@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: flooreplay
+      POSTGRES_PASSWORD: flooreplay
+      POSTGRES_DB: flooreplay
+    ports:
+      - "5433:5432"
+    volumes:
+      - flooreplay-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flooreplay"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  flooreplay-pg:

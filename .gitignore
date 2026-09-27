@@ -1,0 +1,17 @@
+# Dependencies
+frontend/node_modules/
+
+# Build output
+frontend/dist/
+
+# Python virtualenv
+backend/.venv/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Misc
+.DS_Store
+*.log
