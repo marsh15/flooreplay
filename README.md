@@ -82,6 +82,15 @@ The Imports screen (`/imports`, mounted only in local mode) follows: select a do
 - Forking creates a new scenario revision with the imported snapshot; the original revision and every historical replay stay untouched.
 - The curated examples include a successful import and a rejected one (five defect kinds in six rows).
 
+## The 32-case operational suite and comparison report
+
+`SUITE-OPS-V1` pins 32 named cases across six categories (deterministic selection, missing/stale/incomplete evidence, conflicting facts, candidate and resource constraints, abstention vs insufficient context, historical replay). Every case states the defect it would catch and carries per-configuration expectations. The Comparison screen executes the suite under two configurations and reports actual transitions:
+
+- baseline vs improved: 32 unchanged pass (the baseline meets its documented limitation demands; behavior differences are shown separately as "behavior changed")
+- improved vs the demonstration defect: 29 unchanged pass, **3 regressions** (the relaxed-freshness config lets stale evidence through on exactly the three stale-evidence cases), each with its failure reasons
+
+An interrupted suite can never receive an overall passing verdict; comparison reports are persisted with a manifest digest and idempotency keys.
+
 ## Status and honest limits
 
-Milestones 1-2 of 6 are complete: contracts, engine, persistence, seed, replay API, library and workbench screens, and the CSV import/fork workflow, all walkable in the browser. Not yet built: AI note extraction, suite comparison report, later-context review, public-mode execution limits, deployment. See `DEVELOPMENT.md` for the milestone log and architecture walkthrough.
+Milestones 1-3 of 6 are complete: contracts, engine, persistence, seed, replay API, library and workbench screens, the CSV import/fork workflow, and the 32-case suite with comparison report, all walkable in the browser. Not yet built: AI note extraction, later-context review, public-mode execution limits, deployment. See `DEVELOPMENT.md` for the milestone log and architecture walkthrough.

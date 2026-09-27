@@ -13,15 +13,18 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
+from .domain.evaluation import Expectation
 from .domain.hashing import digest
 from .domain.types import Snapshot
 from .fixtures import CATALOG, CONFIGURATIONS, hero_scenarios
+from .fixtures_suite import SUITE_ID, suite_cases
 from .models import (
     CatalogRevision,
     ExecutionConfiguration,
     ExpectationRevision,
     ScenarioRevision,
     SourceSnapshot,
+    SuiteRevision,
 )
 
 CATALOG_ID = "CATALOG-2026-09-A"
@@ -32,8 +35,62 @@ def _payload_digest(payload: dict[str, Any]) -> str:
     return digest(without_digest)
 
 
+def _expectation_assertions(expectation: Expectation) -> dict[str, Any]:
+    return {
+        "expected_outcome": (
+            expectation.expected_outcome.value
+            if expectation.expected_outcome is not None
+            else None
+        ),
+        "required_issue_codes": [c.value for c in expectation.required_issue_codes],
+        "required_failed_constraints": [
+            c.value for c in expectation.required_failed_constraints
+        ],
+        "required_passed_constraints": [
+            c.value for c in expectation.required_passed_constraints
+        ],
+        "forbidden_operators": list(expectation.forbidden_operators),
+        "allowed_operators": list(expectation.allowed_operators),
+        "required_operator": expectation.required_operator,
+        "policy_execution_permitted": expectation.policy_execution_permitted,
+    }
+
+
+class _ScenarioLike:
+    """Uniform view over hero fixtures and suite cases for seeding."""
+
+    def __init__(self, scenario_id: str, revision: int, title: str, tags: tuple[str, ...],
+                 defect_statement: str, context: Any, expectations: dict[str, Expectation]) -> None:
+        self.scenario_id = scenario_id
+        self.revision = revision
+        self.title = title
+        self.tags = tags
+        self.defect_statement = defect_statement
+        self.context = context
+        self.expectations = expectations
+
+
+def _all_scenarios() -> list[_ScenarioLike]:
+    hero = [
+        _ScenarioLike(
+            scen.scenario_id, scen.revision, scen.title, scen.tags,
+            scen.defect_statement, scen.context, scen.expectations,
+        )
+        for scen in hero_scenarios()
+    ]
+    suite = [
+        _ScenarioLike(
+            case.sid, 1, f"{case.title} ({case.category})",
+            (*case.tags, "suite", f"category:{case.category}"),
+            case.defect_statement, case.context, case.demands,
+        )
+        for case in suite_cases()
+    ]
+    return hero + suite
+
+
 def seed(session: Session) -> dict[str, int]:
-    counts = {"catalogs": 0, "snapshots": 0, "configurations": 0, "scenarios": 0, "expectations": 0}
+    counts = {"catalogs": 0, "snapshots": 0, "configurations": 0, "scenarios": 0, "expectations": 0, "suite": 0}
 
     # --- catalog ---------------------------------------------------------
     catalog_payload = CATALOG.model_dump(mode="json")
@@ -53,7 +110,7 @@ def seed(session: Session) -> dict[str, int]:
 
     # --- snapshots (collected across all scenario revisions) -------------
     snapshots: dict[str, Snapshot] = {}
-    for scenario in hero_scenarios():
+    for scenario in _all_scenarios():
         for snap in scenario.context.snapshots:
             if snap.id in snapshots and snapshots[snap.id] != snap:
                 raise RuntimeError(f"Snapshot id {snap.id} reused with different content")
@@ -107,7 +164,7 @@ def seed(session: Session) -> dict[str, int]:
             existing_cfg.known_limitation = cfg["known_limitation"]
 
     # --- scenario revisions and expectations ------------------------------
-    for scenario in hero_scenarios():
+    for scenario in _all_scenarios():
         existing_scen = session.get(ScenarioRevision, (scenario.scenario_id, scenario.revision))
         if existing_scen is None:
             session.add(
@@ -127,24 +184,7 @@ def seed(session: Session) -> dict[str, int]:
             counts["scenarios"] += 1
 
         for cfg_id, expectation in scenario.expectations.items():
-            assertions = {
-                "expected_outcome": (
-                    expectation.expected_outcome.value
-                    if expectation.expected_outcome is not None
-                    else None
-                ),
-                "required_issue_codes": [c.value for c in expectation.required_issue_codes],
-                "required_failed_constraints": [
-                    c.value for c in expectation.required_failed_constraints
-                ],
-                "required_passed_constraints": [
-                    c.value for c in expectation.required_passed_constraints
-                ],
-                "forbidden_operators": list(expectation.forbidden_operators),
-                "allowed_operators": list(expectation.allowed_operators),
-                "required_operator": expectation.required_operator,
-                "policy_execution_permitted": expectation.policy_execution_permitted,
-            }
+            assertions = _expectation_assertions(expectation)
             stmt = pg_insert(ExpectationRevision).values(
                 scenario_id=scenario.scenario_id,
                 revision=scenario.revision,
@@ -167,6 +207,35 @@ def seed(session: Session) -> dict[str, int]:
                     "changed after publication; publish a new expectation revision with "
                     "a written rationale."
                 )
+
+    # --- suite revision ----------------------------------------------------
+    suite_items = [
+        {
+            "scenario_id": case.sid,
+            "revision": 1,
+            "category": case.category,
+            "title": case.title,
+            "defect_statement": case.defect_statement,
+        }
+        for case in suite_cases()
+    ]
+    suite_digest = digest({"suite_id": SUITE_ID, "items": suite_items})
+    existing_suite = session.get(SuiteRevision, SUITE_ID)
+    if existing_suite is None:
+        session.add(
+            SuiteRevision(
+                id=SUITE_ID,
+                revision=1,
+                label="Operational evaluation suite v1 (32 cases)",
+                items=suite_items,
+                content_digest=suite_digest,
+            )
+        )
+        counts["suite"] = 1
+    elif existing_suite.content_digest != suite_digest:
+        raise RuntimeError(
+            f"Suite {SUITE_ID} membership changed after publication; publish a new suite revision."
+        )
 
     session.commit()
     return counts

@@ -17,10 +17,12 @@ from .db import session_scope
 from .fixtures import CONFIGURATIONS
 from .importing import ImportStructuralError, preview_import
 from .models import (
+    ComparisonReport,
     ExecutionConfiguration,
     ReplayAttempt,
     ScenarioRevision,
     SourceSnapshot,
+    SuiteRevision,
 )
 from .service import (
     ServiceError,
@@ -28,6 +30,7 @@ from .service import (
     fork_scenario,
     latest_attempt_summaries,
     publish_import,
+    run_comparison,
 )
 
 
@@ -59,6 +62,13 @@ class PublishRequestBody(ImportRequestBody):
 
 class ForkRequest(BaseModel):
     snapshot_id: str
+
+
+class ComparisonRequest(BaseModel):
+    suite_id: str
+    baseline_config_id: str
+    candidate_config_id: str
+    idempotency_key: str = Field(min_length=8, max_length=120)
 
 
 def create_app(mode: str | None = None) -> FastAPI:
@@ -298,6 +308,75 @@ def create_app(mode: str | None = None) -> FastAPI:
                     "tags": fork.tags,
                     "pinned_snapshot_ids": fork.pinned_snapshot_ids,
                 }
+
+    @app.get("/api/v1/suites")
+    def list_suites() -> dict[str, Any]:
+        with session_scope() as session:
+            rows = session.execute(select(SuiteRevision).order_by(SuiteRevision.id)).scalars().all()
+            return {
+                "items": [
+                    {
+                        "id": r.id,
+                        "revision": r.revision,
+                        "label": r.label,
+                        "case_count": len(r.items),
+                        "content_digest": r.content_digest,
+                    }
+                    for r in rows
+                ]
+            }
+
+    @app.get("/api/v1/comparisons")
+    def list_comparisons() -> dict[str, Any]:
+        with session_scope() as session:
+            rows = (
+                session.execute(
+                    select(ComparisonReport).order_by(ComparisonReport.created_at.desc()).limit(20)
+                )
+                .scalars()
+                .all()
+            )
+            return {"items": [comparison_summary(r) for r in rows]}
+
+    @app.post("/api/v1/comparisons")
+    def create_comparison(body: ComparisonRequest) -> dict[str, Any]:
+        with session_scope() as session:
+            report = run_comparison(
+                session,
+                body.suite_id,
+                body.baseline_config_id,
+                body.candidate_config_id,
+                body.idempotency_key,
+            )
+            return comparison_report(report)
+
+    @app.get("/api/v1/comparisons/{comparison_id}")
+    def comparison_detail(comparison_id: str) -> dict[str, Any]:
+        with session_scope() as session:
+            report = session.get(ComparisonReport, comparison_id)
+            if report is None:
+                raise ServiceError("COMPARISON_UNKNOWN", "Unknown comparison report", 404)
+            return comparison_report(report)
+
+    def comparison_summary(report: ComparisonReport) -> dict[str, Any]:
+        return {
+            "id": report.id,
+            "suite_id": report.suite_id,
+            "suite_revision": report.suite_revision,
+            "baseline_config_id": report.baseline_config_id,
+            "candidate_config_id": report.candidate_config_id,
+            "status": report.status,
+            "totals": report.totals,
+            "created_at": report.created_at.isoformat(),
+        }
+
+    def comparison_report(report: ComparisonReport) -> dict[str, Any]:
+        return {
+            **comparison_summary(report),
+            "manifest_digest": report.manifest_digest,
+            "items": report.items,
+            "execution_kind": "live",
+        }
 
     def attempt_report(attempt: ReplayAttempt) -> dict[str, Any]:
         return {

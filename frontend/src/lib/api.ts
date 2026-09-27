@@ -262,6 +262,56 @@ export interface ForkResult {
   pinned_snapshot_ids: string[]
 }
 
+export type Classification = 'UNCHANGED_PASS' | 'FIXED' | 'REGRESSION' | 'UNCHANGED_FAIL' | 'NOT_COMPARABLE'
+
+export interface ComparisonSide {
+  outcome: DomainOutcome | null
+  verdict: 'PASS' | 'FAIL' | 'NOT_EVALUATED'
+  operator: string | null
+  issue_codes: string[]
+  failures: string[]
+}
+
+export interface ComparisonItem {
+  scenario_id: string
+  title: string
+  category: string
+  defect_statement: string
+  baseline: ComparisonSide
+  candidate: ComparisonSide
+  classification: Classification
+  behavior_changed: boolean
+}
+
+export interface ComparisonReport {
+  id: string
+  suite_id: string
+  suite_revision: number
+  baseline_config_id: string
+  candidate_config_id: string
+  status: 'COMPLETED' | 'INTERRUPTED'
+  totals: {
+    fixed: number
+    regression: number
+    unchanged_pass: number
+    unchanged_fail: number
+    completed: number
+    total: number
+  }
+  created_at: string
+  manifest_digest?: string
+  items?: ComparisonItem[]
+  execution_kind?: 'live'
+}
+
+export interface SuiteSummary {
+  id: string
+  revision: number
+  label: string
+  case_count: number
+  content_digest: string
+}
+
 export const api = {
   capabilities: () =>
     request<{
@@ -301,5 +351,18 @@ export const api = {
     request<ForkResult>(`/scenarios/${scenarioId}/revisions/${revision}/fork`, {
       method: 'POST',
       body: JSON.stringify({ snapshot_id: snapshotId }),
+    }),
+  suites: () => request<{ items: SuiteSummary[] }>('/suites'),
+  comparisons: () => request<{ items: ComparisonReport[] }>('/comparisons'),
+  comparison: (id: string) => request<ComparisonReport>(`/comparisons/${id}`),
+  runComparison: (body: {
+    suite_id: string
+    baseline_config_id: string
+    candidate_config_id: string
+    idempotency_key: string
+  }) =>
+    request<ComparisonReport>('/comparisons', {
+      method: 'POST',
+      body: JSON.stringify(body),
     }),
 }

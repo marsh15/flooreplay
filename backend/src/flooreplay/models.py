@@ -138,3 +138,36 @@ class ImportAudit(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(tz=UTC)
     )
+
+
+class SuiteRevision(Base):
+    """An ordered, pinned suite membership: scenario revisions plus their
+    expectation revisions, content-addressed as one unit."""
+
+    __tablename__ = "suite_revisions"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer)
+    label: Mapped[str] = mapped_column(Text)
+    items: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
+    content_digest: Mapped[str] = mapped_column(String(80), unique=True)
+
+
+class ComparisonReport(Base):
+    """One suite execution under two configurations and its classifications."""
+
+    __tablename__ = "comparison_reports"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
+    idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
+    suite_id: Mapped[str] = mapped_column(String(64))
+    suite_revision: Mapped[int] = mapped_column(Integer)
+    baseline_config_id: Mapped[str] = mapped_column(String(64))
+    candidate_config_id: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(16))  # COMPLETED | INTERRUPTED
+    items: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
+    totals: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    manifest_digest: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(tz=UTC)
+    )

@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 const NAV = [
   { to: '/', label: 'Scenario library' },
   { to: '/workbench', label: 'Replay workbench' },
+  { to: '/comparison', label: 'Comparison' },
   { to: '/imports', label: 'Imports', localOnly: true },
 ]
 

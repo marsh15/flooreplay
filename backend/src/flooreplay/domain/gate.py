@@ -167,6 +167,38 @@ def _check_shared(
                 f"Machine {machine.id} ({machine.kind}) is not compatible with operation {op_def.id}.",
             )
         )
+    elif machine is not None:
+        # A recorded-unusable designated machine conclusively excludes every
+        # candidate: no proposal on it can ever validate. This is a known
+        # fact, not missing context, so it never yields NEEDS_CONTEXT.
+        state = next(
+            (
+                rec
+                for snap in pinned.snapshots
+                if snap.kind is SnapshotKind.MACHINE_STATE and snap.machine_state
+                for rec in snap.machine_state
+                if rec.machine_id == machine.id
+            ),
+            None,
+        )
+        if state is not None and not state.usable:
+            machine_snapshot_id = next(
+                s.id for s in pinned.snapshots if s.kind is SnapshotKind.MACHINE_STATE
+            )
+            conclusive.append(
+                _issue(
+                    IssueCode.TARGET_MACHINE_UNUSABLE,
+                    IssueSeverity.BLOCKING,
+                    f"Machine {machine.id} is recorded unusable: {state.detail}.",
+                    evidence=(
+                        EvidenceRef(
+                            snapshot_id=machine_snapshot_id,
+                            source_ref=state.source_ref,
+                            field="usable",
+                        ),
+                    ),
+                )
+            )
 
     for kind, max_age, stale_code in (
         (
@@ -571,12 +603,13 @@ def evaluate_gate(ctx: ReplayRequestContext, settings: GateFreshnessSettings) ->
     evidence_blocks = [i for i in blocking if i.code is not IssueCode.CONTRADICTORY_ASSERTIONS]
 
     if contradictions:
+        # Contradictions dominate: report both sets, block the policy.
         return GateResult(
             DomainOutcome.CONFLICTING_CONTEXT, blocking, [], [], plan_payload, slot
         )
     if conclusive:
         return GateResult(
-            DomainOutcome.NO_FEASIBLE_CANDIDATE, blocking, [], [], plan_payload, slot
+            DomainOutcome.NO_FEASIBLE_CANDIDATE, evidence_blocks + conclusive, [], [], plan_payload, slot
         )
     if evidence_blocks:
         return GateResult(DomainOutcome.NEEDS_CONTEXT, blocking, [], [], plan_payload, slot)

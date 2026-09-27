@@ -60,6 +60,14 @@ Re-derives all twelve checks from pinned evidence. An unknown operator fails `C0
 
 Kaveri Garments Unit 3, Asia/Kolkata, 2026-09-22. Two lines, 22 operators, 2 styles, 8 operations, 12 named machines. The hero episode: decision 07:58, shift 08:00-16:30, `O117` cannot cover sleeve attach on Line 4 (machine SN-4407). `O204` is the most skilled but occupied on Line 3; `O219` is idle, skilled, same line. Revision 1 pins a stale skill snapshot (45 days); revision 2 pins the corrected one (4 days).
 
+## Milestone 3: the operational suite and comparison (fixtures_suite.py, Comparison screen)
+
+- **32 named cases** (`fixtures_suite.py`), each derived from the hero episode by a targeted mutation with an explicit defect statement and per-configuration demands. The cases were authored against the engine and validated case-by-case before any persistence was wired: 0 unintended mismatches, and exactly 3 intended defect-config failures (B1/F1/F4, the stale-evidence regressions the defect exists to exhibit).
+- **Expectations are demands, not observations.** The baseline configuration legitimately fails healthy-coverage demands (its overlap blind spot is documented), so its demands are written as "REJECTED by C07"; the comparison therefore compares each config against its own pinned demands, and pass/fail is judgment, not taste.
+- **Comparison execution** (`run_comparison`): sequential, at most the suite's items, a monotonic 30-second budget checked between cases, results persisted as one report with a manifest digest and database-enforced idempotency. Classifications: UNCHANGED_PASS / FIXED / REGRESSION / UNCHANGED_FAIL; behavior changes (both pass, different decisions) are reported separately, never folded into pass/fail. An interrupted suite stores INTERRUPTED and can never pass overall.
+- **Two engine gaps found by authoring the suite**, both fixed and now covered: (1) a recorded-unusable designated machine now conclusively blocks at the gate (NO_FEASIBLE_CANDIDATE with TARGET_MACHINE_UNUSABLE evidence) instead of waiting to fail C06 after a wasted proposal; (2) conclusive gate issues are no longer dropped from the result's issue list.
+- **Honesty notes carried into the fixtures**: operators without a skill row are MATERIAL unknowns, so "everyone excluded" cases only become conclusive NO_FEASIBLE_CANDIDATE with a complete skill matrix; one operator's stale/future/unknown evidence never blocks a supported candidate elsewhere in the pool (cases E1/E2, C4).
+
 ## Milestone 2: the import pipeline (importing.py, Imports screen)
 
 The import flow turns an imperfect external export into immutable evidence without ever lying about what it received:

@@ -8,6 +8,7 @@ not an in-memory dictionary.
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from sqlalchemy import select
@@ -31,12 +32,14 @@ from .domain.types import (
 from .importing import ImportPreview, build_snapshot
 from .models import (
     CatalogRevision,
+    ComparisonReport,
     ExecutionConfiguration,
     ExpectationRevision,
     ImportAudit,
     ReplayAttempt,
     ScenarioRevision,
     SourceSnapshot,
+    SuiteRevision,
 )
 
 
@@ -383,3 +386,158 @@ def fork_scenario(
         )
     session.commit()
     return fork
+
+
+CLASSIFICATIONS = ("UNCHANGED_PASS", "FIXED", "REGRESSION", "UNCHANGED_FAIL", "NOT_COMPARABLE")
+
+
+def _classify(baseline_verdict: str, candidate_verdict: str) -> str:
+    if baseline_verdict == "PASS" and candidate_verdict == "PASS":
+        return "UNCHANGED_PASS"
+    if baseline_verdict == "FAIL" and candidate_verdict == "PASS":
+        return "FIXED"
+    if baseline_verdict == "PASS" and candidate_verdict == "FAIL":
+        return "REGRESSION"
+    return "UNCHANGED_FAIL"
+
+
+def _run_one(
+    session: Session,
+    scenario: ScenarioRevision,
+    configuration: ExecutionConfiguration,
+) -> dict[str, Any]:
+    ctx = _load_context(session, scenario)
+    gate_settings = GateFreshnessSettings.model_validate(configuration.settings)
+    run = run_replay(ctx, gate_settings, configuration.policy_kind)
+    expectation = session.execute(
+        select(ExpectationRevision).where(
+            ExpectationRevision.scenario_id == scenario.scenario_id,
+            ExpectationRevision.revision == scenario.revision,
+            ExpectationRevision.configuration_id == configuration.id,
+        )
+    ).scalar_one_or_none()
+    verdict = "NOT_EVALUATED"
+    failures: list[str] = []
+    if expectation is not None:
+        v = evaluation.evaluate(run.outcome, _expectation_from(expectation.assertions))
+        verdict = v.verdict.value
+        failures = list(v.failures)
+    return {
+        "outcome": run.outcome.outcome.value,
+        "verdict": verdict,
+        "operator": run.outcome.proposal.operator_id if run.outcome.proposal else None,
+        "issue_codes": sorted({i.code.value for i in run.outcome.gate_issues}),
+        "failures": failures,
+    }
+
+
+def run_comparison(
+    session: Session,
+    suite_id: str,
+    baseline_config_id: str,
+    candidate_config_id: str,
+    idempotency_key: str,
+) -> ComparisonReport:
+    if baseline_config_id == candidate_config_id:
+        raise ServiceError(
+            "COMPARISON_CONFIGS_IDENTICAL",
+            "Baseline and candidate configurations must differ.",
+            422,
+        )
+    suite = session.get(SuiteRevision, suite_id)
+    if suite is None:
+        raise ServiceError("SUITE_UNKNOWN", "Unknown suite revision", 404)
+    baseline_cfg = session.get(ExecutionConfiguration, baseline_config_id)
+    candidate_cfg = session.get(ExecutionConfiguration, candidate_config_id)
+    if baseline_cfg is None or candidate_cfg is None:
+        raise ServiceError("CONFIGURATION_UNKNOWN", "Unknown execution configuration", 404)
+
+    request_payload = {
+        "suite_id": suite_id,
+        "baseline_config_id": baseline_config_id,
+        "candidate_config_id": candidate_config_id,
+    }
+    existing = session.execute(
+        select(ComparisonReport).where(ComparisonReport.idempotency_key == idempotency_key)
+    ).scalar_one_or_none()
+    if existing is not None:
+        same_request = (
+            existing.suite_id == suite_id
+            and existing.baseline_config_id == baseline_config_id
+            and existing.candidate_config_id == candidate_config_id
+        )
+        if not same_request:
+            raise ServiceError(
+                "IDEMPOTENCY_CONFLICT",
+                "This idempotency key was used with a different comparison request.",
+                409,
+            )
+        return existing
+    _ = request_payload  # documented request identity, mirrored by the columns above
+
+    deadline = time.monotonic() + settings.suite_budget_seconds
+    items: list[dict[str, Any]] = []
+    totals = {"fixed": 0, "regression": 0, "unchanged_pass": 0, "unchanged_fail": 0}
+    interrupted = False
+
+    for suite_item in suite.items:
+        if time.monotonic() > deadline:
+            interrupted = True
+            break
+        scenario = session.get(ScenarioRevision, (suite_item["scenario_id"], suite_item["revision"]))
+        if scenario is None:
+            raise ServiceError(
+                "SUITE_MEMBER_MISSING",
+                f"Suite member {suite_item['scenario_id']} is missing from the database.",
+                500,
+            )
+        base = _run_one(session, scenario, baseline_cfg)
+        cand = _run_one(session, scenario, candidate_cfg)
+        classification = _classify(base["verdict"], cand["verdict"])
+        behavior_changed = (
+            base["verdict"] == "PASS"
+            and cand["verdict"] == "PASS"
+            and base["outcome"] != cand["outcome"]
+        ) or (
+            base["verdict"] == "PASS"
+            and cand["verdict"] == "PASS"
+            and base["operator"] != cand["operator"]
+        )
+        totals_key = classification.lower()
+        if totals_key in totals:
+            totals[totals_key] += 1
+        items.append(
+            {
+                "scenario_id": scenario.scenario_id,
+                "title": suite_item.get("title", scenario.title),
+                "category": suite_item.get("category", ""),
+                "defect_statement": suite_item.get("defect_statement", scenario.defect_statement),
+                "baseline": base,
+                "candidate": cand,
+                "classification": classification,
+                "behavior_changed": behavior_changed,
+            }
+        )
+
+    manifest_digest = digest(
+        {
+            "suite": {"id": suite.id, "revision": suite.revision, "digest": suite.content_digest},
+            "baseline": {"id": baseline_cfg.id, "settings": baseline_cfg.settings},
+            "candidate": {"id": candidate_cfg.id, "settings": candidate_cfg.settings},
+            "build_id": settings.build_id,
+        }
+    )
+    report = ComparisonReport(
+        idempotency_key=idempotency_key,
+        suite_id=suite.id,
+        suite_revision=suite.revision,
+        baseline_config_id=baseline_config_id,
+        candidate_config_id=candidate_config_id,
+        status="INTERRUPTED" if interrupted else "COMPLETED",
+        items=items,
+        totals={**totals, "completed": len(items), "total": len(suite.items)},
+        manifest_digest=manifest_digest,
+    )
+    session.add(report)
+    session.commit()
+    return report
