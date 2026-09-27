@@ -1,14 +1,17 @@
 import { Route, Routes } from 'react-router'
 
-import { HomePage } from '@/pages/Home'
+import { AppShell } from '@/components/AppShell'
+import { LibraryPage } from '@/pages/Library'
 import { WorkbenchPage } from '@/pages/Workbench'
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/workbench" element={<WorkbenchPage />} />
-    </Routes>
+    <AppShell>
+      <Routes>
+        <Route path="/" element={<LibraryPage />} />
+        <Route path="/workbench" element={<WorkbenchPage />} />
+      </Routes>
+    </AppShell>
   )
 }
 
