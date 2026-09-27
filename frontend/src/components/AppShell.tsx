@@ -3,16 +3,25 @@
  * locked for this workbench; state colors supplement labels everywhere.
  */
 
+import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation } from 'react-router'
+import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const NAV = [
   { to: '/', label: 'Scenario library' },
   { to: '/workbench', label: 'Replay workbench' },
+  { to: '/imports', label: 'Imports', localOnly: true },
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
+  const capabilities = useQuery({
+    queryKey: ['capabilities'],
+    queryFn: api.capabilities,
+    staleTime: 60_000,
+  })
+  const importsEnabled = capabilities.data?.imports_enabled === true
   return (
     <div className="min-h-[100dvh] bg-zinc-50">
       <header className="border-b border-zinc-200 bg-white">
@@ -25,6 +34,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <nav className="ml-auto flex gap-1" aria-label="Primary">
             {NAV.map((item) => {
+              if (item.localOnly && !importsEnabled) return null
               const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to)
               return (
                 <Link

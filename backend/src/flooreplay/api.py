@@ -15,13 +15,20 @@ from sqlalchemy import select
 from .config import settings
 from .db import session_scope
 from .fixtures import CONFIGURATIONS
+from .importing import ImportStructuralError, preview_import
 from .models import (
     ExecutionConfiguration,
     ReplayAttempt,
     ScenarioRevision,
     SourceSnapshot,
 )
-from .service import ServiceError, execute_replay, latest_attempt_summaries
+from .service import (
+    ServiceError,
+    execute_replay,
+    fork_scenario,
+    latest_attempt_summaries,
+    publish_import,
+)
 
 
 class ErrorEnvelope(BaseModel):
@@ -38,8 +45,34 @@ class ReplayRequest(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
-def create_app() -> FastAPI:
+class ImportRequestBody(BaseModel):
+    profile_id: str
+    csv_text: str
+    declared_evidence_at: str
+    coverage_complete: bool = True
+    scope: str | None = None
+
+
+class PublishRequestBody(ImportRequestBody):
+    preview_digest: str
+
+
+class ForkRequest(BaseModel):
+    snapshot_id: str
+
+
+def create_app(mode: str | None = None) -> FastAPI:
+    effective_mode = mode or settings.mode
     app = FastAPI(title="FloorReplay API", version="0.1.0")
+
+    @app.exception_handler(ImportStructuralError)
+    async def import_error_handler(request: Request, exc: ImportStructuralError) -> JSONResponse:
+        return JSONResponse(
+            status_code=422,
+            content=ErrorEnvelope(
+                code=exc.code, message=exc.message, details=exc.details, trace_id=str(uuid.uuid4())
+            ).model_dump(),
+        )
 
     @app.exception_handler(ServiceError)
     async def service_error_handler(request: Request, exc: ServiceError) -> JSONResponse:
@@ -65,7 +98,8 @@ def create_app() -> FastAPI:
     @app.get("/api/v1/capabilities")
     def capabilities() -> dict[str, Any]:
         return {
-            "mode": settings.mode,
+            "mode": effective_mode,
+            "imports_enabled": effective_mode == "local",
             "build_id": settings.build_id,
             "live_parser_available": False,  # AI extraction lands in milestone 4
             "configurations": [
@@ -182,6 +216,88 @@ def create_app() -> FastAPI:
             if attempt is None:
                 raise ServiceError("REPLAY_UNKNOWN", "Unknown replay attempt", 404)
             return attempt_report(attempt)
+
+    def _preview_body(body: ImportRequestBody) -> dict[str, Any]:
+        preview = preview_import(
+            body.profile_id,
+            body.csv_text,
+            body.declared_evidence_at,
+            body.coverage_complete,
+            body.scope,
+        )
+        issues_by_row: dict[int, list[dict[str, Any]]] = {}
+        for issue in preview.issues:
+            issues_by_row.setdefault(issue.row, []).append(
+                {
+                    "code": issue.code,
+                    "severity": issue.severity,
+                    "column": issue.column,
+                    "raw_value": issue.raw_value,
+                    "message": issue.message,
+                }
+            )
+        return {
+            "profile_id": preview.profile_id,
+            "snapshot_kind": preview.snapshot_kind,
+            "headers": list(preview.headers),
+            "ignored_columns": list(preview.ignored_columns),
+            "declared_evidence_at": preview.declared_evidence_at,
+            "coverage_complete": preview.coverage_complete,
+            "scope": preview.scope,
+            "preview_digest": preview.preview_digest,
+            "raw_digest": preview.raw_digest,
+            "counts": {
+                "rows": len(preview.rows),
+                "blocking": preview.blocking_count,
+                "warning": preview.warning_count,
+            },
+            "rows": [
+                {
+                    "row": row.row,
+                    "raw": row.raw,
+                    "normalized": row.normalized,
+                    "normalizations": list(row.normalizations),
+                    "issues": issues_by_row.get(row.row, []),
+                }
+                for row in preview.rows
+            ],
+            "file_issues": issues_by_row.get(0, []),
+        }
+
+    if effective_mode == "local":
+        @app.post("/api/v1/imports/preview")
+        def import_preview(body: ImportRequestBody) -> dict[str, Any]:
+            return _preview_body(body)
+
+        @app.post("/api/v1/imports/publish")
+        def import_publish(body: PublishRequestBody) -> dict[str, Any]:
+            preview = preview_import(
+                body.profile_id,
+                body.csv_text,
+                body.declared_evidence_at,
+                body.coverage_complete,
+                body.scope,
+            )
+            if preview.preview_digest != body.preview_digest:
+                raise ServiceError(
+                    "PREVIEW_MISMATCH",
+                    "The CSV or metadata changed since the preview was computed; preview again.",
+                    409,
+                )
+            with session_scope() as session:
+                return publish_import(session, preview, body.csv_text)
+
+        @app.post("/api/v1/scenarios/{scenario_id}/revisions/{revision}/fork")
+        def scenario_fork(scenario_id: str, revision: int, body: ForkRequest) -> dict[str, Any]:
+            with session_scope() as session:
+                fork = fork_scenario(session, scenario_id, revision, body.snapshot_id)
+                return {
+                    "scenario_id": fork.scenario_id,
+                    "revision": fork.revision,
+                    "title": fork.title,
+                    "tags": fork.tags,
+                    "pinned_snapshot_ids": fork.pinned_snapshot_ids,
+                }
 
     def attempt_report(attempt: ReplayAttempt) -> dict[str, Any]:
         return {

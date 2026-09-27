@@ -209,10 +209,64 @@ export class ApiError extends Error {
   }
 }
 
+export interface ImportRowIssue {
+  code: string
+  severity: 'BLOCKING' | 'WARNING'
+  column: string
+  raw_value: string
+  message: string
+}
+
+export interface ImportPreviewRow {
+  row: number
+  raw: Record<string, string>
+  normalized: Record<string, string>
+  normalizations: string[]
+  issues: ImportRowIssue[]
+}
+
+export interface ImportPreview {
+  profile_id: string
+  snapshot_kind: string
+  headers: string[]
+  ignored_columns: string[]
+  declared_evidence_at: string
+  coverage_complete: boolean
+  scope: string
+  preview_digest: string
+  raw_digest: string
+  counts: { rows: number; blocking: number; warning: number }
+  rows: ImportPreviewRow[]
+  file_issues: ImportRowIssue[]
+}
+
+export interface ImportPublishResult {
+  snapshot_id: string
+  already_published: boolean
+  content_digest: string
+}
+
+export interface ImportRequestBody {
+  profile_id: string
+  csv_text: string
+  declared_evidence_at: string
+  coverage_complete: boolean
+  scope?: string
+}
+
+export interface ForkResult {
+  scenario_id: string
+  revision: number
+  title: string
+  tags: string[]
+  pinned_snapshot_ids: string[]
+}
+
 export const api = {
   capabilities: () =>
     request<{
       mode: string
+      imports_enabled: boolean
       build_id: string
       live_parser_available: boolean
       configurations: { id: string; name: string; known_limitation: string }[]
@@ -233,4 +287,19 @@ export const api = {
       body: JSON.stringify(body),
     }),
   replay: (id: string) => request<ReplayAttempt>(`/replays/${id}`),
+  importPreview: (body: ImportRequestBody) =>
+    request<ImportPreview>('/imports/preview', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  importPublish: (body: ImportRequestBody & { preview_digest: string }) =>
+    request<ImportPublishResult>('/imports/publish', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  forkScenario: (scenarioId: string, revision: number, snapshotId: string) =>
+    request<ForkResult>(`/scenarios/${scenarioId}/revisions/${revision}/fork`, {
+      method: 'POST',
+      body: JSON.stringify({ snapshot_id: snapshotId }),
+    }),
 }

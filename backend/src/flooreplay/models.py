@@ -18,6 +18,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    LargeBinary,
     String,
     Text,
     UniqueConstraint,
@@ -114,3 +115,26 @@ class ReplayAttempt(Base):
         DateTime(timezone=True), default=lambda: datetime.now(tz=UTC)
     )
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class ImportAudit(Base):
+    """One published import: the exact preview digest, the raw bytes, and
+    the snapshot they became. Publication is all-or-nothing and idempotent
+    by preview digest."""
+
+    __tablename__ = "import_audits"
+
+    preview_digest: Mapped[str] = mapped_column(String(80), primary_key=True)
+    profile_id: Mapped[str] = mapped_column(String(32))
+    snapshot_id: Mapped[str] = mapped_column(String(64), ForeignKey("source_snapshots.id"))
+    raw_digest: Mapped[str] = mapped_column(String(80))
+    raw_bytes: Mapped[bytes] = mapped_column(LargeBinary)
+    row_count: Mapped[int] = mapped_column(Integer)
+    blocking_issue_count: Mapped[int] = mapped_column(Integer)
+    warning_issue_count: Mapped[int] = mapped_column(Integer)
+    declared_evidence_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    coverage_complete: Mapped[bool] = mapped_column(Boolean)
+    scope: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(tz=UTC)
+    )

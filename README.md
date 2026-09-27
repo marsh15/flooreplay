@@ -73,6 +73,15 @@ frontend/src/
   pages/Workbench.tsx  replay workbench
 ```
 
+## Imports (local owner)
+
+The Imports screen (`/imports`, mounted only in local mode) follows: select a documented source profile, upload or load a curated example, inspect the normalized preview with row-level diagnostics, publish the exact preview as an immutable snapshot, then fork a scenario onto it.
+
+- Profiles: `attendance-v1` (P/A/blank codes; blank means UNKNOWN, never absent) and `skills-v1` (levels 1-4). Naive timestamps are interpreted as Asia/Kolkata per the documented profile rule.
+- Publication is all-or-nothing: any blocking issue (unsupported value, invalid timestamp, duplicate natural key, unknown entity, missing cell) refuses the publish. Raw bytes and their digest are retained in an audit table.
+- Forking creates a new scenario revision with the imported snapshot; the original revision and every historical replay stay untouched.
+- The curated examples include a successful import and a rejected one (five defect kinds in six rows).
+
 ## Status and honest limits
 
-Milestone 1 of 6 is complete: contracts, engine, persistence, seed, replay API, library and workbench screens, with the hero demonstration walkable in the browser. Not yet built: CSV import, AI note extraction, suite comparison report, later-context review, public-mode limits, deployment. See `DEVELOPMENT.md` for the milestone log and architecture walkthrough.
+Milestones 1-2 of 6 are complete: contracts, engine, persistence, seed, replay API, library and workbench screens, and the CSV import/fork workflow, all walkable in the browser. Not yet built: AI note extraction, suite comparison report, later-context review, public-mode execution limits, deployment. See `DEVELOPMENT.md` for the milestone log and architecture walkthrough.

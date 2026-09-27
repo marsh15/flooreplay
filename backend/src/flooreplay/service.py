@@ -28,10 +28,12 @@ from .domain.types import (
     Snapshot,
     UnavailabilityEvent,
 )
+from .importing import ImportPreview, build_snapshot
 from .models import (
     CatalogRevision,
     ExecutionConfiguration,
     ExpectationRevision,
+    ImportAudit,
     ReplayAttempt,
     ScenarioRevision,
     SourceSnapshot,
@@ -217,3 +219,167 @@ def latest_attempt_summaries(session: Session) -> list[dict[str, Any]]:
         }
         for a in latest.values()
     ]
+
+
+def publish_import(session: Session, preview: ImportPreview, raw_text: str) -> dict[str, Any]:
+    """Atomically persist the snapshot and its audit record.
+
+    Idempotent by preview digest: republishing the exact preview returns the
+    existing snapshot without creating anything.
+    """
+    snapshot = build_snapshot(preview)  # raises on blocking issues: all-or-nothing
+
+    existing_audit = session.get(ImportAudit, preview.preview_digest)
+    if existing_audit is not None:
+        existing_snapshot = session.get(SourceSnapshot, existing_audit.snapshot_id)
+        if existing_snapshot is None:
+            raise ServiceError(
+                "IMPORT_INCONSISTENT",
+                "Audit record references a missing snapshot.",
+                500,
+            )
+        return {
+            "snapshot_id": existing_snapshot.id,
+            "already_published": True,
+            "content_digest": existing_snapshot.content_digest,
+        }
+
+    existing_snapshot = session.get(SourceSnapshot, snapshot.id)
+    if existing_snapshot is not None and existing_snapshot.content_digest == snapshot.content_digest:
+        session.add(
+            ImportAudit(
+                preview_digest=preview.preview_digest,
+                profile_id=preview.profile_id,
+                snapshot_id=snapshot.id,
+                raw_digest=preview.raw_digest,
+                raw_bytes=raw_text.encode("utf-8"),
+                row_count=len(preview.rows),
+                blocking_issue_count=preview.blocking_count,
+                warning_issue_count=preview.warning_count,
+                declared_evidence_at=snapshot.declared_evidence_at,
+                coverage_complete=preview.coverage_complete,
+                scope=preview.scope,
+            )
+        )
+        session.commit()
+        return {
+            "snapshot_id": snapshot.id,
+            "already_published": True,
+            "content_digest": snapshot.content_digest,
+        }
+
+    payload = snapshot.model_dump(mode="json")
+    session.add(
+        SourceSnapshot(
+            id=snapshot.id,
+            kind=snapshot.kind.value,
+            source_system=snapshot.source_system,
+            scope=snapshot.scope,
+            declared_evidence_at=snapshot.declared_evidence_at,
+            coverage_complete=snapshot.coverage_complete,
+            content_digest=snapshot.content_digest,
+            payload=payload,
+        )
+    )
+    session.flush()  # the audit's foreign key needs the snapshot row first
+    session.add(
+        ImportAudit(
+            preview_digest=preview.preview_digest,
+            profile_id=preview.profile_id,
+            snapshot_id=snapshot.id,
+            raw_digest=preview.raw_digest,
+            raw_bytes=raw_text.encode("utf-8"),
+            row_count=len(preview.rows),
+            blocking_issue_count=preview.blocking_count,
+            warning_issue_count=preview.warning_count,
+            declared_evidence_at=snapshot.declared_evidence_at,
+            coverage_complete=preview.coverage_complete,
+            scope=preview.scope,
+        )
+    )
+    session.commit()
+    return {
+        "snapshot_id": snapshot.id,
+        "already_published": False,
+        "content_digest": snapshot.content_digest,
+    }
+
+
+def fork_scenario(
+    session: Session, scenario_id: str, revision: int, replacement_snapshot_id: str
+) -> ScenarioRevision:
+    """Create a new scenario revision that swaps one pinned snapshot.
+
+    The original revision is untouched: corrections create revisions, they
+    never rewrite history. Expectations carry over so the fork is
+    immediately evaluable against the same behavioral demands.
+    """
+    source = session.get(ScenarioRevision, (scenario_id, revision))
+    if source is None:
+        raise ServiceError("SCENARIO_UNKNOWN", "Unknown scenario revision", 404)
+    replacement = session.get(SourceSnapshot, replacement_snapshot_id)
+    if replacement is None:
+        raise ServiceError("SNAPSHOT_UNKNOWN", "Unknown snapshot", 404)
+
+    same_kind_ids = [
+        sid for sid in source.pinned_snapshot_ids
+        if (row := session.get(SourceSnapshot, sid)) is not None and row.kind == replacement.kind
+    ]
+    if not same_kind_ids:
+        raise ServiceError(
+            "FORK_KIND_MISMATCH",
+            f"Scenario {scenario_id}@{revision} pins no {replacement.kind.lower()} snapshot to "
+            f"replace with {replacement_snapshot_id}.",
+            422,
+        )
+
+    new_pinned = [
+        replacement_snapshot_id if sid == same_kind_ids[0] else sid
+        for sid in source.pinned_snapshot_ids
+    ]
+
+    latest = (
+        session.execute(
+            select(ScenarioRevision.revision).where(ScenarioRevision.scenario_id == scenario_id)
+        )
+        .scalars()
+        .all()
+    )
+    new_revision = max(latest) + 1
+
+    tags = list(source.tags)
+    if "imported-evidence" not in tags:
+        tags.append("imported-evidence")
+    fork = ScenarioRevision(
+        scenario_id=scenario_id,
+        revision=new_revision,
+        title=source.title,
+        tags=tags,
+        defect_statement=source.defect_statement
+        + f" Forked at revision {new_revision} with imported {replacement.kind.lower()} "
+        f"snapshot {replacement_snapshot_id}.",
+        event=dict(source.event),
+        decision_at=source.decision_at,
+        target=dict(source.target),
+        catalog_revision_id=source.catalog_revision_id,
+        pinned_snapshot_ids=new_pinned,
+    )
+    session.add(fork)
+
+    expectations = session.execute(
+        select(ExpectationRevision).where(
+            ExpectationRevision.scenario_id == scenario_id,
+            ExpectationRevision.revision == revision,
+        )
+    ).scalars().all()
+    for exp in expectations:
+        session.add(
+            ExpectationRevision(
+                scenario_id=scenario_id,
+                revision=new_revision,
+                configuration_id=exp.configuration_id,
+                assertions=dict(exp.assertions),
+            )
+        )
+    session.commit()
+    return fork

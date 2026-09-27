@@ -60,6 +60,17 @@ Re-derives all twelve checks from pinned evidence. An unknown operator fails `C0
 
 Kaveri Garments Unit 3, Asia/Kolkata, 2026-09-22. Two lines, 22 operators, 2 styles, 8 operations, 12 named machines. The hero episode: decision 07:58, shift 08:00-16:30, `O117` cannot cover sleeve attach on Line 4 (machine SN-4407). `O204` is the most skilled but occupied on Line 3; `O219` is idle, skilled, same line. Revision 1 pins a stale skill snapshot (45 days); revision 2 pins the corrected one (4 days).
 
+## Milestone 2: the import pipeline (importing.py, Imports screen)
+
+The import flow turns an imperfect external export into immutable evidence without ever lying about what it received:
+
+- **Fixed, documented source profiles** (`attendance-v1`, `skills-v1`) declare required columns, accepted codes, and the natural key. Extra columns are allowed and listed as ignored.
+- **Normalization is recorded, not silent**: `P` -> PRESENT, `A` -> ABSENT, blank -> UNKNOWN (never absent), naive timestamps -> Asia/Kolkata. Every applied rule appears on the row in the preview, and the original cells are preserved next to the normalized values.
+- **Row-level diagnostics** carry a code, severity, column, and raw value: MISSING_REQUIRED_CELL, UNSUPPORTED_VALUE, INVALID_TIMESTAMP, UNKNOWN_OPERATOR/OPERATION, DUPLICATE_NATURAL_KEY, FORMULA_LIKE_CELL (warning), ROSTER_GAP (warning; the replay gate still does the blocking).
+- **Publication is all-or-nothing and idempotent** by preview digest. The publish endpoint recomputes the preview and refuses if the digest does not match (nothing is published on the quiet). The raw bytes land in `import_audits` beside the snapshot they became.
+- **Forking** (`POST /scenarios/{id}/revisions/{rev}/fork`) swaps one pinned snapshot for the imported one in a *new* revision with expectations carried over. History stays immutable: replaying the old revision still returns its old outcome (asserted by test).
+- **Public mode mounts none of these routes** (`create_app(mode=...)`): hiding buttons is not the mechanism, absent endpoints are.
+
 ## What exists after milestone 1
 
 - Domain engine with the properties above, 45 tests including Hypothesis property invariants (mypy strict + ruff clean).
@@ -69,7 +80,6 @@ Kaveri Garments Unit 3, Asia/Kolkata, 2026-09-22. Two lines, 22 operators, 2 sty
 
 ## What is deliberately not built yet
 
-- CSV import with row-level diagnostics (milestone 2)
 - AI note extraction with confirmation workflow and manual fallback (milestone 4)
 - Suite execution + baseline comparison report (milestone 3)
 - Later-context review checks (milestone 4)
