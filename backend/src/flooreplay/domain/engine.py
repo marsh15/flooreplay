@@ -77,13 +77,13 @@ def run_replay(
     if not any(f.evidence_supported for f in gate_result.candidates) and (
         gate_result.material_candidate_issues
     ):
-            return EngineRun(
-                ReplayOutcome(
-                    outcome=DomainOutcome.NEEDS_CONTEXT,
-                    gate_issues=tuple(gate_result.material_candidate_issues),
-                    context_digest=context_digest,
-                )
+        return EngineRun(
+            ReplayOutcome(
+                outcome=DomainOutcome.NEEDS_CONTEXT,
+                gate_issues=tuple(gate_result.material_candidate_issues),
+                context_digest=context_digest,
             )
+        )
 
     try:
         decision, ranked = policies.select(policy_kind, ctx, gate_result, context_digest)

@@ -33,8 +33,6 @@ class PolicyKind:
     BASELINE_V1 = "baseline-v1"
     IMPROVED_V1 = "improved-v1"
 
-    ALL = (BASELINE_V1, IMPROVED_V1)
-
 
 class PolicyError(RuntimeError):
     """The policy produced output that violates the recommendation contract."""

@@ -9,8 +9,6 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from .types import Instant
-
 
 class InvalidInterval(ValueError):
     pass
@@ -31,7 +29,3 @@ def overlaps(a_start: datetime, a_end: datetime, b_start: datetime, b_end: datet
 def contains(outer_start: datetime, outer_end: datetime, inner_start: datetime, inner_end: datetime) -> bool:
     """True when [inner_start, inner_end) lies wholly inside the outer window."""
     return outer_start <= inner_start and inner_end <= outer_end
-
-
-def clamp_to_instant(value: Instant) -> datetime:  # convenience for callers passing pydantic types
-    return value

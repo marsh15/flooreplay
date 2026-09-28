@@ -60,6 +60,18 @@ Re-derives all twelve checks from pinned evidence. An unknown operator fails `C0
 
 Kaveri Garments Unit 3, Asia/Kolkata, 2026-09-22. Two lines, 22 operators, 2 styles, 8 operations, 12 named machines. The hero episode: decision 07:58, shift 08:00-16:30, `O117` cannot cover sleeve attach on Line 4 (machine SN-4407). `O204` is the most skilled but occupied on Line 3; `O219` is idle, skilled, same line. Revision 1 pins a stale skill snapshot (45 days); revision 2 pins the corrected one (4 days).
 
+## Post-milestone audit: hardening the flash-model-built core
+
+A full review of the milestone 1-3 code (plus the first half of 4) against the project's own honesty rules found and fixed:
+
+- **Evidence selection was row-order dependent** (real determinism bug, in both gate and validator): when an export carried history for one operator, "last row in the list" won — so the same facts in a different file order could produce a different outcome. Both readers now select the record with the latest `observed_at`/`assessed_at`, and the validator additionally reads the *first* pinned snapshot of each kind, exactly like the gate. Covered by regression tests that replay row-order permutations.
+- **Future-dated attendance rows were trusted** (skills had a future-evidence check; attendance did not). The gate now flags a row observed after `decision_at` as MATERIAL `FUTURE_EVIDENCE`, and validator C02 fails any proposal resting on it — the same rule C05 already enforced for skills. A future attendance row can no longer support a proposal through any policy.
+- **UI honesty bugs**: the Imports page kept a stale preview (and could publish an old digest against a new body — the exact "publish the exact preview" violation); the workbench could show one replay's review verdict under a different replay (review outcomes are now keyed to the attempt they checked); the Notes page could cite a parser call whose text no longer matched the note (the draft is now tracked against the text it parsed, with a visible stale banner, and confirm drops the citation); oversized-file errors rendered in a hidden branch; saved-report errors were all mislabeled "nothing saved"; several query failures silently blanked sections; the report download link ignored `VITE_API_BASE`.
+- **Smaller correctness**: `ROSTER_P` was missing O112, so the curated example never exercised its own blank→UNKNOWN path (and silently triggered a roster-gap warning); unknown configuration ids were labeled "defect" in the library; clickable table rows gained keyboard access; a malformed `revision` URL param now shows an explicit not-found notice instead of silently falling back.
+- **Dead code and smells**: `clamp_to_instant`, `PolicyKind.ALL`, an over-indented engine block, a `type: ignore` replaced by an honest assert, function-level imports hoisted, and seeding now accepts only the `"computed-at-publish"` sentinel — a genuinely wrong embedded digest fails loudly instead of being silently rewritten.
+
+State after the audit: 103 backend tests (3 new), 10 E2E specs, mypy strict, ruff, eslint, and the production build all green; the 32-case suite outcomes are unchanged (the fixes close latent holes the suite's fixtures happened not to exercise).
+
 ## Milestone 6: verification and presentation (fixtures_eval.py, eval_notes.py, E2E)
 
 The theme: measure honestly, then demonstrate — never the other way round.

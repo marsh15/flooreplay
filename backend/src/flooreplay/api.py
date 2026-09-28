@@ -8,6 +8,7 @@ import logging
 import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from hashlib import sha256
 from typing import Any
 
 from fastapi import Depends, FastAPI, Request
@@ -23,7 +24,9 @@ from .importing import ImportStructuralError, preview_import
 from .models import (
     ComparisonReport,
     ExecutionConfiguration,
+    ParserCall,
     ReplayAttempt,
+    ReviewCheck,
     ScenarioRevision,
     SourceSnapshot,
     SuiteRevision,
@@ -393,12 +396,10 @@ def create_app(mode: str | None = None) -> FastAPI:
 
     @app.get("/api/v1/review-checks")
     def list_review_checks(replay_id: str | None = None) -> dict[str, Any]:
-        from .models import ReviewCheck as ReviewCheckModel
-
         with session_scope() as session:
-            query = select(ReviewCheckModel).order_by(ReviewCheckModel.created_at.desc()).limit(20)
+            query = select(ReviewCheck).order_by(ReviewCheck.created_at.desc()).limit(20)
             if replay_id:
-                query = query.where(ReviewCheckModel.original_replay_id == replay_id)
+                query = query.where(ReviewCheck.original_replay_id == replay_id)
             rows = session.execute(query).scalars().all()
             return {
                 "items": [
@@ -449,12 +450,8 @@ def create_app(mode: str | None = None) -> FastAPI:
             parser = get_parser(settings.openai_api_key or None)
             draft = parser.parse(body.text, CATALOG)
             resolution = resolve_draft(draft, CATALOG)
-            from hashlib import sha256
-
-            from .models import ParserCall as ParserCallModel
-
             with session_scope() as session:
-                call = ParserCallModel(
+                call = ParserCall(
                     note_text=body.text,
                     note_digest="sha256:" + sha256(body.text.encode()).hexdigest(),
                     parser_kind=draft.parser_kind,

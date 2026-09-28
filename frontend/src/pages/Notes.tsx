@@ -37,6 +37,10 @@ export function NotesPage() {
   const queryClient = useQueryClient()
   const [noteText, setNoteText] = useState(EXAMPLE_NOTE)
   const [parse, setParse] = useState<NoteParseResult | null>(null)
+  // The exact text the current draft was extracted from; a draft is only
+  // attributable to the note it parsed, so confirming cites the parser call
+  // only while the text is unchanged.
+  const [parsedText, setParsedText] = useState('')
   const [confirmed, setConfirmed] = useState<{ scenario_id: string; revision: number } | null>(null)
 
   const scenariosQuery = useQuery({ queryKey: ['scenarios'], queryFn: api.scenarios })
@@ -50,10 +54,13 @@ export function NotesPage() {
   const [summary, setSummary] = useState('')
   const [sourceKind, setSourceKind] = useState<'note' | 'manual'>('note')
 
+  const draftIsCurrent = parse !== null && parsedText === noteText
+
   const parseMutation = useMutation({
     mutationFn: () => api.parseNote(noteText),
     onSuccess: (data) => {
       setParse(data)
+      setParsedText(noteText)
       setConfirmed(null)
       const resolved = data.resolution.operators.find((o) => o.status === 'RESOLVED')
       if (resolved?.resolved_id) setOperatorId(resolved.resolved_id)
@@ -70,9 +77,10 @@ export function NotesPage() {
         observed_at: observedAt,
         summary: summary || 'Confirmed unavailability event.',
         source_kind: sourceKind,
-        parser_call_id: sourceKind === 'note' ? parse?.parser_call_id ?? null : null,
+        parser_call_id:
+          sourceKind === 'note' && draftIsCurrent ? parse?.parser_call_id ?? null : null,
         corrections:
-          parse && parse.draft.raw_temporal_expressions.length > 0
+          draftIsCurrent && parse && parse.draft.raw_temporal_expressions.length > 0
             ? { observed_at: `draft mentioned: ${parse.draft.raw_temporal_expressions.join(', ')}` }
             : undefined,
       }),
@@ -138,6 +146,13 @@ export function NotesPage() {
           <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
             Draft and resolution
           </h2>
+          {!draftIsCurrent ? (
+            <p className="rounded-md border border-amber-600/30 bg-amber-500/10 p-2 text-xs text-amber-900">
+              The note was edited after this draft was extracted, so the draft below is stale.
+              Re-extract to refresh it; confirming now records the event without citing the
+              parser.
+            </p>
+          ) : null}
           <div className="space-y-2 rounded-lg border bg-white p-3 text-sm">
             <p>
               Category <Mono className="font-semibold">{parse.draft.event_category}</Mono> ·
@@ -190,6 +205,11 @@ export function NotesPage() {
           Confirm structured event
         </h2>
         <div className="grid gap-3 rounded-lg border bg-white p-3 sm:grid-cols-2">
+          {scenariosQuery.isError ? (
+            <p className="text-xs text-red-700 sm:col-span-2">
+              Scenarios could not be loaded: {scenariosQuery.error.message}
+            </p>
+          ) : null}
           <label className="block text-xs">
             <span className="mb-1 block font-medium text-zinc-600">Fork onto scenario revision</span>
             <select

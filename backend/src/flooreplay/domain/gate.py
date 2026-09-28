@@ -35,6 +35,7 @@ from .types import (
     Issue,
     IssueCode,
     IssueSeverity,
+    MachineStateRecord,
     Operator,
     PinnedInputs,
     PlanSnapshotPayload,
@@ -97,7 +98,8 @@ def _check_shared(
             )
         )
         return blocking, conclusive
-    plan_payload: PlanSnapshotPayload = plan.plan  # type: ignore[assignment]
+    plan_payload = plan.plan
+    assert plan_payload is not None  # Snapshot's model validator guarantees the kind's payload
 
     slot = next((s for s in plan_payload.slots if s.id == target.slot_id), None)
     if slot is None:
@@ -171,20 +173,18 @@ def _check_shared(
         # A recorded-unusable designated machine conclusively excludes every
         # candidate: no proposal on it can ever validate. This is a known
         # fact, not missing context, so it never yields NEEDS_CONTEXT.
-        state = next(
-            (
-                rec
-                for snap in pinned.snapshots
-                if snap.kind is SnapshotKind.MACHINE_STATE and snap.machine_state
-                for rec in snap.machine_state
-                if rec.machine_id == machine.id
-            ),
-            None,
-        )
-        if state is not None and not state.usable:
-            machine_snapshot_id = next(
-                s.id for s in pinned.snapshots if s.kind is SnapshotKind.MACHINE_STATE
-            )
+        state_owner: tuple[Snapshot, MachineStateRecord] | None = None
+        for snap in pinned.snapshots:
+            if snap.kind is not SnapshotKind.MACHINE_STATE or snap.machine_state is None:
+                continue
+            for rec in snap.machine_state:
+                if rec.machine_id == machine.id:
+                    state_owner = (snap, rec)
+                    break
+            if state_owner is not None:
+                break
+        if state_owner is not None and not state_owner[1].usable:
+            machine_snapshot, state = state_owner
             conclusive.append(
                 _issue(
                     IssueCode.TARGET_MACHINE_UNUSABLE,
@@ -192,7 +192,7 @@ def _check_shared(
                     f"Machine {machine.id} is recorded unusable: {state.detail}.",
                     evidence=(
                         EvidenceRef(
-                            snapshot_id=machine_snapshot_id,
+                            snapshot_id=machine_snapshot.id,
                             source_ref=state.source_ref,
                             field="usable",
                         ),
@@ -434,6 +434,24 @@ def _evaluate_candidate(
                 ),
             )
         )
+    elif att.observed_at > ctx.decision_at:
+        # Parity with skill evidence: a row observed after the decision time
+        # was not knowable when deciding, and is flagged rather than trusted.
+        issues.append(
+            _issue(
+                IssueCode.FUTURE_EVIDENCE,
+                IssueSeverity.MATERIAL,
+                f"Attendance for {op_id} was observed after the decision time.",
+                subject=op_id,
+                evidence=(
+                    EvidenceRef(
+                        snapshot_id=snapshot_ids[SnapshotKind.ATTENDANCE],
+                        source_ref=att.source_ref,
+                        field="observed_at",
+                    ),
+                ),
+            )
+        )
     elif att.status is AttendanceStatus.ABSENT:
         issues.append(
             _issue(
@@ -617,16 +635,27 @@ def evaluate_gate(ctx: ReplayRequestContext, settings: GateFreshnessSettings) ->
     attendance_snap = _snapshot_of(pinned, SnapshotKind.ATTENDANCE)
     attendance_by_op: dict[str, AttendanceRecord] = {}
     if attendance_snap is not None and attendance_snap.attendance is not None:
-        attendance_by_op = {rec.operator_id: rec for rec in attendance_snap.attendance}
+        # Deterministic selection: when an export carries history for one
+        # operator, the row with the latest observed_at is the operative one.
+        # List order must never decide which evidence counts.
+        for att_rec in attendance_snap.attendance:
+            current_att = attendance_by_op.get(att_rec.operator_id)
+            if current_att is None or att_rec.observed_at > current_att.observed_at:
+                attendance_by_op[att_rec.operator_id] = att_rec
     assignments_snap = _snapshot_of(pinned, SnapshotKind.ASSIGNMENTS)
     assignments_by_op: dict[str, list[AssignmentRecord]] = {}
     if assignments_snap is not None and assignments_snap.assignments is not None:
-        for rec in assignments_snap.assignments:
-            assignments_by_op.setdefault(rec.operator_id, []).append(rec)
+        for asg_rec in assignments_snap.assignments:
+            assignments_by_op.setdefault(asg_rec.operator_id, []).append(asg_rec)
     skills_snap = _snapshot_of(pinned, SnapshotKind.SKILLS)
     skills_by_key: dict[tuple[str, str], SkillRecord] = {}
     if skills_snap is not None and skills_snap.skills is not None:
-        skills_by_key = {(r.operator_id, r.operation_id): r for r in skills_snap.skills}
+        # Same rule as attendance: latest assessed_at wins, never list order.
+        for skill_rec in skills_snap.skills:
+            key = (skill_rec.operator_id, skill_rec.operation_id)
+            current_skill = skills_by_key.get(key)
+            if current_skill is None or skill_rec.assessed_at > current_skill.assessed_at:
+                skills_by_key[key] = skill_rec
     snapshot_ids: dict[SnapshotKind, str] = {}
     for kind in SnapshotKind:
         snap = _snapshot_of(pinned, kind)

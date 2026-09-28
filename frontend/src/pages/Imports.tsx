@@ -81,6 +81,7 @@ export function ImportsPage() {
   const [coverageComplete, setCoverageComplete] = useState(true)
   const [preview, setPreview] = useState<ImportPreview | null>(null)
   const [published, setPublished] = useState<{ snapshot_id: string; content_digest: string } | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [forkError, setForkError] = useState<string | null>(null)
 
   const scenariosQuery = useQuery({ queryKey: ['scenarios'], queryFn: api.scenarios })
@@ -94,6 +95,18 @@ export function ImportsPage() {
     }),
     [profileId, csvText, declaredAt, coverageComplete],
   )
+
+  // Any input change invalidates the preview: a stale preview presented as
+  // current, or published with an old digest against a new body, would break
+  // the "publish the exact preview" contract. (Render-time reset keyed on
+  // the derived request body, per the "no effect needed" pattern.)
+  const [requestBodySeen, setRequestBodySeen] = useState(requestBody)
+  if (requestBodySeen !== requestBody) {
+    setRequestBodySeen(requestBody)
+    setPreview(null)
+    setPublished(null)
+    setUploadError(null)
+  }
 
   const previewMutation = useMutation({
     mutationFn: () => api.importPreview(requestBody),
@@ -127,10 +140,16 @@ export function ImportsPage() {
     const file = event.target.files?.[0]
     if (!file) return
     if (file.size > 1024 * 1024) {
-      setForkError('File exceeds the 1 MiB limit.')
+      setUploadError(`"${file.name}" exceeds the 1 MiB limit.`)
       return
     }
-    file.text().then(setCsvText)
+    file
+      .text()
+      .then((text) => {
+        setUploadError(null)
+        setCsvText(text)
+      })
+      .catch(() => setUploadError(`"${file.name}" could not be read.`))
   }
 
   const forkMutation = useMutation({
@@ -268,6 +287,7 @@ export function ImportsPage() {
               </Button>
             ))}
           </div>
+          {uploadError ? <p className="text-xs text-red-700">{uploadError}</p> : null}
         </div>
       </section>
 
@@ -426,6 +446,10 @@ export function ImportsPage() {
             </p>
             {scenariosQuery.isPending ? (
               <Skeleton className="mt-2 h-8 w-64" />
+            ) : scenariosQuery.isError ? (
+              <p className="mt-2 text-xs text-red-700">
+                Scenarios could not be loaded: {scenariosQuery.error.message}
+              </p>
             ) : (
               <div className="mt-2 flex flex-wrap gap-2">
                 {forkableRevisions.map((scenario) => (

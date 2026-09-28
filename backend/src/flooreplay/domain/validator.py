@@ -17,6 +17,7 @@ from . import intervals
 from .types import (
     AssignmentRecord,
     AttendanceRecord,
+    AttendanceStatus,
     ConstraintCode,
     ConstraintResult,
     EvidenceRef,
@@ -57,7 +58,14 @@ def _ne(code: ConstraintCode) -> ConstraintResult:
 
 
 class _Evidence:
-    """Indexed access to the pinned evidence, with source references."""
+    """Indexed access to the pinned evidence, with source references.
+
+    Selection rules mirror the gate exactly: the first pinned snapshot of
+    each kind is the operative one, and when an export carries history for
+    one subject, the record with the latest timestamp wins — never list
+    order. The validator is independent of the gate's conclusions, not of
+    its evidence-reading rules.
+    """
 
     def __init__(self, ctx: ReplayRequestContext) -> None:
         self.attendance_by_op: dict[str, AttendanceRecord] = {}
@@ -67,13 +75,22 @@ class _Evidence:
         self.plan: PlanSnapshotPayload | None = None
         self.snapshot_ids: dict[SnapshotKind, str] = {}
         for snap in ctx.snapshots:
+            if snap.kind in self.snapshot_ids:
+                continue  # first pinned snapshot of a kind is the operative one
             self.snapshot_ids[snap.kind] = snap.id
             if snap.attendance is not None:
-                self.attendance_by_op = {rec.operator_id: rec for rec in snap.attendance}
+                for att_rec in snap.attendance:
+                    current_att = self.attendance_by_op.get(att_rec.operator_id)
+                    if current_att is None or att_rec.observed_at > current_att.observed_at:
+                        self.attendance_by_op[att_rec.operator_id] = att_rec
             if snap.assignments is not None:
                 self.assignments = list(snap.assignments)
             if snap.skills is not None:
-                self.skills_by_key = {(r.operator_id, r.operation_id): r for r in snap.skills}
+                for skill_rec in snap.skills:
+                    key = (skill_rec.operator_id, skill_rec.operation_id)
+                    current_skill = self.skills_by_key.get(key)
+                    if current_skill is None or skill_rec.assessed_at > current_skill.assessed_at:
+                        self.skills_by_key[key] = skill_rec
             if snap.machine_state is not None:
                 self.machine_state_by_id = {r.machine_id: r for r in snap.machine_state}
             if snap.plan is not None:
@@ -158,7 +175,7 @@ def _c02(
     proposal: Proposal, ctx: ReplayRequestContext, operator_id: str, ev: _Evidence
 ) -> ConstraintResult:
     att = ev.attendance_by_op.get(operator_id)
-    if att is None or att.status.value == "UNKNOWN":
+    if att is None or att.status is AttendanceStatus.UNKNOWN:
         return _result(
             ConstraintCode.C02,
             Verdict.FAIL,
@@ -166,7 +183,16 @@ def _c02(
             reason_code="ATTENDANCE_UNKNOWN",
             evidence=(ev.ref(SnapshotKind.ATTENDANCE, att.source_ref if att else "", "status"),),
         )
-    if att.status.value == "ABSENT":
+    if att.observed_at > ctx.decision_at:
+        return _result(
+            ConstraintCode.C02,
+            Verdict.FAIL,
+            f"Attendance for {operator_id} was observed at {att.observed_at.isoformat()}, after "
+            "the decision time; it was not knowable when deciding.",
+            reason_code="FUTURE_EVIDENCE",
+            evidence=(ev.ref(SnapshotKind.ATTENDANCE, att.source_ref, "observed_at"),),
+        )
+    if att.status is AttendanceStatus.ABSENT:
         return _result(
             ConstraintCode.C02,
             Verdict.FAIL,

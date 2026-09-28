@@ -277,8 +277,10 @@ export function ComparisonPage() {
           </div>
 
           <p className="text-xs text-zinc-400">
-            Suite {report.suite_id}@{report.suite_revision} · executed {formatInstant(report.created_at)} ·{' '}
-            persisted report · manifest <Mono>{report.manifest_digest?.slice(0, 19)}…</Mono>
+            Baseline <Mono>{report.baseline_config_id}</Mono> vs candidate{' '}
+            <Mono>{report.candidate_config_id}</Mono> · Suite {report.suite_id}@
+            {report.suite_revision} · executed {formatInstant(report.created_at)} · persisted
+            report · manifest <Mono>{report.manifest_digest?.slice(0, 19)}…</Mono>
           </p>
 
           <div className="overflow-x-auto rounded-lg border bg-white">
@@ -307,6 +309,14 @@ export function ComparisonPage() {
                   <Fragment key={item.scenario_id}>
                     <TableRow
                       onClick={() => setExpanded(expanded === item.scenario_id ? null : item.scenario_id)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          setExpanded(expanded === item.scenario_id ? null : item.scenario_id)
+                        }
+                      }}
+                      tabIndex={0}
+                      aria-label={`Toggle detail for ${item.scenario_id}`}
                       className={cn(
                         'cursor-pointer',
                         expanded === item.scenario_id && 'bg-zinc-100',
@@ -383,6 +393,12 @@ export function ComparisonPage() {
           </p>
         </div>
       )}
+
+      {historyQuery.isError ? (
+        <p className="text-xs text-red-700">
+          Comparison history could not be loaded: {historyQuery.error.message}
+        </p>
+      ) : null}
 
       {historyQuery.data && historyQuery.data.items.length > 0 ? (
         <section className="space-y-2">

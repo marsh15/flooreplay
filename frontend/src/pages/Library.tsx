@@ -25,7 +25,8 @@ import {
 function ConfigLabel({ id }: { id: string }) {
   if (id === 'CFG-BASELINE-V1') return 'baseline'
   if (id === 'CFG-IMPROVED-V1') return 'improved'
-  return 'defect'
+  if (id === 'CFG-DEFECT-SKILLFRESH') return 'defect'
+  return id.replace('CFG-', '').toLowerCase() // unknown ids keep their own name
 }
 
 export function LibraryPage() {

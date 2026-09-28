@@ -11,6 +11,7 @@ import { useSearchParams } from 'react-router'
 import {
   api,
   ApiError,
+  API_BASE,
   CONSTRAINT_NAMES,
   type EvidenceRef,
   type ReplayAttempt,
@@ -125,12 +126,18 @@ export function WorkbenchPage() {
   const configurations = configsQuery.data?.items ?? []
 
   const scenarioParam = searchParams.get('scenario')
-  const revisionParam = Number(searchParams.get('revision') ?? 0)
+  const revisionValue = Number(searchParams.get('revision') ?? 0)
+  const revisionParam = Number.isFinite(revisionValue) ? revisionValue : 0
   const configParam = searchParams.get('config')
 
-  const selected =
-    scenarios.find((s) => s.scenario_id === scenarioParam && s.revision === revisionParam) ??
-    scenarios[0]
+  const exactMatch = scenarios.find(
+    (s) => s.scenario_id === scenarioParam && s.revision === revisionParam,
+  )
+  // A hand-edited URL can name an unknown scenario/revision; say so instead
+  // of silently showing the first revision while the URL claims otherwise.
+  const requestedMissing =
+    scenarioParam != null && !exactMatch && !scenariosQuery.isPending && scenarios.length > 0
+  const selected = exactMatch ?? scenarios[0]
   const selectedConfig =
     configurations.find((c) => c.id === configParam) ??
     configurations.find((c) => c.id === 'CFG-IMPROVED-V1') ??
@@ -159,7 +166,6 @@ export function WorkbenchPage() {
       setSessionAttempts((prev) => [attempt, ...prev])
       setActiveAttemptId(attempt.id)
       setLoadedFromSaved(false)
-      setReviewResult(null)
       queryClient.invalidateQueries({ queryKey: ['scenarios'] })
     },
   })
@@ -175,7 +181,13 @@ export function WorkbenchPage() {
   })
 
   const [reviewTargetKey, setReviewTargetKey] = useState('')
-  const [reviewResult, setReviewResult] = useState<ReviewCheckResult | null>(null)
+  // A review outcome belongs to the replay it checked; keying it to the
+  // attempt id means switching attempts or loading a saved report can never
+  // display one replay's verdict under another.
+  const [reviewFor, setReviewFor] = useState<{
+    attemptId: string
+    result: ReviewCheckResult
+  } | null>(null)
   const reviewMutation = useMutation({
     mutationFn: (input: { scenarioId: string; revision: number }) =>
       api.reviewCheck({
@@ -183,7 +195,7 @@ export function WorkbenchPage() {
         target_scenario_id: input.scenarioId,
         target_scenario_revision: input.revision,
       }),
-    onSuccess: setReviewResult,
+    onSuccess: (result) => setReviewFor({ attemptId: activeAttemptId ?? '', result }),
   })
 
   function select(scenarioId: string, revision: number) {
@@ -236,6 +248,22 @@ export function WorkbenchPage() {
 
   return (
     <div className="space-y-4">
+      {requestedMissing ? (
+        <Alert variant="destructive">
+          <AlertTitle>Requested scenario revision was not found</AlertTitle>
+          <AlertDescription>
+            No scenario matches <Mono>{scenarioParam}@{revisionParam}</Mono> from the URL; showing{' '}
+            {selected ? (
+              <Mono>
+                {selected.scenario_id}@{selected.revision}
+              </Mono>
+            ) : (
+              'the first available revision'
+            )}
+            .
+          </AlertDescription>
+        </Alert>
+      ) : null}
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         {/* ------------------------- Inputs column ------------------------- */}
         <div className="space-y-4">
@@ -348,6 +376,11 @@ export function WorkbenchPage() {
             </div>
           ) : detailQuery.isPending ? (
             <Skeleton className="h-44" />
+          ) : detailQuery.isError ? (
+            <Alert variant="destructive">
+              <AlertTitle>Pinned evidence could not be loaded</AlertTitle>
+              <AlertDescription>{detailQuery.error.message}</AlertDescription>
+            </Alert>
           ) : null}
 
           <Button
@@ -386,9 +419,16 @@ export function WorkbenchPage() {
               : 'Open latest saved report for this selection'}
           </Button>
           {savedMutation.isError ? (
-            <p className="text-xs text-zinc-400">
-              No saved report exists for this selection yet.
-            </p>
+            savedMutation.error instanceof ApiError && savedMutation.error.code === 'NO_SAVED_REPORT' ? (
+              <p className="text-xs text-zinc-400">
+                No saved report exists for this selection yet.
+              </p>
+            ) : (
+              <Alert variant="destructive">
+                <AlertTitle>The saved report could not be loaded</AlertTitle>
+                <AlertDescription>{savedMutation.error.message}</AlertDescription>
+              </Alert>
+            )
           ) : null}
           {runMutation.isError ? (
             runMutation.error instanceof ApiError && runMutation.error.code === 'RATE_LIMITED' ? (
@@ -433,6 +473,7 @@ export function WorkbenchPage() {
                   <LifecycleBadge lifecycle={activeAttempt.lifecycle} />
                   <ExpectationBadge verdict={activeAttempt.expectation_verdict} />
                   <span className="ml-auto text-xs text-zinc-400">
+                    <Mono>{activeAttempt.configuration_id}</Mono> ·{' '}
                     {loadedFromSaved ? 'Saved report' : 'Persisted attempt'} ·{' '}
                     {formatInstant(activeAttempt.created_at)}
                   </span>
@@ -476,6 +517,10 @@ export function WorkbenchPage() {
                             detailQuery.data.target.ends_at,
                           )}
                           .
+                        </p>
+                      ) : detailQuery.isError ? (
+                        <p className="text-xs text-red-700">
+                          Event details unavailable: {detailQuery.error.message}
                         </p>
                       ) : null}
                     </div>
@@ -626,7 +671,7 @@ export function WorkbenchPage() {
                         </p>
                       ) : null}
                       <a
-                        href={`/api/v1/replays/${activeAttempt.id}/export`}
+                        href={`${API_BASE}/replays/${activeAttempt.id}/export`}
                         className="inline-block underline underline-offset-4 hover:no-underline focus-visible:outline-2"
                         download
                       >
@@ -684,7 +729,9 @@ export function WorkbenchPage() {
                             <span className="text-xs text-red-700">{reviewMutation.error.message}</span>
                           ) : null}
                         </div>
-                        {reviewResult ? <ReviewOutcome review={reviewResult} /> : null}
+                        {reviewFor && reviewFor.attemptId === activeAttempt.id ? (
+                          <ReviewOutcome review={reviewFor.result} />
+                        ) : null}
                       </div>
                     </Section>
                   ) : null}
@@ -715,6 +762,14 @@ export function WorkbenchPage() {
                       <TableRow
                         key={attempt.id}
                         onClick={() => setActiveAttemptId(attempt.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            setActiveAttemptId(attempt.id)
+                          }
+                        }}
+                        tabIndex={0}
+                        aria-label={`Show attempt ${shortDigest(attempt.id)} under ${attempt.configuration_id}`}
                         className={cn(
                           'cursor-pointer',
                           attempt.id === activeAttempt?.id && 'bg-zinc-100',

@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from .domain.evaluation import Expectation
 from .domain.hashing import digest
-from .domain.types import DomainOutcome, Snapshot
+from .domain.types import ConstraintCode, DomainOutcome, Snapshot
 from .fixtures import (
     CATALOG,
     CONFIGURATIONS,
@@ -35,6 +35,8 @@ from .models import (
 )
 
 CATALOG_ID = "CATALOG-2026-09-A"
+# Fixtures carry this sentinel; seeding computes and pins the real digest.
+FIXTURE_DIGEST_SENTINEL = "computed-at-publish"
 
 
 def _payload_digest(payload: dict[str, Any]) -> str:
@@ -93,9 +95,6 @@ def _all_scenarios() -> list[_ScenarioLike]:
         )
         for case in suite_cases()
     ]
-    from .domain.evaluation import Expectation
-    from .domain.types import ConstraintCode
-
     def _hero_like_expectations(required_operator: str | None) -> dict[str, Expectation]:
         return {
             "CFG-BASELINE-V1": Expectation(
@@ -170,8 +169,15 @@ def seed(session: Session) -> dict[str, int]:
     for snap_id, snap in sorted(snapshots.items()):
         payload = snap.model_dump(mode="json")
         real_digest = _payload_digest(payload)
-        if payload.get("content_digest") != real_digest:
+        embedded = payload.get("content_digest")
+        if embedded == FIXTURE_DIGEST_SENTINEL:
             payload["content_digest"] = real_digest
+        elif embedded != real_digest:
+            raise RuntimeError(
+                f"Snapshot {snap_id} embeds content_digest {embedded!r}, which does not match "
+                "its own content; fix the fixture (or use the "
+                f"{FIXTURE_DIGEST_SENTINEL!r} sentinel to compute it at publish)."
+            )
         existing_snap = session.get(SourceSnapshot, snap_id)
         row = {
             "id": snap_id,
