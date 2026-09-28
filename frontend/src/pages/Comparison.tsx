@@ -113,9 +113,12 @@ export function ComparisonPage() {
   const suitesQuery = useQuery({ queryKey: ['suites'], queryFn: api.suites })
   const configsQuery = useQuery({ queryKey: ['configurations'], queryFn: api.configurations })
   const historyQuery = useQuery({ queryKey: ['comparisons'], queryFn: api.comparisons })
+  const capsQuery = useQuery({ queryKey: ['capabilities'], queryFn: api.capabilities })
 
   const suite = suitesQuery.data?.items[0]
   const configurations = configsQuery.data?.items ?? []
+  const executionLocalOnly =
+    capsQuery.data?.execution_limits.comparison_execution === 'local_only'
   const [baselineId, setBaselineId] = useState<string>('CFG-BASELINE-V1')
   const [candidateId, setCandidateId] = useState<string>('CFG-IMPROVED-V1')
   const [report, setReport] = useState<ComparisonReport | null>(null)
@@ -227,12 +230,19 @@ export function ComparisonPage() {
             ))}
           </select>
         </label>
-        <Button
-          disabled={!suite || baselineId === candidateId || runMutation.isPending}
-          onClick={() => runMutation.mutate()}
-        >
-          {runMutation.isPending ? 'Executing suite…' : 'Run comparison'}
-        </Button>
+        {executionLocalOnly ? (
+          <p className="text-xs text-zinc-500">
+            Suite execution is limited to the local owner deployment; the saved reports below are
+            from the owner’s runs.
+          </p>
+        ) : (
+          <Button
+            disabled={!suite || baselineId === candidateId || runMutation.isPending}
+            onClick={() => runMutation.mutate()}
+          >
+            {runMutation.isPending ? 'Executing suite…' : 'Run comparison'}
+          </Button>
+        )}
         {runMutation.isError ? (
           <span className="text-xs text-red-700">{runMutation.error.message}</span>
         ) : null}

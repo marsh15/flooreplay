@@ -45,11 +45,14 @@ from .models import (
 
 
 class ServiceError(Exception):
-    def __init__(self, code: str, message: str, http_status: int = 400) -> None:
+    def __init__(
+        self, code: str, message: str, http_status: int = 400, retry_after: int | None = None
+    ) -> None:
         super().__init__(message)
         self.code = code
         self.message = message
         self.http_status = http_status
+        self.retry_after = retry_after
 
 
 def _load_context(session: Session, scenario: ScenarioRevision) -> ReplayRequestContext:
@@ -223,6 +226,55 @@ def latest_attempt_summaries(session: Session) -> list[dict[str, Any]]:
         }
         for a in latest.values()
     ]
+
+
+def recover_interrupted(session: Session) -> int:
+    """Mark replay attempts stuck in RUNNING as INTERRUPTED.
+
+    execute_replay commits the attempt as RUNNING before execution starts, so
+    a process that dies mid-execution leaves such rows behind. Recovery runs
+    at application startup: the machinery never finished, and INTERRUPTED is
+    the honest lifecycle for that. completed_at stays empty — it never
+    completed. Idempotent by definition; returns how many rows it marked.
+    """
+    stuck = (
+        session.execute(
+            select(ReplayAttempt).where(ReplayAttempt.lifecycle == "RUNNING")
+        )
+        .scalars()
+        .all()
+    )
+    for attempt in stuck:
+        attempt.lifecycle = "INTERRUPTED"
+    if stuck:
+        session.commit()
+    return len(stuck)
+
+
+def latest_saved_attempt(
+    session: Session, scenario_id: str, revision: int, configuration_id: str
+) -> ReplayAttempt:
+    """The most recent COMPLETED attempt for an exact selection, for the
+    saved-report fallback. A saved report is always labeled as saved; it is
+    never presented as a fresh execution."""
+    attempt = session.execute(
+        select(ReplayAttempt)
+        .where(
+            ReplayAttempt.scenario_id == scenario_id,
+            ReplayAttempt.scenario_revision == revision,
+            ReplayAttempt.configuration_id == configuration_id,
+            ReplayAttempt.lifecycle == "COMPLETED",
+        )
+        .order_by(ReplayAttempt.created_at.desc())
+        .limit(1)
+    ).scalar_one_or_none()
+    if attempt is None:
+        raise ServiceError(
+            "NO_SAVED_REPORT",
+            "No completed replay is saved for this selection yet.",
+            404,
+        )
+    return attempt
 
 
 def publish_import(session: Session, preview: ImportPreview, raw_text: str) -> dict[str, Any]:

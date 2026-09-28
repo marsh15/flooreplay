@@ -47,7 +47,7 @@ pnpm install
 pnpm dev                       # http://localhost:5173, proxies /api to :8000
 ```
 
-Shortcuts from the repo root: `make seed`, `make test`, `make lint`, `make typecheck`, `make verify`.
+Shortcuts from the repo root: `make seed`, `make test`, `make lint`, `make typecheck`, `make verify`. Free-hosting deployment (Neon + Render) is preconfigured in `render.yaml` and walked through in `DEPLOY.md`.
 
 ## Repository map
 
@@ -118,6 +118,13 @@ The seeded `SCEN-REVIEW-LATER` revisions (original 07:58 decision, refreshed evi
 
 Every replay attempt also has a **portable JSON report** at `/api/v1/replays/{id}/export` — request, result, and both digests — for offline review.
 
+## Reliability and the public demo
+
+- **Interrupted, not lost.** A replay attempt is persisted as `RUNNING` before execution starts. If the process dies mid-run, startup recovery marks it `INTERRUPTED` — the machinery never finished, and nothing pretends it did. Interrupted attempts can never receive a passing verdict.
+- **Public-mode limits.** The public demo keeps reads open but bounds execution: suite/comparison runs are local-owner only (absent endpoint), and single replays are rate limited per client (`429` with `Retry-After`).
+- **Saved-report fallback.** Any selection's most recent completed report is available at `/api/v1/replays/latest` and in the workbench — explicitly labeled "Saved report", never presented as a fresh execution.
+- `/api/v1/capabilities` reports the active limits so the UI renders the truth instead of hardcoding assumptions.
+
 ## Status and honest limits
 
-Milestones 1-4 of 6 are complete: contracts, engine, persistence, seed, replay API, library and workbench screens, the CSV import/fork workflow, the 32-case suite with comparison report, floor-note parsing with confirmation, later-context review, and portable replay reports — all walkable in the browser. Not yet built: interruption recovery, public-mode execution limits, deployment, held-out parser evaluation, E2E tests. See `DEVELOPMENT.md` for the milestone log and architecture walkthrough.
+Milestones 1-5 of 6 are complete: contracts, engine, persistence, seed, replay API, library and workbench screens, the CSV import/fork workflow, the 32-case suite with comparison report, floor-note parsing with confirmation, later-context review, portable replay reports, interruption recovery, public-mode execution limits, and deployment configuration — all walkable in the browser. Not yet built: held-out parser evaluation, E2E browser tests, presentation material (milestone 6). See `DEVELOPMENT.md` for the milestone log and architecture walkthrough.

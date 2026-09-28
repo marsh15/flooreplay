@@ -4,10 +4,14 @@ executions, never HTTP server errors."""
 
 from __future__ import annotations
 
+import logging
 import uuid
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -29,17 +33,22 @@ from .parsing import (
     get_parser,
     resolve_draft,
 )
+from .ratelimit import enforce, make_execution_limiter
 from .service import (
     ServiceError,
     confirm_event_and_fork,
     execute_replay,
     fork_scenario,
     latest_attempt_summaries,
+    latest_saved_attempt,
     publish_import,
+    recover_interrupted,
     replay_export,
     review_check,
     run_comparison,
 )
+
+logger = logging.getLogger("flooreplay.api")
 
 
 class ErrorEnvelope(BaseModel):
@@ -102,7 +111,41 @@ class ReviewCheckRequest(BaseModel):
 
 def create_app(mode: str | None = None) -> FastAPI:
     effective_mode = mode or settings.mode
-    app = FastAPI(title="FloorReplay API", version="0.1.0")
+    limiter = make_execution_limiter()
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        # A process that died mid-execution leaves RUNNING rows behind
+        # (execute_replay commits the attempt before executing). Mark them
+        # INTERRUPTED once at startup; the suite's "interrupted never passes"
+        # rule then applies to them everywhere.
+        try:
+            with session_scope() as session:
+                recovered = recover_interrupted(session)
+            if recovered:
+                logger.warning(
+                    "Startup recovery marked %d RUNNING replay attempt(s) INTERRUPTED",
+                    recovered,
+                )
+        except Exception:
+            logger.exception(
+                "Startup recovery could not reach the database; "
+                "/health/ready reports the live database state."
+            )
+        yield
+
+    app = FastAPI(title="FloorReplay API", version="0.1.0", lifespan=lifespan)
+    if settings.cors_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=list(settings.cors_origins),
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+    def limit_public_execution(request: Request) -> None:
+        if effective_mode == "public":
+            enforce(limiter, request)
 
     @app.exception_handler(ParserUnavailable)
     async def parser_unavailable_handler(request: Request, exc: ParserUnavailable) -> JSONResponse:
@@ -126,11 +169,13 @@ def create_app(mode: str | None = None) -> FastAPI:
 
     @app.exception_handler(ServiceError)
     async def service_error_handler(request: Request, exc: ServiceError) -> JSONResponse:
+        headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after else None
         return JSONResponse(
             status_code=exc.http_status,
             content=ErrorEnvelope(
                 code=exc.code, message=exc.message, trace_id=str(uuid.uuid4())
             ).model_dump(),
+            headers=headers,
         )
 
     @app.exception_handler(Exception)
@@ -153,6 +198,13 @@ def create_app(mode: str | None = None) -> FastAPI:
             "build_id": settings.build_id,
             "live_parser_available": bool(settings.openai_api_key),
             "parser_kind": "openai-structured" if settings.openai_api_key else "rule-baseline",
+            "execution_limits": {
+                "replays_per_hour_per_client": (
+                    settings.public_replays_per_hour if effective_mode == "public" else None
+                ),
+                "comparison_execution": "local_only" if effective_mode == "public" else "open",
+                "saved_report_fallback": "/api/v1/replays/latest",
+            },
             "configurations": [
                 {"id": c["id"], "name": c["name"], "known_limitation": c["known_limitation"]}
                 for c in CONFIGURATIONS
@@ -249,7 +301,9 @@ def create_app(mode: str | None = None) -> FastAPI:
             }
 
     @app.post("/api/v1/replays")
-    def create_replay(body: ReplayRequest) -> dict[str, Any]:
+    def create_replay(
+        body: ReplayRequest, _limits: None = Depends(limit_public_execution)
+    ) -> dict[str, Any]:
         with session_scope() as session:
             attempt = execute_replay(
                 session,
@@ -257,6 +311,16 @@ def create_app(mode: str | None = None) -> FastAPI:
                 body.scenario_revision,
                 body.configuration_id,
                 body.idempotency_key,
+            )
+            return attempt_report(attempt)
+
+    @app.get("/api/v1/replays/latest")
+    def latest_replay(
+        scenario_id: str, scenario_revision: int, configuration_id: str
+    ) -> dict[str, Any]:
+        with session_scope() as session:
+            attempt = latest_saved_attempt(
+                session, scenario_id, scenario_revision, configuration_id
             )
             return attempt_report(attempt)
 
@@ -316,7 +380,9 @@ def create_app(mode: str | None = None) -> FastAPI:
         }
 
     @app.post("/api/v1/review-checks")
-    def create_review_check(body: ReviewCheckRequest) -> dict[str, Any]:
+    def create_review_check(
+        body: ReviewCheckRequest, _limits: None = Depends(limit_public_execution)
+    ) -> dict[str, Any]:
         with session_scope() as session:
             return review_check(
                 session,
@@ -475,17 +541,21 @@ def create_app(mode: str | None = None) -> FastAPI:
             )
             return {"items": [comparison_summary(r) for r in rows]}
 
-    @app.post("/api/v1/comparisons")
-    def create_comparison(body: ComparisonRequest) -> dict[str, Any]:
-        with session_scope() as session:
-            report = run_comparison(
-                session,
-                body.suite_id,
-                body.baseline_config_id,
-                body.candidate_config_id,
-                body.idempotency_key,
-            )
-            return comparison_report(report)
+    if effective_mode == "local":
+        # A suite execution runs up to two replays per case under a 30-second
+        # budget — a local-owner action, absent from the public demo. Saved
+        # reports stay viewable everywhere.
+        @app.post("/api/v1/comparisons")
+        def create_comparison(body: ComparisonRequest) -> dict[str, Any]:
+            with session_scope() as session:
+                report = run_comparison(
+                    session,
+                    body.suite_id,
+                    body.baseline_config_id,
+                    body.candidate_config_id,
+                    body.idempotency_key,
+                )
+                return comparison_report(report)
 
     @app.get("/api/v1/comparisons/{comparison_id}")
     def comparison_detail(comparison_id: str) -> dict[str, Any]:

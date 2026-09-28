@@ -1,0 +1,46 @@
+# Render blueprint: one free-tier web service (backend) plus one free-tier
+# static site (frontend). The PostgreSQL database is external on Neon's free
+# tier — create it first and paste its connection string as the
+# FLOORREPLAY_DATABASE_URL environment variable (see DEPLOY.md).
+services:
+  - type: web
+    name: flooreplay-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: |
+      pip install uv
+      uv sync --frozen
+    startCommand: |
+      uv run alembic upgrade head &&
+      if [ "$FLOORREPLAY_SEED_ON_START" = "1" ]; then uv run python -m flooreplay seed; fi &&
+      uv run uvicorn flooreplay.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health/live
+    envVars:
+      - key: FLOORREPLAY_MODE
+        value: public
+      - key: FLOORREPLAY_DATABASE_URL
+        sync: false
+      - key: FLOORREPLAY_BUILD_ID
+        value: render
+      - key: FLOORREPLAY_SEED_ON_START
+        value: "1"
+      - key: FLOORREPLAY_CORS_ORIGINS
+        sync: false
+      - key: FLOORREPLAY_OPENAI_API_KEY
+        sync: false
+
+  - type: web
+    name: flooreplay-frontend
+    runtime: static
+    plan: free
+    rootDir: frontend
+    buildCommand: |
+      corepack enable
+      pnpm install --frozen-lockfile
+      pnpm build
+    publishPath: dist
+    envVars:
+      # e.g. https://flooreplay-api.onrender.com/api/v1
+      - key: VITE_API_BASE
+        sync: false

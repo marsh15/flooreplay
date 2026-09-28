@@ -60,6 +60,18 @@ Re-derives all twelve checks from pinned evidence. An unknown operator fails `C0
 
 Kaveri Garments Unit 3, Asia/Kolkata, 2026-09-22. Two lines, 22 operators, 2 styles, 8 operations, 12 named machines. The hero episode: decision 07:58, shift 08:00-16:30, `O117` cannot cover sleeve attach on Line 4 (machine SN-4407). `O204` is the most skilled but occupied on Line 3; `O219` is idle, skilled, same line. Revision 1 pins a stale skill snapshot (45 days); revision 2 pins the corrected one (4 days).
 
+## Milestone 5: reliability and public limits (recovery, ratelimit.py, DEPLOY.md)
+
+The theme: the machinery is allowed to fail, never allowed to lie about having run.
+
+- **Startup recovery.** `execute_replay` commits the attempt as `RUNNING` before executing, so a process that dies mid-execution leaves a stuck row. The FastAPI lifespan runs `recover_interrupted` once at boot: `RUNNING` → `INTERRUPTED`, with `completed_at` deliberately left empty (it never completed). Recovery is idempotent, logged, and failure-tolerant — if the database is unreachable at boot, the app still starts and `/health/ready` reports the truth. The library's "latest attempt" summaries already filtered on `COMPLETED`, so interrupted attempts surface only as their honest lifecycle badge, never as an outcome.
+- **Public-mode execution limits.** The public demo gets two limits with different mechanisms, both honest about *why*:
+  - Comparison execution is **absent** (`POST /api/v1/comparisons` is not registered; reads answer 405). One suite run executes 64 replays — that stays a local-owner action. Saved reports stay viewable everywhere.
+  - Single replay executions and review checks are **rate limited** per client (`ratelimit.py`, sliding window, default 20/hour from `FLOORREPLAY_PUBLIC_REPLAYS_PER_HOUR`). The window is in-process memory — documented as the honest trade for free single-instance hosting: it bounds abuse, it is not an accounting system. Rejection is `429 RATE_LIMITED` with `Retry-After`, and the message itself points at the saved-report fallback.
+- **The saved-report fallback.** `GET /api/v1/replays/latest?scenario_id=&scenario_revision=&configuration_id=` returns the most recent `COMPLETED` attempt for an exact selection. The workbench renders it with a "Saved report" badge and an explicit banner: *loaded from history — not a fresh execution*. A saved report is always labeled; the UI never lets history impersonate a run.
+- **Capabilities tell the truth.** `/capabilities` now reports the limits (`replays_per_hour_per_client`, `comparison_execution: local_only`), and the frontend renders from that instead of hardcoding: the comparison screen shows an owner-only notice instead of a button that would 405.
+- **Deployment.** `render.yaml` (backend web service + frontend static site, free tier) with Neon's free PostgreSQL as the external database; `DEPLOY.md` has the full walk-through, including CORS via `FLOORREPLAY_CORS_ORIGINS` and `VITE_API_BASE` for the deployed frontend (the dev proxy still serves `/api` locally).
+
 ## Milestone 4: notes, later-context review, portable reports (parsing.py, Notes screen, review panel)
 
 The theme: the model (or any parser) may *draft*, but only a human *confirms*, and only the confirmation writes history.
@@ -100,9 +112,9 @@ The import flow turns an imperfect external export into immutable evidence witho
 
 ## What is deliberately not built yet
 
-- Interruption recovery (RUNNING attempts marked INTERRUPTED at startup), public-mode execution limits, deployment to free hosting (milestone 5)
 - Held-out parser evaluation within the stated spend budget, end-to-end browser tests, presentation material (milestone 6)
 - The OpenAI parser path needs a key to exercise live; everything else is fully walkable without one.
+- Deployment itself (accounts, DNS) is a human step; `render.yaml` + `DEPLOY.md` make it a fill-in-the-variables exercise.
 
 ## Dev commands
 

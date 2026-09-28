@@ -176,7 +176,9 @@ export interface ReplayAttempt {
   execution_kind: 'live'
 }
 
-const BASE = import.meta.env.DEV ? '/api/v1' : '/api/v1'
+// Dev uses the Vite proxy; a deployed static build points at the backend
+// origin via VITE_API_BASE (e.g. https://flooreplay-api.onrender.com/api/v1).
+const BASE: string = import.meta.env.VITE_API_BASE ?? '/api/v1'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${BASE}${path}`, {
@@ -367,6 +369,11 @@ export const api = {
       imports_enabled: boolean
       build_id: string
       live_parser_available: boolean
+      execution_limits: {
+        replays_per_hour_per_client: number | null
+        comparison_execution: 'local_only' | 'open'
+        saved_report_fallback: string
+      }
       configurations: { id: string; name: string; known_limitation: string }[]
     }>('/capabilities'),
   scenarios: () => request<ScenarioListResponse>('/scenarios'),
@@ -385,6 +392,10 @@ export const api = {
       body: JSON.stringify(body),
     }),
   replay: (id: string) => request<ReplayAttempt>(`/replays/${id}`),
+  latestReplay: (scenarioId: string, revision: number, configurationId: string) =>
+    request<ReplayAttempt>(
+      `/replays/latest?scenario_id=${encodeURIComponent(scenarioId)}&scenario_revision=${revision}&configuration_id=${encodeURIComponent(configurationId)}`,
+    ),
   importPreview: (body: ImportRequestBody) =>
     request<ImportPreview>('/imports/preview', {
       method: 'POST',

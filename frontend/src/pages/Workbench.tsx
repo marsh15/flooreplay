@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
 import {
   api,
+  ApiError,
   CONSTRAINT_NAMES,
   type EvidenceRef,
   type ReplayAttempt,
@@ -114,6 +115,7 @@ export function WorkbenchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [sessionAttempts, setSessionAttempts] = useState<ReplayAttempt[]>([])
   const [activeAttemptId, setActiveAttemptId] = useState<string | null>(null)
+  const [loadedFromSaved, setLoadedFromSaved] = useState(false)
   const [drawerEvidence, setDrawerEvidence] = useState<EvidenceRef | null>(null)
 
   const scenariosQuery = useQuery({ queryKey: ['scenarios'], queryFn: api.scenarios })
@@ -156,8 +158,19 @@ export function WorkbenchPage() {
     onSuccess: (attempt) => {
       setSessionAttempts((prev) => [attempt, ...prev])
       setActiveAttemptId(attempt.id)
+      setLoadedFromSaved(false)
       setReviewResult(null)
       queryClient.invalidateQueries({ queryKey: ['scenarios'] })
+    },
+  })
+
+  const savedMutation = useMutation({
+    mutationFn: (input: { scenarioId: string; revision: number; configId: string }) =>
+      api.latestReplay(input.scenarioId, input.revision, input.configId),
+    onSuccess: (attempt) => {
+      setSessionAttempts((prev) => [attempt, ...prev.filter((a) => a.id !== attempt.id)])
+      setActiveAttemptId(attempt.id)
+      setLoadedFromSaved(true)
     },
   })
 
@@ -176,6 +189,7 @@ export function WorkbenchPage() {
   function select(scenarioId: string, revision: number) {
     setSessionAttempts([])
     setActiveAttemptId(null)
+    setLoadedFromSaved(false)
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       next.set('scenario', scenarioId)
@@ -351,11 +365,46 @@ export function WorkbenchPage() {
           >
             {runMutation.isPending ? 'Executing replay…' : 'Run replay'}
           </Button>
+          <Button
+            variant="ghost"
+            className="w-full text-xs text-zinc-500"
+            disabled={
+              !selected || !selectedConfig || savedMutation.isPending || runMutation.isPending
+            }
+            onClick={() =>
+              selected &&
+              selectedConfig &&
+              savedMutation.mutate({
+                scenarioId: selected.scenario_id,
+                revision: selected.revision,
+                configId: selectedConfig.id,
+              })
+            }
+          >
+            {savedMutation.isPending
+              ? 'Loading saved report…'
+              : 'Open latest saved report for this selection'}
+          </Button>
+          {savedMutation.isError ? (
+            <p className="text-xs text-zinc-400">
+              No saved report exists for this selection yet.
+            </p>
+          ) : null}
           {runMutation.isError ? (
-            <Alert variant="destructive">
-              <AlertTitle>Execution failed</AlertTitle>
-              <AlertDescription>{runMutation.error.message}</AlertDescription>
-            </Alert>
+            runMutation.error instanceof ApiError && runMutation.error.code === 'RATE_LIMITED' ? (
+              <Alert variant="destructive">
+                <AlertTitle>Execution limit reached</AlertTitle>
+                <AlertDescription>
+                  {runMutation.error.message} Use “Open latest saved report” above, or try again
+                  when the limit window resets.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert variant="destructive">
+                <AlertTitle>Execution failed</AlertTitle>
+                <AlertDescription>{runMutation.error.message}</AlertDescription>
+              </Alert>
+            )
           ) : null}
         </div>
 
@@ -384,9 +433,16 @@ export function WorkbenchPage() {
                   <LifecycleBadge lifecycle={activeAttempt.lifecycle} />
                   <ExpectationBadge verdict={activeAttempt.expectation_verdict} />
                   <span className="ml-auto text-xs text-zinc-400">
-                    Persisted attempt · {formatInstant(activeAttempt.created_at)}
+                    {loadedFromSaved ? 'Saved report' : 'Persisted attempt'} ·{' '}
+                    {formatInstant(activeAttempt.created_at)}
                   </span>
                 </div>
+                {loadedFromSaved ? (
+                  <p className="mt-2 rounded-md border border-amber-600/25 bg-amber-500/10 p-2 text-xs text-amber-800">
+                    Loaded from history for this exact selection — not a fresh execution. Press{' '}
+                    <span className="font-medium">Run replay</span> to execute now.
+                  </p>
+                ) : null}
                 {activeAttempt.domain_outcome ? (
                   <p className="mt-2 text-sm text-zinc-600">
                     {OUTCOME_META[activeAttempt.domain_outcome].hint}
