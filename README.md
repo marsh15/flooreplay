@@ -125,6 +125,12 @@ Every replay attempt also has a **portable JSON report** at `/api/v1/replays/{id
 - **Saved-report fallback.** Any selection's most recent completed report is available at `/api/v1/replays/latest` and in the workbench — explicitly labeled "Saved report", never presented as a fresh execution.
 - `/api/v1/capabilities` reports the active limits so the UI renders the truth instead of hardcoding assumptions.
 
+## Verification and demonstration
+
+- **Parser evaluation on held-out notes**: `make eval-notes` scores the offline rule baseline against 16 labeled floor notes it has never seen (it honestly scores 50% exact — name-based mentions are its documented blind spot, which is why notes require human confirmation). With an API key, `uv run python -m flooreplay.eval_notes --live` scores the pinned OpenAI model within a hard rupee budget (default ₹500) and stops with `BUDGET_EXHAUSTED` rather than overspending.
+- **End-to-end browser tests**: `make e2e` (after `make e2e-install`) drives all ten flows in real Chromium — the hero matrix, later-context review, notes-to-fork, and a full 32-case comparison run.
+- **`DEMO.md`** is a narrated seven-act demonstration script in which every step names the principle it demonstrates.
+
 ## Status and honest limits
 
-Milestones 1-5 of 6 are complete: contracts, engine, persistence, seed, replay API, library and workbench screens, the CSV import/fork workflow, the 32-case suite with comparison report, floor-note parsing with confirmation, later-context review, portable replay reports, interruption recovery, public-mode execution limits, and deployment configuration — all walkable in the browser. Not yet built: held-out parser evaluation, E2E browser tests, presentation material (milestone 6). See `DEVELOPMENT.md` for the milestone log and architecture walkthrough.
+All six milestones are complete: contracts, engine, persistence, seed, replay API, library and workbench screens, the CSV import/fork workflow, the 32-case suite with comparison report, floor-note parsing with confirmation, later-context review, portable replay reports, interruption recovery, public-mode execution limits, deployment configuration, held-out parser evaluation, end-to-end browser tests, and the demonstration script — all walkable in the browser. Remaining steps are human ones: supply an OpenAI key to score the live parser within its budget, and execute the free-hosting deployment via `DEPLOY.md`. See `DEVELOPMENT.md` for the milestone log and architecture walkthrough.

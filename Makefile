@@ -1,4 +1,4 @@
-.PHONY: dev seed verify test lint typecheck backend-dev frontend-dev
+.PHONY: dev seed verify test lint typecheck backend-dev frontend-dev e2e e2e-install eval-notes
 
 backend-dev:
 	cd backend && uv run uvicorn flooreplay.api:app --reload --port 8000
@@ -29,3 +29,14 @@ typecheck:
 	cd frontend && pnpm build
 
 verify: lint typecheck test
+
+e2e-install:
+	cd frontend && pnpm exec playwright install chromium
+
+# needs the backend running on :8000 with the seed loaded (make backend-dev + make seed)
+e2e:
+	cd frontend && pnpm exec playwright test
+
+# offline held-out parser evaluation (no API key needed; --live spends budget)
+eval-notes:
+	cd backend && uv run python -m flooreplay.eval_notes

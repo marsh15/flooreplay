@@ -60,6 +60,15 @@ Re-derives all twelve checks from pinned evidence. An unknown operator fails `C0
 
 Kaveri Garments Unit 3, Asia/Kolkata, 2026-09-22. Two lines, 22 operators, 2 styles, 8 operations, 12 named machines. The hero episode: decision 07:58, shift 08:00-16:30, `O117` cannot cover sleeve attach on Line 4 (machine SN-4407). `O204` is the most skilled but occupied on Line 3; `O219` is idle, skilled, same line. Revision 1 pins a stale skill snapshot (45 days); revision 2 pins the corrected one (4 days).
 
+## Milestone 6: verification and presentation (fixtures_eval.py, eval_notes.py, E2E)
+
+The theme: measure honestly, then demonstrate — never the other way round.
+
+- **Held-out note evaluation.** `fixtures_eval.py` pins 16 labeled floor notes written *after* the parser rules were frozen; labels state what a careful human would extract (category, subject operators, operations, uncertainty), including deliberate traps: denied absences, display names instead of ids, a "will cover" operator who must not count as a subject, and a surname-only mention that must stay unresolved. `eval_notes.py` scores any parser against them with per-field accuracy and an exact-match rate. The **offline rule baseline honestly scores 50% exact** (category 62%, subjects 62%, operations 88%, uncertainty 100%): it only sees exact operator ids, so every name-based note fails — documented misses, not hidden ones, and precisely the reason the notes workflow treats parser output as a draft requiring human confirmation.
+- **The rupee budget.** The live evaluation charges the pinned model's published per-token price, converted at a rate pinned in code (`INR_PER_USD = 88.0`), and refuses to cross `--budget-inr` (default 500). The guard checks before each case, so the case that crosses the line still counts and its cost is reported; the run ends `BUDGET_EXHAUSTED` with whatever was measured. The offline baseline costs nothing. Running `--live` without a key refuses ("refusing to pretend this is live").
+- **End-to-end browser tests.** Ten Playwright specs (`frontend/e2e/`) drive the real app through the whole story: the library, the hero matrix (stale → needs context; corrected → ready proposing O219; baseline → rejected by C07), the later-context review (stale with reason codes; still supported on an identical digest), the notes flow (draft → confirm → fork, plus the manual path), and a full 32-case comparison run asserting the exact totals tiles (32 / 0 / 0 / 0). They found real selector ambiguity on the first pass (a `SCEN-HERO@2` regex also matching revisions 20–28; the note page owns four textboxes) — the fixes are stricter locators, not waits. `make e2e` runs them; `make e2e-install` fetches Chromium.
+- **The demonstration script.** `DEMO.md` is a narrated seven-act walkthrough where every step names the principle it demonstrates, with a 5-minute cut for short slots.
+
 ## Milestone 5: reliability and public limits (recovery, ratelimit.py, DEPLOY.md)
 
 The theme: the machinery is allowed to fail, never allowed to lie about having run.
@@ -112,9 +121,11 @@ The import flow turns an imperfect external export into immutable evidence witho
 
 ## What is deliberately not built yet
 
-- Held-out parser evaluation within the stated spend budget, end-to-end browser tests, presentation material (milestone 6)
-- The OpenAI parser path needs a key to exercise live; everything else is fully walkable without one.
-- Deployment itself (accounts, DNS) is a human step; `render.yaml` + `DEPLOY.md` make it a fill-in-the-variables exercise.
+The six milestones are complete. The remaining steps are human ones, not code:
+
+- The **live** parser evaluation needs an OpenAI key: `uv run python -m flooreplay.eval_notes --live` scores the pinned model on the held-out set within its budget. Until then only the rule baseline's honest 50% is on record.
+- **Deployment execution** (accounts, DNS) is a fill-in-the-variables exercise via `render.yaml` + `DEPLOY.md`, not yet carried out.
+- The OpenAI parser path otherwise needs a key to exercise; everything else is fully walkable without one.
 
 ## Dev commands
 

@@ -19,3 +19,11 @@ backend/.venv/
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Evaluation output (regenerate with: uv run python -m flooreplay.eval_notes)
+backend/eval-reports/
+eval-reports/
+
+# Playwright output
+frontend/test-results/
+frontend/playwright-report/

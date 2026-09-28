@@ -131,7 +131,7 @@ def resolve_operation(mention: str, catalog: Catalog) -> MentionResolution:
     return MentionResolution(raw=mention)
 
 
-def resolve_draft(draft: DraftExtraction, catalog: Catalog) -> dict[str, object]:
+def resolve_draft(draft: DraftExtraction, catalog: Catalog) -> dict[str, list[dict[str, object]]]:
     return {
         "operators": [
             {
