@@ -8,7 +8,13 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
-import { api, CONSTRAINT_NAMES, type EvidenceRef, type ReplayAttempt } from '@/lib/api'
+import {
+  api,
+  CONSTRAINT_NAMES,
+  type EvidenceRef,
+  type ReplayAttempt,
+  type ReviewCheckResult,
+} from '@/lib/api'
 import { formatInstant, formatInterval, OUTCOME_META, shortDigest } from '@/lib/status'
 import { ExpectationBadge, LifecycleBadge, Mono, OutcomeBadge, VerdictBadge } from '@/components/status'
 import { EvidenceDrawer } from '@/components/EvidenceDrawer'
@@ -54,6 +60,52 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">{title}</h2>
       {children}
     </section>
+  )
+}
+
+function ReviewOutcome({ review }: { review: ReviewCheckResult }) {
+  const tone =
+    review.outcome === 'STILL_SUPPORTED'
+      ? 'border-emerald-600/30 bg-emerald-600/5'
+      : review.outcome === 'BLOCKED_CONTEXT'
+        ? 'border-red-600/30 bg-red-600/5'
+        : 'border-amber-600/30 bg-amber-500/10'
+  return (
+    <div className={cn('rounded-md border p-2.5', tone)}>
+      <p className="text-sm font-medium">{review.outcome.replace(/_/g, ' ').toLowerCase()}</p>
+      <p className="mt-0.5 text-xs text-zinc-500">
+        Checked against {review.target_scenario_id}@{review.target_scenario_revision}; the original
+        replay is untouched.
+      </p>
+      {review.reason_codes.length > 0 ? (
+        <p className="mt-1 text-xs">
+          reasons: <Mono>{review.reason_codes.join(', ')}</Mono>
+        </p>
+      ) : null}
+      {review.changed_paths.length > 0 ? (
+        <details className="mt-1">
+          <summary className="cursor-pointer text-xs text-zinc-500">
+            {review.changed_paths.length} changed path(s)
+          </summary>
+          <ul className="mt-1 max-h-40 space-y-0.5 overflow-y-auto pl-4">
+            {review.changed_paths.map((path) => (
+              <li key={path} className="list-disc text-xs">
+                <Mono>{path}</Mono>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+      {review.issues.length > 0 ? (
+        <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-red-700">
+          {review.issues.slice(0, 6).map((issue, index) => (
+            <li key={index}>
+              <Mono>{issue.code}</Mono> {issue.message}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   )
 }
 
@@ -104,8 +156,21 @@ export function WorkbenchPage() {
     onSuccess: (attempt) => {
       setSessionAttempts((prev) => [attempt, ...prev])
       setActiveAttemptId(attempt.id)
+      setReviewResult(null)
       queryClient.invalidateQueries({ queryKey: ['scenarios'] })
     },
+  })
+
+  const [reviewTargetKey, setReviewTargetKey] = useState('')
+  const [reviewResult, setReviewResult] = useState<ReviewCheckResult | null>(null)
+  const reviewMutation = useMutation({
+    mutationFn: (input: { scenarioId: string; revision: number }) =>
+      api.reviewCheck({
+        original_replay_id: activeAttemptId ?? '',
+        target_scenario_id: input.scenarioId,
+        target_scenario_revision: input.revision,
+      }),
+    onSuccess: setReviewResult,
   })
 
   function select(scenarioId: string, revision: number) {
@@ -504,8 +569,69 @@ export function WorkbenchPage() {
                           ))}
                         </p>
                       ) : null}
+                      <a
+                        href={`/api/v1/replays/${activeAttempt.id}/export`}
+                        className="inline-block underline underline-offset-4 hover:no-underline focus-visible:outline-2"
+                        download
+                      >
+                        Download portable JSON report
+                      </a>
                     </div>
                   </Section>
+
+                  {result.proposal ? (
+                    <Section title="Later-context review">
+                      <div className="space-y-2 rounded-lg border bg-white p-3">
+                        <p className="text-xs text-zinc-500">
+                          Check this proposal against an explicit later scenario revision. The
+                          original replay is never altered.
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <select
+                            value={reviewTargetKey}
+                            onChange={(event) => setReviewTargetKey(event.target.value)}
+                            className="rounded-md border border-zinc-300 px-2 py-1.5 text-sm focus-visible:outline-2"
+                            aria-label="Later scenario revision"
+                          >
+                            <option value="">Select later revision…</option>
+                            {scenarios
+                              .filter(
+                                (scenario) =>
+                                  !(
+                                    scenario.scenario_id === activeAttempt.scenario_id &&
+                                    scenario.revision === activeAttempt.scenario_revision
+                                  ),
+                              )
+                              .map((scenario) => (
+                                <option
+                                  key={`${scenario.scenario_id}@${scenario.revision}`}
+                                  value={`${scenario.scenario_id}@${scenario.revision}`}
+                                >
+                                  {scenario.scenario_id}@{scenario.revision} · {scenario.title.slice(0, 40)}
+                                </option>
+                              ))}
+                          </select>
+                          <Button
+                            size="sm"
+                            disabled={!reviewTargetKey || reviewMutation.isPending}
+                            onClick={() => {
+                              const [scenarioId, revision] = reviewTargetKey.split('@')
+                              reviewMutation.mutate({
+                                scenarioId,
+                                revision: Number(revision),
+                              })
+                            }}
+                          >
+                            {reviewMutation.isPending ? 'Checking…' : 'Run review check'}
+                          </Button>
+                          {reviewMutation.isError ? (
+                            <span className="text-xs text-red-700">{reviewMutation.error.message}</span>
+                          ) : null}
+                        </div>
+                        {reviewResult ? <ReviewOutcome review={reviewResult} /> : null}
+                      </div>
+                    </Section>
+                  ) : null}
                 </>
               ) : result && 'execution_error' in result ? (
                 <Alert variant="destructive">

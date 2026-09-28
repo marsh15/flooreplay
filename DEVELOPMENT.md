@@ -60,6 +60,18 @@ Re-derives all twelve checks from pinned evidence. An unknown operator fails `C0
 
 Kaveri Garments Unit 3, Asia/Kolkata, 2026-09-22. Two lines, 22 operators, 2 styles, 8 operations, 12 named machines. The hero episode: decision 07:58, shift 08:00-16:30, `O117` cannot cover sleeve attach on Line 4 (machine SN-4407). `O204` is the most skilled but occupied on Line 3; `O219` is idle, skilled, same line. Revision 1 pins a stale skill snapshot (45 days); revision 2 pins the corrected one (4 days).
 
+## Milestone 4: notes, later-context review, portable reports (parsing.py, Notes screen, review panel)
+
+The theme: the model (or any parser) may *draft*, but only a human *confirms*, and only the confirmation writes history.
+
+- **The parser boundary.** `parsing.py` exposes one interface with two implementations. `RuleBaselineParser` is offline and deterministic (regex extraction of the operator mention, operation words, unavailability phrasing, uncertainty words) and is the demo default — no API key needed. `OpenAIStructuredParser` calls the pinned `gpt-4.1-mini-2025-04-14` through raw `httpx` (no SDK, so no hidden retries), enforces the 2000-character cap, a 15-second monotonic deadline, and at most one retry; any failure raises `ParserUnavailable`. `get_parser(api_key)` picks; the API response always names the parser kind and live status so the UI can say "no API key configured" instead of pretending.
+- **Drafts are never events.** A parse returns a `DraftExtraction` (operator, operation, moment, uncertainty flags) plus mention resolutions. Resolution is exact operator id or documented alias only; an ambiguous mention keeps its candidate list and stays ambiguous — ambiguity is data, not an error to suppress. Nothing persists until confirm.
+- **Confirm forks.** `POST /notes/confirm` writes the immutable event and forks a new scenario revision with expectations carried over (`SCEN-HERO@28` in the demo database). The manual fallback radio records the event without any parser output; the parser call is audited either way (`parser_calls`: note digest, kind, model, latency, result or error).
+- **Later-context review answers one question**: is the proposal I already have still supported by a *later, explicitly-pinned* context? `review_check(original_replay_id, target_scenario_id, target_revision)` re-runs the gate on the target revision's pinned context. Blocked → `BLOCKED_CONTEXT` with the issues. Otherwise compare the canonical context digests: identical → `STILL_SUPPORTED`; different → `STALE_RECOMMENDATION` with reason codes (`EVENT_CHANGED`, `DECISION_TIME_CHANGED`, `EVIDENCE_CHANGED`) and a recursive changed-path diff (`snapshots[4].rows[31].assessed_at`), element-wise through lists as well as dicts. The original replay is never altered.
+- **The three review fixtures** (`SCEN-REVIEW-LATER` revs 1-3) are engine-verified to produce the three outcomes: the original 07:58 decision; refreshed evidence and plan revision C at 08:10 (stale); stale exports at 08:10 (blocked). All three are walkable from the workbench panel.
+- **Portable reports.** `/api/v1/replays/{id}/export` returns the attempt's request, result, and both digests as one JSON document.
+- **Bug found and fixed during the build:** the changed-path diff originally treated snapshot lists as atomic values; it now recurses element-wise with `[index]` paths, and the reason-code mapper strips `[...]` suffixes before classifying the path head.
+
 ## Milestone 3: the operational suite and comparison (fixtures_suite.py, Comparison screen)
 
 - **32 named cases** (`fixtures_suite.py`), each derived from the hero episode by a targeted mutation with an explicit defect statement and per-configuration demands. The cases were authored against the engine and validated case-by-case before any persistence was wired: 0 unintended mismatches, and exactly 3 intended defect-config failures (B1/F1/F4, the stale-evidence regressions the defect exists to exhibit).
@@ -88,11 +100,9 @@ The import flow turns an imperfect external export into immutable evidence witho
 
 ## What is deliberately not built yet
 
-- AI note extraction with confirmation workflow and manual fallback (milestone 4)
-- Suite execution + baseline comparison report (milestone 3)
-- Later-context review checks (milestone 4)
-- Interruption recovery, public-mode limits, deployment (milestone 5)
-- The 32-case operational suite grows with milestone 3; today the expectation machinery is proven on the hero scenarios.
+- Interruption recovery (RUNNING attempts marked INTERRUPTED at startup), public-mode execution limits, deployment to free hosting (milestone 5)
+- Held-out parser evaluation within the stated spend budget, end-to-end browser tests, presentation material (milestone 6)
+- The OpenAI parser path needs a key to exercise live; everything else is fully walkable without one.
 
 ## Dev commands
 

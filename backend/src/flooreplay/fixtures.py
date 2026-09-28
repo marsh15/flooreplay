@@ -519,3 +519,79 @@ def hero_scenarios() -> tuple[ScenarioFixture, ...]:
             },
         ),
     )
+
+
+# ---------------------------------------------------------------------------
+# Later-context review fixtures: one episode, three points in time.
+# rev1 07:58 (original decision, healthy evidence)
+# rev2 08:10 with refreshed evidence and a new plan revision -> STALE_RECOMMENDATION
+# rev3 08:10 with the ORIGINAL (now stale) snapshots -> BLOCKED_CONTEXT
+# ---------------------------------------------------------------------------
+
+LATER_DECISION_AT = ist(8, 10)
+
+
+def _refreshed_snapshot(snap: Snapshot, at: datetime, new_declared: bool = True) -> Snapshot:
+    updates: dict[str, object] = {}
+    if new_declared:
+        updates["declared_evidence_at"] = at
+    if snap.attendance is not None:
+        updates["attendance"] = tuple(
+            rec.model_copy(update={"observed_at": at}) for rec in snap.attendance
+        )
+    if snap.machine_state is not None:
+        updates["machine_state"] = tuple(
+            rec.model_copy(update={"observed_at": at}) for rec in snap.machine_state
+        )
+    return snap.model_copy(update=updates)
+
+
+def _revised_plan(snap: Snapshot, verified_at: datetime) -> Snapshot:
+    assert snap.plan is not None
+    return snap.model_copy(
+        update={
+            "plan": snap.plan.model_copy(
+                update={"revision": "PLAN-2026-09-22-C", "verified_at": verified_at}
+            )
+        }
+    )
+
+
+def _reid(snap: Snapshot, suffix: str) -> Snapshot:
+    return snap.model_copy(update={"id": f"{snap.id}-{suffix}"})
+
+
+def review_original_context() -> ReplayRequestContext:
+    """rev1: the hero context exactly as decided at 07:58."""
+    return hero_context(hero_snapshots_v2())
+
+
+def review_refreshed_context() -> ReplayRequestContext:
+    """rev2: 08:10, everything re-exported fresh, plan revision C verified."""
+    snaps = []
+    for snap in hero_snapshots_v2():
+        if snap.kind.value == "PLAN":
+            snaps.append(_reid(_revised_plan(snap, ist(8, 5)), "R2"))
+        elif snap.kind.value == "SKILLS":
+            snaps.append(_reid(snap, "R2"))  # 30-day budget: still fresh at 08:10
+        else:
+            snaps.append(_reid(_refreshed_snapshot(snap, ist(8, 6)), "R2"))
+    return ReplayRequestContext(
+        catalog=CATALOG,
+        snapshots=tuple(snaps),
+        event=HERO_EVENT.model_copy(update={"observed_at": ist(8, 2)}),
+        decision_at=LATER_DECISION_AT,
+        target=HERO_TARGET,
+    )
+
+
+def review_stale_context() -> ReplayRequestContext:
+    """rev3: 08:10 decided against the original 07:5x exports: stale."""
+    snaps = tuple(_reid(snap, "R3") for snap in hero_snapshots_v2())
+    return ReplayRequestContext(
+        catalog=CATALOG,
+        snapshots=snaps,
+        event=HERO_EVENT.model_copy(update={"observed_at": ist(8, 2)}),
+        decision_at=LATER_DECISION_AT,
+        target=HERO_TARGET,
+    )

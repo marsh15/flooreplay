@@ -12,6 +12,7 @@ const NAV = [
   { to: '/', label: 'Scenario library' },
   { to: '/workbench', label: 'Replay workbench' },
   { to: '/comparison', label: 'Comparison' },
+  { to: '/notes', label: 'Floor notes', localOnly: true },
   { to: '/imports', label: 'Imports', localOnly: true },
 ]
 

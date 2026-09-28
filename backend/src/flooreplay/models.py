@@ -171,3 +171,46 @@ class ComparisonReport(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(tz=UTC)
     )
+
+
+class ParserCall(Base):
+    """One draft extraction call. Raw note text is retained for the
+    confirmation workflow (a local-owner tool); it is never written to
+    application logs. Live-provider responses are recorded with model,
+    prompt digest, schema version, and token usage."""
+
+    __tablename__ = "parser_calls"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
+    note_text: Mapped[str] = mapped_column(Text)
+    note_digest: Mapped[str] = mapped_column(String(80))
+    parser_kind: Mapped[str] = mapped_column(String(32))
+    model: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    prompt_digest: Mapped[str] = mapped_column(String(80), default="")
+    schema_version: Mapped[int] = mapped_column(Integer, default=1)
+    response: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    resolution: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    usage: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(tz=UTC)
+    )
+
+
+class ReviewCheck(Base):
+    """A later-context review of an original proposal. Never alters the
+    original replay; records which paths of the decision context changed."""
+
+    __tablename__ = "review_checks"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
+    original_replay_id: Mapped[str] = mapped_column(String(64), index=True)
+    target_scenario_id: Mapped[str] = mapped_column(String(64))
+    target_scenario_revision: Mapped[int] = mapped_column(Integer)
+    outcome: Mapped[str] = mapped_column(String(32))  # STILL_SUPPORTED | STALE_RECOMMENDATION | BLOCKED_CONTEXT
+    changed_paths: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    reason_codes: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    issues: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    target_context_digest: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(tz=UTC)
+    )

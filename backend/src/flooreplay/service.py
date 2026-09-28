@@ -37,6 +37,7 @@ from .models import (
     ExpectationRevision,
     ImportAudit,
     ReplayAttempt,
+    ReviewCheck,
     ScenarioRevision,
     SourceSnapshot,
     SuiteRevision,
@@ -541,3 +542,314 @@ def run_comparison(
     session.add(report)
     session.commit()
     return report
+
+
+# ---------------------------------------------------------------------------
+# Later-context review
+# ---------------------------------------------------------------------------
+
+_REVIEW_OUTCOMES = ("STILL_SUPPORTED", "STALE_RECOMMENDATION", "BLOCKED_CONTEXT")
+
+
+def _changed_paths(left: object, right: object, prefix: str = "") -> list[str]:
+    """Paths at which two canonical payloads differ, for human inspection."""
+    from .domain.hashing import canonical_json
+
+    try:
+        left_json = canonical_json(left)
+        right_json = canonical_json(right)
+    except ValueError:
+        return [prefix or "<unserializable>"]
+    if left_json == right_json:
+        return []
+    if isinstance(left, dict) and isinstance(right, dict):
+        paths: list[str] = []
+        for key in sorted(set(left) | set(right)):
+            child = f"{prefix}.{key}" if prefix else str(key)
+            if key not in left or key not in right or left[key] != right[key]:
+                paths.extend(_changed_paths(left.get(key), right.get(key), child))
+        return paths
+    if isinstance(left, list) and isinstance(right, list):
+        paths = []
+        for index in range(max(len(left), len(right))):
+            child = f"{prefix}[{index}]"
+            l_item = left[index] if index < len(left) else None
+            r_item = right[index] if index < len(right) else None
+            if l_item != r_item:
+                paths.extend(_changed_paths(l_item, r_item, child))
+        if len(left) != len(right):
+            paths.append(f"{prefix}[length]")
+        return paths
+    return [prefix or "<value>"]
+
+
+def _path_reason_codes(paths: list[str]) -> list[str]:
+    codes = set()
+    for path in paths:
+        head = path.split(".")[0].split("[")[0]
+        if head == "snapshots":
+            codes.add("EVIDENCE_CHANGED")
+        elif head == "event":
+            codes.add("EVENT_CHANGED")
+        elif head == "decision_at":
+            codes.add("DECISION_TIME_CHANGED")
+        elif head == "target":
+            codes.add("TARGET_CHANGED")
+        elif head == "catalog":
+            codes.add("CATALOG_CHANGED")
+    return sorted(codes)
+
+
+def review_check(
+    session: Session,
+    original_replay_id: str,
+    target_scenario_id: str,
+    target_revision: int,
+) -> dict[str, Any]:
+    """Check an earlier proposal against an explicit later scenario.
+
+    Never alters the original replay. The original result stands; this
+    records whether the later context still supports it."""
+    original = session.get(ReplayAttempt, original_replay_id)
+    if original is None or original.lifecycle != "COMPLETED" or not original.result:
+        raise ServiceError("REPLAY_UNKNOWN", "Original replay not found or not completed", 404)
+    original_result = original.result
+    proposal_payload = original_result.get("proposal") if isinstance(original_result, dict) else None
+    if not proposal_payload:
+        raise ServiceError(
+            "REVIEW_INCOMPATIBLE",
+            "Only a replay that produced a proposal can be reviewed against later context.",
+            422,
+        )
+    original_scenario = session.get(ScenarioRevision, (original.scenario_id, original.scenario_revision))
+    target_scenario = session.get(ScenarioRevision, (target_scenario_id, target_revision))
+    if original_scenario is None or target_scenario is None:
+        raise ServiceError("SCENARIO_UNKNOWN", "Unknown scenario revision", 404)
+    if (
+        original_scenario.target.get("slot_id") != target_scenario.target.get("slot_id")
+        or original_scenario.target.get("line_id") != target_scenario.target.get("line_id")
+    ):
+        raise ServiceError(
+            "REVIEW_INCOMPATIBLE",
+            "The target scenario describes a different episode or slot.",
+            422,
+        )
+
+    configuration = session.get(ExecutionConfiguration, original.configuration_id)
+    if configuration is None:
+        raise ServiceError("CONFIGURATION_UNKNOWN", "Original configuration is missing", 500)
+
+    target_ctx = _load_context(session, target_scenario)
+    gate_settings = GateFreshnessSettings.model_validate(configuration.settings)
+    run = run_replay(target_ctx, gate_settings, configuration.policy_kind)
+
+    gate_issues = [i.model_dump(mode="json") for i in run.outcome.gate_issues]
+
+    if run.outcome.outcome in (DomainOutcome.NEEDS_CONTEXT, DomainOutcome.CONFLICTING_CONTEXT):
+        outcome = "BLOCKED_CONTEXT"
+    else:
+        original_ctx = _load_context(session, original_scenario)
+        from .domain.engine import context_digest_for
+
+        original_digest = original.context_digest or context_digest_for(original_ctx)
+        if run.outcome.context_digest != original_digest:
+            outcome = "STALE_RECOMMENDATION"
+        else:
+            # Same decision context: revalidate the original proposal.
+            from .domain import validator as validator_module
+            from .domain.types import Proposal
+
+            proposal = Proposal.model_validate(proposal_payload)
+            constraints = validator_module.validate_proposal(
+                proposal, target_ctx, gate_settings, run.outcome.context_digest
+            )
+            outcome = (
+                "STILL_SUPPORTED"
+                if all(c.verdict.value == "PASS" for c in constraints)
+                else "STALE_RECOMMENDATION"
+            )
+
+    if outcome == "STALE_RECOMMENDATION":
+        original_ctx = _load_context(session, original_scenario)
+        paths = _changed_paths(
+            original_ctx.model_dump(mode="json"), target_ctx.model_dump(mode="json")
+        )
+        reason_codes = _path_reason_codes(paths)
+        if run.outcome.outcome is DomainOutcome.NO_FEASIBLE_CANDIDATE:
+            reason_codes = sorted(set(reason_codes) | {"TARGET_CONTEXT_EXCLUDED"})
+    else:
+        paths, reason_codes = [], []
+
+    check = ReviewCheck(
+        original_replay_id=original_replay_id,
+        target_scenario_id=target_scenario_id,
+        target_scenario_revision=target_revision,
+        outcome=outcome,
+        changed_paths=paths,
+        reason_codes=reason_codes,
+        issues=gate_issues,
+        target_context_digest=run.outcome.context_digest,
+    )
+    session.add(check)
+    session.commit()
+    return {
+        "id": check.id,
+        "original_replay_id": original_replay_id,
+        "target_scenario_id": target_scenario_id,
+        "target_scenario_revision": target_revision,
+        "outcome": outcome,
+        "changed_paths": paths,
+        "reason_codes": reason_codes,
+        "issues": gate_issues,
+        "target_context_digest": check.target_context_digest,
+        "created_at": check.created_at.isoformat(),
+        "original_untouched": True,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Note confirmation
+# ---------------------------------------------------------------------------
+
+
+def confirm_event_and_fork(
+    session: Session,
+    scenario_id: str,
+    revision: int,
+    *,
+    subject_operator_id: str,
+    summary: str,
+    observed_at: Any,
+    source_kind: str,
+    source_ref: str,
+    parser_call_id: str | None = None,
+    corrections: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Confirm a structured event and fork the scenario onto it.
+
+    The model never authors an event: this endpoint runs only on confirmed
+    human input, whether the draft came from the parser or manual entry.
+    """
+    source = session.get(ScenarioRevision, (scenario_id, revision))
+    if source is None:
+        raise ServiceError("SCENARIO_UNKNOWN", "Unknown scenario revision", 404)
+    operator = next(
+        (op for op in _load_context(session, source).catalog.operators if op.id == subject_operator_id),
+        None,
+    )
+    if operator is None or not operator.active:
+        raise ServiceError("OPERATOR_UNKNOWN", "Unknown or inactive operator", 422)
+    if source_kind not in ("note", "manual"):
+        raise ServiceError("VALIDATION", "source_kind must be note or manual", 422)
+
+    event = {
+        "kind": "OPERATOR_UNAVAILABLE",
+        "subject_operator_id": subject_operator_id,
+        "observed_at": observed_at,
+        "summary": summary,
+        "source_ref": source_ref,
+    }
+
+    latest = (
+        session.execute(
+            select(ScenarioRevision.revision).where(ScenarioRevision.scenario_id == scenario_id)
+        )
+        .scalars()
+        .all()
+    )
+    new_revision = max(latest) + 1
+    tags = list(source.tags)
+    if source_kind == "note" and "confirmed-note" not in tags:
+        tags.append("confirmed-note")
+    elif source_kind == "manual" and "manual-entry" not in tags:
+        tags.append("manual-entry")
+
+    fork = ScenarioRevision(
+        scenario_id=scenario_id,
+        revision=new_revision,
+        title=source.title,
+        tags=tags,
+        defect_statement=source.defect_statement
+        + f" Revision {new_revision} carries a confirmed "
+        f"({'floor note' if source_kind == 'note' else 'manual entry'}) unavailability event for "
+        f"{subject_operator_id}.",
+        event=event,
+        decision_at=source.decision_at,
+        target=dict(source.target),
+        catalog_revision_id=source.catalog_revision_id,
+        pinned_snapshot_ids=list(source.pinned_snapshot_ids),
+    )
+    session.add(fork)
+    expectations = session.execute(
+        select(ExpectationRevision).where(
+            ExpectationRevision.scenario_id == scenario_id,
+            ExpectationRevision.revision == revision,
+        )
+    ).scalars().all()
+    for exp in expectations:
+        session.add(
+            ExpectationRevision(
+                scenario_id=scenario_id,
+                revision=new_revision,
+                configuration_id=exp.configuration_id,
+                assertions=dict(exp.assertions),
+            )
+        )
+    session.commit()
+    return {
+        "scenario_id": fork.scenario_id,
+        "revision": fork.revision,
+        "event": event,
+        "corrections": corrections or {},
+        "parser_call_id": parser_call_id,
+        "pinned_snapshot_ids": fork.pinned_snapshot_ids,
+    }
+
+
+def replay_export(session: Session, replay_id: str) -> dict[str, Any]:
+    """A portable JSON report: the result plus every pinned input."""
+    attempt = session.get(ReplayAttempt, replay_id)
+    if attempt is None:
+        raise ServiceError("REPLAY_UNKNOWN", "Unknown replay attempt", 404)
+    scenario = session.get(ScenarioRevision, (attempt.scenario_id, attempt.scenario_revision))
+    if scenario is None:
+        raise ServiceError("SCENARIO_UNKNOWN", "Scenario revision missing", 500)
+    snapshots = []
+    for snap_id in scenario.pinned_snapshot_ids:
+        row = session.get(SourceSnapshot, snap_id)
+        if row is not None:
+            snapshots.append(
+                {
+                    "id": row.id,
+                    "kind": row.kind,
+                    "source_system": row.source_system,
+                    "scope": row.scope,
+                    "declared_evidence_at": row.declared_evidence_at.isoformat(),
+                    "coverage_complete": row.coverage_complete,
+                    "content_digest": row.content_digest,
+                    "payload": row.payload,
+                }
+            )
+    return {
+        "format": "flooreplay/replay-export@1",
+        "attempt": {
+            "id": attempt.id,
+            "lifecycle": attempt.lifecycle,
+            "domain_outcome": attempt.domain_outcome,
+            "result": attempt.result,
+            "expectation_verdict": attempt.expectation_verdict,
+            "expectation_failures": attempt.expectation_failures,
+            "context_digest": attempt.context_digest,
+            "manifest_digest": attempt.manifest_digest,
+            "created_at": attempt.created_at.isoformat(),
+        },
+        "scenario": {
+            "scenario_id": scenario.scenario_id,
+            "revision": scenario.revision,
+            "title": scenario.title,
+            "event": scenario.event,
+            "target": scenario.target,
+            "decision_at": scenario.decision_at.isoformat(),
+        },
+        "snapshots": snapshots,
+    }

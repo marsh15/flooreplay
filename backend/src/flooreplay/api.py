@@ -14,7 +14,7 @@ from sqlalchemy import select
 
 from .config import settings
 from .db import session_scope
-from .fixtures import CONFIGURATIONS
+from .fixtures import CATALOG, CONFIGURATIONS
 from .importing import ImportStructuralError, preview_import
 from .models import (
     ComparisonReport,
@@ -24,12 +24,20 @@ from .models import (
     SourceSnapshot,
     SuiteRevision,
 )
+from .parsing import (
+    ParserUnavailable,
+    get_parser,
+    resolve_draft,
+)
 from .service import (
     ServiceError,
+    confirm_event_and_fork,
     execute_replay,
     fork_scenario,
     latest_attempt_summaries,
     publish_import,
+    replay_export,
+    review_check,
     run_comparison,
 )
 
@@ -71,9 +79,41 @@ class ComparisonRequest(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
+class NoteParseRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+
+
+class NoteConfirmRequest(BaseModel):
+    scenario_id: str
+    scenario_revision: int
+    subject_operator_id: str
+    observed_at: str
+    summary: str = Field(min_length=3, max_length=400)
+    source_kind: str = "note"  # note | manual
+    parser_call_id: str | None = None
+    corrections: dict[str, Any] | None = None
+
+
+class ReviewCheckRequest(BaseModel):
+    original_replay_id: str
+    target_scenario_id: str
+    target_scenario_revision: int
+
+
 def create_app(mode: str | None = None) -> FastAPI:
     effective_mode = mode or settings.mode
     app = FastAPI(title="FloorReplay API", version="0.1.0")
+
+    @app.exception_handler(ParserUnavailable)
+    async def parser_unavailable_handler(request: Request, exc: ParserUnavailable) -> JSONResponse:
+        return JSONResponse(
+            status_code=503,
+            content=ErrorEnvelope(
+                code="PARSER_UNAVAILABLE",
+                message=f"{exc} Manual structured entry remains available.",
+                trace_id=str(uuid.uuid4()),
+            ).model_dump(),
+        )
 
     @app.exception_handler(ImportStructuralError)
     async def import_error_handler(request: Request, exc: ImportStructuralError) -> JSONResponse:
@@ -111,7 +151,8 @@ def create_app(mode: str | None = None) -> FastAPI:
             "mode": effective_mode,
             "imports_enabled": effective_mode == "local",
             "build_id": settings.build_id,
-            "live_parser_available": False,  # AI extraction lands in milestone 4
+            "live_parser_available": bool(settings.openai_api_key),
+            "parser_kind": "openai-structured" if settings.openai_api_key else "rule-baseline",
             "configurations": [
                 {"id": c["id"], "name": c["name"], "known_limitation": c["known_limitation"]}
                 for c in CONFIGURATIONS
@@ -274,6 +315,46 @@ def create_app(mode: str | None = None) -> FastAPI:
             "file_issues": issues_by_row.get(0, []),
         }
 
+    @app.post("/api/v1/review-checks")
+    def create_review_check(body: ReviewCheckRequest) -> dict[str, Any]:
+        with session_scope() as session:
+            return review_check(
+                session,
+                body.original_replay_id,
+                body.target_scenario_id,
+                body.target_scenario_revision,
+            )
+
+    @app.get("/api/v1/review-checks")
+    def list_review_checks(replay_id: str | None = None) -> dict[str, Any]:
+        from .models import ReviewCheck as ReviewCheckModel
+
+        with session_scope() as session:
+            query = select(ReviewCheckModel).order_by(ReviewCheckModel.created_at.desc()).limit(20)
+            if replay_id:
+                query = query.where(ReviewCheckModel.original_replay_id == replay_id)
+            rows = session.execute(query).scalars().all()
+            return {
+                "items": [
+                    {
+                        "id": r.id,
+                        "original_replay_id": r.original_replay_id,
+                        "target_scenario_id": r.target_scenario_id,
+                        "target_scenario_revision": r.target_scenario_revision,
+                        "outcome": r.outcome,
+                        "changed_paths": r.changed_paths,
+                        "reason_codes": r.reason_codes,
+                        "created_at": r.created_at.isoformat(),
+                    }
+                    for r in rows
+                ]
+            }
+
+    @app.get("/api/v1/replays/{attempt_id}/export")
+    def export_replay(attempt_id: str) -> dict[str, Any]:
+        with session_scope() as session:
+            return replay_export(session, attempt_id)
+
     if effective_mode == "local":
         @app.post("/api/v1/imports/preview")
         def import_preview(body: ImportRequestBody) -> dict[str, Any]:
@@ -296,6 +377,62 @@ def create_app(mode: str | None = None) -> FastAPI:
                 )
             with session_scope() as session:
                 return publish_import(session, preview, body.csv_text)
+
+        @app.post("/api/v1/notes/parse")
+        def parse_note(body: NoteParseRequest) -> dict[str, Any]:
+            parser = get_parser(settings.openai_api_key or None)
+            draft = parser.parse(body.text, CATALOG)
+            resolution = resolve_draft(draft, CATALOG)
+            from hashlib import sha256
+
+            from .models import ParserCall as ParserCallModel
+
+            with session_scope() as session:
+                call = ParserCallModel(
+                    note_text=body.text,
+                    note_digest="sha256:" + sha256(body.text.encode()).hexdigest(),
+                    parser_kind=draft.parser_kind,
+                    model=draft.model,
+                    prompt_digest=draft.prompt_digest,
+                    schema_version=1,
+                    response={
+                        "event_category": draft.event_category,
+                        "subject_mentions": list(draft.subject_mentions),
+                        "operation_mentions": list(draft.operation_mentions),
+                        "polarity": draft.polarity,
+                        "uncertainty_phrase": draft.uncertainty_phrase,
+                        "raw_temporal_expressions": list(draft.raw_temporal_expressions),
+                        "ambiguity_notes": list(draft.ambiguity_notes),
+                    },
+                    resolution=resolution,
+                    usage=draft.usage,
+                )
+                session.add(call)
+                session.commit()
+                return {
+                    "parser_call_id": call.id,
+                    "parser_kind": draft.parser_kind,
+                    "live": draft.parser_kind == "openai-structured",
+                    "draft": call.response,
+                    "resolution": resolution,
+                }
+
+        @app.post("/api/v1/notes/confirm")
+        def confirm_note(body: NoteConfirmRequest) -> dict[str, Any]:
+            with session_scope() as session:
+                source_ref = f"{body.source_kind}:{body.parser_call_id or 'entry'}"
+                return confirm_event_and_fork(
+                    session,
+                    body.scenario_id,
+                    body.scenario_revision,
+                    subject_operator_id=body.subject_operator_id,
+                    summary=body.summary,
+                    observed_at=body.observed_at,
+                    source_kind=body.source_kind,
+                    source_ref=source_ref,
+                    parser_call_id=body.parser_call_id,
+                    corrections=body.corrections,
+                )
 
         @app.post("/api/v1/scenarios/{scenario_id}/revisions/{revision}/fork")
         def scenario_fork(scenario_id: str, revision: int, body: ForkRequest) -> dict[str, Any]:

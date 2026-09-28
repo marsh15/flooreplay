@@ -312,6 +312,54 @@ export interface SuiteSummary {
   content_digest: string
 }
 
+export interface NoteDraft {
+  event_category: string
+  subject_mentions: string[]
+  operation_mentions: string[]
+  polarity: string
+  uncertainty_phrase: string | null
+  raw_temporal_expressions: string[]
+  ambiguity_notes: string[]
+}
+
+export interface MentionResolutionView {
+  raw: string
+  resolved_id: string | null
+  status: 'RESOLVED' | 'AMBIGUOUS' | 'UNKNOWN'
+  candidates: string[]
+}
+
+export interface NoteParseResult {
+  parser_call_id: string
+  parser_kind: string
+  live: boolean
+  draft: NoteDraft
+  resolution: { operators: MentionResolutionView[]; operations: MentionResolutionView[] }
+}
+
+export interface NoteConfirmResult {
+  scenario_id: string
+  revision: number
+  event: { subject_operator_id: string; observed_at: string; summary: string; source_ref: string }
+  corrections: Record<string, string>
+  parser_call_id: string | null
+  pinned_snapshot_ids: string[]
+}
+
+export interface ReviewCheckResult {
+  id: string
+  original_replay_id: string
+  target_scenario_id: string
+  target_scenario_revision: number
+  outcome: 'STILL_SUPPORTED' | 'STALE_RECOMMENDATION' | 'BLOCKED_CONTEXT'
+  changed_paths: string[]
+  reason_codes: string[]
+  issues: { code: string; message: string }[]
+  target_context_digest: string | null
+  created_at: string
+  original_untouched: boolean
+}
+
 export const api = {
   capabilities: () =>
     request<{
@@ -362,6 +410,34 @@ export const api = {
     idempotency_key: string
   }) =>
     request<ComparisonReport>('/comparisons', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  parseNote: (text: string) =>
+    request<NoteParseResult>('/notes/parse', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    }),
+  confirmNote: (body: {
+    scenario_id: string
+    scenario_revision: number
+    subject_operator_id: string
+    observed_at: string
+    summary: string
+    source_kind: 'note' | 'manual'
+    parser_call_id?: string | null
+    corrections?: Record<string, string>
+  }) =>
+    request<NoteConfirmResult>('/notes/confirm', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  reviewCheck: (body: {
+    original_replay_id: string
+    target_scenario_id: string
+    target_scenario_revision: number
+  }) =>
+    request<ReviewCheckResult>('/review-checks', {
       method: 'POST',
       body: JSON.stringify(body),
     }),

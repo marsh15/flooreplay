@@ -62,15 +62,21 @@ backend/src/flooreplay/
     validator.py     independent C01..C12 constraint validation
     evaluation.py    expectation verdicts
     engine.py        gate -> policy -> validator orchestration
-  fixtures.py        the synthetic factory and the hero episode
-  models.py          ORM: immutable artifacts + replay attempts
+  fixtures.py        the synthetic factory, hero episode, later-review revisions
+  fixtures_suite.py  the 32-case operational suite
+  importing.py       documented CSV profiles, preview diagnostics, snapshot build
+  parsing.py         note draft extraction: rule-baseline + pinned OpenAI parser
+  models.py          ORM: immutable artifacts + replay attempts + audits
   seeding.py         idempotent, content-addressed seeding
-  service.py         execution orchestration, idempotency, manifests
-  api.py             HTTP surface and error envelope
+  service.py         execution, comparison, review checks, idempotency, export
+  api.py             HTTP surface and error envelope (mode-scoped routes)
 frontend/src/
   lib/api.ts         typed API client (hand-written; OpenAPI generation planned)
-  pages/Library.tsx  scenario library
-  pages/Workbench.tsx  replay workbench
+  pages/Library.tsx     scenario library
+  pages/Workbench.tsx   replay workbench + later-context review
+  pages/Comparison.tsx  suite comparison report
+  pages/Imports.tsx     CSV import / publish / fork (local mode)
+  pages/Notes.tsx       floor note parse -> confirm -> fork (local mode)
 ```
 
 ## Imports (local owner)
@@ -91,6 +97,27 @@ The Imports screen (`/imports`, mounted only in local mode) follows: select a do
 
 An interrupted suite can never receive an overall passing verdict; comparison reports are persisted with a manifest digest and idempotency keys.
 
+## Floor notes, later-context review, and portable reports
+
+**Floor notes** (`/notes`, local mode only) turn a supervisor's free-text note into evidence without ever letting the parser become authoritative:
+
+1. Paste a note (max 2000 characters) and parse it. The UI states honestly which parser ran and whether it is live — the offline `rule-baseline` parser is the demo default when no OpenAI key is configured.
+2. The parse returns a **draft**: candidate operator, operation, moment, uncertainty flags, and mention resolutions. Mentions resolve by exact operator id or documented alias only; ambiguity keeps its candidates and stays ambiguous rather than guessing.
+3. Confirming the draft creates an immutable event and forks a **new scenario revision** carrying the expectations; every historical revision and replay is untouched. A manual fallback lets you record the event without any parser output at all.
+4. Every parser call is audited (raw note digest, parser kind, model, latency, result or error).
+
+The optional OpenAI parser is pinned to `gpt-4.1-mini-2025-04-14` with a 2000-character cap, a 15-second deadline, and at most one retry; timeouts surface as `ParserUnavailable`, never as a silent fallback. The demo needs no API key.
+
+**Later-context review** (workbench panel) asks: *is the proposal I already have still supported by a later, explicitly-pinned context?* Pick any later scenario revision and run the check. The original replay is never altered, and the outcome is one of three:
+
+- `still supported` — the later context's canonical digest is identical; nothing changed that matters.
+- `stale recommendation` — the digest differs; reason codes (`EVENT_CHANGED`, `DECISION_TIME_CHANGED`, `EVIDENCE_CHANGED`) plus an expandable list of canonical changed paths (down to individual rows and fields) explain exactly what moved.
+- `blocked context` — the gate itself now blocks; the blocking issues are listed.
+
+The seeded `SCEN-REVIEW-LATER` revisions (original 07:58 decision, refreshed evidence at 08:10, stale exports at 08:10) demonstrate all three outcomes.
+
+Every replay attempt also has a **portable JSON report** at `/api/v1/replays/{id}/export` — request, result, and both digests — for offline review.
+
 ## Status and honest limits
 
-Milestones 1-3 of 6 are complete: contracts, engine, persistence, seed, replay API, library and workbench screens, the CSV import/fork workflow, and the 32-case suite with comparison report, all walkable in the browser. Not yet built: AI note extraction, later-context review, public-mode execution limits, deployment. See `DEVELOPMENT.md` for the milestone log and architecture walkthrough.
+Milestones 1-4 of 6 are complete: contracts, engine, persistence, seed, replay API, library and workbench screens, the CSV import/fork workflow, the 32-case suite with comparison report, floor-note parsing with confirmation, later-context review, and portable replay reports — all walkable in the browser. Not yet built: interruption recovery, public-mode execution limits, deployment, held-out parser evaluation, E2E tests. See `DEVELOPMENT.md` for the milestone log and architecture walkthrough.

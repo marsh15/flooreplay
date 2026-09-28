@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     replay_budget_seconds: float = 10.0
     suite_budget_seconds: float = 30.0
     max_concurrent_executions: int = 2
+    openai_api_key: str = ""
 
 
 settings = Settings()

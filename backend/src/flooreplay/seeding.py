@@ -15,8 +15,15 @@ from sqlalchemy.orm import Session
 
 from .domain.evaluation import Expectation
 from .domain.hashing import digest
-from .domain.types import Snapshot
-from .fixtures import CATALOG, CONFIGURATIONS, hero_scenarios
+from .domain.types import DomainOutcome, Snapshot
+from .fixtures import (
+    CATALOG,
+    CONFIGURATIONS,
+    hero_scenarios,
+    review_original_context,
+    review_refreshed_context,
+    review_stale_context,
+)
 from .fixtures_suite import SUITE_ID, suite_cases
 from .models import (
     CatalogRevision,
@@ -86,7 +93,51 @@ def _all_scenarios() -> list[_ScenarioLike]:
         )
         for case in suite_cases()
     ]
-    return hero + suite
+    from .domain.evaluation import Expectation
+    from .domain.types import ConstraintCode
+
+    def _hero_like_expectations(required_operator: str | None) -> dict[str, Expectation]:
+        return {
+            "CFG-BASELINE-V1": Expectation(
+                required_failed_constraints=(ConstraintCode.C07,)
+            ),
+            "CFG-IMPROVED-V1": Expectation(required_operator=required_operator),
+            "CFG-DEFECT-SKILLFRESH": Expectation(required_operator=required_operator),
+        }
+
+    review = [
+        _ScenarioLike(
+            "SCEN-REVIEW-LATER", 1,
+            "Later-context review: original decision at 07:58",
+            ("review", "later-context"),
+            "The original replay this review flow starts from.",
+            review_original_context(),
+            _hero_like_expectations("O219"),
+        ),
+        _ScenarioLike(
+            "SCEN-REVIEW-LATER", 2,
+            "Later-context review: refreshed evidence and plan revision C at 08:10",
+            ("review", "later-context"),
+            "Changed plan and evidence timestamps must stale the earlier recommendation.",
+            review_refreshed_context(),
+            _hero_like_expectations("O219"),
+        ),
+        _ScenarioLike(
+            "SCEN-REVIEW-LATER", 3,
+            "Later-context review: stale exports at 08:10",
+            ("review", "later-context"),
+            "Blocking evidence problems at the later decision time yield BLOCKED_CONTEXT.",
+            review_stale_context(),
+            {
+                "CFG-BASELINE-V1": Expectation(expected_outcome=DomainOutcome.NEEDS_CONTEXT),
+                "CFG-IMPROVED-V1": Expectation(expected_outcome=DomainOutcome.NEEDS_CONTEXT),
+                "CFG-DEFECT-SKILLFRESH": Expectation(
+                    expected_outcome=DomainOutcome.NEEDS_CONTEXT
+                ),
+            },
+        ),
+    ]
+    return hero + suite + review
 
 
 def seed(session: Session) -> dict[str, int]:
