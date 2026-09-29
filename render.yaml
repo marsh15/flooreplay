@@ -27,8 +27,6 @@ services:
         value: "1"
       - key: FLOORREPLAY_CORS_ORIGINS
         sync: false
-      - key: FLOORREPLAY_OPENAI_API_KEY
-        sync: false
 
   - type: web
     name: flooreplay-frontend
