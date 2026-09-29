@@ -1,4 +1,4 @@
-.PHONY: dev seed verify test lint typecheck backend-dev frontend-dev e2e e2e-install eval-notes
+.PHONY: dev seed worker verify test lint typecheck backend-dev frontend-dev e2e e2e-install eval-notes
 
 backend-dev:
 	cd backend && uv run uvicorn flooreplay.api:app --reload --port 8000
@@ -13,6 +13,9 @@ dev:
 
 seed:
 	cd backend && uv run python -m flooreplay seed
+
+worker:
+	cd backend && uv run python -m flooreplay worker
 
 migrate:
 	cd backend && uv run alembic upgrade head

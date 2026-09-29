@@ -1,0 +1,2156 @@
+{
+  "schema": "flooreplay.local-model-evaluation.v1",
+  "model": "qwen3:1.7b",
+  "hardware": {
+    "machine": "arm64",
+    "system": "Darwin",
+    "memory_gib": 8.0
+  },
+  "external_api_expenditure_inr": 0,
+  "cases_attempted": 10,
+  "valid_drafts": 4,
+  "citation_validation": {
+    "cases": 4,
+    "valid_drafts": 4,
+    "factual_claims": 16,
+    "citation_valid_claims": 16,
+    "human_reviewed_claims": 0,
+    "human_supported_claims": 0,
+    "evidence_precision": null,
+    "failures": []
+  },
+  "latency_seconds": {
+    "p50": 39.98,
+    "p95": 53.91
+  },
+  "limitations": [
+    "Synthetic packets only",
+    "Citation membership does not establish semantic support",
+    "Human claim review is recorded separately"
+  ],
+  "cases": [
+    {
+      "id": "INC-001@1",
+      "packet": {
+        "incident_id": "INC-001",
+        "revision": 1,
+        "evidence": [
+          {
+            "id": "EV-BLOCK-1",
+            "type": "line_block",
+            "summary": "Supervisor recorded the line waiting for fabric from 09:00 to 09:30.",
+            "start": "2026-09-28T09:00:00+05:30",
+            "end": "2026-09-28T09:30:00+05:30",
+            "source_id": "shift-log-44",
+            "assertion": true
+          },
+          {
+            "id": "EV-START-1",
+            "type": "line_start",
+            "summary": "First final good units recorded in the 09:30 bucket.",
+            "occurred_at": "2026-09-28T09:30:00+05:30",
+            "source_id": "output-ledger-28"
+          },
+          {
+            "id": "EV-MAT-1",
+            "type": "material_readiness",
+            "summary": "Fabric lot F-218 reached the line at 09:32, after the scheduled start.",
+            "occurred_at": "2026-09-28T09:32:00+05:30",
+            "source_id": "material-transfer-218"
+          },
+          {
+            "id": "EV-MACH-1",
+            "type": "machine_interruption",
+            "summary": "Needle feed on machine M12 interrupted between 10:31 and 10:49; line-wide impact is not established.",
+            "start": "2026-09-28T10:31:00+05:30",
+            "end": "2026-09-28T10:49:00+05:30",
+            "source_id": "machine-log-m12"
+          },
+          {
+            "id": "EV-QC-1",
+            "type": "qc_hold",
+            "summary": "QC placed lot L-91 on hold pending seam inspection; held units are not added to good output.",
+            "occurred_at": "2026-09-28T10:42:00+05:30",
+            "source_id": "qc-hold-l91"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "planned",
+            "value": 160,
+            "unit": "good_units"
+          },
+          {
+            "id": "observed",
+            "value": 87,
+            "unit": "good_units"
+          },
+          {
+            "id": "variance",
+            "value": -73,
+            "unit": "good_units"
+          },
+          {
+            "id": "shortfall",
+            "value": 73,
+            "unit": "good_units"
+          },
+          {
+            "id": "baseline_target",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "blocked_minutes",
+            "value": 30,
+            "unit": "good_units"
+          }
+        ],
+        "precedents": [
+          {
+            "id": "INC-101",
+            "title": "Late fabric transfer on line S2",
+            "match_reason": "Shared terms in incident title or recorded events",
+            "differences": [
+              "Different sewing line (S2 versus S4).",
+              "Material lot, machine, and action prerequisites need separate verification."
+            ]
+          },
+          {
+            "id": "INC-107",
+            "title": "Delayed WIP transfer on line S4",
+            "match_reason": "Shared terms in incident title or recorded events",
+            "differences": [
+              "Material lot, machine, and action prerequisites need separate verification."
+            ]
+          }
+        ],
+        "missing_evidence": [
+          "Causal attribution requires more than chronology.",
+          "Proposals require human review and do not execute factory changes."
+        ],
+        "hypotheses": [
+          {
+            "category": "material",
+            "status": "SUPPORTED",
+            "mechanism": "A recorded line block establishes lost operating time. Its share of the output shortfall is unknown.",
+            "supporting_evidence": [
+              "EV-BLOCK-1",
+              "EV-MAT-1"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the material event blocked this line and for how long."
+          },
+          {
+            "category": "machine",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "EV-MACH-1"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the machine event blocked this line and for how long."
+          },
+          {
+            "category": "quality",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "EV-QC-1"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the quality event blocked this line and for how long."
+          }
+        ]
+      },
+      "result": {
+        "status": "DRAFT_NEEDS_REVIEW",
+        "draft": {
+          "claims": [
+            {
+              "text": "The line block event (EV-BLOCK-1) occurred between 09:00 and 09:30, indicating a delay in fabric supply.",
+              "evidence_ids": [
+                "EV-BLOCK-1"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The material readiness event (EV-MAT-1) confirmed that fabric lot F-218 was available at 09:32, after the scheduled start.",
+              "evidence_ids": [
+                "EV-MAT-1"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The machine interruption (EV-MACH-1) affected machine M12 between 10:31 and 10:49, causing a line-wide impact that is not established.",
+              "evidence_ids": [
+                "EV-MACH-1"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The QC hold event (EV-QC-1) placed lot L-91 on hold pending seam inspection, with held units not added to good output.",
+              "evidence_ids": [
+                "EV-QC-1"
+              ],
+              "metric_ids": []
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "raw_draft": {
+          "claims": [
+            {
+              "text": "The line block event (EV-BLOCK-1) occurred between 09:00 and 09:30, indicating a delay in fabric supply.",
+              "evidence_ids": [
+                "EV-BLOCK-1"
+              ],
+              "metric_ids": [
+                "planned"
+              ]
+            },
+            {
+              "text": "The material readiness event (EV-MAT-1) confirmed that fabric lot F-218 was available at 09:32, after the scheduled start.",
+              "evidence_ids": [
+                "EV-MAT-1"
+              ],
+              "metric_ids": [
+                "baseline_target"
+              ]
+            },
+            {
+              "text": "The machine interruption (EV-MACH-1) affected machine M12 between 10:31 and 10:49, causing a line-wide impact that is not established.",
+              "evidence_ids": [
+                "EV-MACH-1"
+              ],
+              "metric_ids": [
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "The QC hold event (EV-QC-1) placed lot L-91 on hold pending seam inspection, with held units not added to good output.",
+              "evidence_ids": [
+                "EV-QC-1"
+              ],
+              "metric_ids": [
+                "shortfall"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "claims": [
+            {
+              "text": "The line block event (EV-BLOCK-1) occurred between 09:00 and 09:30, indicating a delay in fabric supply.",
+              "evidence_ids": [
+                "EV-BLOCK-1"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The material readiness event (EV-MAT-1) confirmed that fabric lot F-218 was available at 09:32, after the scheduled start.",
+              "evidence_ids": [
+                "EV-MAT-1"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The machine interruption (EV-MACH-1) affected machine M12 between 10:31 and 10:49, causing a line-wide impact that is not established.",
+              "evidence_ids": [
+                "EV-MACH-1"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The QC hold event (EV-QC-1) placed lot L-91 on hold pending seam inspection, with held units not added to good output.",
+              "evidence_ids": [
+                "EV-QC-1"
+              ],
+              "metric_ids": []
+            }
+          ]
+        },
+        "model": "qwen3:1.7b",
+        "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "prompt_digest": "cf93cd21ce4d186ea1b7633c967e03ff1c2afae22074735fd71a7ebc525cf823",
+        "packet": {
+          "incident_id": "INC-001",
+          "revision": 1,
+          "evidence": [
+            {
+              "id": "EV-BLOCK-1",
+              "type": "line_block",
+              "summary": "Supervisor recorded the line waiting for fabric from 09:00 to 09:30.",
+              "start": "2026-09-28T09:00:00+05:30",
+              "end": "2026-09-28T09:30:00+05:30",
+              "source_id": "shift-log-44",
+              "assertion": true
+            },
+            {
+              "id": "EV-START-1",
+              "type": "line_start",
+              "summary": "First final good units recorded in the 09:30 bucket.",
+              "occurred_at": "2026-09-28T09:30:00+05:30",
+              "source_id": "output-ledger-28"
+            },
+            {
+              "id": "EV-MAT-1",
+              "type": "material_readiness",
+              "summary": "Fabric lot F-218 reached the line at 09:32, after the scheduled start.",
+              "occurred_at": "2026-09-28T09:32:00+05:30",
+              "source_id": "material-transfer-218"
+            },
+            {
+              "id": "EV-MACH-1",
+              "type": "machine_interruption",
+              "summary": "Needle feed on machine M12 interrupted between 10:31 and 10:49; line-wide impact is not established.",
+              "start": "2026-09-28T10:31:00+05:30",
+              "end": "2026-09-28T10:49:00+05:30",
+              "source_id": "machine-log-m12"
+            },
+            {
+              "id": "EV-QC-1",
+              "type": "qc_hold",
+              "summary": "QC placed lot L-91 on hold pending seam inspection; held units are not added to good output.",
+              "occurred_at": "2026-09-28T10:42:00+05:30",
+              "source_id": "qc-hold-l91"
+            }
+          ],
+          "metrics": [
+            {
+              "id": "planned",
+              "value": 160,
+              "unit": "good_units"
+            },
+            {
+              "id": "observed",
+              "value": 87,
+              "unit": "good_units"
+            },
+            {
+              "id": "variance",
+              "value": -73,
+              "unit": "good_units"
+            },
+            {
+              "id": "shortfall",
+              "value": 73,
+              "unit": "good_units"
+            },
+            {
+              "id": "baseline_target",
+              "value": 240,
+              "unit": "good_units"
+            },
+            {
+              "id": "blocked_minutes",
+              "value": 30,
+              "unit": "good_units"
+            }
+          ],
+          "precedents": [
+            {
+              "id": "INC-101",
+              "title": "Late fabric transfer on line S2",
+              "match_reason": "Shared terms in incident title or recorded events",
+              "differences": [
+                "Different sewing line (S2 versus S4).",
+                "Material lot, machine, and action prerequisites need separate verification."
+              ]
+            },
+            {
+              "id": "INC-107",
+              "title": "Delayed WIP transfer on line S4",
+              "match_reason": "Shared terms in incident title or recorded events",
+              "differences": [
+                "Material lot, machine, and action prerequisites need separate verification."
+              ]
+            }
+          ],
+          "missing_evidence": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ],
+          "hypotheses": [
+            {
+              "category": "material",
+              "status": "SUPPORTED",
+              "mechanism": "A recorded line block establishes lost operating time. Its share of the output shortfall is unknown.",
+              "supporting_evidence": [
+                "EV-BLOCK-1",
+                "EV-MAT-1"
+              ],
+              "contradicting_evidence": [],
+              "next_check": "Confirm whether the material event blocked this line and for how long."
+            },
+            {
+              "category": "machine",
+              "status": "PLAUSIBLE",
+              "mechanism": "This event may have affected production, but a line-level effect is not established.",
+              "supporting_evidence": [
+                "EV-MACH-1"
+              ],
+              "contradicting_evidence": [],
+              "next_check": "Confirm whether the machine event blocked this line and for how long."
+            },
+            {
+              "category": "quality",
+              "status": "PLAUSIBLE",
+              "mechanism": "This event may have affected production, but a line-level effect is not established.",
+              "supporting_evidence": [
+                "EV-QC-1"
+              ],
+              "contradicting_evidence": [],
+              "next_check": "Confirm whether the quality event blocked this line and for how long."
+            }
+          ]
+        },
+        "packet_digest": "56375f9aade6ccfb2fe7a66b500d5c7047de595f01489678cb57cd25490bcaef",
+        "usage": {
+          "prompt_tokens": 1143,
+          "output_tokens": 307
+        },
+        "attempts": 1
+      },
+      "elapsed_seconds": 29.11
+    },
+    {
+      "id": "INC-001@2",
+      "packet": {
+        "incident_id": "INC-001",
+        "revision": 2,
+        "evidence": [
+          {
+            "id": "EV-BLOCK-1",
+            "type": "line_block",
+            "summary": "Supervisor recorded the line waiting for fabric from 09:00 to 09:30.",
+            "start": "2026-09-28T09:00:00+05:30",
+            "end": "2026-09-28T09:30:00+05:30",
+            "source_id": "shift-log-44",
+            "assertion": true
+          },
+          {
+            "id": "EV-START-1",
+            "type": "line_start",
+            "summary": "First final good units recorded in the 09:30 bucket.",
+            "occurred_at": "2026-09-28T09:30:00+05:30",
+            "source_id": "output-ledger-28"
+          },
+          {
+            "id": "EV-MAT-1",
+            "type": "material_readiness",
+            "summary": "Fabric lot F-218 reached the line at 09:32, after the scheduled start.",
+            "occurred_at": "2026-09-28T09:32:00+05:30",
+            "source_id": "material-transfer-218"
+          },
+          {
+            "id": "EV-MAINT-1",
+            "type": "maintenance_note",
+            "summary": "Technician reported that the feed issue began around 10:14; recorded later, with no confirmed line-stop duration.",
+            "start": "2026-09-28T10:10:00+05:30",
+            "end": "2026-09-28T10:20:00+05:30",
+            "source_id": "maintenance-note-77",
+            "assertion": true
+          },
+          {
+            "id": "EV-MACH-CORR",
+            "type": "machine_interruption",
+            "summary": "Maintenance confirmed machine M12 was stopped from 10:31 to 10:49; other stations continued.",
+            "start": "2026-09-28T10:31:00+05:30",
+            "end": "2026-09-28T10:49:00+05:30",
+            "source_id": "maintenance-confirmation-78"
+          },
+          {
+            "id": "EV-QC-1",
+            "type": "qc_hold",
+            "summary": "QC placed lot L-91 on hold pending seam inspection; held units are not added to good output.",
+            "occurred_at": "2026-09-28T10:42:00+05:30",
+            "source_id": "qc-hold-l91"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "planned",
+            "value": 200,
+            "unit": "good_units"
+          },
+          {
+            "id": "observed",
+            "value": 126,
+            "unit": "good_units"
+          },
+          {
+            "id": "variance",
+            "value": -74,
+            "unit": "good_units"
+          },
+          {
+            "id": "shortfall",
+            "value": 74,
+            "unit": "good_units"
+          },
+          {
+            "id": "baseline_target",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "blocked_minutes",
+            "value": 30,
+            "unit": "good_units"
+          }
+        ],
+        "precedents": [
+          {
+            "id": "INC-101",
+            "title": "Late fabric transfer on line S2",
+            "match_reason": "Shared terms in incident title or recorded events",
+            "differences": [
+              "Different sewing line (S2 versus S4).",
+              "Material lot, machine, and action prerequisites need separate verification."
+            ]
+          },
+          {
+            "id": "INC-107",
+            "title": "Delayed WIP transfer on line S4",
+            "match_reason": "Shared terms in incident title or recorded events",
+            "differences": [
+              "Material lot, machine, and action prerequisites need separate verification."
+            ]
+          }
+        ],
+        "missing_evidence": [
+          "Causal attribution requires more than chronology.",
+          "Proposals require human review and do not execute factory changes."
+        ],
+        "hypotheses": [
+          {
+            "category": "material",
+            "status": "SUPPORTED",
+            "mechanism": "A recorded line block establishes lost operating time. Its share of the output shortfall is unknown.",
+            "supporting_evidence": [
+              "EV-BLOCK-1",
+              "EV-MAT-1"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the material event blocked this line and for how long."
+          },
+          {
+            "category": "machine",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "EV-MAINT-1",
+              "EV-MACH-CORR"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the machine event blocked this line and for how long."
+          },
+          {
+            "category": "quality",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "EV-QC-1"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the quality event blocked this line and for how long."
+          }
+        ]
+      },
+      "result": {
+        "status": "DRAFT_NEEDS_REVIEW",
+        "draft": {
+          "claims": [
+            {
+              "text": "The line block occurred from 09:00 to 09:30, with fabric lot F-218 arriving at 09:32.",
+              "evidence_ids": [
+                "EV-BLOCK-1",
+                "EV-MAT-1"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The machine interruption lasted from 10:31 to 10:49, with maintenance confirming the stop.",
+              "evidence_ids": [
+                "EV-MAINT-1",
+                "EV-MACH-CORR"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "QC placed lot L-91 on hold pending seam inspection, affecting output.",
+              "evidence_ids": [
+                "EV-QC-1"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The shortfall in good units is 74, with 30 minutes of blocked time recorded.",
+              "evidence_ids": [
+                "EV-MAINT-1",
+                "EV-MACH-CORR",
+                "EV-QC-1"
+              ],
+              "metric_ids": [
+                "shortfall",
+                "blocked_minutes"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "raw_draft": {
+          "claims": [
+            {
+              "text": "The line block occurred from 09:00 to 09:30, with fabric lot F-218 arriving at 09:32.",
+              "evidence_ids": [
+                "EV-BLOCK-1",
+                "EV-MAT-1"
+              ],
+              "metric_ids": [
+                "planned",
+                "observed",
+                "variance",
+                "shortfall",
+                "baseline_target",
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "The machine interruption lasted from 10:31 to 10:49, with maintenance confirming the stop.",
+              "evidence_ids": [
+                "EV-MAINT-1",
+                "EV-MACH-CORR"
+              ],
+              "metric_ids": [
+                "planned",
+                "observed",
+                "variance",
+                "shortfall",
+                "baseline_target",
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "QC placed lot L-91 on hold pending seam inspection, affecting output.",
+              "evidence_ids": [
+                "EV-QC-1"
+              ],
+              "metric_ids": [
+                "planned",
+                "observed",
+                "variance",
+                "shortfall",
+                "baseline_target",
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "The shortfall in good units is 74, with 30 minutes of blocked time recorded.",
+              "evidence_ids": [
+                "EV-MAINT-1",
+                "EV-MACH-CORR",
+                "EV-QC-1"
+              ],
+              "metric_ids": [
+                "planned",
+                "observed",
+                "variance",
+                "shortfall",
+                "baseline_target",
+                "blocked_minutes"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "claims": [
+            {
+              "text": "The line block occurred from 09:00 to 09:30, with fabric lot F-218 arriving at 09:32.",
+              "evidence_ids": [
+                "EV-BLOCK-1",
+                "EV-MAT-1"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The machine interruption lasted from 10:31 to 10:49, with maintenance confirming the stop.",
+              "evidence_ids": [
+                "EV-MAINT-1",
+                "EV-MACH-CORR"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "QC placed lot L-91 on hold pending seam inspection, affecting output.",
+              "evidence_ids": [
+                "EV-QC-1"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The shortfall in good units is 74, with 30 minutes of blocked time recorded.",
+              "evidence_ids": [
+                "EV-MAINT-1",
+                "EV-MACH-CORR",
+                "EV-QC-1"
+              ],
+              "metric_ids": [
+                "shortfall",
+                "blocked_minutes"
+              ]
+            }
+          ]
+        },
+        "model": "qwen3:1.7b",
+        "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "prompt_digest": "098a4094fb5251301ff9f3650d164e81da15611025a62bfa90fe819aad730f61",
+        "packet": {
+          "incident_id": "INC-001",
+          "revision": 2,
+          "evidence": [
+            {
+              "id": "EV-BLOCK-1",
+              "type": "line_block",
+              "summary": "Supervisor recorded the line waiting for fabric from 09:00 to 09:30.",
+              "start": "2026-09-28T09:00:00+05:30",
+              "end": "2026-09-28T09:30:00+05:30",
+              "source_id": "shift-log-44",
+              "assertion": true
+            },
+            {
+              "id": "EV-START-1",
+              "type": "line_start",
+              "summary": "First final good units recorded in the 09:30 bucket.",
+              "occurred_at": "2026-09-28T09:30:00+05:30",
+              "source_id": "output-ledger-28"
+            },
+            {
+              "id": "EV-MAT-1",
+              "type": "material_readiness",
+              "summary": "Fabric lot F-218 reached the line at 09:32, after the scheduled start.",
+              "occurred_at": "2026-09-28T09:32:00+05:30",
+              "source_id": "material-transfer-218"
+            },
+            {
+              "id": "EV-MAINT-1",
+              "type": "maintenance_note",
+              "summary": "Technician reported that the feed issue began around 10:14; recorded later, with no confirmed line-stop duration.",
+              "start": "2026-09-28T10:10:00+05:30",
+              "end": "2026-09-28T10:20:00+05:30",
+              "source_id": "maintenance-note-77",
+              "assertion": true
+            },
+            {
+              "id": "EV-MACH-CORR",
+              "type": "machine_interruption",
+              "summary": "Maintenance confirmed machine M12 was stopped from 10:31 to 10:49; other stations continued.",
+              "start": "2026-09-28T10:31:00+05:30",
+              "end": "2026-09-28T10:49:00+05:30",
+              "source_id": "maintenance-confirmation-78"
+            },
+            {
+              "id": "EV-QC-1",
+              "type": "qc_hold",
+              "summary": "QC placed lot L-91 on hold pending seam inspection; held units are not added to good output.",
+              "occurred_at": "2026-09-28T10:42:00+05:30",
+              "source_id": "qc-hold-l91"
+            }
+          ],
+          "metrics": [
+            {
+              "id": "planned",
+              "value": 200,
+              "unit": "good_units"
+            },
+            {
+              "id": "observed",
+              "value": 126,
+              "unit": "good_units"
+            },
+            {
+              "id": "variance",
+              "value": -74,
+              "unit": "good_units"
+            },
+            {
+              "id": "shortfall",
+              "value": 74,
+              "unit": "good_units"
+            },
+            {
+              "id": "baseline_target",
+              "value": 240,
+              "unit": "good_units"
+            },
+            {
+              "id": "blocked_minutes",
+              "value": 30,
+              "unit": "good_units"
+            }
+          ],
+          "precedents": [
+            {
+              "id": "INC-101",
+              "title": "Late fabric transfer on line S2",
+              "match_reason": "Shared terms in incident title or recorded events",
+              "differences": [
+                "Different sewing line (S2 versus S4).",
+                "Material lot, machine, and action prerequisites need separate verification."
+              ]
+            },
+            {
+              "id": "INC-107",
+              "title": "Delayed WIP transfer on line S4",
+              "match_reason": "Shared terms in incident title or recorded events",
+              "differences": [
+                "Material lot, machine, and action prerequisites need separate verification."
+              ]
+            }
+          ],
+          "missing_evidence": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ],
+          "hypotheses": [
+            {
+              "category": "material",
+              "status": "SUPPORTED",
+              "mechanism": "A recorded line block establishes lost operating time. Its share of the output shortfall is unknown.",
+              "supporting_evidence": [
+                "EV-BLOCK-1",
+                "EV-MAT-1"
+              ],
+              "contradicting_evidence": [],
+              "next_check": "Confirm whether the material event blocked this line and for how long."
+            },
+            {
+              "category": "machine",
+              "status": "PLAUSIBLE",
+              "mechanism": "This event may have affected production, but a line-level effect is not established.",
+              "supporting_evidence": [
+                "EV-MAINT-1",
+                "EV-MACH-CORR"
+              ],
+              "contradicting_evidence": [],
+              "next_check": "Confirm whether the machine event blocked this line and for how long."
+            },
+            {
+              "category": "quality",
+              "status": "PLAUSIBLE",
+              "mechanism": "This event may have affected production, but a line-level effect is not established.",
+              "supporting_evidence": [
+                "EV-QC-1"
+              ],
+              "contradicting_evidence": [],
+              "next_check": "Confirm whether the quality event blocked this line and for how long."
+            }
+          ]
+        },
+        "packet_digest": "e422a700f4bba9280400d9e5cadd186039fcf1af9bc488c28e95d6eb159841ca",
+        "usage": {
+          "prompt_tokens": 1271,
+          "output_tokens": 375
+        },
+        "attempts": 1
+      },
+      "elapsed_seconds": 34.95
+    },
+    {
+      "id": "INC-101@1",
+      "packet": {
+        "incident_id": "INC-101",
+        "revision": 1,
+        "evidence": [
+          {
+            "id": "INC-101-EV",
+            "type": "material_readiness",
+            "summary": "Fabric transfer arrived at 09:28 after a warehouse queue.",
+            "occurred_at": "2026-09-10T09:30:00+05:30",
+            "source_id": "INC-101-source"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "planned",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "observed",
+            "value": 192,
+            "unit": "good_units"
+          },
+          {
+            "id": "variance",
+            "value": -48,
+            "unit": "good_units"
+          },
+          {
+            "id": "shortfall",
+            "value": 48,
+            "unit": "good_units"
+          },
+          {
+            "id": "baseline_target",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "blocked_minutes",
+            "value": 0,
+            "unit": "good_units"
+          }
+        ],
+        "precedents": [],
+        "missing_evidence": [
+          "Causal attribution requires more than chronology.",
+          "Proposals require human review and do not execute factory changes."
+        ],
+        "hypotheses": [
+          {
+            "category": "material",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "INC-101-EV"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the material event blocked this line and for how long."
+          }
+        ]
+      },
+      "result": {
+        "status": "DRAFT_NEEDS_REVIEW",
+        "draft": {
+          "claims": [
+            {
+              "text": "The fabric transfer arrived at 09:28, affecting material readiness.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The material event may have impacted production, but a line-level effect is not established.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The incident did not block production, as the blocked_minutes metric shows 0.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "Causal attribution requires more than chronology, and proposals require human review and do not execute factory changes.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": []
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "raw_draft": {
+          "claims": [
+            {
+              "text": "The fabric transfer arrived at 09:28, affecting material readiness.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": [
+                "planned",
+                "observed",
+                "variance",
+                "shortfall",
+                "baseline_target",
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "The material event may have impacted production, but a line-level effect is not established.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": [
+                "planned",
+                "observed",
+                "variance",
+                "shortfall",
+                "baseline_target",
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "The incident did not block production, as the blocked_minutes metric shows 0.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": [
+                "planned",
+                "observed",
+                "variance",
+                "shortfall",
+                "baseline_target",
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "Causal attribution requires more than chronology, and proposals require human review and do not execute factory changes.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": [
+                "planned",
+                "observed",
+                "variance",
+                "shortfall",
+                "baseline_target",
+                "blocked_minutes"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "claims": [
+            {
+              "text": "The fabric transfer arrived at 09:28, affecting material readiness.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The material event may have impacted production, but a line-level effect is not established.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The incident did not block production, as the blocked_minutes metric shows 0.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "Causal attribution requires more than chronology, and proposals require human review and do not execute factory changes.",
+              "evidence_ids": [
+                "INC-101-EV"
+              ],
+              "metric_ids": []
+            }
+          ]
+        },
+        "model": "qwen3:1.7b",
+        "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "prompt_digest": "1b2fb08e2ca01788dda0fb93c13d96a8ec859f7b65e557a3ee5bc33a5f5c88b9",
+        "packet": {
+          "incident_id": "INC-101",
+          "revision": 1,
+          "evidence": [
+            {
+              "id": "INC-101-EV",
+              "type": "material_readiness",
+              "summary": "Fabric transfer arrived at 09:28 after a warehouse queue.",
+              "occurred_at": "2026-09-10T09:30:00+05:30",
+              "source_id": "INC-101-source"
+            }
+          ],
+          "metrics": [
+            {
+              "id": "planned",
+              "value": 240,
+              "unit": "good_units"
+            },
+            {
+              "id": "observed",
+              "value": 192,
+              "unit": "good_units"
+            },
+            {
+              "id": "variance",
+              "value": -48,
+              "unit": "good_units"
+            },
+            {
+              "id": "shortfall",
+              "value": 48,
+              "unit": "good_units"
+            },
+            {
+              "id": "baseline_target",
+              "value": 240,
+              "unit": "good_units"
+            },
+            {
+              "id": "blocked_minutes",
+              "value": 0,
+              "unit": "good_units"
+            }
+          ],
+          "precedents": [],
+          "missing_evidence": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ],
+          "hypotheses": [
+            {
+              "category": "material",
+              "status": "PLAUSIBLE",
+              "mechanism": "This event may have affected production, but a line-level effect is not established.",
+              "supporting_evidence": [
+                "INC-101-EV"
+              ],
+              "contradicting_evidence": [],
+              "next_check": "Confirm whether the material event blocked this line and for how long."
+            }
+          ]
+        },
+        "packet_digest": "dfe7a49a1ccf5e568fcfa34cf520d906f8f2d0623ffe6631dbfb3be264127401",
+        "usage": {
+          "prompt_tokens": 500,
+          "output_tokens": 325
+        },
+        "attempts": 1
+      },
+      "elapsed_seconds": 29.16
+    },
+    {
+      "id": "INC-102@1",
+      "packet": {
+        "incident_id": "INC-102",
+        "revision": 1,
+        "evidence": [
+          {
+            "id": "INC-102-EV",
+            "type": "machine_interruption",
+            "summary": "Machine M08 needed a feed adjustment; line stoppage was not documented.",
+            "occurred_at": "2026-09-11T09:30:00+05:30",
+            "source_id": "INC-102-source"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "planned",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "observed",
+            "value": 218,
+            "unit": "good_units"
+          },
+          {
+            "id": "variance",
+            "value": -22,
+            "unit": "good_units"
+          },
+          {
+            "id": "shortfall",
+            "value": 22,
+            "unit": "good_units"
+          },
+          {
+            "id": "baseline_target",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "blocked_minutes",
+            "value": 0,
+            "unit": "good_units"
+          }
+        ],
+        "precedents": [],
+        "missing_evidence": [
+          "Causal attribution requires more than chronology.",
+          "Proposals require human review and do not execute factory changes."
+        ],
+        "hypotheses": [
+          {
+            "category": "machine",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "INC-102-EV"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the machine event blocked this line and for how long."
+          }
+        ]
+      },
+      "result": {
+        "status": "INVALID_DRAFT",
+        "errors": [
+          "Claim 0: numeric value lacks a matching metric"
+        ],
+        "model": "qwen3:1.7b",
+        "draft_candidate": {
+          "claims": [
+            {
+              "text": "The machine event occurred on 2026-09-11T09:30:00+05:30.",
+              "evidence_ids": [
+                "INC-102-EV"
+              ],
+              "metric_ids": [
+                "planned"
+              ]
+            },
+            {
+              "text": "The machine event was not documented.",
+              "evidence_ids": [
+                "INC-102-EV"
+              ],
+              "metric_ids": [
+                "observed"
+              ]
+            },
+            {
+              "text": "The machine event may have affected production.",
+              "evidence_ids": [
+                "INC-102-EV"
+              ],
+              "metric_ids": [
+                "variance"
+              ]
+            },
+            {
+              "text": "The machine event did not block the line.",
+              "evidence_ids": [
+                "INC-102-EV"
+              ],
+              "metric_ids": [
+                "blocked_minutes"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "prompt_digest": "5648b4ede5b5714acae8c1282e315086b1d0dfbc614595dd82cdfe4db92fa004",
+        "packet_digest": "ac9dd034c0f60f4fd35b3deb6ef6bb06c5967fc06718e414df2fdf0b0c7af604"
+      },
+      "elapsed_seconds": 53.91
+    },
+    {
+      "id": "INC-103@1",
+      "packet": {
+        "incident_id": "INC-103",
+        "revision": 1,
+        "evidence": [
+          {
+            "id": "INC-103-EV",
+            "type": "qc_hold",
+            "summary": "QC held lot L-61 for seam inspection while other lots continued.",
+            "occurred_at": "2026-09-12T09:30:00+05:30",
+            "source_id": "INC-103-source"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "planned",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "observed",
+            "value": 221,
+            "unit": "good_units"
+          },
+          {
+            "id": "variance",
+            "value": -19,
+            "unit": "good_units"
+          },
+          {
+            "id": "shortfall",
+            "value": 19,
+            "unit": "good_units"
+          },
+          {
+            "id": "baseline_target",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "blocked_minutes",
+            "value": 0,
+            "unit": "good_units"
+          }
+        ],
+        "precedents": [],
+        "missing_evidence": [
+          "Causal attribution requires more than chronology.",
+          "Proposals require human review and do not execute factory changes."
+        ],
+        "hypotheses": [
+          {
+            "category": "quality",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "INC-103-EV"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the quality event blocked this line and for how long."
+          }
+        ]
+      },
+      "result": {
+        "status": "DRAFT_NEEDS_REVIEW",
+        "draft": {
+          "claims": [
+            {
+              "text": "QC held lot L-61 for seam inspection while other lots continued.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The quality event may have affected production, but a line-level effect is not established.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The quality event blocked this line for 0 minutes.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": [
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "The quality event may have contributed to a shortfall of 19 good units.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": [
+                "shortfall"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "raw_draft": {
+          "claims": [
+            {
+              "text": "QC held lot L-61 for seam inspection while other lots continued.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The quality event may have affected production, but a line-level effect is not established.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The quality event blocked this line for 0 minutes.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": [
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "The quality event may have contributed to a shortfall of 19 good units.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": [
+                "shortfall"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "claims": [
+            {
+              "text": "QC held lot L-61 for seam inspection while other lots continued.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The quality event may have affected production, but a line-level effect is not established.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The quality event blocked this line for 0 minutes.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": [
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "The quality event may have contributed to a shortfall of 19 good units.",
+              "evidence_ids": [
+                "INC-103-EV"
+              ],
+              "metric_ids": [
+                "shortfall"
+              ]
+            }
+          ]
+        },
+        "model": "qwen3:1.7b",
+        "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "prompt_digest": "52245b96eaa5d78579373c17961c9fbd3371496fe244359ba5ce02aa0d6fa785",
+        "packet": {
+          "incident_id": "INC-103",
+          "revision": 1,
+          "evidence": [
+            {
+              "id": "INC-103-EV",
+              "type": "qc_hold",
+              "summary": "QC held lot L-61 for seam inspection while other lots continued.",
+              "occurred_at": "2026-09-12T09:30:00+05:30",
+              "source_id": "INC-103-source"
+            }
+          ],
+          "metrics": [
+            {
+              "id": "planned",
+              "value": 240,
+              "unit": "good_units"
+            },
+            {
+              "id": "observed",
+              "value": 221,
+              "unit": "good_units"
+            },
+            {
+              "id": "variance",
+              "value": -19,
+              "unit": "good_units"
+            },
+            {
+              "id": "shortfall",
+              "value": 19,
+              "unit": "good_units"
+            },
+            {
+              "id": "baseline_target",
+              "value": 240,
+              "unit": "good_units"
+            },
+            {
+              "id": "blocked_minutes",
+              "value": 0,
+              "unit": "good_units"
+            }
+          ],
+          "precedents": [],
+          "missing_evidence": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ],
+          "hypotheses": [
+            {
+              "category": "quality",
+              "status": "PLAUSIBLE",
+              "mechanism": "This event may have affected production, but a line-level effect is not established.",
+              "supporting_evidence": [
+                "INC-103-EV"
+              ],
+              "contradicting_evidence": [],
+              "next_check": "Confirm whether the quality event blocked this line and for how long."
+            }
+          ]
+        },
+        "packet_digest": "e0ae57e1714c07a802c520b7d758d024d9e2eb527a5e13d28c106bf79b0c84f6",
+        "usage": {
+          "prompt_tokens": 526,
+          "output_tokens": 227
+        },
+        "attempts": 2
+      },
+      "elapsed_seconds": 43.66
+    },
+    {
+      "id": "INC-104@1",
+      "packet": {
+        "incident_id": "INC-104",
+        "revision": 1,
+        "evidence": [
+          {
+            "id": "INC-104-EV",
+            "type": "staffing_event",
+            "summary": "Button operation had no assigned trained operator between 09:30 and 10:10.",
+            "occurred_at": "2026-09-13T09:30:00+05:30",
+            "source_id": "INC-104-source"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "planned",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "observed",
+            "value": 221,
+            "unit": "good_units"
+          },
+          {
+            "id": "variance",
+            "value": -19,
+            "unit": "good_units"
+          },
+          {
+            "id": "shortfall",
+            "value": 19,
+            "unit": "good_units"
+          },
+          {
+            "id": "baseline_target",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "blocked_minutes",
+            "value": 0,
+            "unit": "good_units"
+          }
+        ],
+        "precedents": [],
+        "missing_evidence": [
+          "Causal attribution requires more than chronology.",
+          "Proposals require human review and do not execute factory changes."
+        ],
+        "hypotheses": [
+          {
+            "category": "staffing",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "INC-104-EV"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the staffing event blocked this line and for how long."
+          }
+        ]
+      },
+      "result": {
+        "status": "INVALID_DRAFT",
+        "errors": [
+          "Claim 3: numeric value lacks a matching metric"
+        ],
+        "model": "qwen3:1.7b",
+        "draft_candidate": {
+          "claims": [
+            {
+              "text": "The staffing event occurred between 09:30 and 10:10.",
+              "evidence_ids": [
+                "INC-104-EV"
+              ],
+              "metric_ids": [
+                "planned"
+              ]
+            },
+            {
+              "text": "The staffing event may have affected production, but a line-level effect is not established.",
+              "evidence_ids": [
+                "INC-104-EV"
+              ],
+              "metric_ids": [
+                "variance"
+              ]
+            },
+            {
+              "text": "The staffing event blocked this line for 0 minutes.",
+              "evidence_ids": [
+                "INC-104-EV"
+              ],
+              "metric_ids": [
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "The observed production output was 221 good units, 19 units less than the baseline target of 240 good units.",
+              "evidence_ids": [
+                "INC-104-EV"
+              ],
+              "metric_ids": [
+                "observed",
+                "baseline_target"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "prompt_digest": "28ceb39278da8a093ae94a2cdc36d58fe71aa8d5aeb630a4251686483bc71916",
+        "packet_digest": "7dd490962f38efa5cf601a4c1c33e8225cf1b7503d2d2d539fa82fa7bc7d36c1"
+      },
+      "elapsed_seconds": 39.25
+    },
+    {
+      "id": "INC-105@1",
+      "packet": {
+        "incident_id": "INC-105",
+        "revision": 1,
+        "evidence": [
+          {
+            "id": "INC-105-EV",
+            "type": "setup_changeover",
+            "summary": "Style setup finished at 09:24 after the scheduled 09:00 start.",
+            "occurred_at": "2026-09-14T09:30:00+05:30",
+            "source_id": "INC-105-source"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "planned",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "observed",
+            "value": 206,
+            "unit": "good_units"
+          },
+          {
+            "id": "variance",
+            "value": -34,
+            "unit": "good_units"
+          },
+          {
+            "id": "shortfall",
+            "value": 34,
+            "unit": "good_units"
+          },
+          {
+            "id": "baseline_target",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "blocked_minutes",
+            "value": 0,
+            "unit": "good_units"
+          }
+        ],
+        "precedents": [],
+        "missing_evidence": [
+          "Causal attribution requires more than chronology.",
+          "Proposals require human review and do not execute factory changes."
+        ],
+        "hypotheses": [
+          {
+            "category": "changeover",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "INC-105-EV"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the changeover event blocked this line and for how long."
+          }
+        ]
+      },
+      "result": {
+        "status": "INVALID_DRAFT",
+        "errors": [
+          "Claim 0: numeric value lacks a matching metric",
+          "Claim 1: numeric value lacks a matching metric",
+          "Claim 3: numeric value lacks a matching metric"
+        ],
+        "model": "qwen3:1.7b",
+        "draft_candidate": {
+          "claims": [
+            {
+              "text": "The style setup was completed at 09:24, 30 minutes after the scheduled start time.",
+              "evidence_ids": [
+                "INC-105-EV"
+              ],
+              "metric_ids": [
+                "planned"
+              ]
+            },
+            {
+              "text": "The setup changeover event occurred at 09:30, 6 minutes after the scheduled start time.",
+              "evidence_ids": [
+                "INC-105-EV"
+              ],
+              "metric_ids": [
+                "observed"
+              ]
+            },
+            {
+              "text": "The setup changeover event did not block the line, as the blocked_minutes metric shows 0.",
+              "evidence_ids": [
+                "INC-105-EV"
+              ],
+              "metric_ids": [
+                "blocked_minutes"
+              ]
+            },
+            {
+              "text": "The observed production output was 206 good units, 34 units less than the baseline target of 240 good units.",
+              "evidence_ids": [
+                "INC-105-EV"
+              ],
+              "metric_ids": [
+                "observed",
+                "baseline_target"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "prompt_digest": "66077c45239c44ec6d9077ffe0397fa2b53b496767f9360e560632cf1a033502",
+        "packet_digest": "7b24fe07c8eda9c2adfe246700978e8c9503a6195d857c0edaee0c7243dbe156"
+      },
+      "elapsed_seconds": 43.45
+    },
+    {
+      "id": "INC-106@1",
+      "packet": {
+        "incident_id": "INC-106",
+        "revision": 1,
+        "evidence": [
+          {
+            "id": "INC-106-EV",
+            "type": "reporting_correction",
+            "summary": "An initial output upload omitted one bucket; corrected ledger shows normal production.",
+            "occurred_at": "2026-09-15T09:30:00+05:30",
+            "source_id": "INC-106-source"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "planned",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "observed",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "variance",
+            "value": 0,
+            "unit": "good_units"
+          },
+          {
+            "id": "shortfall",
+            "value": 0,
+            "unit": "good_units"
+          },
+          {
+            "id": "baseline_target",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "blocked_minutes",
+            "value": 0,
+            "unit": "good_units"
+          }
+        ],
+        "precedents": [],
+        "missing_evidence": [
+          "Causal attribution requires more than chronology.",
+          "Proposals require human review and do not execute factory changes."
+        ],
+        "hypotheses": [
+          {
+            "category": "planning_reporting",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "INC-106-EV"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the planning reporting event blocked this line and for how long."
+          }
+        ]
+      },
+      "result": {
+        "status": "INVALID_DRAFT",
+        "errors": [
+          "Claim 0: numeric value lacks a matching metric"
+        ],
+        "model": "qwen3:1.7b",
+        "draft_candidate": {
+          "claims": [
+            {
+              "text": "The incident occurred on 2026-09-15T09:30:00+05:30.",
+              "evidence_ids": [
+                "INC-106-EV"
+              ],
+              "metric_ids": [
+                "planned"
+              ]
+            },
+            {
+              "text": "The incident resulted in an omitted bucket in the initial output upload.",
+              "evidence_ids": [
+                "INC-106-EV"
+              ],
+              "metric_ids": [
+                "observed"
+              ]
+            },
+            {
+              "text": "The incident was corrected in the ledger, showing normal production.",
+              "evidence_ids": [
+                "INC-106-EV"
+              ],
+              "metric_ids": [
+                "baseline_target"
+              ]
+            },
+            {
+              "text": "The incident did not affect production metrics, as no shortfall or variance was observed.",
+              "evidence_ids": [
+                "INC-106-EV"
+              ],
+              "metric_ids": [
+                "shortfall",
+                "variance"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "prompt_digest": "2bdf78f483d64f4ed271bbd9d6bf5a1a116887b23fe984e1b1b340a947a13f17",
+        "packet_digest": "cd3a03f8ea379a975bd5ff0baab26ff270c39ef1d0a3b361561fada4e7fc615e"
+      },
+      "elapsed_seconds": 40.71
+    },
+    {
+      "id": "INC-107@1",
+      "packet": {
+        "incident_id": "INC-107",
+        "revision": 1,
+        "evidence": [
+          {
+            "id": "INC-107-EV",
+            "type": "material_readiness",
+            "summary": "Cut panels reached line S4 after the planned start.",
+            "occurred_at": "2026-09-16T09:30:00+05:30",
+            "source_id": "INC-107-source"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "planned",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "observed",
+            "value": 201,
+            "unit": "good_units"
+          },
+          {
+            "id": "variance",
+            "value": -39,
+            "unit": "good_units"
+          },
+          {
+            "id": "shortfall",
+            "value": 39,
+            "unit": "good_units"
+          },
+          {
+            "id": "baseline_target",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "blocked_minutes",
+            "value": 0,
+            "unit": "good_units"
+          }
+        ],
+        "precedents": [
+          {
+            "id": "INC-101",
+            "title": "Late fabric transfer on line S2",
+            "match_reason": "Shared terms in incident title or recorded events",
+            "differences": [
+              "Different sewing line (S2 versus S4).",
+              "Material lot, machine, and action prerequisites need separate verification."
+            ]
+          }
+        ],
+        "missing_evidence": [
+          "Causal attribution requires more than chronology.",
+          "Proposals require human review and do not execute factory changes."
+        ],
+        "hypotheses": [
+          {
+            "category": "material",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "INC-107-EV"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the material event blocked this line and for how long."
+          }
+        ]
+      },
+      "result": {
+        "status": "INVALID_DRAFT",
+        "errors": [
+          "Claim 0: reference outside pinned packet"
+        ],
+        "model": "qwen3:1.7b",
+        "draft_candidate": {
+          "claims": [
+            {
+              "text": "The planned number of good units was 240.",
+              "evidence_ids": [
+                "INC-107-EV",
+                "baseline_target"
+              ],
+              "metric_ids": [
+                "planned",
+                "baseline_target"
+              ]
+            },
+            {
+              "text": "The observed number of good units was 201.",
+              "evidence_ids": [
+                "INC-107-EV"
+              ],
+              "metric_ids": [
+                "observed"
+              ]
+            },
+            {
+              "text": "The variance in good units was -39.",
+              "evidence_ids": [
+                "INC-107-EV"
+              ],
+              "metric_ids": [
+                "variance"
+              ]
+            },
+            {
+              "text": "The shortfall in good units was 39.",
+              "evidence_ids": [
+                "INC-107-EV"
+              ],
+              "metric_ids": [
+                "shortfall"
+              ]
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "prompt_digest": "20b9ab3007e5a29bcaa5d732fbd7928e0667ac306e6b2fd628ebb5899d72eaf7",
+        "packet_digest": "9f23b15c86109bb9e534c6c32d077b15bbac2111e683b3b6ce62aadcce307006"
+      },
+      "elapsed_seconds": 39.22
+    },
+    {
+      "id": "INC-108@1",
+      "packet": {
+        "incident_id": "INC-108",
+        "revision": 1,
+        "evidence": [
+          {
+            "id": "INC-108-EV",
+            "type": "machine_interruption",
+            "summary": "Operator recorded intermittent alarm on M03; production continued.",
+            "occurred_at": "2026-09-17T09:30:00+05:30",
+            "source_id": "INC-108-source"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "planned",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "observed",
+            "value": 230,
+            "unit": "good_units"
+          },
+          {
+            "id": "variance",
+            "value": -10,
+            "unit": "good_units"
+          },
+          {
+            "id": "shortfall",
+            "value": 10,
+            "unit": "good_units"
+          },
+          {
+            "id": "baseline_target",
+            "value": 240,
+            "unit": "good_units"
+          },
+          {
+            "id": "blocked_minutes",
+            "value": 0,
+            "unit": "good_units"
+          }
+        ],
+        "precedents": [
+          {
+            "id": "INC-102",
+            "title": "Feed adjustment on line S3",
+            "match_reason": "Shared terms in incident title or recorded events",
+            "differences": [
+              "Material lot, machine, and action prerequisites need separate verification."
+            ]
+          }
+        ],
+        "missing_evidence": [
+          "Causal attribution requires more than chronology.",
+          "Proposals require human review and do not execute factory changes."
+        ],
+        "hypotheses": [
+          {
+            "category": "machine",
+            "status": "PLAUSIBLE",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "supporting_evidence": [
+              "INC-108-EV"
+            ],
+            "contradicting_evidence": [],
+            "next_check": "Confirm whether the machine event blocked this line and for how long."
+          }
+        ]
+      },
+      "result": {
+        "status": "INVALID_DRAFT",
+        "errors": [
+          "Claim 0: numeric value lacks a matching metric"
+        ],
+        "model": "qwen3:1.7b",
+        "draft_candidate": {
+          "claims": [
+            {
+              "text": "The incident occurred on 2026-09-17 at 09:30:00, with an operator recording an intermittent alarm on M03.",
+              "evidence_ids": [
+                "INC-108-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The machine event may have affected production, but a line-level effect is not established.",
+              "evidence_ids": [
+                "INC-108-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "The incident's impact on production is uncertain, as causal attribution requires more than chronology.",
+              "evidence_ids": [
+                "INC-108-EV"
+              ],
+              "metric_ids": []
+            },
+            {
+              "text": "Proposals require human review and do not execute factory changes.",
+              "evidence_ids": [
+                "INC-108-EV"
+              ],
+              "metric_ids": []
+            }
+          ],
+          "limitations": [
+            "Causal attribution requires more than chronology.",
+            "Proposals require human review and do not execute factory changes."
+          ]
+        },
+        "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "prompt_digest": "ff97369162bef3de1a61b1ef5fb96782fe1d632b9edce200b72fe9d0ec839861",
+        "packet_digest": "a5b3688e2d28d05d83e38ac22ff359bf4fe8a6350d667f4578eb5ca87452ba42"
+      },
+      "elapsed_seconds": 51.36
+    }
+  ],
+  "engine_version": "incident-v1",
+  "packet_compatibility": {
+    "engine_version": "incident-v2",
+    "matched": 10,
+    "total": 10,
+    "method": "Exact JSON equality between recorded packets and freshly built incident-v2 packets for the same ten pinned revisions."
+  }
+}

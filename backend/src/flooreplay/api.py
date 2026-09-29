@@ -4,11 +4,14 @@ executions, never HTTP server errors."""
 
 from __future__ import annotations
 
+import json
 import logging
 import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from hashlib import sha256
+from pathlib import Path
 from typing import Any
 
 from fastapi import Depends, FastAPI, Request
@@ -21,9 +24,25 @@ from .config import settings
 from .db import session_scope
 from .fixtures import CATALOG, CONFIGURATIONS
 from .importing import ImportStructuralError, preview_import
+from .incident_evaluation import evaluation_report
+from .incident_import import preview_incident_import
+from .incident_jobs import enqueue_draft, job_view
+from .incident_service import (
+    analysis_evidence,
+    analysis_view,
+    create_analysis,
+    create_incident_from_source,
+    incident_detail,
+    incident_list,
+    publish_source,
+    review_proposal,
+    search_incidents,
+)
 from .models import (
     ComparisonReport,
     ExecutionConfiguration,
+    IncidentAnalysis,
+    IncidentModelJob,
     ParserCall,
     ReplayAttempt,
     ReviewCheck,
@@ -110,6 +129,54 @@ class ReviewCheckRequest(BaseModel):
     original_replay_id: str
     target_scenario_id: str
     target_scenario_revision: int
+
+
+class IncidentAnalysisRequest(BaseModel):
+    revision: int
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class IncidentReviewRequest(BaseModel):
+    idempotency_key: str = Field(min_length=8, max_length=120)
+    actor: str = Field(min_length=2, max_length=120)
+    rationale: str = Field(min_length=3, max_length=1000)
+    decision: str
+
+
+class IncidentDraftRequest(BaseModel):
+    question: str = Field(default="Summarize the incident and next checks.", min_length=3, max_length=500)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class IncidentImportRequest(BaseModel):
+    incident_id: str = Field(min_length=1, max_length=64)
+    base_revision: int = Field(ge=0)
+    cutoff: str = Field(min_length=10, max_length=64)
+    raw_text: str = Field(min_length=1, max_length=2 * 1024 * 1024)
+    profile: str = Field(min_length=1, max_length=32)
+    source_system: str = Field(min_length=1, max_length=64)
+    timezone: str = Field(min_length=1, max_length=64)
+    filename: str = Field(min_length=1, max_length=120)
+    unit: str | None = None
+
+
+class IncidentPublishRequest(IncidentImportRequest):
+    preview_digest: str
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class IncidentCreateRequest(BaseModel):
+    incident_id: str = Field(min_length=1, max_length=64)
+    title: str = Field(min_length=3, max_length=200)
+    scope: dict[str, str]
+    window: dict[str, str]
+    cutoff: str
+    raw_text: str = Field(min_length=1, max_length=2 * 1024 * 1024)
+    source_system: str = Field(min_length=1, max_length=64)
+    timezone: str = Field(min_length=1, max_length=64)
+    filename: str = Field(min_length=1, max_length=120)
+    preview_digest: str
+    idempotency_key: str = Field(min_length=8, max_length=120)
 
 
 def create_app(mode: str | None = None) -> FastAPI:
@@ -199,8 +266,8 @@ def create_app(mode: str | None = None) -> FastAPI:
             "mode": effective_mode,
             "imports_enabled": effective_mode == "local",
             "build_id": settings.build_id,
-            "live_parser_available": bool(settings.openai_api_key),
-            "parser_kind": "openai-structured" if settings.openai_api_key else "rule-baseline",
+            "live_parser_available": bool(settings.allow_paid_parser and settings.openai_api_key),
+            "parser_kind": "openai-structured" if settings.allow_paid_parser and settings.openai_api_key else "rule-baseline",
             "execution_limits": {
                 "replays_per_hour_per_client": (
                     settings.public_replays_per_hour if effective_mode == "public" else None
@@ -226,6 +293,133 @@ def create_app(mode: str | None = None) -> FastAPI:
         except Exception as exc:  # pragma: no cover - infra failure path
             raise ServiceError("DATABASE_UNAVAILABLE", str(exc), 503) from exc
         return {"status": "ready"}
+
+    @app.get("/api/v1/incidents")
+    def list_incidents() -> dict[str, Any]:
+        with session_scope() as session:
+            return {"items": incident_list(session)}
+
+    @app.get("/api/v1/evaluation-reports/incident-core-v1")
+    def incident_eval_report() -> dict[str, Any]:
+        with session_scope() as session:
+            return evaluation_report(session)
+
+    @app.get("/api/v1/incidents/search")
+    def incident_search(q: str = "") -> dict[str, Any]:
+        with session_scope() as session:
+            return {"items": search_incidents(session, q), "execution_kind": "live_lexical"}
+
+    @app.get("/api/v1/incidents/{incident_id}/saved-draft")
+    def saved_incident_draft(incident_id: str) -> dict[str, Any]:
+        if incident_id != "INC-001":
+            raise ServiceError("SAVED_DRAFT_UNKNOWN", "No saved local draft for this incident", 404)
+        path = Path(__file__).resolve().parents[2] / "evaluation" / "hero-saved-ai.json"
+        if not path.exists():
+            raise ServiceError("SAVED_DRAFT_UNKNOWN", "Saved local draft is not installed", 404)
+        saved = json.loads(path.read_text())
+        if not isinstance(saved, dict):
+            raise ServiceError("SAVED_DRAFT_INVALID", "Saved draft artifact is invalid", 503)
+        return saved
+
+    @app.get("/api/v1/incidents/{incident_id}/revisions/{revision}")
+    def get_incident(incident_id: str, revision: int) -> dict[str, Any]:
+        with session_scope() as session:
+            return incident_detail(session, incident_id, revision)
+
+    @app.post("/api/v1/incidents/{incident_id}/analyses")
+    def run_incident_analysis(incident_id: str, body: IncidentAnalysisRequest, _limits: None = Depends(limit_public_execution)) -> dict[str, Any]:
+        with session_scope() as session:
+            analysis = create_analysis(session, incident_id, body.revision, body.idempotency_key)
+            return analysis_view(session, analysis)
+
+    @app.get("/api/v1/analyses/{analysis_id}")
+    def get_incident_analysis(analysis_id: str) -> dict[str, Any]:
+        with session_scope() as session:
+            analysis = session.get(IncidentAnalysis, analysis_id)
+            if analysis is None:
+                raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
+            return analysis_view(session, analysis)
+
+    @app.get("/api/v1/analyses/{analysis_id}/evidence/{evidence_id}")
+    def get_incident_evidence(analysis_id: str, evidence_id: str) -> dict[str, Any]:
+        with session_scope() as session:
+            analysis = session.get(IncidentAnalysis, analysis_id)
+            if analysis is None:
+                raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
+            return analysis_evidence(session, analysis, evidence_id)
+
+    @app.get("/api/v1/analyses/{analysis_id}/export")
+    def export_incident_analysis(analysis_id: str) -> dict[str, Any]:
+        with session_scope() as session:
+            analysis = session.get(IncidentAnalysis, analysis_id)
+            if analysis is None:
+                raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
+            return {"schema": "flooreplay.incident-report.v1", "report": analysis_view(session, analysis)}
+
+    if effective_mode == "local":
+        @app.post("/api/v1/incidents")
+        def create_incident(body: IncidentCreateRequest) -> dict[str, Any]:
+            with session_scope() as session:
+                return create_incident_from_source(session, **body.model_dump())
+
+        @app.post("/api/v1/incidents/imports/preview")
+        def preview_incident_source(body: IncidentImportRequest) -> dict[str, Any]:
+            try:
+                return preview_incident_import(body.raw_text.encode("utf-8"), profile=body.profile, source_system=body.source_system, timezone=body.timezone, filename=body.filename, unit=body.unit)
+            except ValueError as exc:
+                raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
+
+        @app.post("/api/v1/incidents/imports/publish")
+        def publish_incident_source(body: IncidentPublishRequest) -> dict[str, Any]:
+            with session_scope() as session:
+                return publish_source(session, **body.model_dump())
+
+        @app.post("/api/v1/analyses/{analysis_id}/drafts")
+        def queue_incident_draft(analysis_id: str, body: IncidentDraftRequest) -> dict[str, Any]:
+            with session_scope() as session:
+                analysis = session.get(IncidentAnalysis, analysis_id)
+                if analysis is None:
+                    raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
+                return job_view(enqueue_draft(session, analysis, body.idempotency_key, body.question))
+
+        @app.post("/api/v1/drafts/{job_id}/cancel")
+        def cancel_incident_draft(job_id: str) -> dict[str, Any]:
+            with session_scope() as session:
+                job = session.get(IncidentModelJob, job_id)
+                if job is None:
+                    raise ServiceError("DRAFT_UNKNOWN", "Unknown draft", 404)
+                if job.status in ("QUEUED", "RUNNING"):
+                    job.status = "CANCELLED"
+                    job.completed_at = datetime.now(UTC)
+                return job_view(job)
+
+        @app.post("/api/v1/analyses/{analysis_id}/proposals/{proposal_id}/submit")
+        def submit_incident_proposal(analysis_id: str, proposal_id: str, body: IncidentReviewRequest) -> dict[str, Any]:
+            with session_scope() as session:
+                analysis = session.get(IncidentAnalysis, analysis_id)
+                if analysis is None:
+                    raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
+                review = review_proposal(session, analysis, proposal_id, "PENDING_REVIEW", body.actor, body.rationale, body.idempotency_key)
+                return {"id": review.id, "state": review.state, "analysis_id": review.analysis_id, "proposal_id": review.proposal_id}
+
+        @app.post("/api/v1/analyses/{analysis_id}/proposals/{proposal_id}/review")
+        def decide_incident_proposal(analysis_id: str, proposal_id: str, body: IncidentReviewRequest) -> dict[str, Any]:
+            if body.decision not in ("APPROVED", "REJECTED"):
+                raise ServiceError("REVIEW_DECISION", "Decision must be APPROVED or REJECTED", 422)
+            with session_scope() as session:
+                analysis = session.get(IncidentAnalysis, analysis_id)
+                if analysis is None:
+                    raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
+                review = review_proposal(session, analysis, proposal_id, body.decision, body.actor, body.rationale, body.idempotency_key)
+                return {"id": review.id, "state": review.state, "analysis_id": review.analysis_id, "proposal_id": review.proposal_id}
+
+    @app.get("/api/v1/drafts/{job_id}")
+    def get_incident_draft(job_id: str) -> dict[str, Any]:
+        with session_scope() as session:
+            job = session.get(IncidentModelJob, job_id)
+            if job is None:
+                raise ServiceError("DRAFT_UNKNOWN", "Unknown draft", 404)
+            return job_view(job)
 
     @app.get("/api/v1/scenarios")
     def list_scenarios() -> dict[str, Any]:
@@ -447,7 +641,7 @@ def create_app(mode: str | None = None) -> FastAPI:
 
         @app.post("/api/v1/notes/parse")
         def parse_note(body: NoteParseRequest) -> dict[str, Any]:
-            parser = get_parser(settings.openai_api_key or None)
+            parser = get_parser(settings.openai_api_key if settings.allow_paid_parser else None)
             draft = parser.parse(body.text, CATALOG)
             resolution = resolve_draft(draft, CATALOG)
             with session_scope() as session:
@@ -598,6 +792,7 @@ def create_app(mode: str | None = None) -> FastAPI:
             "manifest_digest": attempt.manifest_digest,
             "created_at": attempt.created_at.isoformat(),
             "completed_at": attempt.completed_at.isoformat() if attempt.completed_at else None,
+            "elapsed_ms": attempt.elapsed_ms,
             "execution_kind": "live",  # this endpoint always reports a persisted attempt
         }
 

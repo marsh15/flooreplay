@@ -33,7 +33,6 @@ _SORTED_COLLECTION_HINTS = {
     "ranking_factors",
     "candidate_exclusions",
     "issue_codes",
-    "ranked_candidates",
     "excluded_operators",
     "required_issue_codes",
     "required_failed_constraints",
@@ -83,3 +82,24 @@ def canonical_json(value: Any) -> str:
 
 def digest(value: Any) -> str:
     return "sha256:" + hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
+
+
+_INCIDENT_INSTANT_KEYS = {"cutoff", "available_at", "occurred_at", "start", "end"}
+
+
+def incident_digest(value: Any) -> str:
+    """Incident schema digest: normalize instants, preserve timeline/rank order."""
+    def normalize(item: Any, key: str | None = None) -> Any:
+        if isinstance(item, Mapping):
+            return {str(k): normalize(v, str(k)) for k, v in sorted(item.items())}
+        if isinstance(item, (list, tuple)):
+            return [normalize(v) for v in item]
+        if isinstance(item, str) and key in _INCIDENT_INSTANT_KEYS:
+            moment = datetime.fromisoformat(item.replace("Z", "+00:00"))
+            if moment.tzinfo is None:
+                raise ValueError("incident timestamps must be timezone aware")
+            return moment.astimezone(UTC).isoformat().replace("+00:00", "Z")
+        return item
+
+    encoded = json.dumps(normalize(value), sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+    return "sha256:" + hashlib.sha256(encoded.encode("utf-8")).hexdigest()

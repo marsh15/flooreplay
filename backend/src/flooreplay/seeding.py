@@ -7,6 +7,7 @@ must create a new artifact, never rewrite a published one.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import select
@@ -14,7 +15,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
 from .domain.evaluation import Expectation
-from .domain.hashing import digest
+from .domain.hashing import digest, incident_digest
 from .domain.types import ConstraintCode, DomainOutcome, Snapshot
 from .fixtures import (
     CATALOG,
@@ -25,10 +26,13 @@ from .fixtures import (
     review_stale_context,
 )
 from .fixtures_suite import SUITE_ID, suite_cases
+from .incident_engine import incident_evidence_card
+from .incident_fixtures import incident_fixtures
 from .models import (
     CatalogRevision,
     ExecutionConfiguration,
     ExpectationRevision,
+    IncidentRevision,
     ScenarioRevision,
     SourceSnapshot,
     SuiteRevision,
@@ -293,6 +297,25 @@ def seed(session: Session) -> dict[str, int]:
         raise RuntimeError(
             f"Suite {SUITE_ID} membership changed after publication; publish a new suite revision."
         )
+
+    for item in incident_fixtures():
+        key = (item["id"], item["revision"])
+        content_digest = incident_digest(item)
+        existing_incident = session.get(IncidentRevision, key)
+        if existing_incident is None:
+            session.add(IncidentRevision(
+                incident_id=item["id"], revision=item["revision"], title=item["title"],
+                line_id=item["scope"]["line_id"], cutoff=datetime.fromisoformat(item["cutoff"]),
+                window_start=datetime.fromisoformat(item["window"]["start"]),
+                window_end=datetime.fromisoformat(item["window"]["end"]),
+                payload=item, content_digest=content_digest,
+                evidence_card=incident_evidence_card(item),
+            ))
+            counts["incidents"] = counts.get("incidents", 0) + 1
+        elif existing_incident.content_digest not in {content_digest, digest(item)}:
+            raise RuntimeError(f"Incident {key} changed after publication; create a new revision")
+        elif not existing_incident.evidence_card:
+            existing_incident.evidence_card = incident_evidence_card(item)
 
     session.commit()
     return counts

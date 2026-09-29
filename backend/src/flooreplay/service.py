@@ -9,6 +9,7 @@ not an in-memory dictionary.
 from __future__ import annotations
 
 import time
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import select
@@ -158,6 +159,7 @@ def execute_replay(
     )
     session.add(attempt)
     session.commit()  # the attempt exists before execution; restarts can mark it INTERRUPTED
+    started = time.monotonic()
 
     try:
         ctx = _load_context(session, scenario)
@@ -195,11 +197,14 @@ def execute_replay(
             scenario, configuration, catalog_row, snapshot_rows, expectation  # type: ignore[arg-type]
         )
         attempt.lifecycle = "COMPLETED"
-        attempt.completed_at = attempt.created_at
+        attempt.completed_at = datetime.now(UTC)
+        attempt.elapsed_ms = round((time.monotonic() - started) * 1000)
         session.commit()
     except EngineError as exc:
         attempt.lifecycle = "ERRORED"
         attempt.result = {"execution_error": {"code": exc.code, "message": str(exc)}}
+        attempt.completed_at = datetime.now(UTC)
+        attempt.elapsed_ms = round((time.monotonic() - started) * 1000)
         session.commit()
         raise ServiceError(exc.code, str(exc), 500) from exc
     return attempt

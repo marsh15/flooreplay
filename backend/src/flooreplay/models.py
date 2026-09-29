@@ -115,6 +115,7 @@ class ReplayAttempt(Base):
         DateTime(timezone=True), default=lambda: datetime.now(tz=UTC)
     )
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    elapsed_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class ImportAudit(Base):
@@ -214,3 +215,80 @@ class ReviewCheck(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(tz=UTC)
     )
+
+
+class IncidentRevision(Base):
+    __tablename__ = "incident_revisions"
+
+    incident_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(Text)
+    line_id: Mapped[str] = mapped_column(String(64), index=True)
+    cutoff: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    window_start: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    window_end: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_digest: Mapped[str] = mapped_column(String(80))
+    evidence_card: Mapped[str] = mapped_column(Text, default="")
+
+
+class IncidentAnalysis(Base):
+    __tablename__ = "incident_analyses"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
+    idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
+    incident_id: Mapped[str] = mapped_column(String(64), index=True)
+    revision: Mapped[int] = mapped_column(Integer)
+    manifest_digest: Mapped[str] = mapped_column(String(80))
+    report: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    execution_kind: Mapped[str] = mapped_column(String(32), default="live_deterministic")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(tz=UTC))
+    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class IncidentReview(Base):
+    __tablename__ = "incident_reviews"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
+    idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
+    analysis_id: Mapped[str] = mapped_column(String(64), index=True)
+    proposal_id: Mapped[str] = mapped_column(String(64))
+    state: Mapped[str] = mapped_column(String(32))
+    actor: Mapped[str] = mapped_column(String(120))
+    rationale: Mapped[str] = mapped_column(Text)
+    proposal_digest: Mapped[str] = mapped_column(String(80))
+    analysis_digest: Mapped[str] = mapped_column(String(80))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(tz=UTC))
+
+
+class IncidentModelJob(Base):
+    __tablename__ = "incident_model_jobs"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
+    idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
+    analysis_id: Mapped[str] = mapped_column(String(64), index=True)
+    question: Mapped[str] = mapped_column(Text)
+    packet: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    owner: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    lease_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    result: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(tz=UTC))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class IncidentSourceArtifact(Base):
+    __tablename__ = "incident_source_artifacts"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
+    idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
+    incident_id: Mapped[str] = mapped_column(String(64), index=True)
+    revision: Mapped[int] = mapped_column(Integer)
+    profile: Mapped[str] = mapped_column(String(32))
+    source_system: Mapped[str] = mapped_column(String(64))
+    filename: Mapped[str] = mapped_column(String(120))
+    raw_digest: Mapped[str] = mapped_column(String(80))
+    raw_bytes: Mapped[bytes] = mapped_column(LargeBinary)
+    preview: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(tz=UTC))
