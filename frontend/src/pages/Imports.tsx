@@ -157,7 +157,7 @@ export function ImportsPage() {
       api.forkScenario(input.scenarioId, input.revision, published!.snapshot_id),
     onSuccess: (fork) => {
       queryClient.invalidateQueries({ queryKey: ['scenarios'] })
-      navigate(`/workbench?scenario=${fork.scenario_id}&revision=${fork.revision}`)
+      navigate(`/coverage/workbench?scenario=${fork.scenario_id}&revision=${fork.revision}`)
     },
     onError: (error: Error) => setForkError(error.message),
   })

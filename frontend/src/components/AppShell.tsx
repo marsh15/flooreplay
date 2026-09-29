@@ -9,11 +9,9 @@ import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const NAV = [
-  { to: '/', label: 'Scenario library' },
-  { to: '/workbench', label: 'Replay workbench' },
-  { to: '/comparison', label: 'Comparison' },
-  { to: '/notes', label: 'Floor notes', localOnly: true },
-  { to: '/imports', label: 'Imports', localOnly: true },
+  { to: '/', label: 'Incidents' },
+  { to: '/evaluation', label: 'Evaluation lab' },
+  { to: '/coverage', label: 'Coverage archive' },
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -23,7 +21,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     queryFn: api.capabilities,
     staleTime: 60_000,
   })
-  const importsEnabled = capabilities.data?.imports_enabled === true
   return (
     <div className="min-h-[100dvh] bg-zinc-50">
       <header className="border-b border-zinc-200 bg-white">
@@ -31,13 +28,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Link to="/" className="flex items-baseline gap-2 focus-visible:outline-2 focus-visible:outline-offset-4">
             <span className="text-sm font-semibold tracking-tight">FloorReplay</span>
             <span className="hidden text-xs text-zinc-500 sm:inline">
-              Kaveri Garments Unit 3 · synthetic data
+              Synthetic manufacturing data
             </span>
           </Link>
-          <nav className="ml-auto flex gap-1" aria-label="Primary">
+          <nav className="ml-auto flex flex-wrap gap-1" aria-label="Primary">
             {NAV.map((item) => {
-              if (item.localOnly && !importsEnabled) return null
-              const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to)
+              const active = item.to === '/' ? pathname === '/' || pathname.startsWith('/incidents/') : pathname === item.to || pathname.startsWith(`${item.to}/`)
               return (
                 <Link
                   key={item.to}

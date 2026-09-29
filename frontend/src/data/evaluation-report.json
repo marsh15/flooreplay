@@ -1,0 +1,366 @@
+{
+  "id": "incident-core-v1",
+  "dataset_revision": "authored-synthetic-10-v1",
+  "label_revision": "observable-labels-v1",
+  "configuration": "deterministic-v2+postgres-visible-card",
+  "execution_kind": "saved_evaluation",
+  "case_count": 10,
+  "metrics": {
+    "numeric_correctness": {
+      "passed": 10,
+      "total": 10
+    },
+    "observable_category_coverage": {
+      "passed": 10,
+      "total": 10
+    },
+    "negative_case_qualification": {
+      "passed": 1,
+      "total": 1
+    },
+    "retrieval_hit_at_5": {
+      "passed": 3,
+      "total": 3
+    },
+    "retrieval_recall_at_5": {
+      "passed": 6,
+      "total": 6
+    },
+    "ai_evidence_precision": {
+      "passed": 8,
+      "total": 16
+    },
+    "local_draft_validity": {
+      "passed": 4,
+      "total": 10
+    }
+  },
+  "model_evaluation": {
+    "model": "qwen3:1.7b",
+    "engine_version": "incident-v1",
+    "attempted": 10,
+    "packet_compatibility": {
+      "engine_version": "incident-v2",
+      "matched": 10,
+      "total": 10,
+      "method": "Exact JSON equality between recorded packets and freshly built incident-v2 packets for the same ten pinned revisions."
+    },
+    "valid_drafts": 4,
+    "reviewed_claims": 16,
+    "supported_claims": 8,
+    "latency_seconds": {
+      "p50": 39.98,
+      "p95": 53.91
+    },
+    "hardware": {
+      "machine": "arm64",
+      "system": "Darwin",
+      "memory_gib": 8.0
+    },
+    "external_api_expenditure_inr": 0,
+    "review_rubric": "A claim is supported only if its cited source or calculated metric directly supports its wording. Source assertions must be attributed; absence of a line-block record cannot prove no block; qualified hypotheses may say may, but not imply measured causal impact. Citation membership alone does not count.",
+    "failed_cases": [
+      {
+        "id": "INC-102@1",
+        "errors": [
+          "Claim 0: numeric value lacks a matching metric"
+        ]
+      },
+      {
+        "id": "INC-104@1",
+        "errors": [
+          "Claim 3: numeric value lacks a matching metric"
+        ]
+      },
+      {
+        "id": "INC-105@1",
+        "errors": [
+          "Claim 0: numeric value lacks a matching metric",
+          "Claim 1: numeric value lacks a matching metric",
+          "Claim 3: numeric value lacks a matching metric"
+        ]
+      },
+      {
+        "id": "INC-106@1",
+        "errors": [
+          "Claim 0: numeric value lacks a matching metric"
+        ]
+      },
+      {
+        "id": "INC-107@1",
+        "errors": [
+          "Claim 0: reference outside pinned packet"
+        ]
+      },
+      {
+        "id": "INC-108@1",
+        "errors": [
+          "Claim 0: numeric value lacks a matching metric"
+        ]
+      }
+    ]
+  },
+  "baseline_comparison": {
+    "label_revision": "retrieval-observable-v1",
+    "baseline": {
+      "configuration": "postgres-title-only",
+      "hit_at_5": {
+        "passed": 2,
+        "total": 3
+      },
+      "recall_at_5": {
+        "passed": 3,
+        "total": 6
+      }
+    },
+    "candidate": {
+      "configuration": "postgres-visible-evidence-card",
+      "hit_at_5": {
+        "passed": 3,
+        "total": 3
+      },
+      "recall_at_5": {
+        "passed": 6,
+        "total": 6
+      }
+    },
+    "failed_baseline_queries": [
+      "material"
+    ],
+    "failed_candidate_queries": []
+  },
+  "model": "qwen3:1.7b",
+  "hardware": {
+    "machine": "arm64",
+    "system": "Darwin",
+    "memory_gib": 8.0
+  },
+  "runtime": {
+    "deterministic": "live",
+    "local_model": "saved_run",
+    "latency_seconds": {
+      "p50": 39.98,
+      "p95": 53.91
+    }
+  },
+  "retrieval_cases": [
+    {
+      "query": "material",
+      "relevant": [
+        "INC-101",
+        "INC-107"
+      ],
+      "retrieved": [
+        "INC-101",
+        "INC-107"
+      ],
+      "hits": [
+        "INC-101",
+        "INC-107"
+      ],
+      "title_only_retrieved": [],
+      "title_only_hits": []
+    },
+    {
+      "query": "machine",
+      "relevant": [
+        "INC-102",
+        "INC-108"
+      ],
+      "retrieved": [
+        "INC-102",
+        "INC-108"
+      ],
+      "hits": [
+        "INC-102",
+        "INC-108"
+      ],
+      "title_only_retrieved": [
+        "INC-108"
+      ],
+      "title_only_hits": [
+        "INC-108"
+      ]
+    },
+    {
+      "query": "qc",
+      "relevant": [
+        "INC-103",
+        "INC-109"
+      ],
+      "retrieved": [
+        "INC-103",
+        "INC-109"
+      ],
+      "hits": [
+        "INC-103",
+        "INC-109"
+      ],
+      "title_only_retrieved": [
+        "INC-103",
+        "INC-109"
+      ],
+      "title_only_hits": [
+        "INC-103",
+        "INC-109"
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "incident_id": "INC-101",
+      "expected_category": "material",
+      "observed_categories": [
+        "material"
+      ],
+      "expected_shortfall": 48,
+      "actual_shortfall": 48,
+      "numeric_pass": true,
+      "category_pass": true
+    },
+    {
+      "incident_id": "INC-102",
+      "expected_category": "machine",
+      "observed_categories": [
+        "machine"
+      ],
+      "expected_shortfall": 22,
+      "actual_shortfall": 22,
+      "numeric_pass": true,
+      "category_pass": true
+    },
+    {
+      "incident_id": "INC-103",
+      "expected_category": "quality",
+      "observed_categories": [
+        "quality"
+      ],
+      "expected_shortfall": 19,
+      "actual_shortfall": 19,
+      "numeric_pass": true,
+      "category_pass": true
+    },
+    {
+      "incident_id": "INC-104",
+      "expected_category": "staffing",
+      "observed_categories": [
+        "staffing"
+      ],
+      "expected_shortfall": 19,
+      "actual_shortfall": 19,
+      "numeric_pass": true,
+      "category_pass": true
+    },
+    {
+      "incident_id": "INC-105",
+      "expected_category": "changeover",
+      "observed_categories": [
+        "changeover"
+      ],
+      "expected_shortfall": 34,
+      "actual_shortfall": 34,
+      "numeric_pass": true,
+      "category_pass": true
+    },
+    {
+      "incident_id": "INC-106",
+      "expected_category": "planning_reporting",
+      "observed_categories": [
+        "planning_reporting"
+      ],
+      "expected_shortfall": 0,
+      "actual_shortfall": 0,
+      "numeric_pass": true,
+      "category_pass": true
+    },
+    {
+      "incident_id": "INC-107",
+      "expected_category": "material",
+      "observed_categories": [
+        "material"
+      ],
+      "expected_shortfall": 39,
+      "actual_shortfall": 39,
+      "numeric_pass": true,
+      "category_pass": true
+    },
+    {
+      "incident_id": "INC-108",
+      "expected_category": "machine",
+      "observed_categories": [
+        "machine"
+      ],
+      "expected_shortfall": 10,
+      "actual_shortfall": 10,
+      "numeric_pass": true,
+      "category_pass": true
+    },
+    {
+      "incident_id": "INC-109",
+      "expected_category": "quality",
+      "observed_categories": [
+        "quality"
+      ],
+      "expected_shortfall": 16,
+      "actual_shortfall": 16,
+      "numeric_pass": true,
+      "category_pass": true
+    },
+    {
+      "incident_id": "INC-110",
+      "expected_category": null,
+      "observed_categories": [],
+      "expected_shortfall": 0,
+      "actual_shortfall": 0,
+      "numeric_pass": true,
+      "category_pass": true
+    }
+  ],
+  "failures": [
+    {
+      "case": "model:INC-102@1",
+      "reason": [
+        "Claim 0: numeric value lacks a matching metric"
+      ]
+    },
+    {
+      "case": "model:INC-104@1",
+      "reason": [
+        "Claim 3: numeric value lacks a matching metric"
+      ]
+    },
+    {
+      "case": "model:INC-105@1",
+      "reason": [
+        "Claim 0: numeric value lacks a matching metric",
+        "Claim 1: numeric value lacks a matching metric",
+        "Claim 3: numeric value lacks a matching metric"
+      ]
+    },
+    {
+      "case": "model:INC-106@1",
+      "reason": [
+        "Claim 0: numeric value lacks a matching metric"
+      ]
+    },
+    {
+      "case": "model:INC-107@1",
+      "reason": [
+        "Claim 0: reference outside pinned packet"
+      ]
+    },
+    {
+      "case": "model:INC-108@1",
+      "reason": [
+        "Claim 0: numeric value lacks a matching metric"
+      ]
+    }
+  ],
+  "limitations": [
+    "Author-reviewed synthetic regression set; no factory validation.",
+    "Category coverage is not causal accuracy. Historical notes do not establish line-level impact.",
+    "Local-model quality uses ten packets and single-author claim review; see the failed model cases and reviewed-claim denominator.",
+    "The recorded local-model run used incident-v1; its ten evidence packets were checked for exact equality with incident-v2 packets after review fixes.",
+    "Ten cases and three retrieval queries are too small for generalization."
+  ]
+}

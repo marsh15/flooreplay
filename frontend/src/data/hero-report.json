@@ -1,0 +1,440 @@
+{
+  "id": "8aa40a8e-0d20-419d-82ed-086de73417d7",
+  "incident_id": "INC-001",
+  "revision": 2,
+  "cutoff": "2026-09-28T11:30:00+05:30",
+  "manifest_digest": "sha256:8d9f1194db130a16fbbe04bb6756c5b32371a8ed8073f1735ccd50d2bb74d8b6",
+  "execution_kind": "saved_deterministic",
+  "created_at": "2026-09-29T02:35:15.739039+00:00",
+  "completed_at": "2026-09-29T02:35:15.739039+00:00",
+  "stale": false,
+  "reviews": [],
+  "metrics": {
+    "status": "COMPLETE",
+    "planned": 200,
+    "observed": 126,
+    "variance": -74,
+    "shortfall": 74,
+    "unit": "good_units",
+    "formula": "variance = observed - planned; shortfall = max(0, planned - observed)",
+    "inputs": [
+      {
+        "start": "2026-09-28T09:00:00+05:30",
+        "end": "2026-09-28T09:15:00+05:30",
+        "plan": {
+          "id": "plan-0",
+          "quantity": 20
+        },
+        "output": {
+          "id": "out-0",
+          "quantity": 0
+        }
+      },
+      {
+        "start": "2026-09-28T09:15:00+05:30",
+        "end": "2026-09-28T09:30:00+05:30",
+        "plan": {
+          "id": "plan-1",
+          "quantity": 20
+        },
+        "output": {
+          "id": "out-1",
+          "quantity": 0
+        }
+      },
+      {
+        "start": "2026-09-28T09:30:00+05:30",
+        "end": "2026-09-28T09:45:00+05:30",
+        "plan": {
+          "id": "plan-2",
+          "quantity": 20
+        },
+        "output": {
+          "id": "out-2",
+          "quantity": 8
+        }
+      },
+      {
+        "start": "2026-09-28T09:45:00+05:30",
+        "end": "2026-09-28T10:00:00+05:30",
+        "plan": {
+          "id": "plan-3",
+          "quantity": 20
+        },
+        "output": {
+          "id": "out-3",
+          "quantity": 17
+        }
+      },
+      {
+        "start": "2026-09-28T10:00:00+05:30",
+        "end": "2026-09-28T10:15:00+05:30",
+        "plan": {
+          "id": "plan-4",
+          "quantity": 20
+        },
+        "output": {
+          "id": "out-4",
+          "quantity": 20
+        }
+      },
+      {
+        "start": "2026-09-28T10:15:00+05:30",
+        "end": "2026-09-28T10:30:00+05:30",
+        "plan": {
+          "id": "plan-5",
+          "quantity": 20
+        },
+        "output": {
+          "id": "out-5",
+          "quantity": 20
+        }
+      },
+      {
+        "start": "2026-09-28T10:30:00+05:30",
+        "end": "2026-09-28T10:45:00+05:30",
+        "plan": {
+          "id": "plan-6",
+          "quantity": 20
+        },
+        "output": {
+          "id": "out-6",
+          "quantity": 12
+        }
+      },
+      {
+        "start": "2026-09-28T10:45:00+05:30",
+        "end": "2026-09-28T11:00:00+05:30",
+        "plan": {
+          "id": "plan-7",
+          "quantity": 20
+        },
+        "output": {
+          "id": "out-7",
+          "quantity": 10
+        }
+      },
+      {
+        "start": "2026-09-28T11:00:00+05:30",
+        "end": "2026-09-28T11:15:00+05:30",
+        "plan": {
+          "id": "plan-8",
+          "quantity": 20
+        },
+        "output": {
+          "id": "out-8",
+          "quantity": 19
+        }
+      },
+      {
+        "start": "2026-09-28T11:15:00+05:30",
+        "end": "2026-09-28T11:30:00+05:30",
+        "plan": {
+          "id": "plan-9",
+          "quantity": 20
+        },
+        "output": {
+          "id": "out-9",
+          "quantity": 20
+        }
+      }
+    ],
+    "matched_buckets": [
+      "plan-0",
+      "plan-1",
+      "plan-2",
+      "plan-3",
+      "plan-4",
+      "plan-5",
+      "plan-6",
+      "plan-7",
+      "plan-8",
+      "plan-9"
+    ],
+    "missing_buckets": [],
+    "missing_plan_buckets": [],
+    "unfinished_buckets": [],
+    "baseline_target": 240,
+    "blocked_minutes": 30,
+    "block_segments": [
+      {
+        "start": "2026-09-28T09:00:00+05:30",
+        "end": "2026-09-28T09:30:00+05:30",
+        "evidence": [
+          "EV-BLOCK-1"
+        ]
+      }
+    ],
+    "target_pressure": {
+      "remaining_target": 114,
+      "remaining_working_minutes": 30,
+      "required_units_per_hour": 228.0,
+      "baseline_units_per_hour": 80.0,
+      "target_met": false,
+      "assumptions": [
+        "Remaining scheduled time runs through the investigation window end."
+      ]
+    }
+  },
+  "timeline": [
+    {
+      "id": "EV-BLOCK-1",
+      "end": "2026-09-28T09:30:00+05:30",
+      "lane": "production",
+      "type": "line_block",
+      "start": "2026-09-28T09:00:00+05:30",
+      "summary": "Supervisor recorded the line waiting for fabric from 09:00 to 09:30.",
+      "assertion": true,
+      "source_id": "shift-log-44",
+      "available_at": "2026-09-28T09:40:00+05:30",
+      "line_blocking": true,
+      "linked_categories": [
+        "material"
+      ]
+    },
+    {
+      "id": "EV-START-1",
+      "lane": "production",
+      "type": "line_start",
+      "summary": "First final good units recorded in the 09:30 bucket.",
+      "source_id": "output-ledger-28",
+      "occurred_at": "2026-09-28T09:30:00+05:30",
+      "available_at": "2026-09-28T09:45:00+05:30"
+    },
+    {
+      "id": "EV-MAT-1",
+      "lane": "materials",
+      "type": "material_readiness",
+      "summary": "Fabric lot F-218 reached the line at 09:32, after the scheduled start.",
+      "source_id": "material-transfer-218",
+      "occurred_at": "2026-09-28T09:32:00+05:30",
+      "available_at": "2026-09-28T09:38:00+05:30"
+    },
+    {
+      "id": "EV-MAINT-1",
+      "end": "2026-09-28T10:20:00+05:30",
+      "lane": "machines",
+      "type": "maintenance_note",
+      "start": "2026-09-28T10:10:00+05:30",
+      "summary": "Technician reported that the feed issue began around 10:14; recorded later, with no confirmed line-stop duration.",
+      "assertion": true,
+      "source_id": "maintenance-note-77",
+      "available_at": "2026-09-28T11:20:00+05:30"
+    },
+    {
+      "id": "EV-MACH-CORR",
+      "end": "2026-09-28T10:49:00+05:30",
+      "lane": "machines",
+      "type": "machine_interruption",
+      "start": "2026-09-28T10:31:00+05:30",
+      "summary": "Maintenance confirmed machine M12 was stopped from 10:31 to 10:49; other stations continued.",
+      "source_id": "maintenance-confirmation-78",
+      "available_at": "2026-09-28T11:22:00+05:30",
+      "supersedes_id": "EV-MACH-1"
+    },
+    {
+      "id": "EV-QC-1",
+      "lane": "quality",
+      "type": "qc_hold",
+      "summary": "QC placed lot L-91 on hold pending seam inspection; held units are not added to good output.",
+      "source_id": "qc-hold-l91",
+      "occurred_at": "2026-09-28T10:42:00+05:30",
+      "available_at": "2026-09-28T10:50:00+05:30"
+    }
+  ],
+  "hypotheses": [
+    {
+      "category": "material",
+      "status": "SUPPORTED",
+      "mechanism": "A recorded line block establishes lost operating time. Its share of the output shortfall is unknown.",
+      "supporting_evidence": [
+        "EV-BLOCK-1",
+        "EV-MAT-1"
+      ],
+      "contradicting_evidence": [],
+      "next_check": "Confirm whether the material event blocked this line and for how long."
+    },
+    {
+      "category": "machine",
+      "status": "PLAUSIBLE",
+      "mechanism": "This event may have affected production, but a line-level effect is not established.",
+      "supporting_evidence": [
+        "EV-MAINT-1",
+        "EV-MACH-CORR"
+      ],
+      "contradicting_evidence": [],
+      "next_check": "Confirm whether the machine event blocked this line and for how long."
+    },
+    {
+      "category": "quality",
+      "status": "PLAUSIBLE",
+      "mechanism": "This event may have affected production, but a line-level effect is not established.",
+      "supporting_evidence": [
+        "EV-QC-1"
+      ],
+      "contradicting_evidence": [],
+      "next_check": "Confirm whether the quality event blocked this line and for how long."
+    }
+  ],
+  "capabilities": {
+    "production": {
+      "status": "COMPLETE",
+      "reasons": []
+    },
+    "timeline": {
+      "status": "COMPLETE",
+      "reasons": []
+    },
+    "hypotheses": {
+      "status": "PARTIAL",
+      "reasons": [
+        "Causal attribution requires more than chronology."
+      ]
+    },
+    "actions": {
+      "status": "PARTIAL",
+      "reasons": [
+        "Proposals require human review and do not execute factory changes."
+      ]
+    }
+  },
+  "proposals": [
+    {
+      "id": "verify-material",
+      "type": "verify_material_availability",
+      "owner_role": "Production lead",
+      "supporting_evidence": [
+        "EV-BLOCK-1",
+        "EV-MAT-1"
+      ],
+      "preconditions": [
+        "Review the cited evidence and current incident revision."
+      ],
+      "missing_information": [
+        "Confirm whether the material event blocked this line and for how long."
+      ],
+      "purpose": "Clarify the blocker before choosing a recovery response.",
+      "state": "DRAFT"
+    },
+    {
+      "id": "verify-machine",
+      "type": "request_maintenance_status",
+      "owner_role": "Maintenance lead",
+      "supporting_evidence": [
+        "EV-MAINT-1",
+        "EV-MACH-CORR"
+      ],
+      "preconditions": [
+        "Review the cited evidence and current incident revision."
+      ],
+      "missing_information": [
+        "Confirm whether the machine event blocked this line and for how long."
+      ],
+      "purpose": "Clarify the blocker before choosing a recovery response.",
+      "state": "DRAFT"
+    },
+    {
+      "id": "verify-quality",
+      "type": "request_qc_disposition",
+      "owner_role": "Quality reviewer",
+      "supporting_evidence": [
+        "EV-QC-1"
+      ],
+      "preconditions": [
+        "Review the cited evidence and current incident revision."
+      ],
+      "missing_information": [
+        "Confirm whether the quality event blocked this line and for how long."
+      ],
+      "purpose": "Clarify the blocker before choosing a recovery response.",
+      "state": "DRAFT"
+    }
+  ],
+  "summary": "Recorded good output is 126 good_units against 200 planned; the observed shortfall is 74 good_units. 30 minutes of explicit line blocking are recorded. Event timing alone does not establish how much of the shortfall each event caused.",
+  "engine_version": "incident-v2",
+  "corpus_release": {
+    "version": "lexical-v2",
+    "items": [
+      {
+        "id": "INC-101",
+        "revision": 1,
+        "digest": "sha256:0ef05abcbcbf9e478e74beb70a4425bc47215fefc764cd08651e124de3fa60c1"
+      },
+      {
+        "id": "INC-102",
+        "revision": 1,
+        "digest": "sha256:0212b58c8ada419e05c4502bc41d762f746e7dafa663ecdb5ec51e807685993e"
+      },
+      {
+        "id": "INC-103",
+        "revision": 1,
+        "digest": "sha256:14ecdc2337a461495267473fe47de5ce87f314c30dadbea94d6ca136bb99c18d"
+      },
+      {
+        "id": "INC-104",
+        "revision": 1,
+        "digest": "sha256:32eb2ff283f27d469500e8214000f1c5bb09367873266512eb78a24dad542e3d"
+      },
+      {
+        "id": "INC-105",
+        "revision": 1,
+        "digest": "sha256:d9e3b7aa512c10e2379c455db5e2e8071ecb81e16f74598a9fa468657409bab3"
+      },
+      {
+        "id": "INC-106",
+        "revision": 1,
+        "digest": "sha256:6ae2d73b939bc66243d6186e1449a5ca261a8f3276bffaef12bba31d858d373b"
+      },
+      {
+        "id": "INC-107",
+        "revision": 1,
+        "digest": "sha256:281c50eaa1dc5a8d2b12f122d5a0de0bc1fda31c736eda8f7c559d711a57c62f"
+      },
+      {
+        "id": "INC-108",
+        "revision": 1,
+        "digest": "sha256:6f653ced13cc308688e9931c5ba52f561d58a9a8d8234ba1bf4650531aa4a48d"
+      },
+      {
+        "id": "INC-109",
+        "revision": 1,
+        "digest": "sha256:5a7e25e4432dbde48b469ff3b538e24c94bd04e9e0ea964c1265865b9f27ec8c"
+      },
+      {
+        "id": "INC-110",
+        "revision": 1,
+        "digest": "sha256:39eb16f5699352b47a3f83585e1378a0ed812955618c5a87358da5138e977868"
+      }
+    ],
+    "digest": "sha256:65f1aefab826cf42367be0d4d77c0202e78863629032de07961a0a8911452c2d"
+  },
+  "precedents": [
+    {
+      "id": "INC-101",
+      "revision": 1,
+      "title": "Late fabric transfer on line S2",
+      "line": "S2",
+      "score": 0.0608,
+      "match_reason": "Shared terms in incident title or recorded events",
+      "differences": [
+        "Different sewing line (S2 versus S4).",
+        "Material lot, machine, and action prerequisites need separate verification."
+      ],
+      "cutoff": "2026-09-10T12:00:00+05:30",
+      "execution_kind": "live_lexical"
+    },
+    {
+      "id": "INC-107",
+      "revision": 1,
+      "title": "Delayed WIP transfer on line S4",
+      "line": "S4",
+      "score": 0.0608,
+      "match_reason": "Shared terms in incident title or recorded events",
+      "differences": [
+        "Material lot, machine, and action prerequisites need separate verification."
+      ],
+      "cutoff": "2026-09-16T12:00:00+05:30",
+      "execution_kind": "live_lexical"
+    }
+  ]
+}

@@ -1,0 +1,303 @@
+{
+  "id": "INC-001",
+  "scope": {
+    "unit": "good_units",
+    "stage": "sewing",
+    "factory": "Synthetic Factory A",
+    "line_id": "S4",
+    "order_id": "ORD-28",
+    "style_id": "ST-42"
+  },
+  "title": "Delayed start on sewing line S4",
+  "cutoff": "2026-09-28T11:30:00+05:30",
+  "events": [
+    {
+      "id": "EV-MAT-1",
+      "lane": "materials",
+      "type": "material_readiness",
+      "summary": "Fabric lot F-218 reached the line at 09:32, after the scheduled start.",
+      "source_id": "material-transfer-218",
+      "occurred_at": "2026-09-28T09:32:00+05:30",
+      "available_at": "2026-09-28T09:38:00+05:30"
+    },
+    {
+      "id": "EV-BLOCK-1",
+      "end": "2026-09-28T09:30:00+05:30",
+      "lane": "production",
+      "type": "line_block",
+      "start": "2026-09-28T09:00:00+05:30",
+      "summary": "Supervisor recorded the line waiting for fabric from 09:00 to 09:30.",
+      "assertion": true,
+      "source_id": "shift-log-44",
+      "available_at": "2026-09-28T09:40:00+05:30",
+      "line_blocking": true,
+      "linked_categories": [
+        "material"
+      ]
+    },
+    {
+      "id": "EV-START-1",
+      "lane": "production",
+      "type": "line_start",
+      "summary": "First final good units recorded in the 09:30 bucket.",
+      "source_id": "output-ledger-28",
+      "occurred_at": "2026-09-28T09:30:00+05:30",
+      "available_at": "2026-09-28T09:45:00+05:30"
+    },
+    {
+      "id": "EV-MACH-1",
+      "end": "2026-09-28T10:49:00+05:30",
+      "lane": "machines",
+      "type": "machine_interruption",
+      "start": "2026-09-28T10:31:00+05:30",
+      "summary": "Needle feed on machine M12 interrupted between 10:31 and 10:49; line-wide impact is not established.",
+      "source_id": "machine-log-m12",
+      "available_at": "2026-09-28T10:55:00+05:30"
+    },
+    {
+      "id": "EV-QC-1",
+      "lane": "quality",
+      "type": "qc_hold",
+      "summary": "QC placed lot L-91 on hold pending seam inspection; held units are not added to good output.",
+      "source_id": "qc-hold-l91",
+      "occurred_at": "2026-09-28T10:42:00+05:30",
+      "available_at": "2026-09-28T10:50:00+05:30"
+    },
+    {
+      "id": "EV-MAINT-1",
+      "end": "2026-09-28T10:20:00+05:30",
+      "lane": "machines",
+      "type": "maintenance_note",
+      "start": "2026-09-28T10:10:00+05:30",
+      "summary": "Technician reported that the feed issue began around 10:14; recorded later, with no confirmed line-stop duration.",
+      "assertion": true,
+      "source_id": "maintenance-note-77",
+      "available_at": "2026-09-28T11:20:00+05:30"
+    },
+    {
+      "id": "EV-MACH-CORR",
+      "end": "2026-09-28T10:49:00+05:30",
+      "lane": "machines",
+      "type": "machine_interruption",
+      "start": "2026-09-28T10:31:00+05:30",
+      "summary": "Maintenance confirmed machine M12 was stopped from 10:31 to 10:49; other stations continued.",
+      "source_id": "maintenance-confirmation-78",
+      "available_at": "2026-09-28T11:22:00+05:30",
+      "supersedes_id": "EV-MACH-1"
+    }
+  ],
+  "window": {
+    "end": "2026-09-28T12:00:00+05:30",
+    "start": "2026-09-28T09:00:00+05:30"
+  },
+  "coverage": {
+    "notes": false,
+    "quality": true,
+    "machines": true,
+    "staffing": false,
+    "materials": true,
+    "production": true
+  },
+  "revision": 2,
+  "plan_buckets": [
+    {
+      "id": "plan-0",
+      "end": "2026-09-28T09:15:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T09:00:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-1",
+      "end": "2026-09-28T09:30:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T09:15:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-2",
+      "end": "2026-09-28T09:45:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T09:30:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-3",
+      "end": "2026-09-28T10:00:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T09:45:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-4",
+      "end": "2026-09-28T10:15:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T10:00:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-5",
+      "end": "2026-09-28T10:30:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T10:15:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-6",
+      "end": "2026-09-28T10:45:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T10:30:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-7",
+      "end": "2026-09-28T11:00:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T10:45:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-8",
+      "end": "2026-09-28T11:15:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T11:00:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-9",
+      "end": "2026-09-28T11:30:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T11:15:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-10",
+      "end": "2026-09-28T11:45:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T11:30:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    },
+    {
+      "id": "plan-11",
+      "end": "2026-09-28T12:00:00+05:30",
+      "kind": "baseline_plan",
+      "start": "2026-09-28T11:45:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T08:00:00+05:30"
+    }
+  ],
+  "output_buckets": [
+    {
+      "id": "out-0",
+      "end": "2026-09-28T09:15:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T09:00:00+05:30",
+      "quantity": 0,
+      "available_at": "2026-09-28T09:15:00+05:30"
+    },
+    {
+      "id": "out-1",
+      "end": "2026-09-28T09:30:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T09:15:00+05:30",
+      "quantity": 0,
+      "available_at": "2026-09-28T09:30:00+05:30"
+    },
+    {
+      "id": "out-2",
+      "end": "2026-09-28T09:45:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T09:30:00+05:30",
+      "quantity": 8,
+      "available_at": "2026-09-28T09:45:00+05:30"
+    },
+    {
+      "id": "out-3",
+      "end": "2026-09-28T10:00:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T09:45:00+05:30",
+      "quantity": 17,
+      "available_at": "2026-09-28T10:00:00+05:30"
+    },
+    {
+      "id": "out-4",
+      "end": "2026-09-28T10:15:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T10:00:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T10:15:00+05:30"
+    },
+    {
+      "id": "out-5",
+      "end": "2026-09-28T10:30:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T10:15:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T10:30:00+05:30"
+    },
+    {
+      "id": "out-6",
+      "end": "2026-09-28T10:45:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T10:30:00+05:30",
+      "quantity": 12,
+      "available_at": "2026-09-28T10:45:00+05:30"
+    },
+    {
+      "id": "out-7",
+      "end": "2026-09-28T11:00:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T10:45:00+05:30",
+      "quantity": 10,
+      "available_at": "2026-09-28T11:00:00+05:30"
+    },
+    {
+      "id": "out-8",
+      "end": "2026-09-28T11:15:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T11:00:00+05:30",
+      "quantity": 19,
+      "available_at": "2026-09-28T11:15:00+05:30"
+    },
+    {
+      "id": "out-9",
+      "end": "2026-09-28T11:30:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T11:15:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T11:30:00+05:30"
+    },
+    {
+      "id": "out-10",
+      "end": "2026-09-28T11:45:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T11:30:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T11:45:00+05:30"
+    },
+    {
+      "id": "out-11",
+      "end": "2026-09-28T12:00:00+05:30",
+      "kind": "final_good_delta",
+      "start": "2026-09-28T11:45:00+05:30",
+      "quantity": 20,
+      "available_at": "2026-09-28T12:00:00+05:30"
+    }
+  ],
+  "available_revisions": [
+    1,
+    2
+  ],
+  "content_digest": "sha256:e74f8ce7a9ea5d2d0ff9ea4d660121c336198e1a8a437b9767ecbf1db4913ba2"
+}

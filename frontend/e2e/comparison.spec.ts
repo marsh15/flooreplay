@@ -5,7 +5,7 @@ import { ensureBackend } from './helpers'
 test.beforeAll(ensureBackend)
 
 test('the 32-case suite runs under two configurations and reports totals', async ({ page }) => {
-  await page.goto('/comparison')
+  await page.goto('/coverage/comparison')
 
   await expect(page.getByText(/pinned suite \(32 cases\)/)).toBeVisible()
 
@@ -21,6 +21,6 @@ test('the 32-case suite runs under two configurations and reports totals', async
 })
 
 test('saved comparison history is listed', async ({ page }) => {
-  await page.goto('/comparison')
+  await page.goto('/coverage/comparison')
   await expect(page.getByText(/baseline/i).first()).toBeVisible()
 })

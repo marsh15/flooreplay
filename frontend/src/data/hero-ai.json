@@ -1,0 +1,60 @@
+{
+  "execution_kind": "saved_local_ai",
+  "incident_id": "INC-001",
+  "revision": 2,
+  "model": "qwen3:1.7b",
+  "model_digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+  "packet_digest": "e422a700f4bba9280400d9e5cadd186039fcf1af9bc488c28e95d6eb159841ca",
+  "prompt_digest": "098a4094fb5251301ff9f3650d164e81da15611025a62bfa90fe819aad730f61",
+  "elapsed_seconds": 34.95,
+  "claims": [
+    {
+      "text": "The line block occurred from 09:00 to 09:30, with fabric lot F-218 arriving at 09:32.",
+      "evidence_ids": [
+        "EV-BLOCK-1",
+        "EV-MAT-1"
+      ],
+      "metric_ids": [],
+      "review_status": "NEEDS_QUALIFICATION",
+      "review_reason": "Line block is sourced to a supervisor assertion but the claim omits attribution."
+    },
+    {
+      "text": "The machine interruption lasted from 10:31 to 10:49, with maintenance confirming the stop.",
+      "evidence_ids": [
+        "EV-MAINT-1",
+        "EV-MACH-CORR"
+      ],
+      "metric_ids": [],
+      "review_status": "SUPPORTED",
+      "review_reason": null
+    },
+    {
+      "text": "QC placed lot L-91 on hold pending seam inspection, affecting output.",
+      "evidence_ids": [
+        "EV-QC-1"
+      ],
+      "metric_ids": [],
+      "review_status": "NEEDS_QUALIFICATION",
+      "review_reason": "The QC hold's effect on output is not established by the cited record."
+    },
+    {
+      "text": "The shortfall in good units is 74, with 30 minutes of blocked time recorded.",
+      "evidence_ids": [
+        "EV-MAINT-1",
+        "EV-MACH-CORR",
+        "EV-QC-1"
+      ],
+      "metric_ids": [
+        "shortfall",
+        "blocked_minutes"
+      ],
+      "review_status": "NEEDS_QUALIFICATION",
+      "review_reason": "The two metrics are correct, but the cited event set omits the line-block record supporting blocked time."
+    }
+  ],
+  "limitations": [
+    "Causal attribution requires more than chronology.",
+    "Proposals require human review and do not execute factory changes."
+  ],
+  "quality_notice": "Experimental draft on synthetic evidence. Project-author review supported 1 of 4 factual claims in this saved run; rejected claims remain visible for inspection. No factory validation."
+}

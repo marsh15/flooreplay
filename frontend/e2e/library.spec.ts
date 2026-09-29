@@ -5,7 +5,7 @@ import { ensureBackend } from './helpers'
 test.beforeAll(ensureBackend)
 
 test('library lists the hero scenarios and the synthetic-data disclaimer', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/coverage')
   await expect(page.getByRole('link', { name: /FloorReplay/ }).first()).toBeVisible()
   await expect(page.getByText('SCEN-HERO@1').first()).toBeVisible()
   await expect(
@@ -14,6 +14,6 @@ test('library lists the hero scenarios and the synthetic-data disclaimer', async
 })
 
 test('library surfaces persisted latest-attempt summaries', async ({ page }) => {
-  await page.goto('/')
-  await expect(page.getByText(/Kaveri Garments Unit 3/).first()).toBeVisible()
+  await page.goto('/coverage')
+  await expect(page.getByRole('row', { name: /SCEN-HERO@2(?!\d)/ })).toContainText('Ready for review')
 })

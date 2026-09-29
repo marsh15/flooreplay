@@ -291,7 +291,7 @@ export function NotesPage() {
             </p>
             <Separator className="my-2" />
             <Link
-              to={`/workbench?scenario=${confirmed.scenario_id}&revision=${confirmed.revision}`}
+              to={`/coverage/workbench?scenario=${confirmed.scenario_id}&revision=${confirmed.revision}`}
               className="text-sm underline underline-offset-4 hover:no-underline focus-visible:outline-2"
             >
               Open it in the replay workbench

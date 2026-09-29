@@ -75,6 +75,12 @@ export function LibraryPage() {
           revisions and never rewrite history.
         </p>
       </div>
+      <div className="flex flex-wrap gap-3 text-xs text-zinc-600">
+        <Link className="underline underline-offset-4" to="/coverage/workbench">Replay workbench</Link>
+        <Link className="underline underline-offset-4" to="/coverage/notes">Floor notes</Link>
+        <Link className="underline underline-offset-4" to="/coverage/imports">Imports</Link>
+        <Link className="underline underline-offset-4" to="/coverage/comparison">Comparison</Link>
+      </div>
 
       {data.items.length === 0 ? (
         <div className="rounded-lg border border-dashed bg-white p-10 text-center">
@@ -102,7 +108,7 @@ export function LibraryPage() {
                   <TableRow key={key}>
                     <TableCell>
                       <Link
-                        to={`/workbench?scenario=${encodeURIComponent(item.scenario_id)}&revision=${item.revision}`}
+                        to={`/coverage/workbench?scenario=${encodeURIComponent(item.scenario_id)}&revision=${item.revision}`}
                         className="font-medium underline-offset-4 hover:underline focus-visible:outline-2"
                       >
                         {item.title}

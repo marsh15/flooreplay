@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "id": "INC-001",
+      "revision": 2,
+      "title": "Delayed start on sewing line S4",
+      "line": "S4",
+      "window_start": "2026-09-28T09:00:00+05:30",
+      "window_end": "2026-09-28T12:00:00+05:30",
+      "cutoff": "2026-09-28T11:30:00+05:30",
+      "status": "COMPLETE",
+      "shortfall": 74,
+      "evidence_completeness": "4/6 declared sources",
+      "last_reviewed_revision": null
+    }
+  ]
+}

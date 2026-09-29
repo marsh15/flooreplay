@@ -7,7 +7,7 @@ test.beforeAll(ensureBackend)
 test('a floor note becomes a draft, then a confirmed fork — never an automatic event', async ({
   page,
 }) => {
-  await page.goto('/notes')
+  await page.goto('/coverage/notes')
 
   await page
     .locator('textarea')
@@ -24,7 +24,7 @@ test('a floor note becomes a draft, then a confirmed fork — never an automatic
 })
 
 test('manual entry works without any parser output', async ({ page }) => {
-  await page.goto('/notes')
+  await page.goto('/coverage/notes')
   await page.getByRole('button', { name: 'Skip parsing: manual entry' }).click()
   await expect(page.getByText('Confirm structured event')).toBeVisible()
 })

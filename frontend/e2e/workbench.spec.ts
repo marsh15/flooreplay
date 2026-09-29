@@ -7,7 +7,7 @@ test.beforeAll(ensureBackend)
 test('the hero demonstration: stale evidence blocks, correction replays ready', async ({
   page,
 }) => {
-  await page.goto('/workbench?scenario=SCEN-HERO&revision=1')
+  await page.goto('/coverage/workbench?scenario=SCEN-HERO&revision=1')
 
   await page.getByRole('button', { name: 'Run replay' }).click()
   await expect(page.getByText('Needs context')).toBeVisible()
@@ -24,7 +24,7 @@ test('the hero demonstration: stale evidence blocks, correction replays ready', 
 })
 
 test('baseline proposes an occupied operator and is rejected by C07', async ({ page }) => {
-  await page.goto('/workbench?scenario=SCEN-HERO&revision=2&config=CFG-BASELINE-V1')
+  await page.goto('/coverage/workbench?scenario=SCEN-HERO&revision=2&config=CFG-BASELINE-V1')
   await page.getByRole('button', { name: 'Run replay' }).click()
   await expect(page.getByText('Rejected by constraint')).toBeVisible()
   await expect(page.getByRole('row', { name: /C07/ })).toBeVisible()

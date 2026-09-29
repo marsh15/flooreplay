@@ -7,7 +7,7 @@ test.beforeAll(ensureBackend)
 test('later-context review: refreshed evidence makes the 07:58 recommendation stale', async ({
   page,
 }) => {
-  await page.goto('/workbench?scenario=SCEN-REVIEW-LATER&revision=1')
+  await page.goto('/coverage/workbench?scenario=SCEN-REVIEW-LATER&revision=1')
 
   await page.getByRole('button', { name: 'Run replay' }).click()
   await expect(page.getByText('Ready for review')).toBeVisible()
@@ -21,7 +21,7 @@ test('later-context review: refreshed evidence makes the 07:58 recommendation st
 })
 
 test('later-context review: an identical context is still supported', async ({ page }) => {
-  await page.goto('/workbench?scenario=SCEN-REVIEW-LATER&revision=1')
+  await page.goto('/coverage/workbench?scenario=SCEN-REVIEW-LATER&revision=1')
 
   await page.getByRole('button', { name: 'Run replay' }).click()
   await expect(page.getByText('Ready for review')).toBeVisible()
