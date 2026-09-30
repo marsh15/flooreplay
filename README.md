@@ -2,7 +2,7 @@
 
 FloorReplay reconstructs a sewing-line incident from the operational evidence available at a selected cutoff. Production metrics, hypotheses, precedents and recovery proposals keep their input references. New evidence creates a new revision; earlier reports retain their original meaning. All factory data is synthetic.
 
-The current release adds authenticated owner/reviewer accounts, OpenAI generation, pgvector hybrid search, a persistent ₹500 allowance, durable request recovery and deployment packaging. Software checks pass with mocked provider responses. Actual OpenAI calls and hosted deployment have not been verified because no server key or hosting connections are configured.
+The current release adds authenticated owner/reviewer accounts, OpenAI generation, pgvector hybrid search, a persistent ₹500 allowance, durable request recovery and deployment packaging. Live OpenAI smoke and pilot checks pass; the locked evaluation stopped at a validation failure. Hosted verification and human claim review remain pending.
 
 ## Run the application
 
@@ -35,7 +35,7 @@ uv run python -m flooreplay account-create owner --role owner
 uv run uvicorn flooreplay.api:app --port 8000
 ```
 
-In another shell, run `cd frontend && pnpm install --frozen-lockfile && pnpm dev`. PostgreSQL must provide the vector extension. See [DEPLOY.md](DEPLOY.md) for Compose, isolated tests, Render/Neon, backup/restore and rollback.
+In another shell, run `cd frontend && pnpm install --frozen-lockfile && pnpm dev`. PostgreSQL must provide the vector extension. For online hosting, follow [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md): Vercel frontend, Render API and Neon database. See [DEPLOY.md](DEPLOY.md) for local verification, backup and rollback.
 
 ## Investigate the featured incident
 

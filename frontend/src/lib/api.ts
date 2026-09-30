@@ -180,7 +180,7 @@ export interface ReplayAttempt {
 // Dev uses the Vite proxy; a deployed static build points at the backend
 // origin via VITE_API_BASE (e.g. https://flooreplay-api.onrender.com/api/v1).
 // Exported so non-fetch consumers (e.g. the report download link) share it.
-export const API_BASE: string = import.meta.env.VITE_API_BASE ?? '/api/v1'
+export const API_BASE: string = (import.meta.env.VITE_API_BASE || '/api/v1').replace(/\/$/, '')
 const BASE: string = API_BASE
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from pydantic import Field
+from urllib.parse import urlsplit
+
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,6 +28,16 @@ class Settings(BaseSettings):
     # a single-instance demo host).
     public_replays_per_hour: int = 20
     cors_origins: list[str] = []
+
+    @field_validator("cors_origins")
+    @classmethod
+    def exact_origins(cls, origins: list[str]) -> list[str]:
+        for origin in origins:
+            url = urlsplit(origin)
+            local_http = url.scheme == "http" and url.hostname in {"localhost", "127.0.0.1"}
+            if (url.scheme != "https" and not local_http) or not url.netloc or "*" in origin or url.username or url.password or url.path or url.query or url.fragment:
+                raise ValueError("CORS origins must be exact HTTPS origins (localhost HTTP is allowed), without paths or wildcards")
+        return origins
 
 
 settings = Settings()

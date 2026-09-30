@@ -255,6 +255,14 @@ def create_app(mode: str | None = None) -> FastAPI:
         yield
 
     app = FastAPI(title="FloorReplay API", version="0.1.0", lifespan=lifespan)
+
+    @app.middleware("http")
+    async def prevent_shared_cache(request: Request, call_next: Any) -> Any:
+        response = await call_next(request)
+        response.headers["Cache-Control"] = "private, no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
     if settings.cors_origins:
         app.add_middleware(
             CORSMiddleware,

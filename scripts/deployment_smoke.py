@@ -17,13 +17,31 @@ def fetch(url: str, body: dict | None = None) -> tuple[int, bytes]:
         return response.code, response.read()
 
 
+def cors_check(api: str, origin: str, allowed: bool) -> dict:
+    request = Request(api + "/auth/login", method="OPTIONS", headers={
+        "Origin": origin,
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "authorization,content-type",
+    })
+    try:
+        response = urlopen(request, timeout=60)
+    except HTTPError as error:
+        response = error
+    with response:
+        echoed = response.headers.get("Access-Control-Allow-Origin")
+        return {"path": "cors:" + origin, "passed": (response.status == 200 and echoed == origin) if allowed else echoed is None, "status": response.status}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--api", required=True, help="API base ending /api/v1")
     parser.add_argument("--frontend", required=True)
+    parser.add_argument("--check-cors", action="store_true", help="Verify exact frontend-origin access and rejection of another origin")
     args = parser.parse_args()
     api, frontend = args.api.rstrip("/"), args.frontend.rstrip("/")
     checks = []
+    if args.check_cors:
+        checks.extend([cors_check(api, frontend, True), cors_check(api, "https://untrusted.invalid", False)])
     for path in ("/health/live", "/health/ready", "/incidents", "/capabilities"):
         status, payload = fetch(api + path)
         checks.append({"path": path, "passed": status == 200, "status": status})

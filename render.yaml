@@ -1,4 +1,4 @@
-# Deployment package only: external Neon database and backend secrets required.
+# API only. Deploy frontend/ on Vercel; use external Neon PostgreSQL.
 services:
   - type: web
     name: flooreplay-api
@@ -29,18 +29,3 @@ services:
         value: text-embedding-3-small
       - key: FLOORREPLAY_OPENAI_EMBEDDING_DIMENSIONS
         value: '512'
-  - type: web
-    name: flooreplay-frontend
-    runtime: static
-    rootDir: frontend
-    buildCommand: corepack enable && corepack prepare pnpm@10.30.0 --activate && pnpm install --frozen-lockfile && pnpm build
-    staticPublishPath: dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: NODE_VERSION
-        value: '22'
-      - key: VITE_API_BASE
-        sync: false

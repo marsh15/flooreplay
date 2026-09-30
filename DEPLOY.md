@@ -1,6 +1,6 @@
 # Deployment and operations
 
-The package targets a Render static frontend, a free Render API, and an external Neon PostgreSQL database with pgvector. No hosted deployment has been performed. The server OpenAI key and hosting URLs must be configured before actual hosted verification. Local Docker image builds and Compose configuration were verified before the final review fixes. Complete container startup remains blocked by a local Docker containerd metadata input/output error. The native application workflow is verified separately.
+The recommended deployment is the Vercel frontend, a Render API, and Neon PostgreSQL with pgvector. Start with [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md). No hosted deployment has been performed. The server OpenAI key and hosting URLs must be configured before actual hosted verification. Local Docker image builds and Compose configuration were verified before the final review fixes. Complete container startup remains blocked by a local Docker containerd metadata input/output error. The native application workflow is verified separately.
 
 ## Local complete stack
 
@@ -55,21 +55,21 @@ The GitHub Actions workflow repeats lint/type/build checks, fresh migration, see
 ## Render and Neon setup
 
 1. Create the Neon database and verify that `CREATE EXTENSION IF NOT EXISTS vector` succeeds. Use the direct database connection for migration/owner commands; the API may use a transaction-pooled connection. The application uses transaction-level advisory locks, never a session lock that must survive pooling.
-2. Connect the repository to a Render Blueprint using `render.yaml`. Create the static frontend and API services.
-3. Set API `FLOORREPLAY_DATABASE_URL` to the SQLAlchemy URL, beginning `postgresql+psycopg://` with TLS required. Set `FLOORREPLAY_OPENAI_API_KEY` as a secret. Set `FLOORREPLAY_CORS_ORIGINS` to a JSON array containing the exact HTTPS frontend origin, such as `["https://flooreplay-frontend.onrender.com"]`.
-4. Set frontend `VITE_API_BASE` to the public HTTPS API base ending `/api/v1`. Never put the provider key in a `VITE_*` variable. Redeploy the static site after changing its API base.
+2. Connect the repository to a Render Blueprint using `render.yaml` to create the API. Import the same repository into Vercel with Root Directory `frontend` for the static frontend.
+3. Set API `FLOORREPLAY_DATABASE_URL` to the SQLAlchemy URL, beginning `postgresql+psycopg://` with TLS required. Set `FLOORREPLAY_OPENAI_API_KEY` as a secret. Set `FLOORREPLAY_CORS_ORIGINS` to a JSON array containing the exact HTTPS frontend origin, such as `["https://YOUR-PROJECT.vercel.app"]`.
+4. In Vercel, set frontend `VITE_API_BASE` to the public HTTPS API base ending `/api/v1`. Never put the provider key in a `VITE_*` variable. Redeploy the Vercel frontend after changing its API base.
 5. Deploy the API; its start command migrates and seeds with frozen runtime dependencies. It records `RENDER_GIT_COMMIT` as the build identity. The readiness endpoint checks the expected migration revision before accepting traffic.
 6. From a trusted terminal with the production backend database environment, run `uv run python -m flooreplay account-create owner --role owner`, then create invited reviewers. The free service need not provide an interactive shell: the CLI can connect directly to Neon from a trusted workstation.
 7. Publish the corpus explicitly: `uv run python -m flooreplay corpus-publish release-v1 --cutoff 2026-09-30T00:00:00+00:00 --owner owner`. Indexing is a separate paid command: `uv run python -m flooreplay corpus-index release-v1 --owner owner`. Confirm allowance with `uv run python -m flooreplay usage` first.
 
-Render’s free web service can sleep after inactivity and has ephemeral local storage. Database reports, accounts, sessions, AI runs, embeddings, and allowance are therefore stored in PostgreSQL. Describe the first request after sleeping as a cold start; do not claim warm latency for it. See [Render free service behavior](https://render.com/docs/free). The Blueprint rewrites browser routes to `/index.html` for refresh/deep links, following [Render static rewrites](https://render.com/docs/redirects-rewrites).
+Render’s free web service can sleep after inactivity and has ephemeral local storage. Database reports, accounts, sessions, AI runs, embeddings, and allowance are therefore stored in PostgreSQL. Describe the first request after sleeping as a cold start; do not claim warm latency for it. See [Render free service behavior](https://render.com/docs/free). The frontend’s `vercel.json` rewrites browser routes to `/index.html` for refresh and deep links.
 
 ## Hosted acceptance evidence
 
 Run the read-only checks using actual deployment URLs:
 
 ```sh
-python3 scripts/deployment_smoke.py --api https://YOUR-API.onrender.com/api/v1 --frontend https://YOUR-FRONTEND.onrender.com
+python3 scripts/deployment_smoke.py --api https://YOUR-API.onrender.com/api/v1 --frontend https://YOUR-PROJECT.vercel.app
 ```
 
 These checks prove database readiness, anonymous reads, anonymous denial of paid endpoints, and SPA deep-link delivery. They do not claim real OpenAI evaluation. Complete authenticated sign-in, a budgeted generation and query embedding, citation inspection, proposal submit/review, new-evidence stale rejection, export, restart persistence, exact-origin CORS, and API-outage saved-report behavior in the browser. Record attempts, failures, provider request IDs, usage, and warm/cold timings. The staged paid evaluation must stop on a blocking defect and stay within its allocation.

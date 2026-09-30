@@ -24,6 +24,6 @@ The React/Vite frontend calls FastAPI. PostgreSQL stores immutable incident revi
 
 ## Delivery and evidence
 
-Compose provides pgvector/PostgreSQL, an API and an nginx static frontend with SPA rewrites. Render uses one API and static site with Neon storage. CI uses a disposable database and mocked provider calls. Live model evaluation and actual hosted smoke evidence are separate release gates. `release_tools.py` exports canonical saved reports and a content-digest manifest; frontend types derive from exported OpenAPI.
+Compose provides pgvector/PostgreSQL, an API and an nginx static frontend with SPA rewrites. Vercel serves the static frontend; Render runs the API with Neon storage. The frontend uses the absolute HTTPS API base, and the API allows exact frontend origins. CI uses a disposable database and mocked provider calls. Live model evaluation and actual hosted smoke evidence are separate release gates. `release_tools.py` exports canonical saved reports and a content-digest manifest; frontend types derive from exported OpenAPI.
 
 Historical Qwen results remain archived evidence. The current provider remains unevaluated until actual OpenAI runs and separate human review are recorded.
