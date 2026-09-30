@@ -1,0 +1,2001 @@
+{
+  "schema": "flooreplay.openai-evaluation.v2",
+  "stage": "smoke",
+  "evaluation_id": "80ef53be-754b-442c-b26c-ea44027895a5",
+  "provider": "openai",
+  "status": "BLOCKED",
+  "dataset_manifest": {
+    "release": "incident-synthetic-180-v1",
+    "splits": {
+      "historical": [
+        {
+          "id": "REL-001",
+          "lineage_id": "lineage-REL-001",
+          "template_id": "historical-material-documented-block",
+          "digest": "sha256:eb8d31911034effae066b8981ee66bf004185bcd92546c075a3968ae7a7b28f6"
+        },
+        {
+          "id": "REL-002",
+          "lineage_id": "lineage-REL-002",
+          "template_id": "historical-material-documented-block",
+          "digest": "sha256:724404497d3f191c6a9eaad9fbae02b625b4fbd2e339ab5551d3c18a4e36cc8b"
+        },
+        {
+          "id": "REL-003",
+          "lineage_id": "lineage-REL-003",
+          "template_id": "historical-material-documented-block",
+          "digest": "sha256:06823cd0f9e4050315f35f046d05df31f24b7f342c45a00a7268a465e0edc9a3"
+        },
+        {
+          "id": "REL-004",
+          "lineage_id": "lineage-REL-004",
+          "template_id": "historical-material-documented-block",
+          "digest": "sha256:2905191ee459276603a097d7e56e4c33e637ca270c7a35a143183b2153d02cb1"
+        },
+        {
+          "id": "REL-005",
+          "lineage_id": "lineage-REL-005",
+          "template_id": "historical-material-documented-block",
+          "digest": "sha256:1ec5ae28771c21b74d895a90c98b93c70be7ca9aab133a45d5b1958f6f07e9ac"
+        },
+        {
+          "id": "REL-006",
+          "lineage_id": "lineage-REL-006",
+          "template_id": "historical-material-documented-block",
+          "digest": "sha256:8b3a5613d540cbb1da25e4f340d1c9ee103bb80d92ca62d5c6b231dcbf48d062"
+        },
+        {
+          "id": "REL-007",
+          "lineage_id": "lineage-REL-007",
+          "template_id": "historical-material-documented-block",
+          "digest": "sha256:c9cb5355ac7428d3cb418680b9344143e456f28f7339ffc25be6500d4930e21c"
+        },
+        {
+          "id": "REL-008",
+          "lineage_id": "lineage-REL-008",
+          "template_id": "historical-material-documented-block",
+          "digest": "sha256:10119c2d6c2ade2b88c41e418bf5ac0195242f9f2298199c1634a73c7a0b75fd"
+        },
+        {
+          "id": "REL-009",
+          "lineage_id": "lineage-REL-009",
+          "template_id": "historical-material-documented-block",
+          "digest": "sha256:1cdb7b8e9600c71922acf70b5d62e80e0f74cd49bce03872f08019ff27f5bc13"
+        },
+        {
+          "id": "REL-010",
+          "lineage_id": "lineage-REL-010",
+          "template_id": "historical-material-documented-block",
+          "digest": "sha256:0aedbbdd99348ab799e4e9bffde63d327f38ac086adfbc53a50432b0631bc883"
+        },
+        {
+          "id": "REL-011",
+          "lineage_id": "lineage-REL-011",
+          "template_id": "historical-material-unsuccessful-intervention",
+          "digest": "sha256:d600edc0fd84790d6326d19cf7c665674921da469e49de1a7d9b94255961e5a8"
+        },
+        {
+          "id": "REL-012",
+          "lineage_id": "lineage-REL-012",
+          "template_id": "historical-material-unsuccessful-intervention",
+          "digest": "sha256:4c4fecb34713e7b77ac3ab5227cfc14119b93cb27c8257f23d77787d8507ec8e"
+        },
+        {
+          "id": "REL-013",
+          "lineage_id": "lineage-REL-013",
+          "template_id": "historical-material-unsuccessful-intervention",
+          "digest": "sha256:815d379e7532d56555a69685295714b189682662d70180ac5534251b13ae765d"
+        },
+        {
+          "id": "REL-014",
+          "lineage_id": "lineage-REL-014",
+          "template_id": "historical-material-unsuccessful-intervention",
+          "digest": "sha256:e1853545922c844d2b2644f53b1d9d75733a2f94d8197f8644f41dfa7ccd1bbc"
+        },
+        {
+          "id": "REL-015",
+          "lineage_id": "lineage-REL-015",
+          "template_id": "historical-material-unsuccessful-intervention",
+          "digest": "sha256:b43786da6b6d01f9cd247626214596829359a0a330ea034ca0a341b56abe553d"
+        },
+        {
+          "id": "REL-016",
+          "lineage_id": "lineage-REL-016",
+          "template_id": "historical-material-unsuccessful-intervention",
+          "digest": "sha256:9bc8ff98a8a41d874be5090b2c1548cdb3caedc11ba9d7b1274faac96060be55"
+        },
+        {
+          "id": "REL-017",
+          "lineage_id": "lineage-REL-017",
+          "template_id": "historical-material-unsuccessful-intervention",
+          "digest": "sha256:c07648f09c6d87ba7d6502774b3cb10ba6d02d158a50fedb8082330d6dbc657e"
+        },
+        {
+          "id": "REL-018",
+          "lineage_id": "lineage-REL-018",
+          "template_id": "historical-material-unsuccessful-intervention",
+          "digest": "sha256:ca39d6a34f6b8ca33f1b8ab76a8c27d28422e00530ae2a71dcbd191d0be98944"
+        },
+        {
+          "id": "REL-019",
+          "lineage_id": "lineage-REL-019",
+          "template_id": "historical-material-unsuccessful-intervention",
+          "digest": "sha256:e52ddc62632b5803db3cb930f6d5089c6a18ef3a687a7830e80ff707281288e6"
+        },
+        {
+          "id": "REL-020",
+          "lineage_id": "lineage-REL-020",
+          "template_id": "historical-material-unsuccessful-intervention",
+          "digest": "sha256:29f91cdd410d22f5502a0f6b73bc22d3648fdff2412782d41ebf60e7fbab9f7c"
+        },
+        {
+          "id": "REL-031",
+          "lineage_id": "lineage-REL-031",
+          "template_id": "historical-machine-documented-block",
+          "digest": "sha256:1f63e95a94cdc9ed049ca596791db08e3246af71d5312cad9e5cd4f7e33c8f61"
+        },
+        {
+          "id": "REL-032",
+          "lineage_id": "lineage-REL-032",
+          "template_id": "historical-machine-documented-block",
+          "digest": "sha256:2252cfb73f056e444cedd07bdb6fa128c36e133d68f44bc4f748f35848aabab8"
+        },
+        {
+          "id": "REL-033",
+          "lineage_id": "lineage-REL-033",
+          "template_id": "historical-machine-documented-block",
+          "digest": "sha256:55594db57db4314c448b23f89e4115e4d3fab564182029c4bef203e59a25b6fa"
+        },
+        {
+          "id": "REL-034",
+          "lineage_id": "lineage-REL-034",
+          "template_id": "historical-machine-documented-block",
+          "digest": "sha256:493f6c30f8ed21345614c46bbd64bdc61220a38f703cb3635d76f74c52ce1277"
+        },
+        {
+          "id": "REL-035",
+          "lineage_id": "lineage-REL-035",
+          "template_id": "historical-machine-documented-block",
+          "digest": "sha256:b06517e9ee072e88e84cb39b54d6c2b8d5c57c0ca8aa92007d96b95460a51d16"
+        },
+        {
+          "id": "REL-036",
+          "lineage_id": "lineage-REL-036",
+          "template_id": "historical-machine-documented-block",
+          "digest": "sha256:bbc67eff4bc7461a2d1ce3ede6e4b03c699ebc541eb790b25a0873bc1afa3014"
+        },
+        {
+          "id": "REL-037",
+          "lineage_id": "lineage-REL-037",
+          "template_id": "historical-machine-documented-block",
+          "digest": "sha256:d33edb49abe5db233423162dc84c05240a484f964e4c90e37f5ad2da2de22081"
+        },
+        {
+          "id": "REL-038",
+          "lineage_id": "lineage-REL-038",
+          "template_id": "historical-machine-documented-block",
+          "digest": "sha256:0aeb43293b67a16e0c3c13a5a475c762fe9dd5e199eee154a471d51cb370bb7c"
+        },
+        {
+          "id": "REL-039",
+          "lineage_id": "lineage-REL-039",
+          "template_id": "historical-machine-documented-block",
+          "digest": "sha256:d510bba9c6b97ef06ba14a81816861c5565c9a1a8022ae83753957125002c0ca"
+        },
+        {
+          "id": "REL-040",
+          "lineage_id": "lineage-REL-040",
+          "template_id": "historical-machine-documented-block",
+          "digest": "sha256:c6fecde3ea5c05dabfa6d47ab7d810a1b741bc465609147e727f860ce6c2dc92"
+        },
+        {
+          "id": "REL-041",
+          "lineage_id": "lineage-REL-041",
+          "template_id": "historical-machine-unsuccessful-intervention",
+          "digest": "sha256:13be874286c9b2d1273884f34d065d5afbbcdab7355a3f4bc2dd302e2f2ac50f"
+        },
+        {
+          "id": "REL-042",
+          "lineage_id": "lineage-REL-042",
+          "template_id": "historical-machine-unsuccessful-intervention",
+          "digest": "sha256:bd32a55129c773ba04ef361e5f3f334072ffbfd9582670ce478d140025fbcbc2"
+        },
+        {
+          "id": "REL-043",
+          "lineage_id": "lineage-REL-043",
+          "template_id": "historical-machine-unsuccessful-intervention",
+          "digest": "sha256:bc99414a7662390873ef810a37f9e3743699dc7fad4aa3fb1f6b1d53a457d296"
+        },
+        {
+          "id": "REL-044",
+          "lineage_id": "lineage-REL-044",
+          "template_id": "historical-machine-unsuccessful-intervention",
+          "digest": "sha256:bee769d3c5f22b7c2b0beb66856fe2f82c889bd9911815d1a282761ff60d4b0d"
+        },
+        {
+          "id": "REL-045",
+          "lineage_id": "lineage-REL-045",
+          "template_id": "historical-machine-unsuccessful-intervention",
+          "digest": "sha256:4905aaa054eb6e3972a4d5d66a7c4e1114f3885052bc4030fd835a5949783b0a"
+        },
+        {
+          "id": "REL-046",
+          "lineage_id": "lineage-REL-046",
+          "template_id": "historical-machine-unsuccessful-intervention",
+          "digest": "sha256:e8511205c994cc9e8b6e5332d821f862e53dec191b041a0e31caaeb967549365"
+        },
+        {
+          "id": "REL-047",
+          "lineage_id": "lineage-REL-047",
+          "template_id": "historical-machine-unsuccessful-intervention",
+          "digest": "sha256:e8311c640bd37d572e14c87a8eb8c206e73b28b0cf0a387922632530b19bc7b9"
+        },
+        {
+          "id": "REL-048",
+          "lineage_id": "lineage-REL-048",
+          "template_id": "historical-machine-unsuccessful-intervention",
+          "digest": "sha256:2fa8a4707e060c3e9ac34a33f8576b9a73224592d6fd83453d40cc3369087623"
+        },
+        {
+          "id": "REL-049",
+          "lineage_id": "lineage-REL-049",
+          "template_id": "historical-machine-unsuccessful-intervention",
+          "digest": "sha256:f2a4f936f690cb5a9ca175d1bb806da74ef0ec833de501a4bc573ee48ae310bf"
+        },
+        {
+          "id": "REL-050",
+          "lineage_id": "lineage-REL-050",
+          "template_id": "historical-machine-unsuccessful-intervention",
+          "digest": "sha256:2f8fd3fe3676fdb991b4e77af9b9242469f4aa6b12d9b8df3407ce4e413677db"
+        },
+        {
+          "id": "REL-061",
+          "lineage_id": "lineage-REL-061",
+          "template_id": "historical-staffing-documented-block",
+          "digest": "sha256:e9154ed678a4be540523b6aa58e228699a782c2fd88c306c606e2c4d0fa9804b"
+        },
+        {
+          "id": "REL-062",
+          "lineage_id": "lineage-REL-062",
+          "template_id": "historical-staffing-documented-block",
+          "digest": "sha256:fad4a9fe37b5b43cd7963e4eea0db4f75c0b592ed9bc27b1d13ac1aba366a477"
+        },
+        {
+          "id": "REL-063",
+          "lineage_id": "lineage-REL-063",
+          "template_id": "historical-staffing-documented-block",
+          "digest": "sha256:9fb3fc374c92d2dba36e500f9810322465feb6b0b3d94426cc3adafc2169b613"
+        },
+        {
+          "id": "REL-064",
+          "lineage_id": "lineage-REL-064",
+          "template_id": "historical-staffing-documented-block",
+          "digest": "sha256:c35cc0fc3b105b4d841ce529e2281a152d09ab8b2baacf894400eea80d66182d"
+        },
+        {
+          "id": "REL-065",
+          "lineage_id": "lineage-REL-065",
+          "template_id": "historical-staffing-documented-block",
+          "digest": "sha256:07755573e38dc25da5531831a301d22c897111f3ec8c35cb035e37e28b6a856c"
+        },
+        {
+          "id": "REL-066",
+          "lineage_id": "lineage-REL-066",
+          "template_id": "historical-staffing-documented-block",
+          "digest": "sha256:b955e0d6dd73f8354bfc4fc0d302eb3b4d01c8367a9727a742e4abbc4198d556"
+        },
+        {
+          "id": "REL-067",
+          "lineage_id": "lineage-REL-067",
+          "template_id": "historical-staffing-documented-block",
+          "digest": "sha256:18f2aad87f5e56b590017e56ad1d8a6a00fa792828848018159f75718c73cbbc"
+        },
+        {
+          "id": "REL-068",
+          "lineage_id": "lineage-REL-068",
+          "template_id": "historical-staffing-documented-block",
+          "digest": "sha256:405e5a3c7fd8db5a12ead0dc1832caf88a955328d86a1df15ef1ac4d8ce321a3"
+        },
+        {
+          "id": "REL-069",
+          "lineage_id": "lineage-REL-069",
+          "template_id": "historical-staffing-documented-block",
+          "digest": "sha256:fa3ae01d8e261804dd78e76f64722b8f6001b194f0b2fd048d649c7c15401cbf"
+        },
+        {
+          "id": "REL-070",
+          "lineage_id": "lineage-REL-070",
+          "template_id": "historical-staffing-documented-block",
+          "digest": "sha256:6d534fef9e2613c0f387e2254cb6ad9b30541f6eb160074f3d8ac790f463df2c"
+        },
+        {
+          "id": "REL-071",
+          "lineage_id": "lineage-REL-071",
+          "template_id": "historical-staffing-unsuccessful-intervention",
+          "digest": "sha256:84e2c73e1b0282924bb8c5d9d7b1cc26afa2ec4ee3fe52f8f29196d69fee5605"
+        },
+        {
+          "id": "REL-072",
+          "lineage_id": "lineage-REL-072",
+          "template_id": "historical-staffing-unsuccessful-intervention",
+          "digest": "sha256:b55cf3eeddf20e36c9ed64205d742c0ea6e895f7ea4c4ee9a00278bfd6bb7570"
+        },
+        {
+          "id": "REL-073",
+          "lineage_id": "lineage-REL-073",
+          "template_id": "historical-staffing-unsuccessful-intervention",
+          "digest": "sha256:262a840cc3f424c31c7b07258108b78295c8e93a7af602d50a2000dbe0fa3a47"
+        },
+        {
+          "id": "REL-074",
+          "lineage_id": "lineage-REL-074",
+          "template_id": "historical-staffing-unsuccessful-intervention",
+          "digest": "sha256:16ae542ca5a0bd74b3927a17d7d98fd258525a42b71e14a335e26f940c49907f"
+        },
+        {
+          "id": "REL-075",
+          "lineage_id": "lineage-REL-075",
+          "template_id": "historical-staffing-unsuccessful-intervention",
+          "digest": "sha256:c9dfa5d940d6623a2dca737a4f10c8b6fbcafad827946c49be982d2795c41f80"
+        },
+        {
+          "id": "REL-076",
+          "lineage_id": "lineage-REL-076",
+          "template_id": "historical-staffing-unsuccessful-intervention",
+          "digest": "sha256:2f58c5bc4f556d1585e86a4c0b4df9d1ee700563ea8e27f4203e0d2c3c1347bd"
+        },
+        {
+          "id": "REL-077",
+          "lineage_id": "lineage-REL-077",
+          "template_id": "historical-staffing-unsuccessful-intervention",
+          "digest": "sha256:eee5f7e8523c73184ea53f4796f7f586ac4d02e0681fbbeda0b73f36d01bafe7"
+        },
+        {
+          "id": "REL-078",
+          "lineage_id": "lineage-REL-078",
+          "template_id": "historical-staffing-unsuccessful-intervention",
+          "digest": "sha256:4fd4c980f3dfd73c56970e91fed43a22730cb6dd847f0eac99092fabfa74c8b1"
+        },
+        {
+          "id": "REL-079",
+          "lineage_id": "lineage-REL-079",
+          "template_id": "historical-staffing-unsuccessful-intervention",
+          "digest": "sha256:d9e20078f2a66ff263d24d86e0aecef65806b45a4219248a995087c0963d78f5"
+        },
+        {
+          "id": "REL-080",
+          "lineage_id": "lineage-REL-080",
+          "template_id": "historical-staffing-unsuccessful-intervention",
+          "digest": "sha256:62238545d3c29d844182a62b6e843d6e72ccca7bcab69e7aaf243e3489805af0"
+        },
+        {
+          "id": "REL-091",
+          "lineage_id": "lineage-REL-091",
+          "template_id": "historical-quality-documented-block",
+          "digest": "sha256:b9ef3227a929efb8aa55d9628ffb2988c0d633c8826d1b17fc3b199954e730b2"
+        },
+        {
+          "id": "REL-092",
+          "lineage_id": "lineage-REL-092",
+          "template_id": "historical-quality-documented-block",
+          "digest": "sha256:e9b044254b2d4733b785e7b4debb71471ff18dd2d3103de07d56d11875beb484"
+        },
+        {
+          "id": "REL-093",
+          "lineage_id": "lineage-REL-093",
+          "template_id": "historical-quality-documented-block",
+          "digest": "sha256:1e0a101ca2103f52665fd80ec71867a357529aa9e7ac0f5b729120633607746c"
+        },
+        {
+          "id": "REL-094",
+          "lineage_id": "lineage-REL-094",
+          "template_id": "historical-quality-documented-block",
+          "digest": "sha256:003e3c472237e6935a2dc3dbdf0d5922681f2d4851b95cf0472be3868c29989d"
+        },
+        {
+          "id": "REL-095",
+          "lineage_id": "lineage-REL-095",
+          "template_id": "historical-quality-documented-block",
+          "digest": "sha256:43f7ff6a895fb396402a09d7d480dc9343fd70e9820ff32aa5503863e0217472"
+        },
+        {
+          "id": "REL-096",
+          "lineage_id": "lineage-REL-096",
+          "template_id": "historical-quality-documented-block",
+          "digest": "sha256:6d3a04b3dacde70c00137e9d0dc65955c55ed157ea76497150c388a360f9b903"
+        },
+        {
+          "id": "REL-097",
+          "lineage_id": "lineage-REL-097",
+          "template_id": "historical-quality-documented-block",
+          "digest": "sha256:c9affdc806dd151c4b698883f0fe2807c60eae72c564f015e26d196e72c4fd36"
+        },
+        {
+          "id": "REL-098",
+          "lineage_id": "lineage-REL-098",
+          "template_id": "historical-quality-documented-block",
+          "digest": "sha256:b828b001a89a3f6238f646381795ffc9563086e8d0932b4272c91bd376db82d0"
+        },
+        {
+          "id": "REL-099",
+          "lineage_id": "lineage-REL-099",
+          "template_id": "historical-quality-documented-block",
+          "digest": "sha256:e8129395119353292b9480854c3a6cbbfdff31bd0bb71ada62e50202d7f2a90a"
+        },
+        {
+          "id": "REL-100",
+          "lineage_id": "lineage-REL-100",
+          "template_id": "historical-quality-documented-block",
+          "digest": "sha256:f93dd05659822e16f93d7ebcccc47d1c1f1a55619494535c81813c90e50d251b"
+        },
+        {
+          "id": "REL-101",
+          "lineage_id": "lineage-REL-101",
+          "template_id": "historical-quality-unsuccessful-intervention",
+          "digest": "sha256:ef13559e91654e5cb3e280d3b4af5cac480c39bca0f5cf85240440ea72a08750"
+        },
+        {
+          "id": "REL-102",
+          "lineage_id": "lineage-REL-102",
+          "template_id": "historical-quality-unsuccessful-intervention",
+          "digest": "sha256:7bd29b8f6d590cc83e5047773b84e5f82ac29c4a0daaa108eeab2a48d85bf3ba"
+        },
+        {
+          "id": "REL-103",
+          "lineage_id": "lineage-REL-103",
+          "template_id": "historical-quality-unsuccessful-intervention",
+          "digest": "sha256:176a1b433299deeac9e34a52843aa104e9562f3495b32c9f06a556825b76ee03"
+        },
+        {
+          "id": "REL-104",
+          "lineage_id": "lineage-REL-104",
+          "template_id": "historical-quality-unsuccessful-intervention",
+          "digest": "sha256:286cd9fef833af4c9081eeedb46dc4644c708c7ff21ada7ed818fab043fa6390"
+        },
+        {
+          "id": "REL-105",
+          "lineage_id": "lineage-REL-105",
+          "template_id": "historical-quality-unsuccessful-intervention",
+          "digest": "sha256:de06f5a4ba41792095a51634d16a0def8500222a78d5dd3d15df9f1c2896a30c"
+        },
+        {
+          "id": "REL-106",
+          "lineage_id": "lineage-REL-106",
+          "template_id": "historical-quality-unsuccessful-intervention",
+          "digest": "sha256:99dbec2379568110c1de6e5c5ba85f6382720c0e8658433dd6123b9802556ab0"
+        },
+        {
+          "id": "REL-107",
+          "lineage_id": "lineage-REL-107",
+          "template_id": "historical-quality-unsuccessful-intervention",
+          "digest": "sha256:cbf1ca3078615d7708b7c9bba5ef6f2456ac6a3f60acabc7244eed8f8a6a97b6"
+        },
+        {
+          "id": "REL-108",
+          "lineage_id": "lineage-REL-108",
+          "template_id": "historical-quality-unsuccessful-intervention",
+          "digest": "sha256:5862211ac3ff1bf0b72804fe66f46da2acfecae78fb35c53b02079c65ce03859"
+        },
+        {
+          "id": "REL-109",
+          "lineage_id": "lineage-REL-109",
+          "template_id": "historical-quality-unsuccessful-intervention",
+          "digest": "sha256:afab5af992557698369958e49f7ce7252534a93a55eecd634442d4e258561f64"
+        },
+        {
+          "id": "REL-110",
+          "lineage_id": "lineage-REL-110",
+          "template_id": "historical-quality-unsuccessful-intervention",
+          "digest": "sha256:a4252a93a46003e88ee4b7d5c98c2eca9f621daca74d53ba0bf727f375f8dfdf"
+        },
+        {
+          "id": "REL-121",
+          "lineage_id": "lineage-REL-121",
+          "template_id": "historical-changeover-documented-block",
+          "digest": "sha256:138c33131252a0e3773a644aa4746eec90c6487dcc9efe3b35d907c259baefcb"
+        },
+        {
+          "id": "REL-122",
+          "lineage_id": "lineage-REL-122",
+          "template_id": "historical-changeover-documented-block",
+          "digest": "sha256:7e0667ce93324d2e28381173da98033083209454cd491f1eeff09bd8aa18a2fa"
+        },
+        {
+          "id": "REL-123",
+          "lineage_id": "lineage-REL-123",
+          "template_id": "historical-changeover-documented-block",
+          "digest": "sha256:86451614f1a6b02b6d9e76d5cfef960e4e37a944735a9a278e36f78f3d5ca7af"
+        },
+        {
+          "id": "REL-124",
+          "lineage_id": "lineage-REL-124",
+          "template_id": "historical-changeover-documented-block",
+          "digest": "sha256:ffe51fc94edd3c8b7a6b72e7958f3f63fb72e6be8a3b58642cbcd585a592d514"
+        },
+        {
+          "id": "REL-125",
+          "lineage_id": "lineage-REL-125",
+          "template_id": "historical-changeover-documented-block",
+          "digest": "sha256:cec8e2d938e04b6eb8adcf0336b090a8bb49290d7667e055bc0420b72687480f"
+        },
+        {
+          "id": "REL-126",
+          "lineage_id": "lineage-REL-126",
+          "template_id": "historical-changeover-documented-block",
+          "digest": "sha256:9512b3c45cb71930f5e2364fe524031b2e575a620b1a808d8816dcdfda07facf"
+        },
+        {
+          "id": "REL-127",
+          "lineage_id": "lineage-REL-127",
+          "template_id": "historical-changeover-documented-block",
+          "digest": "sha256:a0974a38317a6d61b237a68df7f033de29f674f181c27504e6352ef63aeefe9f"
+        },
+        {
+          "id": "REL-128",
+          "lineage_id": "lineage-REL-128",
+          "template_id": "historical-changeover-documented-block",
+          "digest": "sha256:9b985eb85ece386ebe552d2b9f1c511f759113722356dd940904820c9a1ff54e"
+        },
+        {
+          "id": "REL-129",
+          "lineage_id": "lineage-REL-129",
+          "template_id": "historical-changeover-documented-block",
+          "digest": "sha256:827b57b26f06f8308a9ebf74e7a7ff10624a4725add43e6b0b38fc90f4fbaea6"
+        },
+        {
+          "id": "REL-130",
+          "lineage_id": "lineage-REL-130",
+          "template_id": "historical-changeover-documented-block",
+          "digest": "sha256:a677d67325ceaab4da9373ad65405c1889461ca15dc728097b9e834f1620f97e"
+        },
+        {
+          "id": "REL-131",
+          "lineage_id": "lineage-REL-131",
+          "template_id": "historical-changeover-unsuccessful-intervention",
+          "digest": "sha256:94cfba2a0387a786f3edc2997e01ec39192ae43ea4f158ae53219d553be992ee"
+        },
+        {
+          "id": "REL-132",
+          "lineage_id": "lineage-REL-132",
+          "template_id": "historical-changeover-unsuccessful-intervention",
+          "digest": "sha256:d7af3c880f4472947cc92e07049d867211b4ae0e9a6b0697f3a6b0166c1d6fcc"
+        },
+        {
+          "id": "REL-133",
+          "lineage_id": "lineage-REL-133",
+          "template_id": "historical-changeover-unsuccessful-intervention",
+          "digest": "sha256:4d98d018a17e1cfdc4285ee672b7ee9700f63e9a51b320a81ed96d71c29689ce"
+        },
+        {
+          "id": "REL-134",
+          "lineage_id": "lineage-REL-134",
+          "template_id": "historical-changeover-unsuccessful-intervention",
+          "digest": "sha256:5f93359d619302b6d1cf950a8569ee96da4686bc459b92893859edb5b50112eb"
+        },
+        {
+          "id": "REL-135",
+          "lineage_id": "lineage-REL-135",
+          "template_id": "historical-changeover-unsuccessful-intervention",
+          "digest": "sha256:f9c30e504f8ad3618d47daa658b8babc2eb5f269f089059a41a9aee699f6e510"
+        },
+        {
+          "id": "REL-136",
+          "lineage_id": "lineage-REL-136",
+          "template_id": "historical-changeover-unsuccessful-intervention",
+          "digest": "sha256:39ca53afe1a705a813581efbbc8fcb8171e28108fdddb1fcd96baf50f99307a6"
+        },
+        {
+          "id": "REL-137",
+          "lineage_id": "lineage-REL-137",
+          "template_id": "historical-changeover-unsuccessful-intervention",
+          "digest": "sha256:71f4b1ee0ef5e8ed3f7bf1e028d63b99d492d53a0163ef903b1752505ee43fd4"
+        },
+        {
+          "id": "REL-138",
+          "lineage_id": "lineage-REL-138",
+          "template_id": "historical-changeover-unsuccessful-intervention",
+          "digest": "sha256:2f8c485c89a57c47d52f13b64fe247ce94e94403f135bc29fb7a5a5b7156166c"
+        },
+        {
+          "id": "REL-139",
+          "lineage_id": "lineage-REL-139",
+          "template_id": "historical-changeover-unsuccessful-intervention",
+          "digest": "sha256:8cfad8b109c1da3b18463d4e48c80afdafa41643da6ed6794e3e69db10176a3a"
+        },
+        {
+          "id": "REL-140",
+          "lineage_id": "lineage-REL-140",
+          "template_id": "historical-changeover-unsuccessful-intervention",
+          "digest": "sha256:eac807782ecd96b4561477ae83182a0dffe8805a26f7a4c95f027ab1ebc0eaaf"
+        },
+        {
+          "id": "REL-151",
+          "lineage_id": "lineage-REL-151",
+          "template_id": "historical-planning_reporting-documented-block",
+          "digest": "sha256:3c8fd8e1e1f440cb92554792e6a3cbc3b110789696302cd44014e39ba9e4a206"
+        },
+        {
+          "id": "REL-152",
+          "lineage_id": "lineage-REL-152",
+          "template_id": "historical-planning_reporting-documented-block",
+          "digest": "sha256:3a4dc2855e1c55cdf7cd0bdafeed1a1e330b01a81108042e262eb0377fd49f49"
+        },
+        {
+          "id": "REL-153",
+          "lineage_id": "lineage-REL-153",
+          "template_id": "historical-planning_reporting-documented-block",
+          "digest": "sha256:40cedac572c82a5e72c3a20bb98d65566977173071d727a2ec9ab1cc4d8fef8e"
+        },
+        {
+          "id": "REL-154",
+          "lineage_id": "lineage-REL-154",
+          "template_id": "historical-planning_reporting-documented-block",
+          "digest": "sha256:81c87cd43c5ed38585a27e20763a25c2a52e3e5230c1056577842626620eea8b"
+        },
+        {
+          "id": "REL-155",
+          "lineage_id": "lineage-REL-155",
+          "template_id": "historical-planning_reporting-documented-block",
+          "digest": "sha256:749a8a9610d8c3c9af6d932a43a23ce4ce4170a57c162bf08538a144569e60d3"
+        },
+        {
+          "id": "REL-156",
+          "lineage_id": "lineage-REL-156",
+          "template_id": "historical-planning_reporting-documented-block",
+          "digest": "sha256:4ba2e455fbf409c966687ac350f254121bc412756ebf18dea59f3d11d0dd9fec"
+        },
+        {
+          "id": "REL-157",
+          "lineage_id": "lineage-REL-157",
+          "template_id": "historical-planning_reporting-documented-block",
+          "digest": "sha256:b95da434aa4588485b13e1905087305d14feb2c6b139d8c61af1be9459f7078f"
+        },
+        {
+          "id": "REL-158",
+          "lineage_id": "lineage-REL-158",
+          "template_id": "historical-planning_reporting-documented-block",
+          "digest": "sha256:73c0b29b4da0082e48aa5cfb67eb8bf0c90361901bc0515f77f8561154f3de63"
+        },
+        {
+          "id": "REL-159",
+          "lineage_id": "lineage-REL-159",
+          "template_id": "historical-planning_reporting-documented-block",
+          "digest": "sha256:03152d80b50bd6140434f557b520dfb1a7f18a04f4f9cda53674ff8762e6c771"
+        },
+        {
+          "id": "REL-160",
+          "lineage_id": "lineage-REL-160",
+          "template_id": "historical-planning_reporting-documented-block",
+          "digest": "sha256:30193be2009d0e1b7afabf88f294c3e6a7ed08d180dbf31a40aa7966526436ba"
+        },
+        {
+          "id": "REL-161",
+          "lineage_id": "lineage-REL-161",
+          "template_id": "historical-planning_reporting-unsuccessful-intervention",
+          "digest": "sha256:3a0b502d3bf44b0d49136302a8fd08aefc326f8f797a1ddafa7c8d13ce7253fb"
+        },
+        {
+          "id": "REL-162",
+          "lineage_id": "lineage-REL-162",
+          "template_id": "historical-planning_reporting-unsuccessful-intervention",
+          "digest": "sha256:00d4a2b3182eaeabc95d04489200ecb6932ac4197da66123d0fc0438c22da7e7"
+        },
+        {
+          "id": "REL-163",
+          "lineage_id": "lineage-REL-163",
+          "template_id": "historical-planning_reporting-unsuccessful-intervention",
+          "digest": "sha256:cdae730e4b8767f34c6f5186fdc1ae8a8b71e7f20d8b99e655f16c9edad32823"
+        },
+        {
+          "id": "REL-164",
+          "lineage_id": "lineage-REL-164",
+          "template_id": "historical-planning_reporting-unsuccessful-intervention",
+          "digest": "sha256:a4cc1fc47e3c5c306f988008cdaf7db6af0a05b71ff5c101eea4999c067d470f"
+        },
+        {
+          "id": "REL-165",
+          "lineage_id": "lineage-REL-165",
+          "template_id": "historical-planning_reporting-unsuccessful-intervention",
+          "digest": "sha256:445d51c0122034bfef7b6ceebdd67c6eb676e80c531c3a5b106c56ffe17d3740"
+        },
+        {
+          "id": "REL-166",
+          "lineage_id": "lineage-REL-166",
+          "template_id": "historical-planning_reporting-unsuccessful-intervention",
+          "digest": "sha256:7521c7cce40ec5cb9fe9b868f0bebf069285ff5ca65ee1cde3a27ade52880007"
+        },
+        {
+          "id": "REL-167",
+          "lineage_id": "lineage-REL-167",
+          "template_id": "historical-planning_reporting-unsuccessful-intervention",
+          "digest": "sha256:d908948842fa52814387f103fe1e39046d5a75ee0b216ec7a8330c570822989c"
+        },
+        {
+          "id": "REL-168",
+          "lineage_id": "lineage-REL-168",
+          "template_id": "historical-planning_reporting-unsuccessful-intervention",
+          "digest": "sha256:519add8a09f26ee1606db1b1e85bf41a440a803c134dc6ccb693356af840c306"
+        },
+        {
+          "id": "REL-169",
+          "lineage_id": "lineage-REL-169",
+          "template_id": "historical-planning_reporting-unsuccessful-intervention",
+          "digest": "sha256:d1418096d50eb27c5332e3e2baef19a8b0e31394486997d12b342e191b42a185"
+        },
+        {
+          "id": "REL-170",
+          "lineage_id": "lineage-REL-170",
+          "template_id": "historical-planning_reporting-unsuccessful-intervention",
+          "digest": "sha256:1ed024d92a3aa0ce9a5a28aa868851abdbd14088005e411fed5a40f56f26dc72"
+        }
+      ],
+      "development": [
+        {
+          "id": "REL-021",
+          "lineage_id": "lineage-REL-021",
+          "template_id": "development-material-unconfirmed-source-assertion",
+          "digest": "sha256:75eb72c2b3195ad3234d5ba6e6cc33aaca0b344c435241569292f3d246d7c61f"
+        },
+        {
+          "id": "REL-022",
+          "lineage_id": "lineage-REL-022",
+          "template_id": "development-material-unconfirmed-source-assertion",
+          "digest": "sha256:bf88c522da7c7ddad303cb6033d7e6fa304e41912fc489d7fc7a8bf1de8c4b72"
+        },
+        {
+          "id": "REL-023",
+          "lineage_id": "lineage-REL-023",
+          "template_id": "development-material-unconfirmed-source-assertion",
+          "digest": "sha256:d980ef29c397f7d8da5cec12a510339a929464a51ae40e589da6b7a664075236"
+        },
+        {
+          "id": "REL-024",
+          "lineage_id": "lineage-REL-024",
+          "template_id": "development-material-unconfirmed-source-assertion",
+          "digest": "sha256:8dc2137ab1ac52b6500f0a7293a85ce8ed51ba50bef8e44fd9c36178f6accdb4"
+        },
+        {
+          "id": "REL-025",
+          "lineage_id": "lineage-REL-025",
+          "template_id": "development-material-unconfirmed-source-assertion",
+          "digest": "sha256:a589431c861953682414ba935243aff71044229978cfd72b03a266cce3e2ede1"
+        },
+        {
+          "id": "REL-051",
+          "lineage_id": "lineage-REL-051",
+          "template_id": "development-machine-unconfirmed-source-assertion",
+          "digest": "sha256:9baa8d4ecbd8e5aa9009dedd844aece5d360c0c92c0c0772b3783ad2e32438bc"
+        },
+        {
+          "id": "REL-052",
+          "lineage_id": "lineage-REL-052",
+          "template_id": "development-machine-unconfirmed-source-assertion",
+          "digest": "sha256:d30e814b6982fed0d0abac40fbc2a40a9590d58d56c9ea4287756f709477fd16"
+        },
+        {
+          "id": "REL-053",
+          "lineage_id": "lineage-REL-053",
+          "template_id": "development-machine-unconfirmed-source-assertion",
+          "digest": "sha256:516ed741b16fffd4421ad6388e0e33bb76f511086b6dc10ce5f8497eba53cb33"
+        },
+        {
+          "id": "REL-054",
+          "lineage_id": "lineage-REL-054",
+          "template_id": "development-machine-unconfirmed-source-assertion",
+          "digest": "sha256:fc75c9097354eb9653420b5c2d1f9cd6fb42d469b8bd470153148544f827d475"
+        },
+        {
+          "id": "REL-055",
+          "lineage_id": "lineage-REL-055",
+          "template_id": "development-machine-unconfirmed-source-assertion",
+          "digest": "sha256:8e9d2dab5345e2047d35c863f944fa482588c89009923b4fc64da811327b9ace"
+        },
+        {
+          "id": "REL-081",
+          "lineage_id": "lineage-REL-081",
+          "template_id": "development-staffing-unconfirmed-source-assertion",
+          "digest": "sha256:5e64c8abc12b4ec5b05699582f0193608e6b0089de848b9e788023c7b9fcac1d"
+        },
+        {
+          "id": "REL-082",
+          "lineage_id": "lineage-REL-082",
+          "template_id": "development-staffing-unconfirmed-source-assertion",
+          "digest": "sha256:4a818108fb7ae29caf9a17f5b79a509441ea0afc94e0468bc7aa9f1e9507bdfb"
+        },
+        {
+          "id": "REL-083",
+          "lineage_id": "lineage-REL-083",
+          "template_id": "development-staffing-unconfirmed-source-assertion",
+          "digest": "sha256:95fd0fcfe391776e696837ac97c8006217ecc330249c4bee2e616c09cb848d81"
+        },
+        {
+          "id": "REL-084",
+          "lineage_id": "lineage-REL-084",
+          "template_id": "development-staffing-unconfirmed-source-assertion",
+          "digest": "sha256:8135fc74025942880f062719bd8984b61971e28b9310fbfd58cfdb00d84cad3f"
+        },
+        {
+          "id": "REL-085",
+          "lineage_id": "lineage-REL-085",
+          "template_id": "development-staffing-unconfirmed-source-assertion",
+          "digest": "sha256:cb06461991e7427d200798a15ae2b02f8554ee48ff71c7fcf277889c5eccb5dc"
+        },
+        {
+          "id": "REL-111",
+          "lineage_id": "lineage-REL-111",
+          "template_id": "development-quality-unconfirmed-source-assertion",
+          "digest": "sha256:e17126f06036fd6adbb77b75459bc60f387057b67670c8b7956bdb52bb66c31b"
+        },
+        {
+          "id": "REL-112",
+          "lineage_id": "lineage-REL-112",
+          "template_id": "development-quality-unconfirmed-source-assertion",
+          "digest": "sha256:a433843d2cc6204f21ecf2663731d696a534500bb5b41b5d339469cd1a387dfb"
+        },
+        {
+          "id": "REL-113",
+          "lineage_id": "lineage-REL-113",
+          "template_id": "development-quality-unconfirmed-source-assertion",
+          "digest": "sha256:8aae8ce8247d20c5f0e18c15c6878dc936c94129867df6bbde4de202f2982b70"
+        },
+        {
+          "id": "REL-114",
+          "lineage_id": "lineage-REL-114",
+          "template_id": "development-quality-unconfirmed-source-assertion",
+          "digest": "sha256:5de9be13beed822e3263ddbdddb5941bd8dfea59031f745a8723512d36cd820d"
+        },
+        {
+          "id": "REL-115",
+          "lineage_id": "lineage-REL-115",
+          "template_id": "development-quality-unconfirmed-source-assertion",
+          "digest": "sha256:2ba4ff61c3eff8a7a6df1b859a60bcde0f0221544dafb56f2435334127c2b556"
+        },
+        {
+          "id": "REL-141",
+          "lineage_id": "lineage-REL-141",
+          "template_id": "development-changeover-unconfirmed-source-assertion",
+          "digest": "sha256:5a871947f81b08c43778a4f1bf9dfb1205746e85f9b5a1cb79f8fda8e4753420"
+        },
+        {
+          "id": "REL-142",
+          "lineage_id": "lineage-REL-142",
+          "template_id": "development-changeover-unconfirmed-source-assertion",
+          "digest": "sha256:28e8ba1a3692e39e81fac361d44e5c40c001abae03fa0e605cc6b0f0459ca4cc"
+        },
+        {
+          "id": "REL-143",
+          "lineage_id": "lineage-REL-143",
+          "template_id": "development-changeover-unconfirmed-source-assertion",
+          "digest": "sha256:28f213b3f7af006d3a5542c899b7db2ca8f155e52d24dfdb3aa0e33a57dac285"
+        },
+        {
+          "id": "REL-144",
+          "lineage_id": "lineage-REL-144",
+          "template_id": "development-changeover-unconfirmed-source-assertion",
+          "digest": "sha256:b29ed755cff189c00810f2cdcc6b17e070d8c5810e878480d79930e8f7a4c0fb"
+        },
+        {
+          "id": "REL-145",
+          "lineage_id": "lineage-REL-145",
+          "template_id": "development-changeover-unconfirmed-source-assertion",
+          "digest": "sha256:7db15a03e8f6fced9a22c7a85215563c60ad5f9cbf38967a6836600c92c40b77"
+        },
+        {
+          "id": "REL-171",
+          "lineage_id": "lineage-REL-171",
+          "template_id": "development-planning_reporting-unconfirmed-source-assertion",
+          "digest": "sha256:205c957d56c43b073cf2813558c608569bdf16c5ea3f3c37e8a3405ede0ad179"
+        },
+        {
+          "id": "REL-172",
+          "lineage_id": "lineage-REL-172",
+          "template_id": "development-planning_reporting-unconfirmed-source-assertion",
+          "digest": "sha256:53942422ddf522c70313734615e1e697b362bedcab58506aa081e35ed361e053"
+        },
+        {
+          "id": "REL-173",
+          "lineage_id": "lineage-REL-173",
+          "template_id": "development-planning_reporting-unconfirmed-source-assertion",
+          "digest": "sha256:cdc29f7d0802b0e84c3abed9d0fe4b75b5f17fe37e82b0a361e9c8a3f2ffb105"
+        },
+        {
+          "id": "REL-174",
+          "lineage_id": "lineage-REL-174",
+          "template_id": "development-planning_reporting-unconfirmed-source-assertion",
+          "digest": "sha256:62ad72ff9db37c60c6628211dfe6c3d32153dc87147cff4b812461b5635bec3d"
+        },
+        {
+          "id": "REL-175",
+          "lineage_id": "lineage-REL-175",
+          "template_id": "development-planning_reporting-unconfirmed-source-assertion",
+          "digest": "sha256:1248501e6d749e19879eb0eac2a8442bcbc5d16281226e890afadb6a5a6810c5"
+        }
+      ],
+      "locked": [
+        {
+          "id": "REL-026",
+          "lineage_id": "lineage-REL-026",
+          "template_id": "locked-material-conflicting-observation",
+          "digest": "sha256:0ca9335680260a8a3273a144b8b3c024920109bd197306816dec7c20af83ee56"
+        },
+        {
+          "id": "REL-027",
+          "lineage_id": "lineage-REL-027",
+          "template_id": "locked-material-conflicting-observation",
+          "digest": "sha256:ae51e09fdd18905a8937669949f1f2e6c828625361a4e146667c1178d6d02454"
+        },
+        {
+          "id": "REL-028",
+          "lineage_id": "lineage-REL-028",
+          "template_id": "locked-material-conflicting-observation",
+          "digest": "sha256:47df20c2d021d6f1d7fc980f26f57f02b9b24982846794e2e72f4f7db22c2912"
+        },
+        {
+          "id": "REL-029",
+          "lineage_id": "lineage-REL-029",
+          "template_id": "locked-material-conflicting-observation",
+          "digest": "sha256:2a855c0ced61a56cdd7a453547c60911c25740ab916a56ef361ae5e99572edab"
+        },
+        {
+          "id": "REL-030",
+          "lineage_id": "lineage-REL-030",
+          "template_id": "locked-material-conflicting-observation",
+          "digest": "sha256:040eb7cb9051c5582efc893127fde28c41ef785148dcf9bd9f7e849ad1bdea54"
+        },
+        {
+          "id": "REL-056",
+          "lineage_id": "lineage-REL-056",
+          "template_id": "locked-machine-conflicting-observation",
+          "digest": "sha256:ee4dcad619f087f0db2cbb22c1f9fc9688d0a5ad14811d16c014247171876ac9"
+        },
+        {
+          "id": "REL-057",
+          "lineage_id": "lineage-REL-057",
+          "template_id": "locked-machine-conflicting-observation",
+          "digest": "sha256:a8d7e5e272ba96f470960bc8e30c91993baa9dcdc28bb0d677fe444d0215c843"
+        },
+        {
+          "id": "REL-058",
+          "lineage_id": "lineage-REL-058",
+          "template_id": "locked-machine-conflicting-observation",
+          "digest": "sha256:3f6acffdfde81c48e0e9034c02591e76baed115ef2128cdf2b061a38df42060b"
+        },
+        {
+          "id": "REL-059",
+          "lineage_id": "lineage-REL-059",
+          "template_id": "locked-machine-conflicting-observation",
+          "digest": "sha256:44b418822b70adb0f491e08b4e47652217042f90a5f0f2a9c7a8539dace0b523"
+        },
+        {
+          "id": "REL-060",
+          "lineage_id": "lineage-REL-060",
+          "template_id": "locked-machine-conflicting-observation",
+          "digest": "sha256:f5544ccb557227891938bdf17be42277f8c6bd0ab289c896acc0b3f4326fee1f"
+        },
+        {
+          "id": "REL-086",
+          "lineage_id": "lineage-REL-086",
+          "template_id": "locked-staffing-conflicting-observation",
+          "digest": "sha256:a970f8c176ade87b45d76ac3edc88fc7b871e5f6ced8ba2fba71896273fe8a0a"
+        },
+        {
+          "id": "REL-087",
+          "lineage_id": "lineage-REL-087",
+          "template_id": "locked-staffing-conflicting-observation",
+          "digest": "sha256:33e3b39e9a378abf626336a842c7246234af5e1a17525f2c524dc94b760f3793"
+        },
+        {
+          "id": "REL-088",
+          "lineage_id": "lineage-REL-088",
+          "template_id": "locked-staffing-conflicting-observation",
+          "digest": "sha256:c0b249b2a5deafa75530ad64bdb03b0d1895ec439adff4d8dda7c53fc9a3ae1b"
+        },
+        {
+          "id": "REL-089",
+          "lineage_id": "lineage-REL-089",
+          "template_id": "locked-staffing-conflicting-observation",
+          "digest": "sha256:1ff4a6fd8ab9a4bdc752a402e5c5bb18efc0b7328327df282d1682669ee901a1"
+        },
+        {
+          "id": "REL-090",
+          "lineage_id": "lineage-REL-090",
+          "template_id": "locked-staffing-conflicting-observation",
+          "digest": "sha256:29600768c64ebe7fa9a87a02063a0911e9906cd43a296578e70ffabb61c4275e"
+        },
+        {
+          "id": "REL-116",
+          "lineage_id": "lineage-REL-116",
+          "template_id": "locked-quality-conflicting-observation",
+          "digest": "sha256:9285906bc5e06626e39d13fca20b86da3c6762f36123333e1c48804e40411466"
+        },
+        {
+          "id": "REL-117",
+          "lineage_id": "lineage-REL-117",
+          "template_id": "locked-quality-conflicting-observation",
+          "digest": "sha256:fd543de9a4b6dbda2eb5abe0ab31e96a23a5277157b486f83dc9301e43a9e9df"
+        },
+        {
+          "id": "REL-118",
+          "lineage_id": "lineage-REL-118",
+          "template_id": "locked-quality-conflicting-observation",
+          "digest": "sha256:a7f99231e30e2f9169613df4fc319bc5bb7d3a9f9c685c8ec3427b1c6b8a15e3"
+        },
+        {
+          "id": "REL-119",
+          "lineage_id": "lineage-REL-119",
+          "template_id": "locked-quality-conflicting-observation",
+          "digest": "sha256:1b4b87f10086e57da01593f972163689415e77d7b4456cae5ce3d332af0b7cef"
+        },
+        {
+          "id": "REL-120",
+          "lineage_id": "lineage-REL-120",
+          "template_id": "locked-quality-conflicting-observation",
+          "digest": "sha256:88a5a124aa53da6489c1fc335a9c065bd94aff525dafa273f7f566899a88cd34"
+        },
+        {
+          "id": "REL-146",
+          "lineage_id": "lineage-REL-146",
+          "template_id": "locked-changeover-conflicting-observation",
+          "digest": "sha256:d41b98c43f870d0fd28de95d9536f305524651e3ca49877c2d481cc1733b9236"
+        },
+        {
+          "id": "REL-147",
+          "lineage_id": "lineage-REL-147",
+          "template_id": "locked-changeover-conflicting-observation",
+          "digest": "sha256:9301dc802f647302a46f0078e65c7907e136c7b556102a9f49095aa0166e0610"
+        },
+        {
+          "id": "REL-148",
+          "lineage_id": "lineage-REL-148",
+          "template_id": "locked-changeover-conflicting-observation",
+          "digest": "sha256:875355d4253f8325cd719e35960bff3051b78144abf988195ac6d6965241c348"
+        },
+        {
+          "id": "REL-149",
+          "lineage_id": "lineage-REL-149",
+          "template_id": "locked-changeover-conflicting-observation",
+          "digest": "sha256:1c32bdd4015f23800e36df787094c985acbcc8471934aa2a82e60057baec79a0"
+        },
+        {
+          "id": "REL-150",
+          "lineage_id": "lineage-REL-150",
+          "template_id": "locked-changeover-conflicting-observation",
+          "digest": "sha256:6318b7d6ede0fe9dd537884382ece5fdd8ab8e8bdf48cfef3fa435fcdbe44948"
+        },
+        {
+          "id": "REL-176",
+          "lineage_id": "lineage-REL-176",
+          "template_id": "locked-planning_reporting-conflicting-observation",
+          "digest": "sha256:6a165aa9869d29e567c82678b8752de6253a8a3c1c9805ec03b5e541301bdf70"
+        },
+        {
+          "id": "REL-177",
+          "lineage_id": "lineage-REL-177",
+          "template_id": "locked-planning_reporting-conflicting-observation",
+          "digest": "sha256:a4c96a86f240e1f034914c5e3c194d3873a087fc17ad1133ac37822b949538c5"
+        },
+        {
+          "id": "REL-178",
+          "lineage_id": "lineage-REL-178",
+          "template_id": "locked-planning_reporting-conflicting-observation",
+          "digest": "sha256:d7cce42cba3981aaafa29b965c0d27dd1ce64ed90f26fec480a70dafe245ffbb"
+        },
+        {
+          "id": "REL-179",
+          "lineage_id": "lineage-REL-179",
+          "template_id": "locked-planning_reporting-conflicting-observation",
+          "digest": "sha256:aec0ec66286ba5013ac865605be0d5d5f88915b80f4c84dd8aa99e8712968b64"
+        },
+        {
+          "id": "REL-180",
+          "lineage_id": "lineage-REL-180",
+          "template_id": "locked-planning_reporting-conflicting-observation",
+          "digest": "sha256:15b87ee0c080af1235a809adc403c7bedfec81e5ed104cef6f3840c7c1ff6ed8"
+        }
+      ]
+    },
+    "templates": [
+      {
+        "id": "historical-material-documented-block",
+        "category": "material",
+        "split": "historical",
+        "structure": "documented-block",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-material-unsuccessful-intervention",
+        "category": "material",
+        "split": "historical",
+        "structure": "unsuccessful-intervention",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "development-material-unconfirmed-source-assertion",
+        "category": "material",
+        "split": "development",
+        "structure": "unconfirmed-source-assertion",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "locked-material-conflicting-observation",
+        "category": "material",
+        "split": "locked",
+        "structure": "conflicting-observation",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-machine-documented-block",
+        "category": "machine",
+        "split": "historical",
+        "structure": "documented-block",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-machine-unsuccessful-intervention",
+        "category": "machine",
+        "split": "historical",
+        "structure": "unsuccessful-intervention",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "development-machine-unconfirmed-source-assertion",
+        "category": "machine",
+        "split": "development",
+        "structure": "unconfirmed-source-assertion",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "locked-machine-conflicting-observation",
+        "category": "machine",
+        "split": "locked",
+        "structure": "conflicting-observation",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-staffing-documented-block",
+        "category": "staffing",
+        "split": "historical",
+        "structure": "documented-block",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-staffing-unsuccessful-intervention",
+        "category": "staffing",
+        "split": "historical",
+        "structure": "unsuccessful-intervention",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "development-staffing-unconfirmed-source-assertion",
+        "category": "staffing",
+        "split": "development",
+        "structure": "unconfirmed-source-assertion",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "locked-staffing-conflicting-observation",
+        "category": "staffing",
+        "split": "locked",
+        "structure": "conflicting-observation",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-quality-documented-block",
+        "category": "quality",
+        "split": "historical",
+        "structure": "documented-block",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-quality-unsuccessful-intervention",
+        "category": "quality",
+        "split": "historical",
+        "structure": "unsuccessful-intervention",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "development-quality-unconfirmed-source-assertion",
+        "category": "quality",
+        "split": "development",
+        "structure": "unconfirmed-source-assertion",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "locked-quality-conflicting-observation",
+        "category": "quality",
+        "split": "locked",
+        "structure": "conflicting-observation",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-changeover-documented-block",
+        "category": "changeover",
+        "split": "historical",
+        "structure": "documented-block",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-changeover-unsuccessful-intervention",
+        "category": "changeover",
+        "split": "historical",
+        "structure": "unsuccessful-intervention",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "development-changeover-unconfirmed-source-assertion",
+        "category": "changeover",
+        "split": "development",
+        "structure": "unconfirmed-source-assertion",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "locked-changeover-conflicting-observation",
+        "category": "changeover",
+        "split": "locked",
+        "structure": "conflicting-observation",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-planning_reporting-documented-block",
+        "category": "planning_reporting",
+        "split": "historical",
+        "structure": "documented-block",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "historical-planning_reporting-unsuccessful-intervention",
+        "category": "planning_reporting",
+        "split": "historical",
+        "structure": "unsuccessful-intervention",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "development-planning_reporting-unconfirmed-source-assertion",
+        "category": "planning_reporting",
+        "split": "development",
+        "structure": "unconfirmed-source-assertion",
+        "review": "generator author structural review; independent semantic review pending"
+      },
+      {
+        "id": "locked-planning_reporting-conflicting-observation",
+        "category": "planning_reporting",
+        "split": "locked",
+        "structure": "conflicting-observation",
+        "review": "generator author structural review; independent semantic review pending"
+      }
+    ],
+    "labels_digest": "sha256:55a7a640d8b58cad80396cfcd472e41d9160e08aa0ed2dedb8f7c9b0ef7922ca",
+    "observations_digest": "sha256:7647c7ba24d222574ad5842afad954abacb85595bc59544c0c5caa4612ccfb23",
+    "locked_labels_frozen": true,
+    "limitations": [
+      "Synthetic scenarios with authored procedural generation, not real manufacturing data",
+      "Generator author review only; no manufacturing expert annotation",
+      "Independent semantic support review pending",
+      "Category-level retrieval labels test precedent topic relevance, not transferability of historical actions"
+    ]
+  },
+  "execution_configuration": {
+    "provider": "openai",
+    "generation_model": "gpt-4.1-mini-2025-04-14",
+    "embedding_model": "text-embedding-3-small",
+    "dimensions": 512,
+    "prompt_version": "incident-grounding-v3",
+    "schema_version": "typed-tasks-v1",
+    "price_version": "openai-2026-09-30",
+    "max_input_tokens": 8000,
+    "max_output_tokens": 1500,
+    "max_attempts": 2
+  },
+  "execution_configuration_digest": "802e49f02d065ad7165502c5042eac57743a5241b1559f34ef9a15dad68f2b1e",
+  "retrieval_mode": "evidence_only",
+  "corpus_id": null,
+  "denominators": {
+    "planned_cases": 5,
+    "attempted_cases": 2,
+    "valid_runs": 1
+  },
+  "blocking_defects": [
+    "18dc7a52-183d-4f28-920a-bdd1557cda22"
+  ],
+  "semantic_support": null,
+  "human_review_status": "PENDING",
+  "limitations": [
+    "Citation membership does not establish semantic support",
+    "Human support labels require separate review",
+    "Dataset generator-author review is not independent semantic review"
+  ],
+  "cases": [
+    {
+      "id": "bddb0ed2-0da3-418f-9db8-1409a85ce054",
+      "request_key": "eval-80ef53be-754b-442c-b26c-ea44027895a5-REL-021",
+      "analysis_id": "b3912262-c7fc-4078-b99a-ac8432163c66",
+      "task": "investigation",
+      "status": "COMPLETED",
+      "provider": "openai",
+      "configuration": {
+        "provider": "openai",
+        "dimensions": 512,
+        "max_attempts": 2,
+        "price_version": "openai-2026-09-30",
+        "prompt_version": "incident-grounding-v3",
+        "schema_version": "typed-tasks-v1",
+        "embedding_model": "text-embedding-3-small",
+        "generation_model": "gpt-4.1-mini-2025-04-14",
+        "max_input_tokens": 8000,
+        "max_output_tokens": 1500
+      },
+      "packet": {
+        "scope": {
+          "unit": "good_units",
+          "stage": "sewing",
+          "factory": "Synthetic Factory Release",
+          "line_id": "S4",
+          "order_id": "ORDER-21",
+          "style_id": "STYLE-0"
+        },
+        "cutoff": "2026-06-22T10:05:00+00:00",
+        "metrics": [
+          {
+            "id": "planned",
+            "unit": "good_units",
+            "value": 80,
+            "formula": "sum(matched baseline plan quantities)",
+            "interval": {
+              "end": "2026-06-22T10:00:00+00:00",
+              "start": "2026-06-22T09:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-021-p0",
+              "REL-021-o0",
+              "REL-021-p1",
+              "REL-021-o1",
+              "REL-021-p2",
+              "REL-021-o2",
+              "REL-021-p3",
+              "REL-021-o3"
+            ]
+          },
+          {
+            "id": "observed",
+            "unit": "good_units",
+            "value": 80,
+            "formula": "sum(matched final-good delta quantities)",
+            "interval": {
+              "end": "2026-06-22T10:00:00+00:00",
+              "start": "2026-06-22T09:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-021-p0",
+              "REL-021-o0",
+              "REL-021-p1",
+              "REL-021-o1",
+              "REL-021-p2",
+              "REL-021-o2",
+              "REL-021-p3",
+              "REL-021-o3"
+            ]
+          },
+          {
+            "id": "variance",
+            "unit": "good_units",
+            "value": 0,
+            "formula": "observed - planned",
+            "interval": {
+              "end": "2026-06-22T10:00:00+00:00",
+              "start": "2026-06-22T09:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-021-p0",
+              "REL-021-o0",
+              "REL-021-p1",
+              "REL-021-o1",
+              "REL-021-p2",
+              "REL-021-o2",
+              "REL-021-p3",
+              "REL-021-o3"
+            ]
+          },
+          {
+            "id": "shortfall",
+            "unit": "good_units",
+            "value": 0,
+            "formula": "max(0, planned - observed)",
+            "interval": {
+              "end": "2026-06-22T10:00:00+00:00",
+              "start": "2026-06-22T09:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-021-p0",
+              "REL-021-o0",
+              "REL-021-p1",
+              "REL-021-o1",
+              "REL-021-p2",
+              "REL-021-o2",
+              "REL-021-p3",
+              "REL-021-o3"
+            ]
+          },
+          {
+            "id": "baseline_target",
+            "unit": "good_units",
+            "value": 80,
+            "formula": "sum(all baseline plan quantities for declared window)",
+            "interval": {
+              "end": "2026-06-22T10:00:00+00:00",
+              "start": "2026-06-22T09:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-021-p0",
+              "REL-021-p1",
+              "REL-021-p2",
+              "REL-021-p3"
+            ]
+          },
+          {
+            "id": "blocked_minutes",
+            "unit": "minutes",
+            "value": 0,
+            "formula": "duration(union(explicit line-block intervals intersected with investigation window))",
+            "interval": {
+              "end": "2026-06-22T10:00:00+00:00",
+              "start": "2026-06-22T09:00:00+00:00"
+            },
+            "input_refs": []
+          },
+          {
+            "id": "remaining_target",
+            "unit": "good_units",
+            "value": 0,
+            "formula": "max(0, baseline_target - observed)",
+            "interval": {
+              "end": "2026-06-22T10:00:00+00:00",
+              "start": "2026-06-22T10:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-021-o0",
+              "REL-021-o1",
+              "REL-021-o2",
+              "REL-021-o3",
+              "REL-021-p0",
+              "REL-021-p1",
+              "REL-021-p2",
+              "REL-021-p3"
+            ]
+          },
+          {
+            "id": "remaining_elapsed_minutes",
+            "unit": "minutes",
+            "value": 0,
+            "formula": "window_end - observation_watermark (elapsed wall-clock)",
+            "interval": {
+              "end": "2026-06-22T10:00:00+00:00",
+              "start": "2026-06-22T10:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-021-p0",
+              "REL-021-o0",
+              "REL-021-p1",
+              "REL-021-o1",
+              "REL-021-p2",
+              "REL-021-o2",
+              "REL-021-p3",
+              "REL-021-o3"
+            ]
+          },
+          {
+            "id": "required_units_per_hour",
+            "unit": "good_units/hour",
+            "value": null,
+            "formula": "remaining_target * 60 / remaining_elapsed_minutes",
+            "interval": {
+              "end": "2026-06-22T10:00:00+00:00",
+              "start": "2026-06-22T10:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-021-o0",
+              "REL-021-o1",
+              "REL-021-o2",
+              "REL-021-o3",
+              "REL-021-p0",
+              "REL-021-p1",
+              "REL-021-p2",
+              "REL-021-p3"
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "REL-021-event",
+            "end": "2026-06-22T08:30:00+00:00",
+            "lane": "material",
+            "type": "material_readiness",
+            "start": "2026-06-22T08:10:00+00:00",
+            "summary": "Prior resolved issue; no current-window concern reported.",
+            "assertion": true,
+            "source_id": "REL-021-shift-log",
+            "available_at": "2026-06-22T08:40:00+00:00",
+            "context_only": true
+          }
+        ],
+        "revision": 1,
+        "hypotheses": [],
+        "incident_id": "REL-021",
+        "action_catalog": [],
+        "analysis_digest": "sha256:09811573703463a407d6ebed3bfd5d4019da54f63e3fc62d630099d3cd4e52f7",
+        "missing_evidence": {
+          "actions": {
+            "status": "UNAVAILABLE",
+            "reasons": [
+              "No evidence-linked proposal is available."
+            ]
+          },
+          "timeline": {
+            "status": "PARTIAL",
+            "reasons": [
+              "Source coverage for the investigation interval is not declared complete."
+            ]
+          },
+          "hypotheses": {
+            "status": "UNAVAILABLE",
+            "reasons": [
+              "No relevant event evidence is available."
+            ]
+          },
+          "production": {
+            "status": "COMPLETE",
+            "reasons": []
+          }
+        },
+        "retrieval_manifest": {
+          "mode": "evidence_only"
+        },
+        "historical_evidence": [],
+        "observation_watermark": "2026-06-22T10:00:00+00:00"
+      },
+      "attempts": [
+        {
+          "provider_verified": true,
+          "output": {
+            "hypotheses": [],
+            "unresolved_issues": [
+              "No hypotheses or proposed explanations are currently supported by available event evidence within the investigation window.",
+              "The investigation interval lacks complete source coverage, limiting comprehensive timeline construction and causal inference.",
+              "No action proposals or counterevidence have been linked to the existing evidence packet.",
+              "Absence of new event evidence leaves uncertainty about any ongoing issues during the 09:00 to 10:00 interval on 2026-06-22.",
+              "Historical evidence is not present to provide context or comparison for current material readiness status.",
+              "Observed production output matches planned targets exactly for the 09:00 to 10:00 interval (metric_ids: planned, observed, variance, shortfall all confirm), suggesting no production shortfall or blockage at line S4 during the sewing stage.",
+              "Prior issue indicated in REL-021-event was resolved before the current window starting at 08:10 and no further concerns were reported as of 08:40, leaving a gap in knowledge for the interval from 08:40 onwards until 10:00.",
+              "No explicit blocked time was recorded in the metrics, implying no line blockages affected output in the observed window.",
+              "Missing evidence on actions and hypotheses limits ability to propose root causes or mitigations.",
+              "No evidence exists to confirm if other latent factors impacted production indirectly outside of material readiness."
+            ]
+          },
+          "response_id": "resp_0c985db152d71b62016abcd870103087d18b1c3c6d86b1a386",
+          "request_id": "req_fb0969ac09a04bcd941699954f8de48a",
+          "reported_model": "gpt-4.1-mini-2025-04-14",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 1984,
+            "output_tokens": 276
+          },
+          "prompt_digest": "cfdba1e4b59aef17ba55a82bd23de87731b403af8e06e96e4aa5c949f3746e14"
+        },
+        {
+          "provider_verified": true,
+          "output": {
+            "hypotheses": [],
+            "unresolved_issues": [
+              "No relevant event evidence is available for hypothesis generation or refutation.",
+              "Timeline source coverage for the investigation interval is partial and not declared complete, limiting temporal context completeness.",
+              "No evidence-linked proposals or actions are available for recovery or next operational checks."
+            ]
+          },
+          "response_id": "resp_068fc3729f36ce8d016abcd874331087d19096f706a5458247",
+          "request_id": "req_4d2bf98074ea47daad5b46f094d29ea1",
+          "reported_model": "gpt-4.1-mini-2025-04-14",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 1997,
+            "output_tokens": 61
+          },
+          "prompt_digest": "c8b3aebe5a661dd5361155fda20c6c209d90c37df6c43de2d210e7a424aae15f"
+        }
+      ],
+      "result": {
+        "output": {
+          "hypotheses": [],
+          "unresolved_issues": [
+            "No relevant event evidence is available for hypothesis generation or refutation.",
+            "Timeline source coverage for the investigation interval is partial and not declared complete, limiting temporal context completeness.",
+            "No evidence-linked proposals or actions are available for recovery or next operational checks."
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": []
+        },
+        "requires_human_review": true,
+        "elapsed_seconds": 8.04758
+      },
+      "created_at": "2026-09-30T15:07:50.421959+05:30",
+      "completed_at": "2026-09-30T09:37:58.198662+00:00"
+    },
+    {
+      "id": "18dc7a52-183d-4f28-920a-bdd1557cda22",
+      "request_key": "eval-80ef53be-754b-442c-b26c-ea44027895a5-REL-022",
+      "analysis_id": "6563c221-61d6-4de2-a4a6-52fc5e3805df",
+      "task": "investigation",
+      "status": "INVALID",
+      "provider": "openai",
+      "configuration": {
+        "provider": "openai",
+        "dimensions": 512,
+        "max_attempts": 2,
+        "price_version": "openai-2026-09-30",
+        "prompt_version": "incident-grounding-v3",
+        "schema_version": "typed-tasks-v1",
+        "embedding_model": "text-embedding-3-small",
+        "generation_model": "gpt-4.1-mini-2025-04-14",
+        "max_input_tokens": 8000,
+        "max_output_tokens": 1500
+      },
+      "packet": {
+        "scope": {
+          "unit": "good_units",
+          "stage": "sewing",
+          "factory": "Synthetic Factory Release",
+          "line_id": "S4",
+          "order_id": "ORDER-22",
+          "style_id": "STYLE-1"
+        },
+        "cutoff": "2026-06-23T10:05:00+00:00",
+        "metrics": [
+          {
+            "id": "planned",
+            "unit": "good_units",
+            "value": null,
+            "formula": "sum(matched baseline plan quantities)",
+            "interval": {
+              "end": "2026-06-23T10:00:00+00:00",
+              "start": "2026-06-23T09:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-022-p0",
+              "REL-022-o0",
+              "REL-022-p2",
+              "REL-022-o2",
+              "REL-022-p3",
+              "REL-022-o3"
+            ]
+          },
+          {
+            "id": "observed",
+            "unit": "good_units",
+            "value": null,
+            "formula": "sum(matched final-good delta quantities)",
+            "interval": {
+              "end": "2026-06-23T10:00:00+00:00",
+              "start": "2026-06-23T09:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-022-p0",
+              "REL-022-o0",
+              "REL-022-p2",
+              "REL-022-o2",
+              "REL-022-p3",
+              "REL-022-o3"
+            ]
+          },
+          {
+            "id": "variance",
+            "unit": "good_units",
+            "value": null,
+            "formula": "observed - planned",
+            "interval": {
+              "end": "2026-06-23T10:00:00+00:00",
+              "start": "2026-06-23T09:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-022-p0",
+              "REL-022-o0",
+              "REL-022-p2",
+              "REL-022-o2",
+              "REL-022-p3",
+              "REL-022-o3"
+            ]
+          },
+          {
+            "id": "shortfall",
+            "unit": "good_units",
+            "value": null,
+            "formula": "max(0, planned - observed)",
+            "interval": {
+              "end": "2026-06-23T10:00:00+00:00",
+              "start": "2026-06-23T09:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-022-p0",
+              "REL-022-o0",
+              "REL-022-p2",
+              "REL-022-o2",
+              "REL-022-p3",
+              "REL-022-o3"
+            ]
+          },
+          {
+            "id": "baseline_target",
+            "unit": "good_units",
+            "value": 88,
+            "formula": "sum(all baseline plan quantities for declared window)",
+            "interval": {
+              "end": "2026-06-23T10:00:00+00:00",
+              "start": "2026-06-23T09:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-022-p0",
+              "REL-022-p1",
+              "REL-022-p2",
+              "REL-022-p3"
+            ]
+          },
+          {
+            "id": "blocked_minutes",
+            "unit": "minutes",
+            "value": 0,
+            "formula": "duration(union(explicit line-block intervals intersected with investigation window))",
+            "interval": {
+              "end": "2026-06-23T10:00:00+00:00",
+              "start": "2026-06-23T09:00:00+00:00"
+            },
+            "input_refs": []
+          },
+          {
+            "id": "remaining_target",
+            "unit": "good_units",
+            "value": null,
+            "formula": "max(0, baseline_target - observed)",
+            "interval": {
+              "end": "2026-06-23T10:00:00+00:00",
+              "start": "2026-06-23T10:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-022-o0",
+              "REL-022-o2",
+              "REL-022-o3",
+              "REL-022-p0",
+              "REL-022-p1",
+              "REL-022-p2",
+              "REL-022-p3"
+            ]
+          },
+          {
+            "id": "remaining_elapsed_minutes",
+            "unit": "minutes",
+            "value": 0,
+            "formula": "window_end - observation_watermark (elapsed wall-clock)",
+            "interval": {
+              "end": "2026-06-23T10:00:00+00:00",
+              "start": "2026-06-23T10:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-022-p0",
+              "REL-022-o0",
+              "REL-022-p2",
+              "REL-022-o2",
+              "REL-022-p3",
+              "REL-022-o3"
+            ]
+          },
+          {
+            "id": "required_units_per_hour",
+            "unit": "good_units/hour",
+            "value": null,
+            "formula": "remaining_target * 60 / remaining_elapsed_minutes",
+            "interval": {
+              "end": "2026-06-23T10:00:00+00:00",
+              "start": "2026-06-23T10:00:00+00:00"
+            },
+            "input_refs": [
+              "REL-022-o0",
+              "REL-022-o2",
+              "REL-022-o3",
+              "REL-022-p0",
+              "REL-022-p1",
+              "REL-022-p2",
+              "REL-022-p3"
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "REL-022-event",
+            "end": "2026-06-23T09:21:00+00:00",
+            "lane": "material",
+            "type": "material_readiness",
+            "start": "2026-06-23T09:06:00+00:00",
+            "summary": "Source reports material concern affecting order 22; line effect needs verification.",
+            "assertion": true,
+            "source_id": "REL-022-shift-log",
+            "available_at": "2026-06-23T09:25:00+00:00",
+            "context_only": false
+          }
+        ],
+        "revision": 1,
+        "hypotheses": [
+          {
+            "status": "PLAUSIBLE",
+            "category": "material",
+            "mechanism": "This event may have affected production, but a line-level effect is not established.",
+            "next_check": "Confirm whether the material event blocked this line and for how long.",
+            "supporting_evidence": [
+              "REL-022-event"
+            ],
+            "contradicting_evidence": []
+          }
+        ],
+        "incident_id": "REL-022",
+        "action_catalog": [
+          {
+            "id": "verify-material",
+            "type": "verify_material_availability",
+            "state": "DRAFT",
+            "purpose": "Clarify the blocker before choosing a recovery response.",
+            "owner_role": "Production lead",
+            "preconditions": [
+              "Review the cited evidence and current incident revision."
+            ],
+            "missing_information": [
+              "Confirm whether the material event blocked this line and for how long."
+            ],
+            "supporting_evidence": [
+              "REL-022-event"
+            ]
+          }
+        ],
+        "analysis_digest": "sha256:c8135cea32d3911382b03874b108a98f80f0f0017f83b3fbcb68763b2ee5acd8",
+        "missing_evidence": {
+          "actions": {
+            "status": "PARTIAL",
+            "reasons": [
+              "Proposals require human review and do not execute factory changes."
+            ]
+          },
+          "timeline": {
+            "status": "PARTIAL",
+            "reasons": [
+              "Source coverage for the investigation interval is not declared complete."
+            ]
+          },
+          "hypotheses": {
+            "status": "PARTIAL",
+            "reasons": [
+              "Causal attribution requires more than chronology."
+            ]
+          },
+          "production": {
+            "status": "PARTIAL",
+            "reasons": [
+              "Baseline plan or output is missing for the declared investigation window."
+            ]
+          }
+        },
+        "retrieval_manifest": {
+          "mode": "evidence_only"
+        },
+        "historical_evidence": [],
+        "observation_watermark": "2026-06-23T10:00:00+00:00"
+      },
+      "attempts": [
+        {
+          "provider_verified": true,
+          "output": {
+            "hypotheses": [
+              {
+                "explanation": {
+                  "text": "The material event reported in REL-022-event may have affected production for order ORDER-22 on line S4 in the sewing stage, but there is no established evidence that the line was blocked or production was directly impacted during the investigation period 09:00\u201310:00 on 2026-06-23.",
+                  "evidence_ids": [
+                    "REL-022-event"
+                  ],
+                  "historical_refs": [],
+                  "metric_ids": [
+                    "blocked_minutes"
+                  ],
+                  "source_fields": [
+                    "REL-022-shift-log"
+                  ]
+                },
+                "counterevidence_ids": [],
+                "limitations": [
+                  "No confirmation that the material event physically blocked the line or affected output during the time window.",
+                  "Baseline plan and output data for the investigation window are incomplete, limiting assessment of production impact.",
+                  "Source coverage for the whole investigation interval is not declared complete, risking missing events."
+                ],
+                "next_checks": [
+                  "Confirm whether the material event blocked line S4 and quantify the duration if so.",
+                  "Acquire complete baseline plan and observed output data for the declared investigation window.",
+                  "Obtain full timeline source coverage to ensure no relevant events are missed."
+                ]
+              }
+            ],
+            "unresolved_issues": [
+              "Material event's effect on production at the line level remains unverified.",
+              "Incomplete baseline and output data prevent firm conclusions on production variance.",
+              "Partial timeline coverage risks overlooking other contributing factors or events."
+            ]
+          },
+          "response_id": "resp_00180df9ca5ba627016abcd876da3487d19528f358e20f46f9",
+          "request_id": "req_e035173736164bc4960265544f883e18",
+          "reported_model": "gpt-4.1-mini-2025-04-14",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 2083,
+            "output_tokens": 264
+          },
+          "prompt_digest": "2b071c11bb170d9564087518d59164de2f3dc7db2d5f908902180c9a75601397"
+        },
+        {
+          "provider_verified": true,
+          "output": {
+            "hypotheses": [
+              {
+                "explanation": {
+                  "text": "A material readiness event was reported during 09:06 to 09:21 affecting order 22, which may have influenced production on line S4 in the sewing stage. However, explicit evidence confirming a line-level blockage during this interval is not established.",
+                  "evidence_ids": [
+                    "REL-022-event"
+                  ],
+                  "historical_refs": [],
+                  "metric_ids": [
+                    "blocked_minutes"
+                  ],
+                  "source_fields": [
+                    "REL-022-shift-log"
+                  ]
+                },
+                "counterevidence_ids": [],
+                "limitations": [
+                  "There is no direct confirmation that the material event blocked the sewing line during the investigation interval.",
+                  "Baseline plan and output data for the specific investigation window is partially missing, limiting precise measurement of impact."
+                ],
+                "next_checks": [
+                  "Confirm from production lead whether the material event blocked line S4 and for how long.",
+                  "Obtain complete baseline plan and output data for the declared investigation window.",
+                  "Verify completeness of source coverage for the investigation interval."
+                ]
+              }
+            ],
+            "unresolved_issues": [
+              "Uncertain if the material event reported caused any measurable blockage on line S4.",
+              "Partial data coverage and missing baseline/outcomes limit the ability to quantify variance or shortfall.",
+              "No historical evidence is available to inform current causal hypotheses."
+            ]
+          },
+          "response_id": "resp_0ccea25b176a9620016abcd87b0b1887d1a5a23391683ff2e1",
+          "request_id": "req_e39da2b88b4a48969d28f44ca9b7dc18",
+          "reported_model": "gpt-4.1-mini-2025-04-14",
+          "status": "completed",
+          "usage": {
+            "input_tokens": 2114,
+            "output_tokens": 243
+          },
+          "prompt_digest": "6b9039094cb29ecb03c4aa3b42c31249a3b03e81c14b9d37105f1e61aa848541"
+        }
+      ],
+      "result": {
+        "output": null,
+        "validation": {
+          "valid": false,
+          "errors": [
+            "Invalid source field reference",
+            "Numeric prose must use an application-rendered metric reference",
+            "Unsupported numerical claim in prose",
+            "Unsupported numerical claim in prose"
+          ]
+        },
+        "requires_human_review": true,
+        "elapsed_seconds": 7.453558
+      },
+      "created_at": "2026-09-30T15:07:58.544104+05:30",
+      "completed_at": "2026-09-30T09:38:05.926383+00:00"
+    }
+  ]
+}

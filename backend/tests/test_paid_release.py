@@ -194,6 +194,8 @@ def test_generation_uses_official_sdk_structured_response_store_false(monkeypatc
     config = openai_provider.configuration(settings.openai_generation_model, settings.openai_embedding_model, 512)
     result = openai_provider.generate("mock", config, "question", "Pinned packet", 7)
     assert observed["store"] is False
+    assert observed["instructions"] == openai_provider.SYSTEM
+    assert "Always return source_fields=[]" in observed["instructions"]
     assert observed["sdk"]["max_retries"] == 0
     assert observed["sdk"]["timeout"] == 7
     assert observed["max_output_tokens"] == 1500

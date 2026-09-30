@@ -1,0 +1,3501 @@
+{
+  "total_ceiling_inr": 500,
+  "allocations_inr": {
+    "development": 100.0,
+    "evaluation": 200.0,
+    "reviewer": 100.0,
+    "buffer": 100.0
+  },
+  "committed_inr": 7.0519068,
+  "available_inr": 492.9480932,
+  "purpose_available_inr": {
+    "development": 100.0,
+    "evaluation": 192.948122,
+    "reviewer": 99.9999712,
+    "buffer": 100.0
+  },
+  "active_operations": 0,
+  "price_table": {
+    "version": "openai-2026-09-30",
+    "effective_date": "2026-09-30",
+    "generation_input_usd_per_million": 0.4,
+    "generation_output_usd_per_million": 1.6,
+    "embedding_usd_per_million": 0.02
+  },
+  "entries": [
+    {
+      "id": "bc7bb3f9-6bb4-4884-b158-c4cf1115f996",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.142128,
+      "charged_usd": 0.0015792,
+      "details": {
+        "run_id": "6ba69f4e-cb8b-4f90-b64f-f4ddb3201c12",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2812,
+              "output_tokens": 284
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "The material event reported may have affected production, but it is not confirmed if it caused a line blockage or production stoppage.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-025-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": [
+                      "openai-live-history-v1:REL-050@1",
+                      "openai-live-history-v1:REL-125@1",
+                      "openai-live-history-v1:REL-075@1",
+                      "openai-live-history-v1:REL-100@1"
+                    ]
+                  },
+                  "limitations": [
+                    "No direct confirmation that the line was blocked due to the material event is available.",
+                    "Production output data has conflicts or lacks alignment with the baseline plan in the relevant intervals.",
+                    "The coverage of source information during the investigation period is incomplete, limiting conclusive attributions."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked this production line and determine the duration if so.",
+                    "Reconcile production output data with baseline plan buckets to resolve conflicts.",
+                    "Gather more comprehensive source coverage to close gaps in the timeline for the investigation period."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains if the material concern directly impacted line stoppage or production output rate.",
+                "Lack of verified production output matching baseline metrics hinders assessment of event impact.",
+                "Incomplete timeline data restricts attribution of production shortfall causes beyond material readiness concerns."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_37c08b226a9c46af89edc967065e5f5c",
+            "response_id": "resp_02ecac6aac47f6c8016abcd9eb067c87d1b8320a8323113a9d",
+            "prompt_digest": "fc6996cddb570d96494f72149330184366f0cbba940347e38f8ddb7d214d6926",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "4c773b36-1563-43bc-90f6-4aaa7eaea49e",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.15436800000000003,
+      "charged_usd": 0.0017152000000000003,
+      "details": {
+        "run_id": "4a1f5c7e-6dde-47f2-a162-eac6e562d99e",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2996,
+              "output_tokens": 323
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material-related event is reported that may have impacted production, but definitive evidence that the event caused a line blockage or reduced output at the line level is not established in the available data.",
+                    "metric_ids": [
+                      "blocked_minutes",
+                      "variance"
+                    ],
+                    "evidence_ids": [
+                      "REL-024-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": [
+                      "openai-live-history-v1:REL-002@1",
+                      "openai-live-history-v1:REL-011@1",
+                      "openai-live-history-v1:REL-012@1",
+                      "openai-live-history-v1:REL-014@1",
+                      "openai-live-history-v1:REL-020@1"
+                    ]
+                  },
+                  "limitations": [
+                    "Current evidence does not confirm if the material event directly blocked the line or quantify the duration or extent of any such blockade.",
+                    "Output shortfall is observed but cannot be conclusively linked to the material concern without additional verification.",
+                    "Historical examples note past material concerns and line stops but their applicability to the present case is uncertain."
+                  ],
+                  "next_checks": [
+                    "Verify explicitly whether the material event caused a line stop during the current investigation window and determine the duration of any blockage.",
+                    "Investigate other possible factors contributing to observed output shortfall beyond the reported material concern."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains about whether the material issue materially constrained production at the line during the investigation period.",
+                "The relationship between the observed production shortfall and the material concern is not fully substantiated by the current evidence.",
+                "Complete timeline coverage is lacking, limiting comprehensive assessment of events and effects."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_a50f3c3c8a374845a7774b8cdc3ab1de",
+            "response_id": "resp_0e6491e67b357829016abcd9e776c087d1aaaf4d2940b17247",
+            "prompt_digest": "5898ac53fe42b55ef0fb273a746100a9d2a7e04e9c6772a52628f5d63f71f026",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "548c5156-234c-4c64-9d5b-2a17b6227ec3",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.15008400000000002,
+      "charged_usd": 0.0016676000000000002,
+      "details": {
+        "run_id": "99b1652e-58fb-465e-996b-6ae2a66e9429",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2921,
+              "output_tokens": 312
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material concern event was reported during the investigation window that may have influenced production on this line. However, there is no confirmed evidence that the event caused a line stoppage or the duration of any such stoppage is unknown.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-023-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": [
+                      "openai-live-history-v1:REL-014@1",
+                      "openai-live-history-v1:REL-011@1",
+                      "openai-live-history-v1:REL-012@1",
+                      "openai-live-history-v1:REL-020@1",
+                      "openai-live-history-v1:REL-002@1"
+                    ]
+                  },
+                  "limitations": [
+                    "The current evidence only reports a material concern but does not confirm whether the line was blocked or the length of any blockage.",
+                    "Historical examples show prior events with similar material concerns and explicit line stops, but they are not proof that the current event caused a stoppage."
+                  ],
+                  "next_checks": [
+                    "Verify explicitly if the material event during the window blocked the line and establish the duration if applicable.",
+                    "Gather additional production and timeline data to confirm any correlation between the material event and output variance."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Lack of confirmed line stoppage timing and duration related to the material concern in the current investigation window.",
+                "Insufficient timeline completeness limits establishing a detailed causal link.",
+                "The missing verification on whether the material issue was the primary cause of observed shortfall in output."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_ee4f925f9b4042b1ba7183613b8f2991",
+            "response_id": "resp_0dba561a5284f028016abcd9e39b9487d1a3a7baf792708076",
+            "prompt_digest": "a19c24b852a507ad5c03f77801a79e4059ca32d5cdaf845db7a1066da074ab31",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "d9561d56-f6a2-413d-afbd-34fcd229df88",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.30135600000000007,
+      "charged_usd": 0.0033484000000000005,
+      "details": {
+        "run_id": "9c29d812-c62d-46b6-8472-acfa2e710d40",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2911,
+              "output_tokens": 268
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material event occurred that may have impacted production on the line, but it is not confirmed that this event caused any explicit line stoppage during the investigation window.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-022-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": [
+                      "openai-live-history-v1:REL-020@1",
+                      "openai-live-history-v1:REL-014@1",
+                      "openai-live-history-v1:REL-011@1",
+                      "openai-live-history-v1:REL-012@1",
+                      "openai-live-history-v1:REL-002@1"
+                    ]
+                  },
+                  "limitations": [
+                    "The evidence does not establish whether the material issue actually blocked the line or for what duration.",
+                    "There is no direct observation of line stoppage linked to this material event in the current interval."
+                  ],
+                  "next_checks": [
+                    "Verify if the material concern led to explicit line stoppage and determine its duration during the investigation window."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains whether the material event blocked production line S4 during the declared investigation window.",
+                "Complete baseline plan and output data for the full investigation window are not confirmed, limiting production impact assessment.",
+                "Source coverage for the entire investigation interval has not been declared complete, restricting timeline clarity."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_38c99bbf4f0040fc83738e11335514ca",
+            "response_id": "resp_0dc4a89d48763fac016abcd9dc91b487d1ba52c892fc48781a",
+            "prompt_digest": "717ab508ca23f43e059e5a3fbb7bcf4c6fae186a6ae32cb2228fd731c45a6acb",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          },
+          {
+            "usage": {
+              "input_tokens": 2924,
+              "output_tokens": 366
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material event was reported that could have affected production for the investigated order, suggesting a potential impact at the line level. However, there is no confirmed evidence that this event caused an actual stoppage or blockage of the production line within the current investigation interval.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-022-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": [
+                      "openai-live-history-v1:REL-014@1",
+                      "openai-live-history-v1:REL-011@1",
+                      "openai-live-history-v1:REL-012@1",
+                      "openai-live-history-v1:REL-020@1",
+                      "openai-live-history-v1:REL-002@1"
+                    ]
+                  },
+                  "limitations": [
+                    "The current evidence does not confirm whether the material concern directly caused a line stoppage or affected throughput during the investigation window.",
+                    "No quantitative output or shortfall data has been conclusively linked to the material concern at this stage.",
+                    "Historical investigations indicate similar material concerns have preceded line stops, but these past cases cannot confirm causality for the current order."
+                  ],
+                  "next_checks": [
+                    "Verify explicitly if the reported material event blocked the production line in the current investigation window and determine the duration of any such blockage.",
+                    "Obtain and analyze production output metrics corresponding to the material event timeframe to assess any deviations from the planned output.",
+                    "Ensure completeness and timeline coverage of source data to rule out missing evidence or unreported interruptions."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Lack of direct confirmation whether material readiness issues led to a production line stop during the investigation window.",
+                "Absence of linked output or variance data demonstrating impact on production quantity or timing for the order under investigation.",
+                "Incomplete source coverage and data completeness raise uncertainty about other unreported factors affecting line performance."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_6ed05336a8b14368b68de1c5a4b14bff",
+            "response_id": "resp_0918bbe6d20696f0016abcd9e02ca087d188b3efbe952b53cb",
+            "prompt_digest": "696800f709a3b06eef0511da5907b460dece202ba52cf43dbe6cde12af4a8933",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "f1bac372-de74-4320-b85d-776fc6105bf7",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.23381999999999997,
+      "charged_usd": 0.0025979999999999996,
+      "details": {
+        "run_id": "0e45237b-5f8d-4404-b350-6bf726e089cd",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2463,
+              "output_tokens": 213
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "An event reported as a changeover concern might have impacted production, but evidence does not firmly establish if there was a blocking effect on the line in question.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-150-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Contradictory information exists concerning the impact; one source denies the changeover effect which introduces uncertainty about the event's influence on production.",
+                    "Production data conflicts and the absence of confirmed blocking duration limit causal conclusions."
+                  ],
+                  "next_checks": [
+                    "Confirm through reliable data whether the changeover event physically blocked the line and ascertain the duration if so."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-150-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "The exact impact of the changeover event on line blockage remains unverified despite the initial report and counter note.",
+                "Conflicts in production data and incomplete source coverage during the investigation window impede definitive conclusions.",
+                "Verification is needed whether production deviations observed relate directly to the changeover event or other factors."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_75bed127c2ac4c999961cb6ab3db5418",
+            "response_id": "resp_0d616ca6a1d0c7e6016abcd9d2fa4087d18a86685ca73f071d",
+            "prompt_digest": "0ca0d9b6393c1fde63c8d29e6b96a18f9b7d21ca0d4cdb79fb604b36610f41d6",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          },
+          {
+            "usage": {
+              "input_tokens": 2476,
+              "output_tokens": 176
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "There is a concern about a changeover event that might have affected the production line, supported by one source.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-150-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "No direct confirmation exists that the changeover event blocked the line during the investigation window."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the changeover event caused the production line to be blocked and determine the duration if blocked."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-150-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Verification remains needed to resolve the conflicting observations about the changeover event's impact on the line.",
+                "Production data is conflicting or incomplete, preventing definitive attribution of output variance to the changeover event.",
+                "Timeline source coverage is insufficient to confirm all relevant events during the investigation window."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_e71c834560284f21ab0e5c4d1dd50420",
+            "response_id": "resp_067375d11b40ef16016abcd9d5753887d1a698d36e90d33d4a",
+            "prompt_digest": "c9fdbad43baf1524817395fd94e9dec2a83f809fd85d0b41a2580e12f2c0d54b",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "b914ab29-c17d-4e61-b133-0e727aedb08d",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.342828,
+      "charged_usd": 0.0038092000000000004,
+      "details": {
+        "run_id": "b26bad04-e3a2-4cdc-ba07-09774af3a86e",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2812,
+              "output_tokens": 888
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "The timeline source coverage for the investigation interval is partial, leaving some observational gaps.",
+                "There is no available evidence-linked proposal or new hypotheses for causes due to lack of relevant event evidence in the current window.",
+                "Historical material readiness issues caused line stops, but these do not prove current material problems in this order.",
+                "The investigation lacks data on interventions or other event types that might explain discrepancies if any.",
+                "No discoveries of material readiness impact or explicit line blocking were reported for the current line and order during the investigation window.",
+                "Despite prior historical records of line stops for material readiness on other orders and lines, the current observed output matched planned output fully.",
+                "There is uncertainty whether any unreported minor issues or nuanced factors affected the line that were not captured in the current evidentiary record.",
+                "Metrics show no shortfall or variance in final good quantities versus plan for this line and order in this window.",
+                "Actions and hypotheses remain unavailable due to missing relevant event data.",
+                "The absence of explicit line block duration within the investigation window suggests no current material-related stoppage.",
+                "No current evidence supports a material concern affecting the investigated order or causing any line impact.",
+                "No confirmed cause for the observed stable production output can be drawn from current evidence.",
+                "Further evidence coverage completeness and corroboration are needed before final conclusions can be formed.",
+                "Potential subtle or transient issues may remain undetected due to lack of supporting monitoring or reporting.",
+                "No recent material interventions or line stops similar to historical orders were observed or recorded in this span.",
+                "No verified lead on production disruptions or line blockings related to material readiness exists for this order in this timeframe.",
+                "No indication of downstream effects or impact on sewing stage beyond normal planned output is found.",
+                "Uncertainty remains whether data sources cover all possible lines of inquiry for current order conditions.",
+                "Event evidence, especially for material readiness or line blocking, is missing, limiting causal investigation. ",
+                "Missing integration of action proposals and hypotheses precludes identification of targeted next steps at this time.",
+                "No observed deviation from planned production removes the immediate impetus for root cause assignment in current dataset.",
+                "Historical references show frequent past issues but do not confirm relevance to the current line, order, or timeframe. ",
+                "No explicit explanation emerges from current evidence to confirm root or contributing cause of line performance beyond normal operations.",
+                "The investigation window's zero reported blocked minutes and production variance implies stable ongoing production activity.",
+                "No additional observational data on material receipt, quality, or staging prior to or during the investigation window is present.",
+                "No indication from any source fields or metrics that the sewing line encountered material shortages or delays impacting output.",
+                "Hypothesis generation is limited by the lack of triggering events or anomalies in the monitored parameters for this order in this line.",
+                "The current stable production contrasts with historic cases of material concern-induced line stops recorded for other lines and orders. ",
+                "No new or unresolved material problems are detected or indicated for this investigation period.",
+                "The investigation does not yet exclude rare or complex causal factors outside material readiness due to lack of broader evidence.",
+                "Observed output matching planned output suggests effective material availability and line operation at target rates through the investigated window.",
+                "No disruptive events or abnormal conditions were formally logged or reported in the current line context within the investigation span.",
+                "Further data capturing from quality checks, supply chain logs, or operator reports might clarify if subtle issues exist unnoticed.",
+                "Continuing monitoring and cross-referencing with other data streams is recommended for ongoing assurance of material readiness and line performance.",
+                "Additional checks on upstream material processes and logistics could verify no latent issues exist beyond the immediate line environment.",
+                "Validation of data completeness and comprehensive timeline construction would support more definitive causal insights in future analysis.",
+                "No evidence was found of reactive interventions or corrective measures during the investigation window for the current order and line.",
+                "Limitations in evidence source scope and event capture granularity constrain fully closed-loop diagnosis at this time.",
+                "No data on staffing, mechanical, or procedural factors during the window were included to triangulate production stability causes.",
+                "The production metrics currently offer no indication of abnormal deviations or disruptions for analysis to address.",
+                "No concrete explanations supported by current evidence to explain changes in production are present, as the metrics show zero variance and no blocking.",
+                "No newly documented incidents or events impact production in this order during the investigation, reinforcing the inference of stable operation."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_06585925c463415e91f3f071054bb924",
+            "response_id": "resp_0282c44938b0d376016abcd9d2b03487d1bc7bd32d430c1353",
+            "prompt_digest": "99d879fe886a6f6f319a140081aa41d847e5984dd99076b15e21cce03f73cf95",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          },
+          {
+            "usage": {
+              "input_tokens": 2831,
+              "output_tokens": 82
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "No relevant current-window event evidence is available to support hypotheses about material readiness affecting production in the current investigation window.",
+                "Source coverage for the investigation interval is partial, limiting assurance about the completeness of the timeline for the current investigation.",
+                "No evidence-linked proposals or suggested actions are available, indicating missing step-by-step investigation evidence that could clarify cause-effect relations."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_fdcad12e1ed94ca1ad038b15b462c5db",
+            "response_id": "resp_0f0f3f4535236378016abcd9d9bb4087d18cd9b131cfd83a5b",
+            "prompt_digest": "09591f5f6dec72f8e4f6cc0bd26b56817c976f3fe8b6c326422817cb4656944f",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "a2d1451b-6b0b-4c83-bef5-65f739112147",
+      "purpose": "reviewer",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 2.8800000000000002e-05,
+      "charged_inr": 2.8800000000000002e-05,
+      "charged_usd": 3.2e-07,
+      "details": {
+        "request_id": "req_8274df547ce14f2fbd57e007ee359bbc",
+        "embedding_ids": [
+          "298020bd70c8d5988e735af33c1b402ab9deeeb7f3a22d99849a284910608604"
+        ]
+      }
+    },
+    {
+      "id": "9745fb13-59a5-4df0-88a0-7246dba34992",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.24310800000000005,
+      "charged_usd": 0.0027012000000000004,
+      "details": {
+        "run_id": "b69bb616-0ef7-4926-8221-dfa944fef94b",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2546,
+              "output_tokens": 210
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "There is an event reported as a changeover concern potentially affecting production for the order in question, but the evidence for a direct effect on the production line is unconfirmed and disputed by an independent source.",
+                    "metric_ids": [
+                      "planned",
+                      "observed",
+                      "variance",
+                      "shortfall",
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-149-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The causal linkage between the changeover event and production shortfall is uncertain since contradictory notes are present and explicit blockage time is zero, indicating no confirmed line downtime due to changeover."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the reported changeover event physically blocked the line and determine the duration of any blockage."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-149-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the changeover event directly caused production losses remains open due to contradictory evidence and absence of line blockage intervals.",
+                "Completeness of timeline data during the investigation window to exclude other potential production interruptions."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_dbc5ebe8ca5543c48011303d6d6f856a",
+            "response_id": "resp_05783d82c5c0cfab016abcd9ce61e887d1adad64bcab2ebae2",
+            "prompt_digest": "1ef345bc4a2469223c758005f9e1391ae837e780728515393d409af0fb955244",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          },
+          {
+            "usage": {
+              "input_tokens": 2559,
+              "output_tokens": 202
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "There is a hypothesis that a changeover event reported in the shift log may have affected production. However, the evidence for a line-level effect during this event is not established because an independent source disputes the observation of impact on the line.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-149-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The causal attribution between the changeover event and production impact is not confirmed due to conflicting observations.",
+                    "The verification of whether the changeover event caused a blockage on the line and its duration is currently incomplete."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the changeover event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-149-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "The timeline coverage for this investigation window may be incomplete, affecting confidence in conclusions.",
+                "Verification is needed on the precise impact and duration of the changeover event on production line blockage."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_3563ca8bed014b21a0447004b6465a10",
+            "response_id": "resp_0a1e44165fdcc440016abcd9d0cf9c87d1b38a5bee37fb5aaf",
+            "prompt_digest": "580d49c135fa93dcdbffd064cd258c93a8bca337fdfd67b68359c4b8f390a324",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "bab65c7b-d23f-4116-adb4-b954a3159c92",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.131184,
+      "charged_usd": 0.0014576,
+      "details": {
+        "run_id": "abb9f627-6f8a-4531-a171-fed5f83fb7a9",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2468,
+              "output_tokens": 294
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A changeover event was reported that may have impacted production on the line during the investigation window, but it is not clearly established that this caused a line-level blockage or production impact. Verification is needed whether the changeover blocked the line and for how long to clarify its role in the observed shortfall.",
+                    "metric_ids": [
+                      "shortfall",
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-148-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The contradicting note challenges the observation of the changeover impact, leaving causality uncertain.",
+                    "No direct evidence confirms that the changeover caused a line blockage or production interruption.",
+                    "Production metrics exclude certain time buckets, which may affect completeness of quantitative assessment."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the changeover event blocked this line and if so, determine the duration of the blockage.",
+                    "Gather additional line-level operational data or logs around the changeover period to elucidate the event's impact.",
+                    "Verify the completeness of source coverage during the investigation window to rule out missing timeline events."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-148-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "It remains unresolved whether the changeover event blocked the production line and contributed to the observed production shortfall.",
+                "The exact relationship between the timing of the changeover and production variances has not been definitively established.",
+                "There is missing evidence regarding timeline completeness and operational details that could clarify event impact."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_7670d285dfd84785963240c3367b2969",
+            "response_id": "resp_0db7fb5115b343c3016abcd9c6b3d487d1b33777695425c643",
+            "prompt_digest": "467231ba84acc6cd4d6ce720a86ad4135fb054e78c57d2669c172a59d4c77462",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "c1d257f4-adfa-40f9-9204-ca5dd9310376",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11865600000000001,
+      "charged_usd": 0.0013184000000000002,
+      "details": {
+        "run_id": "a9e40536-0ec2-4263-8a92-b4d75353edd7",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2460,
+              "output_tokens": 209
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "The changeover event reported may have had an effect on production, but there is no established confirmation that it blocked the line or impacted output during the current investigation window.",
+                    "metric_ids": [
+                      "blocked_minutes",
+                      "planned",
+                      "observed",
+                      "variance",
+                      "shortfall"
+                    ],
+                    "evidence_ids": [
+                      "REL-147-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Verification of whether the reported changeover actually blocked the line and for what duration is not complete.",
+                    "Available data does not confirm any direct impact on production quantities during the investigation period."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the changeover event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-147-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Lack of definitive confirmation if the changeover was a line-blocking event during the investigation window.",
+                "Incomplete baseline plan and output measurement data for the entire declared investigation window limit production impact analysis.",
+                "Source coverage for timeline during the investigation interval is not confirmed complete."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_5bd30ad3556f46c3bc051e9f5fe0ab83",
+            "response_id": "resp_0388983fd55bd967016abcd9c3b57c87d18c1c46ac40b3aac1",
+            "prompt_digest": "ee2be33f65d454c60399ad2e7068bf72477db22e6a8dc51f666a5bcef8a9cf0a",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "8a40350a-3cdd-4e34-89d7-4c5e4140f09d",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.084888,
+      "charged_usd": 0.0009432,
+      "details": {
+        "run_id": "2c30534e-e643-4254-9970-d558a9b6e9a7",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2118,
+              "output_tokens": 60
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "No hypotheses have been proposed due to lack of relevant event evidence in the current investigation window.",
+                "No actions have been proposed because no evidence-linked proposals are available.",
+                "Source coverage for the investigation interval is not declared complete, limiting timeline reconstruction."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_d34a9366cae04221933782820dae82e0",
+            "response_id": "resp_0122ffa2d6c5ec87016abcd9c235a887d18e02f4a78879d1f4",
+            "prompt_digest": "4acc0f3f7d1385b1117fdff303d1cde21787d0ccb0bf0e5e28f14b596b6b80c6",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "cab19ac0-5109-499e-ab84-4de05b3d3278",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.12679200000000002,
+      "charged_usd": 0.0014088000000000002,
+      "details": {
+        "run_id": "c9d5c2a4-c1d8-4569-838c-cddd844bb45c",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2462,
+              "output_tokens": 265
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "There was a reported quality concern event that may have affected production, but it is not established whether this event caused a line-level blockage or delay.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-120-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The quality concern has been disputed by an independent source, which means there is uncertainty about its impact on the line.",
+                    "The exact duration and extent of any blockage or delay caused by the quality concern are not confirmed.",
+                    "Production output metrics are currently unassigned or conflicting, limiting insights into actual impact."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the quality event actually blocked the production line and determine the duration of any blockage.",
+                    "Resolve conflicts among production data buckets to clarify output relative to baseline plans.",
+                    "Gather complete source coverage for the entire investigation interval to confirm timing and sequencing of events."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-120-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the quality concern indeed caused a production line blockage is uncertain due to contradictory reports.",
+                "Production output data does not yet conclusively show an impact coincident with the quality event, partly due to conflicting or unmatched baseline plans.",
+                "Timeline source completeness is insufficient to definitively map event impact over the full investigation window."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_1a747871b7fb4cceabbaecc999ed6976",
+            "response_id": "resp_0f0f8e192a837ff4016abcd9bcc78887d1964abbacea666d8e",
+            "prompt_digest": "41cb79fc993bb9ba2690765c4ae47fbfa897913453ad3e19651fe39f7de7c370",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "3476012d-aaf3-4939-ae2f-436e5cbdc2dc",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.125496,
+      "charged_usd": 0.0013944,
+      "details": {
+        "run_id": "1cbe2174-1be9-4df3-afe8-4322e949db29",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2542,
+              "output_tokens": 236
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A quality concern event was reported that may have affected production, but it is not established that the event caused a line-level blockage or directly impacted the output quantity on this line during the investigation window.",
+                    "metric_ids": [
+                      "variance",
+                      "shortfall",
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-119-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The contradiction from an independent source disputes the initial quality observation and indicates uncertainty about the actual impact on the line.",
+                    "There is no explicit evidence confirming that the quality event resulted in any line blockage or operational halt during the investigation window."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the reported quality concern caused a line blockage during the investigation window and determine the duration if applicable."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-119-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "The lack of confirmation about line blockage status during the quality event leaves uncertainty in attributing production shortfall to quality issues.",
+                "Verification of the quality hold's operational impact is outstanding which limits causal conclusions.",
+                "Source coverage completeness for the entire investigation interval remains partial, possibly leaving some relevant data unreviewed."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_e0f4993428b94190951522392b83079a",
+            "response_id": "resp_096b2f7aa6f9381d016abcd9b97eb887d1b6a1989fa6d27272",
+            "prompt_digest": "81a1e2603af0bf12928d29d80e542497deac4f2e59707142d284ecca27ee494b",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "03ac2486-6d44-4370-8b15-c065b725cec5",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.122976,
+      "charged_usd": 0.0013664,
+      "details": {
+        "run_id": "d84b9c8b-6403-4d97-b8e0-5e229ff2d9e3",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2464,
+              "output_tokens": 238
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A quality event was reported that may have affected production, but whether it blocked the line or caused the observed production shortfall is not established.",
+                    "metric_ids": [
+                      "shortfall"
+                    ],
+                    "evidence_ids": [
+                      "REL-118-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The evidence does not confirm if the quality event directly blocked the line or its duration.",
+                    "Dispute exists from an independent source regarding the quality event's impact, leaving verification open.",
+                    "No complete timeline to verify full source coverage during the investigation window."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the quality event blocked this line and for how long.",
+                    "Obtain additional timeline details to ensure full coverage of the investigation interval.",
+                    "Gather further production data to correlate with the timing of the quality concern."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-118-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the reported quality concern directly caused the production shortfall remains unclear due to conflicting reports.",
+                "Complete timeline evidence for the relevant period is not fully available, limiting causal attribution.",
+                "Additional confirmation is needed on whether the line was physically blocked by the quality event and its impact magnitude."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_cb88614f324642ea98ce9a058296f66f",
+            "response_id": "resp_0c3f27dc810223ff016abcd9b68aa887d19b3482830a210696",
+            "prompt_digest": "83b7f9fe7ba8cb03f67d82cdecb3d1bb23ad4db04cc6153049dbf9abeb82e74c",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "7a646578-d110-4871-8426-f3a9fefda24e",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.000324,
+      "charged_inr": 0.000324,
+      "charged_usd": 3.6000000000000003e-06,
+      "details": {
+        "request_id": "req_9a213526d7294f3b8437a4e95c694bb3",
+        "embedding_ids": [
+          "7f193bb19c551bb94236ab5e7f2a9fffc3a26c80a2351f0e394a185969cefc62",
+          "fa75c2eeb932cb1b7975f4f22bea37aaf528c5c348941c809aeb14842e1f6521",
+          "166285c16030385ae49975e9f54d390eeff60275c2ae5083c1f9897a12689dc3"
+        ]
+      }
+    },
+    {
+      "id": "92351e3d-ceee-4264-ae01-db168625db80",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0008244000000000001,
+      "charged_inr": 0.0008244000000000001,
+      "charged_usd": 9.16e-06,
+      "details": {
+        "request_id": "req_7d7c3b0e3ea242e0be52c6492ac03e7d",
+        "embedding_ids": [
+          "7572a91410ac91631b5b775af43cd98580993016f852a3d638805a4a48da4961",
+          "7bb28eab449fccbddd66075d899b2419726f2c828d9c7ee47780b2e8b6b917d8",
+          "bb90d6aef9bffb7ac3a46d4c079a11dab88569a0ef1d7393bb36705dc2c9b9de",
+          "cf5b8a74d04cd7a0de5f9a98c66abcf4d4047a5bd1f62896273fd319484b0bf3",
+          "3caaf6728905fe29ccfe19ce27b786acb66492f0b3a7b82d595fec5bcabd6354",
+          "1610047bfa9fff70cc15966c37eae306d61590b8e911049b44dd28abce57761c",
+          "a97badc82c19777271fd438ecad99af7138c6e901b61d265c2379dee627fc0e1",
+          "59e887f7d3d1fbc73bdcbbec4fe7336657c66973da3c8a536b5e802157b34d09"
+        ]
+      }
+    },
+    {
+      "id": "e3636e4e-9038-4b7e-b888-d7ed7d59ba18",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0005472000000000001,
+      "charged_inr": 0.0005472000000000001,
+      "charged_usd": 6.08e-06,
+      "details": {
+        "request_id": "req_9fac8e8581c145999c858c363f50994b",
+        "embedding_ids": [
+          "66b4317c4f8eb5d699b277b88120d8071f4e81c323af6a6bbab2f92a74b54c3f",
+          "5ca2ac9bbb80c0e0118bec3f36bc587ec1afcceeb49e6099d6ab84e0f23fe9b3",
+          "719d4eaa2183244a1f94fb34360ec5ae931a4177f284c8c4a9cffa92f418d09b",
+          "9b6a278f82e6ce1cdae47af26bbd5e63f285c0f8cc9a8eb55fbbf8ebd8f72b11",
+          "08668d88587420a804bd49c3f569950b2e23bc4345610ef365b83f0687700a08",
+          "5e38ead5e24f179dad76255145f13db8d5e978078b98579dbfd8e004e3ef8607",
+          "ae59c9ebc04d8e9682d7da2e8be64d6e77d540b25b9ce87de7d2b597cb3541fc",
+          "9e42dd98cfb0bc9168adb5c78ed2f7a4d9a9a9a68c9dd4d0f8201a3fa0cbd94f"
+        ]
+      }
+    },
+    {
+      "id": "33ac8ebb-2a27-453e-92a7-753718e7a478",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0008370000000000001,
+      "charged_inr": 0.0008370000000000001,
+      "charged_usd": 9.3e-06,
+      "details": {
+        "request_id": "req_cff7dc98c1e94e5baa717df738e7e5ce",
+        "embedding_ids": [
+          "32d2b907d13d2f5862096dc17976a0e6040ce397aa537bcbbbc90a977368cf1e",
+          "3cbbe5c816466f98da04ccfa26eae68e3307da0706585782fe656d6ca06a835b",
+          "fe8b3a10d2464a26cf4d7dcac937f282123391f8bc34ab49bf19234fa84cfac7",
+          "7d4920aa6b613bfedf2cf23a6583d783c497612e581d94cec9bae62834cd6059",
+          "da17a0109cd7544bd9d0aba12c325c33d69bcdc7cb0f8ffb234b8823e231906f",
+          "d745c14455210d136583b2494dfd95a497bec071fc33175b2b283b15887a2aa3",
+          "61179307595d28de529f0ba79665e0efa163391e76e84a5a4c4191534aa9fe14",
+          "4bf51c0b100c90b1a670b29e7a872b054b61b8470d6a84cfc1bf4857478d56bf"
+        ]
+      }
+    },
+    {
+      "id": "789bca9d-3619-4b04-a8ad-0d2f7f71bd72",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.12283200000000002,
+      "charged_usd": 0.0013648000000000002,
+      "details": {
+        "run_id": "3ae72ecb-c114-4302-8eea-56bd06f0eb71",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2456,
+              "output_tokens": 239
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A reported quality concern may have influenced production, but there is no definitive evidence confirming an effect on the production line during the investigation window.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-117-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The verification regarding line blockage and its duration is not yet provided, leaving uncertainty about the impact on production.",
+                    "Current evidence lacks direct production metrics correlating the quality event to output variance.",
+                    "The contradictory independent source further challenges the certainty of the quality concern's operational impact."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the quality event blocked this line and for how long.",
+                    "Gather complete coverage of production baseline and output for the investigation window.",
+                    "Resolve discrepancies between quality concern reports and independent notes to clarify the situation."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-117-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains about whether the quality event caused an actual blockage or production delay on the line.",
+                "Baseline production plan and final output data are incomplete or absent for the full investigation interval.",
+                "The timeline of sources covering the entire investigation window is not confirmed complete, limiting holistic understanding."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_fd9127a04fe64d21afbbf68dd76adcc1",
+            "response_id": "resp_0c97155e672f84df016abcd9b3d33487d1ac356afb467237a7",
+            "prompt_digest": "4f8dcba4839b747833f649cc9357609ddbf9909bc728cf0f756a2f433a340e81",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "254dbedd-5e7c-4895-97be-ba349d9d4b35",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0006804000000000001,
+      "charged_inr": 0.0006804000000000001,
+      "charged_usd": 7.5600000000000005e-06,
+      "details": {
+        "request_id": "req_e9743116716d41709856a6b1608d0a26",
+        "embedding_ids": [
+          "be1cf3a24348f00f7984163df5ca2824dd8bddec120f521a77c0b436b83466ae",
+          "af89cc9502bf9ea4a95032bcd48ebdb6b8ac836db3cfac8b621b44edec031236",
+          "ec7097bad2a92b59169b7ef19a2d20aedff788b70572d28fc566c23532286b6e",
+          "a3821cfcddd223523e8012ae22c890008a1ca9b7398634610769ff07079b8572",
+          "f9b79fc703fabc18bb0b5bde51c3f37a025fda89d8ed0e50c8fb77826f996a10",
+          "9ba61e07391fff41485cb8ad636af511595e416effe12e46401beb0bfda44bcc",
+          "bdb685caac05bc62a5f83afa225021e3928c7c0a6527d33f220b0f4cca954d44",
+          "5eaf463855028609f198afb0717d0dfbdde4f94d5e9ae72d7db2d40228268cdf"
+        ]
+      }
+    },
+    {
+      "id": "d0b06bfa-e7b8-42c6-8a51-6bc7e9a311a5",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0006588,
+      "charged_inr": 0.0006588,
+      "charged_usd": 7.32e-06,
+      "details": {
+        "request_id": "req_719fd100d70d4c4f94d207bd53447143",
+        "embedding_ids": [
+          "7707ff1780bbef4fb62d7ab3178ab0f9a6a492123696026e45d8bf477d518422",
+          "0fd67406c6e7463a44e7d927bffdfd145af99d05a2af8bbfdcb7266b7b29c9e1",
+          "a22cbc7a025bcd09e9ace70a4f7dda4fd685394946c025e165ee2f8f9350d67e",
+          "3c70717de92b5d2a8c1d8ff8e445aec20ff345b9663115bca3cf958773d9b927",
+          "1b4939e37868ea96c45ee65a98476c400728fea41a0a812878bb5959b40b693f",
+          "a806750dce57c87c881d72aef491d7138e81b462a89856b7a12670cd867f7bab",
+          "23ccc126f6deac4440518110e41cba128997318cf7caa620b560f4b24407f775",
+          "be857bad58b1902fb80ceac73b58534efff82b7e6e48422d668e3c459a94e7d2"
+        ]
+      }
+    },
+    {
+      "id": "baad103f-0b59-4343-b786-6120a439258e",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.084852,
+      "charged_usd": 0.0009428,
+      "details": {
+        "run_id": "c1383b99-1a89-4a84-9153-f0d1ec15fc88",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2117,
+              "output_tokens": 60
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "No relevant event evidence is available to support any hypotheses or counterevidence in this investigation.",
+                "No evidence-linked proposals or actions are present for consideration.",
+                "Source coverage for the investigation interval is incomplete or not declared complete, affecting timeline assessment."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_d22f43021ec94849b2bead78266d43d0",
+            "response_id": "resp_0f3317bc9746ce91016abcd9b252d487d1a07cd405065ed45d",
+            "prompt_digest": "e2fefd73a5539b405817b1755926db8aa582f7170232c1acd4a3ccd22bb0d830",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "f0636544-ea64-4e8f-a4f6-38818fbffb02",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0007812,
+      "charged_inr": 0.0007812,
+      "charged_usd": 8.68e-06,
+      "details": {
+        "request_id": "req_0b86753dafe2454e9a8580d45c1515fe",
+        "embedding_ids": [
+          "c464c4bee96fa1a3633feeaf9f1a34988b355d94f9a1ed508f875a3d1b191e7c",
+          "6944d2976e13c65dd144030fe2594e9d0ed65522a10caa373a84f6015d97b6a3",
+          "8fc420d094a8264aa7faae595926d26eb14cbfcf11be67a7a463360006ec7542",
+          "43816f21d37f56d1d77084539a54848d6543056cc7853f2961a724f22f67d751",
+          "b43913fdf908a2a1bb7de13752b61840a8f036e55be7ce0714b161751de7a53a",
+          "63b59cf9621bef4c067c76d8032f566bdeba01a96bb938752e281d9dc46a8d4a",
+          "b42fa44124a029b487e9ea279a65dee45126e51b152840efb0d0f10eff2124aa",
+          "07bb487d7f2ca2c2973a5948117b6a36c308565aab5de081f37ddf6ad6bc524f"
+        ]
+      }
+    },
+    {
+      "id": "3d70e155-7680-49f7-ba4b-a680fc01ad48",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0005040000000000001,
+      "charged_inr": 0.0005040000000000001,
+      "charged_usd": 5.600000000000001e-06,
+      "details": {
+        "request_id": "req_18ed98a68f3c4797ad64f291eca51dd5",
+        "embedding_ids": [
+          "3ac9f8ba69b1e3e36794911fd3cb75b8e3054314daf3d56057976d49b0e7ecc7",
+          "4f6819474ea83210e3d0c00d73ce4e2a96aded551b1c3cb2d81ad42323b190a4",
+          "9b5fd7125c090fb2670e010af318533619496b898b3a367fe1df9e302492d14f",
+          "cf8ce728fc1831dc8ad6a188f4c63f7151c23b18092536998b2f1a1bdaa12164",
+          "d956b278c3aca5890861ac6c9116e378076fbe0c62958eabc1565f2aa3f0482f",
+          "5a7ad13373a564eaef72f38e0792c414991104c08070db8459d43ad28394cb21",
+          "ee436391c571fb6732316c7db9ead3762cc695e50ba03af37f169d8f75f80039",
+          "d2ba1e40a56e3d3ed659d71577f18c686cba9a037f9b5e92c7b967f3b8fbc477"
+        ]
+      }
+    },
+    {
+      "id": "f67ebe4f-1823-4343-a2ec-e3fa85e0fe1d",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0007812,
+      "charged_inr": 0.0007812,
+      "charged_usd": 8.68e-06,
+      "details": {
+        "request_id": "req_e4eb4c17281a40f3bf411fad7105006b",
+        "embedding_ids": [
+          "5b4775f54811501e95e2413455299164f93e47e146552a849bf4745cddc3e011",
+          "45c86a314bfe6063a8c3562c439930a699aa773c5544425ac9d34e1acfb06b13",
+          "67a243f4600083dc115fc478f4c94c0d0b33bc441740728fa38006c882559620",
+          "a92e5925c7ee6c7fae3ada3ac1694c07ff2ee664051e346e85a9b9d8e8f00e70",
+          "997860c61206dce7fb90751f2dc1e8634d6eb024af4b95a5a93b8613574ad567",
+          "005857dd761fcc5b477ad362caddbe07418bb48c81573ec8289614ceb69732b2",
+          "da8a7870bcb0d3f9bc61dbe71e46ed1eda3a6a46fc50bf17f991e796358c94aa",
+          "c0b3137efca751f6b0874b761cb65234bcec111c98897154a2433b886005937d"
+        ]
+      }
+    },
+    {
+      "id": "ddcc0b8a-4d1c-4b44-961c-73e527991d7b",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0006228,
+      "charged_inr": 0.0006228,
+      "charged_usd": 6.92e-06,
+      "details": {
+        "request_id": "req_5a7430a66ce94f8ca8c3b22738344bbc",
+        "embedding_ids": [
+          "18efec5174a5feda70af8dbc19a6fbe18550178d12fa30f64cda90d715d85eb8",
+          "5194364604813c74e3353c844eab6fb896b17888808ef6ed2b0a7b00615d7115",
+          "90ba998d45c59c940f7306840adb28b04023e104a2ed8ab22872aef9d29f8308",
+          "bd9215bfd3c4bcd4ffa3ba2684d3369778b673b1f66ac08d15b30c7dc0894349",
+          "c734d5470fedfe6da40d471d29f13a07aedea9b7479ad34728c5cd0187e6d483",
+          "85188f1f25b659ee75b10a53313ad59ced5005ea0ee6f5abec12f200bbaa0a32",
+          "764ccf3c6f8847d415f71d38085176d7405560db1c162c2509b0068f296fbc96",
+          "7e24dadc06242a98b5987dcc5c68cf0f0a9e3c8a742ed7f731a808f215a96e20"
+        ]
+      }
+    },
+    {
+      "id": "063bb866-d32b-4c0b-989b-72bf242e4c91",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.000639,
+      "charged_inr": 0.000639,
+      "charged_usd": 7.100000000000001e-06,
+      "details": {
+        "request_id": "req_9c4248a4ffdf4a45b2631fcb6f6e7829",
+        "embedding_ids": [
+          "5df2de1c44247915461bee0da0a304fec657663ec7be9f9331700c047ead68f8",
+          "6b3ce81680abd5b3f69ba5645c3c75e0eb1e9f719a0f73eb4dfb5907e9bc49e7",
+          "7025d67e45b91b9d6443eb79a02e2a6b47a2d04d10a95b8b3c109b8a9614d2b5",
+          "745497406271904da35c2db81fa7ff76b835f6d08ab7d1369984dfe5d86c7824",
+          "93145a569475ac5c590fa3301cdee7358c8573b6464a06e65c5b8b2e5c9656e8",
+          "99d82a49d8af659bf0163b32f727e844a0bdb279daa133a15070aabaac723c71",
+          "0c2e21a6ef1bd12a9d4fe7f1336d60837d2a643b8bbd062ec27a0df66bb6736d",
+          "6454eb826ea5bb014f1624a89aa41abb30485306e392506134e61a112672522a"
+        ]
+      }
+    },
+    {
+      "id": "cbc0ee8b-7711-4f91-abd4-b27103645b95",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11843999999999999,
+      "charged_usd": 0.001316,
+      "details": {
+        "run_id": "4b7421ff-8881-4751-a269-12c89f2ca33e",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2462,
+              "output_tokens": 207
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A staffing event is reported as a concern potentially affecting the order for the line during the investigation window. However, whether this staffing event caused a direct blocking effect on the line remains unconfirmed. An independent source disputes that this staffing observation caused a line impact, leaving the effect unclear.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-090-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The staffing event's impact on line blockage is not established due to contradictory reports and lack of direct evidence."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the staffing event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-090-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains about whether the staffing concern caused an actual stoppage or delay on the line.",
+                "Production output data is conflicting or lacks matching baseline plan buckets, preventing quantitative assessment of impact.",
+                "Investigation interval source coverage is incomplete or not declared final, limiting timeline accuracy."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_6938cbe1860c40deb8e327c163d7a363",
+            "response_id": "resp_0fc9e9a6153f4623016abcd9ae29bc87d193b42348184509ff",
+            "prompt_digest": "15fdb0796447ec6b271a03c153e4a24e0a6c55097a6c11bf4d33cea47b52b03d",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "0500c82e-591c-4b8f-bb39-bebf4c423353",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0008244000000000001,
+      "charged_inr": 0.0008244000000000001,
+      "charged_usd": 9.16e-06,
+      "details": {
+        "request_id": "req_e72ceb6e2fe84d5592ef7fe53b3d5e58",
+        "embedding_ids": [
+          "79af560f6174b6be92d7d3da8a859a7fe1084b7cd93fd2493b3e193c6ae850c7",
+          "0d3a7f617886387abf63b691c0e4ec8a6d5f92370d589423c8882367b3f53a61",
+          "6f497a7d9d152a73874855ac189948989030a0f2791a2110605eda4f306d2311",
+          "789589cbfeef194a440a5fc04c3ac7f44dbc54fd520d6bff14bd202590b97617",
+          "3cecbf38509d100c6e25fa8cd79ba962f490c8aa2a5abaf5a955e03367138731",
+          "1a04feaae4b56f319630581576e0dc9243ffe9b65821293e7d0598c67dccb932",
+          "cd8a10ea1eb17170c33a12fe2a27ab70cbbff5c40dfa93d88521fa1e2055967d",
+          "1ea122000893929d573c6abed0bfad2ec69bced12d9d632b25cd803d9fa92399"
+        ]
+      }
+    },
+    {
+      "id": "302f06ef-6521-471e-8742-92c717c3322a",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0005472000000000001,
+      "charged_inr": 0.0005472000000000001,
+      "charged_usd": 6.08e-06,
+      "details": {
+        "request_id": "req_6e1e3e3eedca4d6a934a67ac6ccd4b5e",
+        "embedding_ids": [
+          "c04f92db8835a020c2d9704f1711f241e8ba706378a8a0bc1b8a131eac20dc31",
+          "998affc51293f222da673cf6c8d536ce60a952f17b9c77f34b494af343b749f7",
+          "911594a9d3e37d664ac117a87986d820f4dce735b5ab110a4fe83c6256f5ad46",
+          "55b18d48f89dc687db3ceed29649496a1b5f400781395ab2ed603716d427c242",
+          "512edf982a0bafeae9aab917e719cab62e71d42c94777e8eb3e762d3c1912ae8",
+          "9c850e65b9f79fd2c1d9842c40b00dcf357e876f449687b83ca20e7c46443d5c",
+          "9cafc158da075528c282cf3c744b88b9532d0910c067ae196fcadc58ace5f4c2",
+          "189fe31f2be71229f04509c888ed4a60d7101e688af62e718ae6b6d3d2713c35"
+        ]
+      }
+    },
+    {
+      "id": "63a1faca-c3cb-4451-aea1-dc43b7834fae",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0007992000000000001,
+      "charged_inr": 0.0007992000000000001,
+      "charged_usd": 8.880000000000001e-06,
+      "details": {
+        "request_id": "req_a05c91c84c52427e841fcab46fffac37",
+        "embedding_ids": [
+          "d4b1146f93cc9b5094574bbc813010d8b978aeee5bc99996a67f35f6520b2909",
+          "87c6199689b72b5fd0935200c6876e1829267d2f84a6d080cd66479f6172441a",
+          "eaeaa2ff8e9c1bce1e6a817503a63ae164182ccdad69267eab74c3717d1d3842",
+          "1dbceca22bf33bf145f858ec8bb3bc2edd426129cd50d34aadf90d438fc5c51e",
+          "d3e2a0db8b041197e5b4170b37ef13953b05ff885cefbcf3251686c087f304b4",
+          "85b736a094aaf8605fabeb1ec048e3d568486fa0397783711deea6b8e8d0e3c4",
+          "f4aef2305ed2ca7f132a4ea42e53f1fa049a7de41bcff8f8aa01e9c5ff7a42df",
+          "141cfcafcc43bf52edeff27eada67f28b97b51d4064bfae90340c27c6e5a27e1"
+        ]
+      }
+    },
+    {
+      "id": "60a97fce-7ec3-4756-bd18-3550cea6b000",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11520000000000001,
+      "charged_usd": 0.00128,
+      "details": {
+        "run_id": "2e0ea446-4778-4a4c-8b05-aac43d2e98b9",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2548,
+              "output_tokens": 163
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A staffing event was reported as a concern potentially affecting production. However, this is contradicted by an independent note disputing that the staffing observation caused a line-level effect.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-089-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "No direct evidence confirms whether the staffing event actually blocked the production line or its duration."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the staffing event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-089-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Verification whether the staffing event caused a line blockage and its exact impact remains open.",
+                "Source coverage for the entire investigation interval is not declared complete, leaving some temporal gaps unconfirmed."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_85789f2e7d4441938cb3a62ac74190b5",
+            "response_id": "resp_0e0f9cf022d96186016abcd9abf35887d192302d337a6736de",
+            "prompt_digest": "5f8ed698fb038475491b2067ec5b03db8dbb1a4022165535948085e569bdf896",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "7f40263c-f1fb-4ee8-b3d7-38a50f647553",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0006372,
+      "charged_inr": 0.0006372,
+      "charged_usd": 7.08e-06,
+      "details": {
+        "request_id": "req_461e1dc29c0e4699ba26df3419e799af",
+        "embedding_ids": [
+          "a0f59d1ad3d724b4e3633d6b8e92bc6f92a2d050fa670b915fa7be02356eee8c",
+          "c570358e8e52981057f9f76c8419fc29d7b43d37dc192b6766d53abb82180ee2",
+          "72264851bf8842f8d44f572d668a35e53417e0f366cdbd02535b34325634282c",
+          "5f915f3a268731b19d3aa45dcfdd577808c6ce32be04da81208da12d6e4b0ccf",
+          "22a72969e8a8151b8c02e811d9f1095494098cc43ca3404e25315860bfc04448",
+          "99ee38bbb101fd291a520be4f79d05ba34fc86c8ade778c7e258a532f3fecbd0",
+          "9ed08e89f77328ed6e4179ae7c5974d9713246f72d0fe4634e38ef25a2be4df8",
+          "ce1e20855f5868e6a9a56c179b8c0994b7259e917c9b35eed89d68b3eac5c074"
+        ]
+      }
+    },
+    {
+      "id": "6b2ccd42-abef-4c5d-8d44-9c0e59ca82d3",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0004392,
+      "charged_inr": 0.0004392,
+      "charged_usd": 4.88e-06,
+      "details": {
+        "request_id": "req_e4fb8c9226944bd79984a5eb98b41801",
+        "embedding_ids": [
+          "9c46f75e6c54d221ea5495c791f860c4a03159e250df3f93fa72594380576799",
+          "7b38261b422ae2f5fc90617f3fd079bbf533768f5bbcb71976ecb4428fc84dbf",
+          "630668b76d2a4062b48a3ce4116fcdd89b39e790182dbc0dbb6d15c402707b0d",
+          "eabac97bb18da7eb312c2ec4336350890854a09f54b25d599fc5feb70e339ecb",
+          "790c092701328bb1e3ce8d3147897ef77b713d19cd70161287fb869a0eefefd9",
+          "6c51a95abf41f108e4d5ae9011b5fb01a6110196c423c644aecb9f767c6a45f4",
+          "2cf0e30325fae549836f99377c13742f40a4316c5f5413edf810632a527b9500",
+          "bb6354f61e5184ab98236feab0eb6405cb717771e924ecfdbd066c027317a0eb"
+        ]
+      }
+    },
+    {
+      "id": "8b3a8271-f397-4eff-99b7-3988f3632433",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.132444,
+      "charged_usd": 0.0014716000000000002,
+      "details": {
+        "run_id": "80ca849b-366c-42cb-8e2f-c09d5d2f7dbc",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2471,
+              "output_tokens": 302
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A staffing event during the investigation window has been reported that could have affected production on the line. However, a direct effect on the line's output has not been established since an independent source disputes the observation of staffing impact. There is a shortfall in observed production relative to the planned baseline during the observed interval, but this cannot be conclusively attributed to the staffing event given the contradictory note.",
+                    "metric_ids": [
+                      "planned",
+                      "observed",
+                      "variance",
+                      "shortfall"
+                    ],
+                    "evidence_ids": [
+                      "REL-088-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The available evidence does not confirm whether the staffing event blocked the production line or for how long.",
+                    "There is unresolved uncertainty about the exact impact of the staffing event on output as corroborating data is lacking.",
+                    "Causal attribution cannot be made based solely on the observed sequence of events and reported discrepancies."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the staffing event blocked the production line and determine the duration if so.",
+                    "Obtain additional observations or records that can verify or refute the staffing impact on production.",
+                    "Review line activity logs or direct supervision reports for evidence of interruptions related to staffing during the incident window."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-088-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the staffing event directly caused a blockage or reduction in production output.",
+                "Completeness and confirmation of source coverage for the entire investigation interval.",
+                "Further evidence to distinguish staffing impact from other possible production factors."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_327997254edf43d48346c041c57d3be3",
+            "response_id": "resp_0a8ed5b3f8f1a4e5016abcd9a489a487d195a399338ef8f3fc",
+            "prompt_digest": "e26dba5e3b136e1bdfd320dfa120b94fcc4c5c04360cdffa72fa04391c4806a4",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "58fdec15-58dc-4d30-a9d8-40e4617a4392",
+      "purpose": "evaluation",
+      "operation": "embedding",
+      "status": "SETTLED",
+      "reserved_inr": 0.0005507999999999999,
+      "charged_inr": 0.0005507999999999999,
+      "charged_usd": 6.12e-06,
+      "details": {
+        "request_id": "req_e7a72e1be9f4494eb3f80209a552287a",
+        "embedding_ids": [
+          "ab8a19a72457549fb7c965bed7c868b3a0a6ed6d31fd9725a2d8bd5417cd735a",
+          "53a60cc8441b14b1630180c6e194dbda8973bd19e425fd9b6cb4fbdc2c5d3f18",
+          "6d6ecbb5878e22704156b4cf9e3f2894d0e421b5d1420e57aad6c3aa36043294",
+          "edf12cd624e4a5a15769912d1dccb0904c726264abf449b59e387a8b3912a108",
+          "9dd5832eaa39e18438910e9ce70f59e850b7ffc163d341206b90843673cb2ba7",
+          "bcda767e0b94599d9046ad6ab70001e0259849671c68ae2a3a51bf3bfaa8e165",
+          "55b46c19f78d10e5015c0dffc71846cb9a8f4228351f3bc44cd89905e82a9d09",
+          "13db9d72df3fabf455728d930bfd63b135c601cb9e2702e7a5304e365ac54cab"
+        ]
+      }
+    },
+    {
+      "id": "376103cd-d474-4c2d-8bfe-1b3a231d9578",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11822399999999998,
+      "charged_usd": 0.0013135999999999998,
+      "details": {
+        "run_id": "525c36c3-a150-4958-9b7c-67cd55b818c1",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2464,
+              "output_tokens": 205
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "There is a staffing event reported that may have impacted production. However, the effect on the specific production line is not established with current evidence. Verification of the line impact and duration of blockage is needed before confirming its role in this incident.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-087-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Current information does not confirm if the staffing event physically blocked the line or for how long.",
+                    "No direct production output data is linked to the staffing event to confirm causal impact."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the staffing event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-087-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the staffing event caused an actual blockage on the production line remains undetermined.",
+                "Baseline plan and output data for the investigation window are incomplete, limiting production impact assessment.",
+                "Coverage completeness of source information during the investigation interval is partial and needs verification."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_bbf5a87ab61b4ae3bb86f7075f57f8b5",
+            "response_id": "resp_0d9e98d8e14ce626016abcd9a17bb487d1bd7d1acd70d25c6e",
+            "prompt_digest": "72afb9f2cd504e5723190bc651974c872b0a0a0ac4752834951d787998fe2ccb",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "5bd5826b-052f-4b67-ac5b-7675706bafb9",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.08629200000000001,
+      "charged_usd": 0.0009588000000000001,
+      "details": {
+        "run_id": "37c7f30b-fe16-432c-b180-d92764decab1",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2121,
+              "output_tokens": 69
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "No event evidence is available to support or refute any hypotheses regarding the investigation window.",
+                "No evidence-linked proposals or actions have been identified that might explain observed data or issues.",
+                "Source coverage for the investigation interval is not declared complete, limiting the completeness of the timeline and related analysis."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_ed2756eabefc46d9afd0de7eb5901910",
+            "response_id": "resp_059322a5a730d0d9016abcd99e712c87d19eb9cb89be6945ed",
+            "prompt_digest": "187f7c7223dc0f45570865def5a03ccf562e88aaf5cc58d7dff29de92cc9a7ab",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "de1d33c8-041b-47e6-820a-8332da5b4250",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.23652,
+      "charged_usd": 0.002628,
+      "details": {
+        "run_id": "bff7b431-e5a1-4ee7-9409-40867aa696f4",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2460,
+              "output_tokens": 229
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A machine event was reported that may have affected production during the investigation window, but the presence of a line-level effect is not established. The machine concern is supported by one source but contradicted by an independent note disputing the machine observation. Uncertainty remains about whether the machine event actually blocked the production line and for how long.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-060-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The dispute between sources leaves the machine event impact uncertain.",
+                    "No confirmed evidence that the machine event caused a line blockage or production loss."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the machine event blocked this line and determine its duration."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-060-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the machine event truly blocked the production line during the investigation window is unclear due to conflicting source reports.",
+                "Production output data for the investigation interval has conflicts and lacks matching baseline plan assignment, hindering causal attribution.",
+                "Source coverage completeness for the investigation interval is not established, leaving the timeline uncertain."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_8492d2aca1b945f2afe9b1df4dfe9c26",
+            "response_id": "resp_0a24b68fb654a435016abcd998af9887d18fcb7e2966662338",
+            "prompt_digest": "d6887060017520dda86c41c215d00d0b9e0053e8a61d9f3b10afea834f9614ef",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          },
+          {
+            "usage": {
+              "input_tokens": 2478,
+              "output_tokens": 179
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A machine event was reported that may have affected production on the line. However, the extent to which this event caused a line-level effect is not established conclusively.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-060-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The counterevidence disputes the machine event's impact and verification remains open."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the machine event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-060-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "It is uncertain if the machine event caused any production blockage or delay on the line as reported.",
+                "Conflicting notes from independent sources remain unverified.",
+                "Production data are currently conflicting and not fully reconciled with baseline plans.",
+                "Timeline completeness for the investigation interval is not fully established."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_1cd23fff1ce44c3aa10eba3de2e2be8e",
+            "response_id": "resp_08c821f0e4eaadc0016abcd99b9a5487d1b8079562773d0fbc",
+            "prompt_digest": "593719dbb4d8b0cf77602c51901fa2cbf40f9ebfbf7fcc795873f91f8a70ceda",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "d2f7266a-4be1-485d-b333-3133357bbde1",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.12020399999999999,
+      "charged_usd": 0.0013356,
+      "details": {
+        "run_id": "81212578-405f-4de4-9644-796fedeadc39",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2539,
+              "output_tokens": 200
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A machine event was reported that may have affected production during the investigation window, but there is no established evidence that this affected the production line's output. The effect at the line level remains unconfirmed due to conflicting notes disputing the machine concern.",
+                    "metric_ids": [
+                      "planned",
+                      "observed",
+                      "variance",
+                      "shortfall",
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-059-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "There is uncertainty whether the machine event actually blocked the production line or impacted output.",
+                    "No direct evidence confirms line blockage by the machine event during the investigation window."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the machine event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-059-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "The investigation window lacks full source coverage for a comprehensive timeline assessment.",
+                "Verification is needed to establish the linkage between the machine event and actual line output changes."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_ba80bd28fd2840799a4b2bb43cf1bb93",
+            "response_id": "resp_064a3c67d3da9e47016abcd996200c87d18d9751cfe928c1f9",
+            "prompt_digest": "d4a68f9a4c024f6a32c5216a1990378ef51b3b9aa1a3fc40ebedc4475571ef4f",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "2b0409e8-f064-43e7-8cc6-85058d0d6f17",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.118728,
+      "charged_usd": 0.0013192,
+      "details": {
+        "run_id": "cdd0af23-5862-4376-ab67-8b04308b9b43",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2466,
+              "output_tokens": 208
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "There is a machine event reported that may have impacted production for the order on this line, but the evidence for a direct line-level blockage or effect remains unverified and is contradicted by an independent note disputing the machine concern.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-058-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The investigation lacks confirmation whether the machine event actually blocked the line or for how long, which limits causal conclusions.",
+                    "Current evidence does not fully cover the source timeline for the interval of interest, leaving timeline completeness partial."
+                  ],
+                  "next_checks": [
+                    "Verify if the machine event caused a line blockage and determine its duration to clarify production impact."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-058-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains about the effect of the machine event on line blockage duration as no direct confirmation is available.",
+                "Incomplete timeline coverage in sources leaves potential gaps in understanding event sequence and effects."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_d37d6792afa74a20aae5f939bebc058d",
+            "response_id": "resp_0991a6e1c66e8f9f016abcd992e2e887d19159f188b5dfc635",
+            "prompt_digest": "51cf4716fcb276cb272c1e5f6f4fe8a4a0ce12c4cc6202a84045f87e1b5e9193",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "95b6bab2-8fda-46aa-960f-307375a2df18",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.118836,
+      "charged_usd": 0.0013204,
+      "details": {
+        "run_id": "5e7517ca-e0c0-4737-8162-9955425d0d96",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2453,
+              "output_tokens": 212
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A machine event was recorded that may have affected production during the investigation window; however, the effect on the production line itself has not been established. This event is supported by an evidence source reporting the machine concern but contradicted by an independent source disputing the machine observation.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-057-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Verification of line-level blocking is incomplete, creating uncertainty regarding actual impact on production."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the machine event physically blocked this production line and determine the duration if so."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-057-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "The exact impact of the machine event on the production line remains unconfirmed due to conflicting sources.",
+                "Baseline production plan and output data are incomplete for the investigation interval, limiting quantitative analysis of shortfall or delay.",
+                "Source coverage for the investigation window is not declared complete, potentially missing related events or observations."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_3e1893e13fe746e3a4ee07e33758c802",
+            "response_id": "resp_07eee6c60d21f9e6016abcd98f9d9c87d1bd435d5e0b57470b",
+            "prompt_digest": "11e741a299c4ad8dc18b788a44dcef651c4234e305735eb9a6c03c656b456c36",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "c64a2997-5c58-4f0d-90c6-98dbb97a6fde",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.08618400000000001,
+      "charged_usd": 0.0009576000000000001,
+      "details": {
+        "run_id": "87df4e0c-5ee5-484a-a9b7-8734fbedaa5d",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2114,
+              "output_tokens": 70
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "No relevant event evidence is available to form hypotheses or explanations for the current investigation window.",
+                "No evidence-linked proposals or actions are documented for this line and order during the investigation window.",
+                "Source coverage for the investigation interval is not declared complete, leaving potential observations uncollected or unverified."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_a3e77670d15c491194257c60f04d419a",
+            "response_id": "resp_04e553004da2b908016abcd98dfc7487d18a5cb7567eef0bcf",
+            "prompt_digest": "791d45121e38736b5df606c1f8691345af14a9832b95aa4916b82d4403f2f504",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "f47b939e-3bb2-4bd7-bfa5-66f1ad5bcfac",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.127872,
+      "charged_usd": 0.0014208,
+      "details": {
+        "run_id": "27319e19-f054-4978-b68c-43d85df0a7bd",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2460,
+              "output_tokens": 273
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material event is reported as a concern affecting the order in the sewing stage of the production line. This event potentially impacted production, but direct evidence confirming an effect on line output or blockage duration is not established in the data. Therefore, the line-level impact remains unverified given the contradictory note from an independent source disputing the material event.",
+                    "metric_ids": [
+                      "blocked_minutes",
+                      "planned",
+                      "observed",
+                      "variance"
+                    ],
+                    "evidence_ids": [
+                      "REL-030-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Material event presence alone does not confirm line blockage or production impact.",
+                    "Contradictory observations introduce uncertainty about the actual effect on this production line.",
+                    "No direct measurement confirming blockage duration or lost output attributable to the material event is present."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked this line and for how long through direct observation or additional production data.",
+                    "Collect further data verifying output changes correlated with the material concern impact timeframe."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-030-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty on whether the material event caused any measurable blockage or downtime for the line remains.",
+                "Conflicting sources leave the extent of material event impact on production unresolved.",
+                "Production data buckets for this investigation have conflicts limiting conclusive attribution of output variance to material readiness."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_397314f3f2264f338f403015e59975f5",
+            "response_id": "resp_0bbb74e7f8055ff2016abcd98add3487d19af4e9a8df12b5b2",
+            "prompt_digest": "52afa8082b0174f8828c2cc815dd6bac22ff0fcdeaf6b0a2632ed71d1debd284",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "629f5c64-155d-4f2b-92cb-18717e6ca93c",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.132804,
+      "charged_usd": 0.0014756,
+      "details": {
+        "run_id": "9a10f8b4-9c0f-478a-b810-e5a5c359ece0",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2541,
+              "output_tokens": 287
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "There is a material readiness event possibly affecting production of the order on the sewing line. However, it remains unconfirmed if this event caused a blockage to the line or impacted production output at that level. Observations noted a shortfall in production quantity compared to the planned target during the investigation window, but no explicit line block duration was recorded, suggesting the material event's impact on production throughput remains unclear.",
+                    "metric_ids": [
+                      "planned",
+                      "observed",
+                      "shortfall",
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-029-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The available evidence does not confirm whether the material event directly blocked the line or for what duration, leaving uncertainty in attributing production shortfall to material readiness.",
+                    "There is an independent observation disputing the material event's impact, indicating conflicting interpretations of its influence on production."
+                  ],
+                  "next_checks": [
+                    "Verify if the material event resulted in an actual line blockage and determine its duration to clarify impact."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-029-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains about the causative effects of the reported material readiness problem on the actual production shortfall observed.",
+                "No explicit line blockage time was observed despite the reported material issue, creating ambiguity in cause attribution.",
+                "The data coverage for some segments of the investigation window may be incomplete, limiting full causal analysis."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_52a98f6bab58421ba4984eb39d1089b0",
+            "response_id": "resp_02deb2e5091a2056016abcd987907487d18787451daa687202",
+            "prompt_digest": "99ae7202c84ceaf29fdfdcff8081a994b4e7df09a1a7471368e82c3c2a123692",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "fcf84c8f-92b7-45a3-9cf6-258fb3bcc5b0",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11843999999999999,
+      "charged_usd": 0.001316,
+      "details": {
+        "run_id": "b73430ae-feae-4100-b5d2-f4b1b35d1d90",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2470,
+              "output_tokens": 205
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material event was reported by a source as potentially affecting production for the order under investigation, pointing to a possible disruption in material readiness during the production window.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-028-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The material concern's actual impact on the production line is not established without confirmation of line blockage details.",
+                    "Evidence contradicts the initial material concern and verification remains open, so causality is uncertain."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked this line and for how long.",
+                    "Clarify the duration and extent of any line blockage caused by material readiness issues."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-028-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty persists whether the material readiness event directly caused production shortfall on the line under this order.",
+                "Verification of line blockage and incident window coverage remains incomplete, hindering resolution of the material cause hypothesis."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_c8aded464428403da1a11884deac0cb3",
+            "response_id": "resp_0a8bc23232444010016abcd982bdf887d19d52117139b22faa",
+            "prompt_digest": "f723669b162fd72957a075e211c732ebb24cb8e6c8524bd66086562fe0395502",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "0c369505-ac50-4204-9bca-8a7a55592fb1",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.122076,
+      "charged_usd": 0.0013564,
+      "details": {
+        "run_id": "cb82bfd9-41c9-478f-b8ee-7e81cc99470e",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2455,
+              "output_tokens": 234
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material event was reported that might have affected production on the line under investigation, but the actual impact at the line level remains unconfirmed. This event's effect on production quantity or timing is uncertain based on the current evidence.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-027-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Verification of whether the material event blocked the line and for how long is lacking.",
+                    "Current evidence does not establish a definitive line-level impact from the material event.",
+                    "The contradictory note challenges the material event's relevance or occurrence, indicating uncertainty."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked this line and for what duration to clarify its impact."
+                  ],
+                  "counterevidence_ids": [
+                    "REL-027-counter"
+                  ]
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains about the material event's actual influence on line production due to contradictory reports.",
+                "Production measurement values for planned versus observed quantities during the investigation window are not yet available to evaluate performance impact.",
+                "Complete source coverage and timeline data for the entire investigation interval have not been declared, limiting full context assessment."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_e69c1f9da5284fe48150bf8e5cf7f0d9",
+            "response_id": "resp_0ae80db80be594c6016abcd9802df487d191c380cb301de711",
+            "prompt_digest": "04e96ad646bb704aa075b79ad0d1bc803a341eec890b5bfa06e2449e81c7ee76",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "4622080f-9d7e-42e9-b9f9-b92700dff775",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.08449200000000001,
+      "charged_usd": 0.0009388,
+      "details": {
+        "run_id": "830984a6-9fea-48fb-bd7d-f81ff6202d76",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2111,
+              "output_tokens": 59
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "There is an absence of event evidence to formulate supported hypotheses.",
+                "No evidence-linked proposals are available to guide potential causes or explanations.",
+                "The source coverage for the investigation interval is not confirmed as complete, leaving possible observations unexamined."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_5b875b0647ff46e0883d401a8530ae6b",
+            "response_id": "resp_0300328075f57b4e016abcd97eb28887d19555cfe8a5d60539",
+            "prompt_digest": "35307eb2140a6c8d4207d32f8651e0502d2bc16f55260b29fc073b05b24c9362",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "b60b6c25-6ac5-4d01-bf61-240a1ec92f1f",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11984399999999999,
+      "charged_usd": 0.0013315999999999998,
+      "details": {
+        "run_id": "a89b70d2-9b96-46ee-b0b4-b14d9990c415",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2345,
+              "output_tokens": 246
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A machine event is reported that may have affected production during the investigation window, but it is not established whether this caused a blockage or impact at the line level within the current line and interval.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-055-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Absence of explicit verification that the machine event blocked this specific production line during the investigation window.",
+                    "Production metrics for the line show no recorded blocked minutes, introducing uncertainty on the event's local line effect."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the machine event physically blocked this production line and specify the duration of any blockage."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains on whether the reported machine event from the source directly impacted the production line flow, given no direct line-blocking time is currently recorded.",
+                "Production output data for the line has conflicting or incomplete matching with baseline plan buckets for the given interval, hindering clear assessment of production shortfall or variance.",
+                "The timeline coverage and source completeness for the relevant investigation interval are not fully declared, limiting confidence in temporal alignment of production and event data."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_8724988e83a54307a7fe45896a5020e6",
+            "response_id": "resp_015b669add8da17a016abcd960f7b087d193b372cdedb35589",
+            "prompt_digest": "392bb06ff52638e488c440bf6a90934c8b0d0750b03ccae1ffa92337cb72ca44",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "d3e87485-6181-4252-b26a-9ef50602ca5b",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.115092,
+      "charged_usd": 0.0012788,
+      "details": {
+        "run_id": "4522cc92-ed5b-4b58-8b7b-905fb02adddc",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2421,
+              "output_tokens": 194
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A machine event was recorded during the line's operation period which may have impacted production. However, there is no confirmed evidence that this event blocked the line or directly caused the observed production shortfall.",
+                    "metric_ids": [
+                      "shortfall",
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-054-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "No explicit confirmation exists that the machine event actually blocked or delayed this production line.",
+                    "Timing overlap alone does not establish causality between the machine event and reduced output."
+                  ],
+                  "next_checks": [
+                    "Verify from maintenance whether the machine event caused a line blockage and for what duration."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains about the actual impact of the machine event on line production due to lack of direct blockage evidence.",
+                "Completeness of source coverage for the entire investigation interval is not confirmed, possibly leaving gaps in timeline data."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_0d15281c41d747519a4f345800f97f04",
+            "response_id": "resp_0ecb6686acc84384016abcd95df6a487d1b4b280584f8bfb1f",
+            "prompt_digest": "7dc9566f874b53279fb1bf6365a6c78847e7c74cb336d386a6801f8c26d6d784",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "c11e397e-a01d-4f92-8830-898be050a4e9",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11196,
+      "charged_usd": 0.001244,
+      "details": {
+        "run_id": "f4f9a8af-4d79-4fa9-88fb-5e6821fbee26",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2346,
+              "output_tokens": 191
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A machine event was reported that may have affected production during the investigation window, but there is no confirmed evidence that this event blocked the line or caused the production shortfall at the line level.",
+                    "metric_ids": [
+                      "shortfall"
+                    ],
+                    "evidence_ids": [
+                      "REL-053-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "No direct verification that the machine event blocked the production line is present.",
+                    "The evidence does not establish duration or extent of any blocking effect on the line."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the machine event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains about the actual impact of the machine event on line output during the investigation window.",
+                "The investigation window may lack complete timeline coverage, hindering full causal analysis.",
+                "Human review is needed to validate proposals before any recovery actions are taken."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_68f2111bce46461993358bd2952251ba",
+            "response_id": "resp_0321d3866a029668016abcd95b9e4887d1bc7b90dd7f81c9b9",
+            "prompt_digest": "cccc4aaab045d30ac1698777de659185a4918e183eab06e9af8bc77a07c5dfbb",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "9310dae3-a229-4228-90c1-3003b678696d",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11552400000000002,
+      "charged_usd": 0.0012836000000000002,
+      "details": {
+        "run_id": "3273efe0-69e2-46e8-8892-9f1c16b51761",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2337,
+              "output_tokens": 218
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A machine event was recorded during the investigation window which may have impacted production, but there is no established evidence confirming that this event blocked the line or reduced output at the line level.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-052-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Lack of direct confirmation of line blockage during the time of the machine event.",
+                    "Absence of output data for the declared investigation window prevents verifying any production shortfall linked to this event."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the machine event blocked this production line and determine the blockage duration.",
+                    "Collect and analyze production output data corresponding to the investigation interval to assess impact."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "No definitive information on whether the machine event caused any stoppage or slow-down in the line operations.",
+                "Absence of complete baseline plan and output data prevents quantifying production variance during the investigation window.",
+                "Source data coverage for the investigation interval is not fully declared, leaving timeline completeness uncertain."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_d3ea920e79834bc9a9d5bd586391f2e8",
+            "response_id": "resp_07a9cd614c82105b016abcd958e47887d1b752c7548f437161",
+            "prompt_digest": "466682b713904fa6a0e8c3d6c9e736237047d9bf726b302d9e991f8947418a1f",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "7f766a23-bf5b-43db-bc9a-bd6d1dcedf91",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.08964000000000001,
+      "charged_usd": 0.0009960000000000001,
+      "details": {
+        "run_id": "98290461-7d14-4f33-aebb-2098121c2a28",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2246,
+              "output_tokens": 61
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "No relevant event evidence is available to support or refute specific hypotheses for the current investigation window.",
+                "Source coverage for the investigation interval is not declared complete, limiting comprehensive temporal analysis.",
+                "No evidence-linked proposals or actions are currently available for assessment."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_68f7c472a3e24fe797c1fed480ca26b8",
+            "response_id": "resp_09840d4debcbdd93016abcd956970087d1818b58e6e6b6239a",
+            "prompt_digest": "74e7e3d51a6305b04826974417f47d7243d318f42943d56edd00eacb108b61f5",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "409ae580-3de2-4be4-9c88-942695507eb7",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11592000000000001,
+      "charged_usd": 0.001288,
+      "details": {
+        "run_id": "eb0c636a-15df-420c-8925-558943579a35",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2340,
+              "output_tokens": 220
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material event was reported affecting the order and may have influenced production on the line. However, there is no established evidence that this event caused any blockage or delay on the line during the investigation window.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-025-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "No direct verification that the material event resulted in line blockage or production delay is available.",
+                    "Production output data conflicts or lacks matching baseline plan buckets, complicating assessment of impact on output."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event caused a line blockage and determine the duration of any such blockage.",
+                    "Obtain complete and consistent production output data aligned with baseline plans to evaluate effects on production quantity."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the material event actually blocked the production line and for what duration remains unverified.",
+                "Production output data conflicts prevent clear attribution of variances to the material event.",
+                "Source coverage during the investigation period is not complete, leaving timeline uncertainties."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_988f6fa9946840e184581de99b9e3b88",
+            "response_id": "resp_071c113cd6a7bb91016abcd953ac8887d1924fa7bb367fd948",
+            "prompt_digest": "61f4d8e39970958015f981f81d715f65c9e09654da04cce5d50945aaba0dbb49",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "da30da13-2803-4336-8566-0a96cffc73a0",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.12398399999999998,
+      "charged_usd": 0.0013775999999999999,
+      "details": {
+        "run_id": "4d3e3509-0abb-4a0d-a94d-c544359a3e6b",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2424,
+              "output_tokens": 255
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "The identified material readiness event coincides with the line and order under investigation and could potentially explain the observed production shortfall, but there is no established evidence indicating that this material issue actually blocked the production line during the interval examined.",
+                    "metric_ids": [
+                      "planned",
+                      "observed",
+                      "variance",
+                      "shortfall",
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-024-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Absence of direct confirmation that the material concern caused a production line blockage or delay during the investigation window.",
+                    "No documented timeframe quantifying the duration or impact of any blockage caused by the material event."
+                  ],
+                  "next_checks": [
+                    "Verify if the material readiness event physically blocked or impeded the line, including the duration of any blockage or delay.",
+                    "Collect detailed production line status logs or operator reports covering this interval to confirm or refute line blockage existence."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the material event indeed caused a blockage or delay on the specific production line in question remains unconfirmed.",
+                "The timeline completeness is partial, limiting confidence in full understanding of incident progression and effects.",
+                "No direct data linking material readiness status to actual production losses within this interval beyond temporal overlap."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_a5562a16dc5c485cb725bb9817414a71",
+            "response_id": "resp_0731bbe6904cac8f016abcd9510e1487d1b96bff549f4c26bb",
+            "prompt_digest": "2710ba5b55fd9bc32a6c6ae1d33be5c581f11e91497ccce913eff2109cc8d02e",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "710450e2-aba7-477f-b765-7e3acf681b0c",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11264399999999998,
+      "charged_usd": 0.0012515999999999998,
+      "details": {
+        "run_id": "c3fd7802-3b38-4e10-81c9-358ffd5e56d9",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2349,
+              "output_tokens": 195
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "The material readiness event documented in this investigation may have influenced the production order under review, but it is not established that the production line itself was blocked or directly impacted in a way that caused production loss during this interval.",
+                    "metric_ids": [
+                      "blocked_minutes",
+                      "shortfall",
+                      "planned",
+                      "observed"
+                    ],
+                    "evidence_ids": [
+                      "REL-023-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "There is no direct evidence confirming that the production line was blocked or delayed due to the material event during the investigation window."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked this production line and for how long."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "The timeline completeness is partial and could miss relevant source data for establishing impact causality.",
+                "Causal attribution currently rests on temporal association without confirmatory blocking evidence.",
+                "The effect of the material event on downstream production stages remains unverified."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_2000e4fbf4414494b2999e8d00fc6aca",
+            "response_id": "resp_0e3d47dfbdc88580016abcd94dadac87d180d5a32f8f1013af",
+            "prompt_digest": "4cef4acf81fa6cc718647128c91e78a6dae31e09091eb5cc1ac99542a0f84d0f",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "2633e17f-d9ce-405e-b020-a30ce9ed285e",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11905200000000002,
+      "charged_usd": 0.0013228000000000003,
+      "details": {
+        "run_id": "4c7e1edf-2d84-4706-9eef-983cfcc7bd35",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2339,
+              "output_tokens": 242
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "There is a material readiness event reported affecting the order during the investigation window. This event is plausible as a factor impacting production at the line level, but there is no established confirmation that it blocked the line or affected output quantity.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-022-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The direct impact of the material event on the line is not confirmed by the available evidence.",
+                    "Production output and baseline plan data for the investigation window are incomplete or missing, limiting assessment of impact magnitude."
+                  ],
+                  "next_checks": [
+                    "Verify whether the material readiness event caused any blockage of the line and determine the duration if so.",
+                    "Acquire complete production baseline and output data for the line during the investigation window.",
+                    "Confirm coverage completeness of source data for the entire investigation interval."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertainty remains about the precise effect of the reported material readiness event on line blocking and production shortfall.",
+                "Missing production baseline and output quantities prevent quantitative validation of the event's impact.",
+                "The investigation window lacks declared complete source coverage, hindering timeline confirmation."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_1f34a783cc724318b42032a7fa9ef7c8",
+            "response_id": "resp_0bf05fcd20b4833d016abcd94b1f5487d1bba6be1f844be709",
+            "prompt_digest": "8eb8c33a115c7332db241e1483ac0cce61e67960d771e3fc4762919daacf5cd1",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "7e204588-c066-42d2-a838-6380df95cb0d",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.08956800000000001,
+      "charged_usd": 0.0009952000000000001,
+      "details": {
+        "run_id": "98bcbbaf-724c-4dc8-97ef-b8b6ee913bbd",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2240,
+              "output_tokens": 62
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "No hypotheses are present due to lack of relevant event evidence in the current investigation window.",
+                "No evidence-linked proposals for actions or explanations are available at this time.",
+                "Source coverage for the investigation interval is partial, so some timeline information may be missing."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_e2259b7bc8b14250af57a52db3ebffbe",
+            "response_id": "resp_0bd731d8b49949e4016abcd94964dc87d198aba7bff0e29f3d",
+            "prompt_digest": "c91f27c93dbabddbfc5e02d226a35a38fec40dddbd51d21ef83ad8c7b4d1ae0f",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "e8b741ed-d950-4bed-8f5a-65130a62643b",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.109872,
+      "charged_usd": 0.0012208,
+      "details": {
+        "run_id": "6700f5ca-f94f-492c-aacd-9acc198e5400",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2340,
+              "output_tokens": 178
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material readiness event occurred during the investigation window that may have had an impact on production; however, there is no established verification that this event blocked the production line or for what duration.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-025-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "There is no direct evidence confirming that the material event caused a blockage on the production line or measuring the duration of any blockage."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "The exact impact of the material readiness concern on production output remains uncertain due to missing confirmation of line blockage and its duration.",
+                "Production output metrics for the investigation interval contain conflicting or incomplete data, complicating precise assessment."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_02a3dc04a4d748828e8d3498017b0459",
+            "response_id": "resp_0e474bfbc043423e016abcd92d391487d18cf4e9ff5a12dbdf",
+            "prompt_digest": "61f4d8e39970958015f981f81d715f65c9e09654da04cce5d50945aaba0dbb49",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "50b244bf-5aaf-42cc-8fc8-732a7c230e7c",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.115488,
+      "charged_usd": 0.0012832,
+      "details": {
+        "run_id": "aa79063f-8a3d-4352-8516-8e27e61a6d56",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2424,
+              "output_tokens": 196
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material event has been reported that may have affected production for the current order in the line, but no evidence confirms that this event caused a blockage or delay at the line level during the investigation window.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-024-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The absence of detected line blockage in metrics does not conclusively rule out minor or transient material disruptions that might have impacted production subtleties not captured in block time measures."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the reported material event directly caused any line-level production interruptions remains unverified due to missing explicit blockage intervals in available data.",
+                "Completeness of source coverage for the investigation interval is not fully established, leaving potential unseen factors unaccounted for."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_c48c8049987e4b30aa4c682060b7896a",
+            "response_id": "resp_0f098fcd5b246c97016abcd928dce887d18a6bbb854552de12",
+            "prompt_digest": "2710ba5b55fd9bc32a6c6ae1d33be5c581f11e91497ccce913eff2109cc8d02e",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "97cb0ecb-d031-4fe5-943b-3aa2b87454aa",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.11365200000000002,
+      "charged_usd": 0.0012628000000000001,
+      "details": {
+        "run_id": "d310ab8b-2c4f-4c43-b51d-0a9becbe4ba2",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2349,
+              "output_tokens": 202
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "There is a material readiness event reported that may have impacted production for the given order and line, but no confirmed evidence currently establishes that this event caused any blockage or stoppage on the production line during the investigation window.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-023-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "No direct confirmation that the material event blocked the line is available within the evidence."
+                  ],
+                  "next_checks": [
+                    "Verify whether the material event caused any blockage of the production line and determine the duration of any such blockage."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the reported material readiness event led to an actual blockage or stoppage on the production line remains unconfirmed.",
+                "The timeline coverage is not declared complete for the investigation window, possibly missing other relevant events or factors.",
+                "Causal attribution is limited by lack of comprehensive evidence beyond the material event reporting."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_5c8c704426074336adaa251733b38c5a",
+            "response_id": "resp_0b015283fbf7b77c016abcd9257bf887d1952f552358100707",
+            "prompt_digest": "4cef4acf81fa6cc718647128c91e78a6dae31e09091eb5cc1ac99542a0f84d0f",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "38fdc290-04a1-43f2-9891-e4948e58c786",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.12063600000000001,
+      "charged_usd": 0.0013404,
+      "details": {
+        "run_id": "e7d69174-3a51-4009-8acf-5a7906510d14",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2339,
+              "output_tokens": 253
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material event occurred which may have affected production on this order, but it is not established whether this event blocked the specific line in question or for how long.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-022-event"
+                    ],
+                    "source_fields": [],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "The evidence does not confirm any line blockage or production stoppage caused by the material event.",
+                    "Production output data and baseline plans for the investigation window are missing or incomplete, limiting ability to correlate the event with observed production impact."
+                  ],
+                  "next_checks": [
+                    "Verify whether the material issue blocked the line during the investigation window and determine the duration of any blockage.",
+                    "Obtain complete production output and baseline plan data for the window to correlate with the event timing.",
+                    "Confirm whether other factors may have influenced production variance aside from the material event."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Exact impact of the material event on line performance is uncertain due to lack of confirmed blockage data and incomplete production metrics.",
+                "It is unknown if observed production discrepancies, if any, are attributable to the material event or other causes.",
+                "Coverage of production sources during the declared investigation interval is not confirmed as complete, leaving possible missing evidence."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_11b85c26cea14f8d9e2f0f0d211e7ef6",
+            "response_id": "resp_03d77a60f7d349db016abcd922729087d1acb686ffadf79986",
+            "prompt_digest": "8eb8c33a115c7332db241e1483ac0cce61e67960d771e3fc4762919daacf5cd1",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "c472b8cf-5784-4e7a-ad71-a26aba6b8f87",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.091584,
+      "charged_usd": 0.0010176,
+      "details": {
+        "run_id": "34a65df8-248a-4905-a59c-bc7b44cb378e",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2240,
+              "output_tokens": 76
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "No relevant event evidence is available during the current investigation window to support formation of hypotheses about production performance or issues.",
+                "Source coverage for the investigation interval is not declared complete, limiting full assessment of timeline impact or correlating events.",
+                "No evidence-linked proposals for remedial or investigative actions exist, restricting potential interventions or checks."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_f007294513704d47a9dcbe8639ee339b",
+            "response_id": "resp_0d6c0237cf5c343b016abcd9200f3887d1bf1dbcb5fb778bac",
+            "prompt_digest": "c91f27c93dbabddbfc5e02d226a35a38fec40dddbd51d21ef83ad8c7b4d1ae0f",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "f3185e7a-d5e1-48b3-b6a3-68f10bdef915",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.231408,
+      "charged_usd": 0.0025712,
+      "details": {
+        "run_id": "0322a73c-2998-4aab-b990-154164b7fcc7",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2369,
+              "output_tokens": 231
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material readiness event was reported affecting order 22 within the investigation window, which may have influenced production at the line level; however, there is no established evidence confirming this event blocked the line or its duration.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-022-event"
+                    ],
+                    "source_fields": [
+                      "REL-022-event.start",
+                      "REL-022-event.end"
+                    ],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Lack of direct evidence verifying line blockage or impact duration.",
+                    "Absence of complete baseline plan and output data for the declared investigation window.",
+                    "Incomplete source coverage over the entire investigation interval."
+                  ],
+                  "next_checks": [
+                    "Verify whether the reported material event caused a line blockage and determine the blockage duration if any.",
+                    "Obtain complete baseline plan and observed output data for the investigation window to quantify production impact."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "The causal link between the material readiness event and specific line-level production effects remains unconfirmed.",
+                "Needed quantitative confirmation of production shortfall during the event due to missing baseline and observed output metrics.",
+                "Incomplete timeline and source data coverage limit comprehensive impact assessment."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_0881a81ecb1e43ef9f985be407650328",
+            "response_id": "resp_03b122176fb4c097016abcd8ee6b4c87d19457e8371c169747",
+            "prompt_digest": "4ca68f9763385ca3ac38b651a6feeb815723fa6b660066e1cfa3714d603b56e7",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          },
+          {
+            "usage": {
+              "input_tokens": 2387,
+              "output_tokens": 187
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material concern event was reported affecting this order, but it is not established that this event blocked the production line or affected output directly.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-022-event"
+                    ],
+                    "source_fields": [
+                      "REL-022-event.start",
+                      "REL-022-event.end",
+                      "REL-022-event.summary"
+                    ],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "It is unclear if the material concern caused any blockage or production downtime on the line."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "The exact impact of the reported material concern on the line's production output is not verified.",
+                "Baseline plan and output data are incomplete for the declared investigation window, limiting assessment of production variance.",
+                "The source coverage for the investigation interval is not confirmed as complete, leaving timeline gaps."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_544dc48338f24803bd6f0314cc2ca8b0",
+            "response_id": "resp_04074ee8af4fee6f016abcd8f1c4c487d182f717bda99b074d",
+            "prompt_digest": "c3a807148578d3d833efe3b733194a3fa029dca273e11be4551869156f3c7466",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "a69aa143-df93-4e13-85ef-f6d25809bf3c",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.09828,
+      "charged_usd": 0.001092,
+      "details": {
+        "run_id": "156576c3-f4b4-4bc5-b00a-7cd2c7981e81",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2270,
+              "output_tokens": 115
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "Source coverage for the investigation interval is not declared complete, leaving open the possibility of unobserved events or factors.",
+                "No relevant event evidence is available to support hypothesis formation or counterevidence identification.",
+                "No evidence-linked proposals or corrective actions have been recorded or made available for review.",
+                "The investigation lacks observations beyond the current confirmed evidence, so potential contributing factors remain unexamined.",
+                "The production metrics indicate no variance between planned and observed good units, but causal explanations or operational conditions are not documented."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_dbbb8a40c7d14f26a5893d3c34a5e4e5",
+            "response_id": "resp_0c52dd12963a260e016abcd8ec6e9c87d19da221c23c21b955",
+            "prompt_digest": "39bb5c4343a7c49815bd2a6c081f2e5b7cccc243cee3211b3c965090d627467a",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "54c8946a-a100-46af-b5a1-c1c8b65c8ebb",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.220356,
+      "charged_usd": 0.0024484,
+      "details": {
+        "run_id": "fa4e9302-a86e-404b-98a4-28959a187b72",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2176,
+              "output_tokens": 223
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "Material availability event reported from 09:06 to 09:21 may have impacted production as it is cited as a material concern affecting order 22. However, explicit evidence that this event blocked the specific line under investigation or its duration is not established, introducing uncertainty about direct causal effect at line level.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-022-event"
+                    ],
+                    "source_fields": [
+                      "REL-022-event.start",
+                      "REL-022-event.end"
+                    ],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "Lack of direct confirmation that material event blocked the line or precise duration of blocking reduces confidence in causal attribution."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Whether the material event observed from 09:06 to 09:21 blocked this line remains unverified.",
+                "Baseline plan or output data covering the entire investigation window is incomplete, limiting production impact assessment.",
+                "Source coverage is not declared complete for the investigation interval, potentially missing relevant context or events."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_bb35b74926324f61a82f327594de4767",
+            "response_id": "resp_0febadde204df28f016abcd8b56ff887d18f05c0e32c1232ba",
+            "prompt_digest": "4ca68f9763385ca3ac38b651a6feeb815723fa6b660066e1cfa3714d603b56e7",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          },
+          {
+            "usage": {
+              "input_tokens": 2201,
+              "output_tokens": 213
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "The event recorded in the source REL-022-shift-log reports a material issue affecting order 22 between 09:06:00 and 09:21:00 UTC. While this suggests a possible impact on production, there is no confirmed evidence that this event blocked the S4 sewing line or affected output during the investigation window.",
+                    "metric_ids": [],
+                    "evidence_ids": [
+                      "REL-022-event"
+                    ],
+                    "source_fields": [
+                      "REL-022-event.start",
+                      "REL-022-event.end"
+                    ],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "It is not established from the current evidence that the material concern described impacted the line's production directly."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked this line and for how long."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Verification is required to establish if the material event caused any blockage or delay on the S4 sewing line during the investigation window.",
+                "Production baseline plan and output data completeness need confirmation for the declared investigation window to accurately assess impact."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_c8f4de00cc844d63a9fcf9025d9a9483",
+            "response_id": "resp_07ff8730ee277f31016abcd8b911c887d1a40e9d21f924c46a",
+            "prompt_digest": "e9497ca0858e003edbd16d4486f5600cb833df50a79128b4e914f25375280524",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "fc3532d0-3a09-4b15-b8f4-7eb02077e1a8",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.088308,
+      "charged_usd": 0.0009812,
+      "details": {
+        "run_id": "f33cb8a3-c3a3-4d26-9d0c-69d505aca876",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2077,
+              "output_tokens": 94
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "The investigation window lacks any evidence-linked hypothesis proposals or current event-relevant evidence to explain production performance or potential issues.",
+                "Source coverage for the investigation interval is indicated as partial, so the timeline may miss important events.",
+                "No action evidence is available to clarify interventions or responses during the investigation.",
+                "The production metrics indicate perfect alignment of observed good units with planned quantities but there is no explanatory data to confirm causal factors."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_98769c79163f4dbc9fd6e0be6c467c45",
+            "response_id": "resp_0c74774b465234b0016abcd8b329ac87d187dcfa954af74db3",
+            "prompt_digest": "39bb5c4343a7c49815bd2a6c081f2e5b7cccc243cee3211b3c965090d627467a",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "abe45679-f38a-4794-8057-3e6f56ace282",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.2241,
+      "charged_usd": 0.00249,
+      "details": {
+        "run_id": "18dc7a52-183d-4f28-920a-bdd1557cda22",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 2083,
+              "output_tokens": 264
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "The material event reported in REL-022-event may have affected production for order ORDER-22 on line S4 in the sewing stage, but there is no established evidence that the line was blocked or production was directly impacted during the investigation period 09:00\u201310:00 on 2026-06-23.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-022-event"
+                    ],
+                    "source_fields": [
+                      "REL-022-shift-log"
+                    ],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "No confirmation that the material event physically blocked the line or affected output during the time window.",
+                    "Baseline plan and output data for the investigation window are incomplete, limiting assessment of production impact.",
+                    "Source coverage for the whole investigation interval is not declared complete, risking missing events."
+                  ],
+                  "next_checks": [
+                    "Confirm whether the material event blocked line S4 and quantify the duration if so.",
+                    "Acquire complete baseline plan and observed output data for the declared investigation window.",
+                    "Obtain full timeline source coverage to ensure no relevant events are missed."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Material event's effect on production at the line level remains unverified.",
+                "Incomplete baseline and output data prevent firm conclusions on production variance.",
+                "Partial timeline coverage risks overlooking other contributing factors or events."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_e035173736164bc4960265544f883e18",
+            "response_id": "resp_00180df9ca5ba627016abcd876da3487d19528f358e20f46f9",
+            "prompt_digest": "2b071c11bb170d9564087518d59164de2f3dc7db2d5f908902180c9a75601397",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          },
+          {
+            "usage": {
+              "input_tokens": 2114,
+              "output_tokens": 243
+            },
+            "output": {
+              "hypotheses": [
+                {
+                  "explanation": {
+                    "text": "A material readiness event was reported during 09:06 to 09:21 affecting order 22, which may have influenced production on line S4 in the sewing stage. However, explicit evidence confirming a line-level blockage during this interval is not established.",
+                    "metric_ids": [
+                      "blocked_minutes"
+                    ],
+                    "evidence_ids": [
+                      "REL-022-event"
+                    ],
+                    "source_fields": [
+                      "REL-022-shift-log"
+                    ],
+                    "historical_refs": []
+                  },
+                  "limitations": [
+                    "There is no direct confirmation that the material event blocked the sewing line during the investigation interval.",
+                    "Baseline plan and output data for the specific investigation window is partially missing, limiting precise measurement of impact."
+                  ],
+                  "next_checks": [
+                    "Confirm from production lead whether the material event blocked line S4 and for how long.",
+                    "Obtain complete baseline plan and output data for the declared investigation window.",
+                    "Verify completeness of source coverage for the investigation interval."
+                  ],
+                  "counterevidence_ids": []
+                }
+              ],
+              "unresolved_issues": [
+                "Uncertain if the material event reported caused any measurable blockage on line S4.",
+                "Partial data coverage and missing baseline/outcomes limit the ability to quantify variance or shortfall.",
+                "No historical evidence is available to inform current causal hypotheses."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_e39da2b88b4a48969d28f44ca9b7dc18",
+            "response_id": "resp_0ccea25b176a9620016abcd87b0b1887d1a5a23391683ff2e1",
+            "prompt_digest": "6b9039094cb29ecb03c4aa3b42c31249a3b03e81c14b9d37105f1e61aa848541",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "723ae218-fd92-4fcb-bbf4-b5e9d67f209a",
+      "purpose": "evaluation",
+      "operation": "generation",
+      "status": "SETTLED",
+      "reserved_inr": 1.008,
+      "charged_inr": 0.191844,
+      "charged_usd": 0.0021316,
+      "details": {
+        "run_id": "bddb0ed2-0da3-418f-9db8-1409a85ce054",
+        "attempts": [
+          {
+            "usage": {
+              "input_tokens": 1984,
+              "output_tokens": 276
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "No hypotheses or proposed explanations are currently supported by available event evidence within the investigation window.",
+                "The investigation interval lacks complete source coverage, limiting comprehensive timeline construction and causal inference.",
+                "No action proposals or counterevidence have been linked to the existing evidence packet.",
+                "Absence of new event evidence leaves uncertainty about any ongoing issues during the 09:00 to 10:00 interval on 2026-06-22.",
+                "Historical evidence is not present to provide context or comparison for current material readiness status.",
+                "Observed production output matches planned targets exactly for the 09:00 to 10:00 interval (metric_ids: planned, observed, variance, shortfall all confirm), suggesting no production shortfall or blockage at line S4 during the sewing stage.",
+                "Prior issue indicated in REL-021-event was resolved before the current window starting at 08:10 and no further concerns were reported as of 08:40, leaving a gap in knowledge for the interval from 08:40 onwards until 10:00.",
+                "No explicit blocked time was recorded in the metrics, implying no line blockages affected output in the observed window.",
+                "Missing evidence on actions and hypotheses limits ability to propose root causes or mitigations.",
+                "No evidence exists to confirm if other latent factors impacted production indirectly outside of material readiness."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_fb0969ac09a04bcd941699954f8de48a",
+            "response_id": "resp_0c985db152d71b62016abcd870103087d18b1c3c6d86b1a386",
+            "prompt_digest": "cfdba1e4b59aef17ba55a82bd23de87731b403af8e06e96e4aa5c949f3746e14",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          },
+          {
+            "usage": {
+              "input_tokens": 1997,
+              "output_tokens": 61
+            },
+            "output": {
+              "hypotheses": [],
+              "unresolved_issues": [
+                "No relevant event evidence is available for hypothesis generation or refutation.",
+                "Timeline source coverage for the investigation interval is partial and not declared complete, limiting temporal context completeness.",
+                "No evidence-linked proposals or actions are available for recovery or next operational checks."
+              ]
+            },
+            "status": "completed",
+            "request_id": "req_4d2bf98074ea47daad5b46f094d29ea1",
+            "response_id": "resp_068fc3729f36ce8d016abcd874331087d19096f706a5458247",
+            "prompt_digest": "c8b3aebe5a661dd5361155fda20c6c209d90c37df6c43de2d210e7a424aae15f",
+            "reported_model": "gpt-4.1-mini-2025-04-14",
+            "provider_verified": true
+          }
+        ]
+      }
+    }
+  ]
+}
