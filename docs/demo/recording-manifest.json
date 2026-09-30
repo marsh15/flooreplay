@@ -1,0 +1,26 @@
+{
+  "recorded_at": "2026-09-30T08:28:47.374Z",
+  "api_origin": "http://localhost:8011",
+  "frontend_origin": "http://localhost:5177",
+  "incident_id": "INC-001",
+  "analysis_id": "24043b19-4c3b-42c7-b40d-4c82a19ceecb",
+  "revision": 2,
+  "knowledge_cutoff": "2026-09-28T11:30:00+05:30",
+  "workflow": [
+    "deterministic analysis",
+    "revision switch",
+    "source evidence",
+    "authenticated proposal submission",
+    "authenticated approval",
+    "OpenAI unavailable",
+    "release dataset integrity"
+  ],
+  "paid_calls": 0,
+  "historical_model": "Qwen archive; not current OpenAI evaluation",
+  "limitations": [
+    "Synthetic data",
+    "No actual OpenAI generation or embeddings verified",
+    "No independent semantic support review",
+    "No hosted deployment smoke test"
+  ]
+}

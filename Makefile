@@ -1,4 +1,4 @@
-.PHONY: dev seed worker verify test lint typecheck backend-dev frontend-dev e2e e2e-install eval-notes
+.PHONY: dev seed verify test lint typecheck backend-dev frontend-dev e2e e2e-install eval-notes
 
 backend-dev:
 	cd backend && uv run uvicorn flooreplay.api:app --reload --port 8000
@@ -13,9 +13,6 @@ dev:
 
 seed:
 	cd backend && uv run python -m flooreplay seed
-
-worker:
-	cd backend && uv run python -m flooreplay worker
 
 migrate:
 	cd backend && uv run alembic upgrade head
@@ -40,6 +37,23 @@ e2e-install:
 e2e:
 	cd frontend && pnpm exec playwright test
 
-# offline held-out parser evaluation (no API key needed; --live spends budget)
+# Archived coverage evaluation is offline. Incident live evaluation uses the shared ledger.
 eval-notes:
 	cd backend && uv run python -m flooreplay.eval_notes
+
+.PHONY: up dataset-verify export-demo generate-api test-db
+up:
+	docker compose up --build --wait
+
+test-db:
+	docker compose --profile test up test-db --wait
+
+dataset-verify:
+	cd backend && uv run python -m flooreplay dataset-verify
+
+export-demo:
+	cd backend && uv run python -m flooreplay export-demo
+
+generate-api:
+	cd backend && uv run python -m flooreplay export-openapi
+	cd frontend && pnpm generate:api

@@ -1,0 +1,104 @@
+name: Release verification
+on:
+  pull_request:
+  push:
+    branches: [main, 'codex/**']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: flooreplay_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: flooreplay_release_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U flooreplay_test -d flooreplay_release_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      FLOORREPLAY_DATABASE_URL: postgresql+psycopg://flooreplay_test@localhost:5432/flooreplay_release_test
+      FLOORREPLAY_TEST_DATABASE_URL: postgresql+psycopg://flooreplay_test@localhost:5432/flooreplay_release_test
+      FLOORREPLAY_BUILD_ID: ${{ github.sha }}
+      FLOORREPLAY_OPENAI_API_KEY: ''
+      E2E_USERNAME: browser-owner
+      E2E_PASSWORD: disposable-browser-test-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.10.4'
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.30.0'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install locked dependencies
+        run: |
+          cd backend
+          uv sync --frozen
+          cd ../frontend
+          pnpm install --frozen-lockfile
+      - name: Static verification and build
+        run: |
+          cd backend
+          uv run ruff check src tests
+          uv run mypy
+          cd ../frontend
+          pnpm lint
+          pnpm build
+          pnpm audit --audit-level high
+      - name: Fresh migration and idempotent seed
+        run: |
+          cd backend
+          uv run alembic upgrade head
+          uv run python -m flooreplay seed
+          uv run python -m flooreplay seed
+          uv run python -m flooreplay dataset-verify
+      - name: Backend integration tests
+        run: cd backend && uv run pytest
+      - name: Verify schema and saved-report consistency
+        run: |
+          cd backend
+          uv run python -m flooreplay export-openapi
+          uv run python -m flooreplay export-demo
+          cd ../frontend
+          pnpm generate:api
+          git diff --exit-code -- ../backend/openapi.json src/lib/generated-api.ts src/data
+      - name: Prepare browser account and API
+        run: |
+          cd backend
+          uv run python -c 'import os; from flooreplay.auth import create_account; create_account(os.environ["E2E_USERNAME"], os.environ["E2E_PASSWORD"], "owner")'
+          uv run uvicorn flooreplay.api:app --host 127.0.0.1 --port 8000 > /tmp/flooreplay-api.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/api/v1/health/ready; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/flooreplay-api.log
+          exit 1
+      - name: Browser verification
+        run: |
+          cd frontend
+          pnpm exec playwright install --with-deps chromium
+          pnpm exec playwright test
+      - name: Validate deployment configuration
+        run: docker compose --profile test config --quiet
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: verification-failure
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+            /tmp/flooreplay-api.log

@@ -1,44 +1,46 @@
-# Render blueprint: one free-tier web service (backend) plus one free-tier
-# static site (frontend). The PostgreSQL database is external on Neon's free
-# tier — create it first and paste its connection string as the
-# FLOORREPLAY_DATABASE_URL environment variable (see DEPLOY.md).
+# Deployment package only: external Neon database and backend secrets required.
 services:
   - type: web
     name: flooreplay-api
     runtime: python
     plan: free
     rootDir: backend
-    buildCommand: |
-      pip install uv
-      uv sync --frozen
-    startCommand: |
-      uv run alembic upgrade head &&
-      if [ "$FLOORREPLAY_SEED_ON_START" = "1" ]; then uv run python -m flooreplay seed; fi &&
-      uv run uvicorn flooreplay.api:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /api/v1/health/live
+    buildCommand: pip install uv==0.10.4 && uv sync --frozen --no-dev
+    startCommand: >-
+      sh -c 'export FLOORREPLAY_BUILD_ID="$RENDER_GIT_COMMIT";
+      uv run --no-dev alembic upgrade head &&
+      uv run --no-dev python -m flooreplay seed &&
+      exec uv run --no-dev uvicorn flooreplay.api:app --host 0.0.0.0 --port "$PORT"'
+    healthCheckPath: /api/v1/health/ready
     envVars:
+      - key: PYTHON_VERSION
+        value: '3.12.10'
       - key: FLOORREPLAY_MODE
         value: public
       - key: FLOORREPLAY_DATABASE_URL
         sync: false
-      - key: FLOORREPLAY_BUILD_ID
-        value: render
-      - key: FLOORREPLAY_SEED_ON_START
-        value: "1"
+      - key: FLOORREPLAY_OPENAI_API_KEY
+        sync: false
       - key: FLOORREPLAY_CORS_ORIGINS
         sync: false
-
+      - key: FLOORREPLAY_OPENAI_GENERATION_MODEL
+        value: gpt-4.1-mini-2025-04-14
+      - key: FLOORREPLAY_OPENAI_EMBEDDING_MODEL
+        value: text-embedding-3-small
+      - key: FLOORREPLAY_OPENAI_EMBEDDING_DIMENSIONS
+        value: '512'
   - type: web
     name: flooreplay-frontend
     runtime: static
-    plan: free
     rootDir: frontend
-    buildCommand: |
-      corepack enable
-      pnpm install --frozen-lockfile
-      pnpm build
-    publishPath: dist
+    buildCommand: corepack enable && corepack prepare pnpm@10.30.0 --activate && pnpm install --frozen-lockfile && pnpm build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
-      # e.g. https://flooreplay-api.onrender.com/api/v1
+      - key: NODE_VERSION
+        value: '22'
       - key: VITE_API_BASE
         sync: false
