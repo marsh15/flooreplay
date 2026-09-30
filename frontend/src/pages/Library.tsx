@@ -117,7 +117,7 @@ export function LibraryPage() {
                         <Mono className="text-zinc-400">
                           {item.scenario_id}@{item.revision}
                         </Mono>
-                        {item.tags.map((tag) => (
+                        {Array.from(new Set(item.tags)).map((tag) => (
                           <Badge key={tag} variant="secondary" className="px-1.5 text-[10px]">
                             {tag}
                           </Badge>

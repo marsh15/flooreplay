@@ -1,3 +1,5 @@
+import type { components } from '@/lib/generated-api'
+import { session } from '@/lib/session'
 import { API_BASE, ApiError } from '@/lib/api'
 import savedLibrary from '@/data/incident-library.json'
 import savedRevision from '@/data/hero-revision.json'
@@ -28,6 +30,7 @@ export interface IncidentSearchResult {
   differences: string[]
   cutoff: string
   execution_kind: string
+  excerpts?: HistoricalExcerpt[]
 }
 
 export interface IncidentRevision {
@@ -55,12 +58,16 @@ export interface IncidentMetric {
   matched_buckets: string[]
   missing_buckets: string[]
   unfinished_buckets: string[]
+  observation_watermark?: string
+  descriptors?: AiMetric[]
   baseline_target?: number | null
   blocked_minutes?: number | null
   block_segments?: unknown[]
   target_pressure?: {
     remaining_target: number | null
     remaining_working_minutes: number
+    remaining_elapsed_minutes?: number
+    as_of?: string
     required_units_per_hour: number | null
     baseline_units_per_hour: number | null
     target_met: boolean | null
@@ -144,26 +151,25 @@ export interface EvidenceDetail {
   [key: string]: unknown
 }
 
-export interface DraftJob {
-  id: string
-  analysis_id: string
-  status: 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'INTERRUPTED'
-  attempts: number
-  created_at: string
-  completed_at: string | null
-  result: {
-    status: string
-    reason?: string
-    draft?: {
-      claims: { text: string; evidence_ids: string[]; metric_ids: string[] }[]
-      limitations: string[]
-    }
-    validation?: { valid?: boolean; errors?: string[] }
-    model?: string
-  } | null
+export type AiTask = 'question' | 'investigation' | 'summary' | 'recovery' | 'note'
+export interface AiMetric { id: string; value: number | null; unit: string; formula?: string; input_refs?: string[] }
+export interface HistoricalExcerpt { id: string; text?: string; excerpt?: string; incident_id?: string; source_id?: string }
+export interface AiClaim { text: string; evidence_ids: string[]; metric_ids: string[]; historical_refs: string[]; source_fields: string[]; rendered_metrics?: AiMetric[] }
+export interface AiRun {
+  id: string; status: string; analysis_id: string; task: AiTask; request_key: string;
+  result: { status?: string; reason?: string; errors?: string[]; output?: { claims?: AiClaim[]; selected_claims?: AiClaim[]; limitations?: string[]; abstention_reasons?: string[]; hypotheses?: { explanation: AiClaim; counterevidence_ids: string[]; limitations: string[]; next_checks: string[] }[]; assertions?: { assertion: AiClaim; source_id: string; source_span: string; mentioned_entities: string[]; uncertainty: string }[]; proposals?: { catalog_action_id: string; prerequisites: string[]; evidence_ids: string[]; owner_role: string }[]; unresolved_issues?: string[] }; validation?: { errors?: string[] } } | null;
+  packet?: { metrics?: AiMetric[]; historical_evidence?: HistoricalExcerpt[] };
+  configuration?: { generation_model?: string; task?: AiTask };
 }
 
+export interface ReleaseEvaluationReport {
+  release: string; status: string; split_counts: { historical: number; development: number; locked: number }; authored_templates: number; arithmetic_and_structure_cases_checked: number; leakage_audit: string; problems: string[]; limitations: string[]; provider: string; provider_status: string; human_support_precision: number | null
+}
+
+export interface CurrentProviderEvaluation { provider?: string; status: string; attempted?: number; completed?: number; failed?: number; running?: number; unverified_completed?: number; reviewed?: number; review_policy?: string; supported_claims?: number; reviewed_claims?: number; limitations?: string[] }
+
 export interface IncidentEvaluationReport {
+  current_provider?: CurrentProviderEvaluation
   id: string
   dataset_revision: string | number
   label_revision: string | number
@@ -188,17 +194,10 @@ export interface IncidentEvaluationReport {
   created_at?: string
 }
 
-export interface IncidentImportBody {
-  incident_id: string
-  base_revision: number
-  cutoff: string
-  raw_text: string
-  profile: 'production-v1' | 'operations-v1' | 'notes-v1'
-  source_system: string
-  timezone: string
-  filename: string
-  unit: string | null
-}
+export type IncidentImportBody = Omit<components['schemas']['IncidentImportRequest'], 'profile'> & { profile: 'production-v1' | 'operations-v1' | 'notes-v1' }
+export type AiRunRequest = Omit<components['schemas']['IncidentDraftRequest'], 'task' | 'retrieval_mode'> & { task: AiTask; retrieval_mode: 'evidence_only' | 'hybrid' }
+export type HybridRequest = components['schemas']['HybridRequest']
+export type IncidentReviewRequest = components['schemas']['IncidentReviewRequest']
 
 export interface IncidentImportPreview {
   status: 'READY' | 'BLOCKED'
@@ -207,6 +206,7 @@ export interface IncidentImportPreview {
   timezone: string
   filename: string
   raw_digest: string
+  preview_digest: string
   row_count: number
   issues: { row: number; field: string; code: string; severity: string; message: string }[]
   plan_buckets: unknown[]
@@ -214,24 +214,15 @@ export interface IncidentImportPreview {
   events: unknown[]
 }
 
-export interface NewIncidentBody {
-  incident_id: string
-  title: string
+export type NewIncidentBody = Omit<components['schemas']['IncidentCreateRequest'], 'scope' | 'window'> & {
   scope: { factory: string; line_id: string; order_id: string; style_id: string; stage: 'sewing'; unit: 'good_units' }
   window: { start: string; end: string }
-  cutoff: string
-  raw_text: string
-  source_system: string
-  timezone: string
-  filename: string
-  preview_digest: string
-  idempotency_key: string
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: { 'Content-Type': 'application/json', ...session.headers(), ...init?.headers },
   })
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`
@@ -267,7 +258,7 @@ export const incidentApi = {
   },
   analyze: async (id: string, revision: number): Promise<AnalysisReport> => {
     try { return await request<AnalysisReport>(`/incidents/${pathId(id)}/analyses`, {
-      method: 'POST', body: JSON.stringify({ revision, idempotency_key: crypto.randomUUID() }),
+      method: 'POST', body: JSON.stringify({ revision, idempotency_key: crypto.randomUUID() } satisfies components['schemas']['IncidentAnalysisRequest']),
     }) }
     catch (error) { if (id !== savedHero.incident_id || revision !== savedHero.revision || !(unavailable(error) || error instanceof ApiError && error.status === 404)) throw error; return savedHero }
   },
@@ -287,18 +278,24 @@ export const incidentApi = {
   search: (query: string) => request<{ items: IncidentSearchResult[]; execution_kind: string }>(`/incidents/search?q=${encodeURIComponent(query)}`),
   submitProposal: (analysisId: string, proposalId: string) =>
     request<{ id: string; state: string }>(`/analyses/${pathId(analysisId)}/proposals/${pathId(proposalId)}/submit`, {
-      method: 'POST', body: JSON.stringify({ idempotency_key: crypto.randomUUID(), actor: 'Production lead', rationale: 'Submitted for review against the cited evidence.', decision: 'PENDING_REVIEW' }),
+      method: 'POST', body: JSON.stringify({ idempotency_key: crypto.randomUUID(), rationale: 'Submitted for review against the cited evidence.', decision: 'PENDING_REVIEW' } satisfies IncidentReviewRequest),
     }),
-  reviewProposal: (analysisId: string, proposalId: string, decision: 'APPROVED' | 'REJECTED', actor: string, rationale: string) =>
+  reviewProposal: (analysisId: string, proposalId: string, decision: 'APPROVED' | 'REJECTED', rationale: string) =>
     request<{ id: string; state: string }>(`/analyses/${pathId(analysisId)}/proposals/${pathId(proposalId)}/review`, {
-      method: 'POST', body: JSON.stringify({ decision, actor, rationale, idempotency_key: crypto.randomUUID() }),
+      method: 'POST', body: JSON.stringify({ decision, rationale, idempotency_key: crypto.randomUUID() } satisfies IncidentReviewRequest),
     }),
-  exportUrl: (analysisId: string) => analysisId === savedId ? `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({ schema: 'flooreplay.incident-report.v1', report: savedHero }))}` : `${API_BASE}/analyses/${pathId(analysisId)}/export`,
-  createDraft: (analysisId: string, question: string) =>
-    request<DraftJob>(`/analyses/${pathId(analysisId)}/drafts`, {
-      method: 'POST', body: JSON.stringify({ question, idempotency_key: crypto.randomUUID() }),
-    }),
-  draft: (jobId: string) => request<DraftJob>(`/drafts/${pathId(jobId)}`),
+  exportReport: async (analysisId: string) => {
+    const response = await fetch(`${API_BASE}/analyses/${pathId(analysisId)}/export`, { headers: session.headers() })
+    if (!response.ok) throw new ApiError('EXPORT_FAILED', 'Report export unavailable. Sign in as a reviewer.', response.status)
+    return response.blob()
+  },
+  createAiRun: (analysisId: string, body: AiRunRequest) => request<AiRun>(`/analyses/${pathId(analysisId)}/ai-runs`, { method: 'POST', body: JSON.stringify(body) }),
+  aiRunByRequest: (key: string) => request<AiRun>(`/ai-runs/by-request/${pathId(key)}`),
+  aiRun: (id: string) => request<AiRun>(`/ai-runs/${pathId(id)}`),
+  usage: () => request<{ total_ceiling_inr: number; committed_inr: number; available_inr: number; active_operations: number; purpose_available_inr: Record<string, number>; entries: { id: string; status: string; charged_inr: number; reserved_inr: number; purpose: string; operation: string }[] }>('/usage'),
+  corpora: () => request<{ items: { id: string; indexed?: boolean }[] }>('/corpora'),
+  hybridSearch: (body: HybridRequest) => request<{ results: IncidentSearchResult[]; manifest: { corpus_id: string; corpus_digest: string; cutoff: string } }>('/incidents/search/hybrid', { method: 'POST', body: JSON.stringify(body) }),
+  releaseEvaluation: () => request<ReleaseEvaluationReport>('/evaluation-reports/incident-release-v1'),
   evaluationReport: async (id: string): Promise<IncidentEvaluationReport> => {
     try { return await request<IncidentEvaluationReport>(`/evaluation-reports/${pathId(id)}`) }
     catch (error) {
@@ -307,6 +304,6 @@ export const incidentApi = {
     }
   },
   previewImport: (body: IncidentImportBody) => request<IncidentImportPreview>('/incidents/imports/preview', { method: 'POST', body: JSON.stringify(body) }),
-  publishImport: (body: IncidentImportBody, previewDigest: string, idempotencyKey: string) => request<IncidentRevision>('/incidents/imports/publish', { method: 'POST', body: JSON.stringify({ ...body, preview_digest: previewDigest, idempotency_key: idempotencyKey }) }),
+  publishImport: (body: IncidentImportBody, previewDigest: string, idempotencyKey: string) => request<IncidentRevision>('/incidents/imports/publish', { method: 'POST', body: JSON.stringify({ ...body, preview_digest: previewDigest, idempotency_key: idempotencyKey } satisfies components['schemas']['IncidentPublishRequest']) }),
   createIncident: (body: NewIncidentBody) => request<IncidentRevision>('/incidents', { method: 'POST', body: JSON.stringify(body) }),
 }

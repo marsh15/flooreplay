@@ -6,6 +6,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation } from 'react-router'
 import { api } from '@/lib/api'
+import { UsagePanel } from '@/components/Usage'
+import { SignInControl } from '@/components/Auth'
 import { cn } from '@/lib/utils'
 
 const NAV = [
@@ -51,14 +53,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               )
             })}
           </nav>
+          <SignInControl />
           {capabilities.isError ? (
             <span className="text-[10px] text-red-700" title={capabilities.error.message}>
-              mode unavailable — local tools hidden
+              Capabilities unavailable
             </span>
           ) : null}
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6"><UsagePanel /><div className="mt-4">{children}</div></main>
       <footer className="mx-auto max-w-6xl px-4 pb-8 pt-2">
         <p className="text-xs text-zinc-400">
           FloorReplay is an unofficial engineering exploration using synthetic data. It is not

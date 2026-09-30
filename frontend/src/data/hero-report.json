@@ -1,142 +1,1149 @@
 {
-  "id": "8aa40a8e-0d20-419d-82ed-086de73417d7",
-  "incident_id": "INC-001",
-  "revision": 2,
+  "bundle_schema": "flooreplay.public-bundle.v1",
+  "capabilities": {
+    "actions": {
+      "reasons": [
+        "Proposals require human review and do not execute factory changes."
+      ],
+      "status": "PARTIAL"
+    },
+    "hypotheses": {
+      "reasons": [
+        "Causal attribution requires more than chronology."
+      ],
+      "status": "PARTIAL"
+    },
+    "production": {
+      "reasons": [],
+      "status": "COMPLETE"
+    },
+    "timeline": {
+      "reasons": [
+        "Source coverage for the investigation interval is not declared complete."
+      ],
+      "status": "PARTIAL"
+    }
+  },
+  "corpus_release": {
+    "digest": "sha256:bcf350fbc062984fd90e2bdf352e5cdb0c8e9254055a60476f45cde11fc050b0",
+    "items": [
+      {
+        "digest": "sha256:0ef05abcbcbf9e478e74beb70a4425bc47215fefc764cd08651e124de3fa60c1",
+        "id": "INC-101",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:0212b58c8ada419e05c4502bc41d762f746e7dafa663ecdb5ec51e807685993e",
+        "id": "INC-102",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:14ecdc2337a461495267473fe47de5ce87f314c30dadbea94d6ca136bb99c18d",
+        "id": "INC-103",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:32eb2ff283f27d469500e8214000f1c5bb09367873266512eb78a24dad542e3d",
+        "id": "INC-104",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:d9e3b7aa512c10e2379c455db5e2e8071ecb81e16f74598a9fa468657409bab3",
+        "id": "INC-105",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:6ae2d73b939bc66243d6186e1449a5ca261a8f3276bffaef12bba31d858d373b",
+        "id": "INC-106",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:281c50eaa1dc5a8d2b12f122d5a0de0bc1fda31c736eda8f7c559d711a57c62f",
+        "id": "INC-107",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:6f653ced13cc308688e9931c5ba52f561d58a9a8d8234ba1bf4650531aa4a48d",
+        "id": "INC-108",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:5a7e25e4432dbde48b469ff3b538e24c94bd04e9e0ea964c1265865b9f27ec8c",
+        "id": "INC-109",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:39eb16f5699352b47a3f83585e1378a0ed812955618c5a87358da5138e977868",
+        "id": "INC-110",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:008623ce769087694ba2a7604c2ab6c6f95f9a407bb33fbc3dd327866d5f6983",
+        "id": "REL-001",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:68432d6468f75542e7a1a7b6b03c3ab52c5512cb4dd405e3303dc424fc5c070e",
+        "id": "REL-002",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:6d1f1d7186545afdabc2bf35657ced9495c39a5503bb851fb5cd6410d23abf88",
+        "id": "REL-003",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:00ce5e3a05b20854d12194874d0f796049c14e74c8acb950df1a8d8e054929ca",
+        "id": "REL-004",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:712a559158f0a1f337601550d35376d0d3568641a34c91e06e3e57a03e93b000",
+        "id": "REL-005",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:afa24ef46643133de16d461c8bed5e9a6cdb4d0a19eb48e37b45d175bdb9630e",
+        "id": "REL-006",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:b92b0167e3960aaa5f69aa5b634692583adabd23538b48ab911b6df4a1ae825d",
+        "id": "REL-007",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:844695b275dee05708fe65219b6529afb7881c8185c7e2b2c0cdb31012fd968f",
+        "id": "REL-008",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:f86e955c8ae1d6227a875f0f8d3f823ec15d3514d7f23b1fac429d86c41acf6b",
+        "id": "REL-009",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:6961f3cbf054c03fd1ea59e1f82499faf3385eab9cba45304d91da5dd8be7f66",
+        "id": "REL-010",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:0d7caa6460f241b7786237d31ccc9611e957c5b98bfaac67380c82fe52bade6d",
+        "id": "REL-011",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:630847f7b1403f9bbf944a5fe19595e3112fedc62230f454d7e2919157a5b75a",
+        "id": "REL-012",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:a37760d53393e9ded06cd8683132f061691021a026de956fcd93a0845daf14d4",
+        "id": "REL-013",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:8678f209acaba33396705920befbd388c2bb355f2d721d21dfbf7c4a9c59e9a0",
+        "id": "REL-014",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:93333247854d3a4710ddd496266b4d96a48fdfeb83fbac6c27a7ca7a7d45f4cb",
+        "id": "REL-015",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:0f770d6a37bfffcf1b62c26e44a9afc50106bdba09db7f631b75c2c208057bf7",
+        "id": "REL-016",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:a9cfaba05548b76301ca22808f427af026b649be37a6c4aff60213b1a86dedaa",
+        "id": "REL-017",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:079779f06c3a2dc527c88ef4ed29d686b1d9b5a0f67c753ac421f1c627a4ad69",
+        "id": "REL-018",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:2a5e79484309db0ce38c0290adabbb72022269a877bba58815e379ad66fe914b",
+        "id": "REL-019",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:b27efed08b7d0d04e689daad09aa1dc1b4feb957393b743429e9d2336dec2b83",
+        "id": "REL-020",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:d2e11c9ff835d89a82b62a41f93450cc1643219c19127024b65e698f13a90abc",
+        "id": "REL-031",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:80687413bdba68cb850ca2e3183de2bbbd9b065cae1b31cc51d9d2cede387418",
+        "id": "REL-032",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:d463ddc089b290d8d2d7cbf5b21e54c3a124d7cdb66078c2bbfed141e1ba9706",
+        "id": "REL-033",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:aa602cfe75bac4da25eb6b099852b78cc2832882946b9068481ae731566c23bb",
+        "id": "REL-034",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:b5cdef794070456ea67a1215bbd752441e2a573d0decd08a82b3bca727542198",
+        "id": "REL-035",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:ede21a6b9c45d3f82269f519192adcb0f4925f5aff2a463133ebfff07c91c70a",
+        "id": "REL-036",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:f2a314316e6c69e46fc3b23b990b15a7fbf25c2da99f803a5b926839ba74e314",
+        "id": "REL-037",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:9a85e53b4b30300b5840f4e202ac08c06be928bf220bd4582146d85ba045efdb",
+        "id": "REL-038",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:d976fd3d2335570161f7cf59d5c4325227c43b99e6e68a0fc35ed68c82336159",
+        "id": "REL-039",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:7aa4d45f36f1245a3391919c7223b13427fed1e93ed81bc3b42c2fff6e11e0f5",
+        "id": "REL-040",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:d9411773fb9d882aec2d292dc9ea4b690a4505a69c19ea11bfdf214eb7c46a33",
+        "id": "REL-041",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:735457660530f2f99382e142426636d3e2f0645e094ba4eb595d36f6f9de6efb",
+        "id": "REL-042",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:41c402b239a617ab73e6ceffe4227d529274008b0173afc6c7419c4b6882a743",
+        "id": "REL-043",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:5fe62f886ca88f5ce8980e00edd357a5c4ec9de04144473cfe8ab62049155f25",
+        "id": "REL-044",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:8e44bd6e5f096eb580023ee4399561640c386ac7b14c67177c223549c785724d",
+        "id": "REL-045",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:f839eafad314427b86d7b6cc9236f440ab521c9e944d6e884dd4186660ab7309",
+        "id": "REL-046",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:67cecf54548e611ed8bee13c44148f9a38d5951d433891de6b1adcd0d826a5a2",
+        "id": "REL-047",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:99f0c37ddbd85d4d7a51bbb6e6728905c278034fda581de22acf62ec2287f0a9",
+        "id": "REL-048",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:937ddd1314f01a73cce93cf8cf9dd5fe7d909fc006fd9542f3358554bfa33e9d",
+        "id": "REL-049",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:e28d9ddca025fac837c79ca907cc24b6a12e53f9731338176607752ca04c0598",
+        "id": "REL-050",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:c05c6cb2e36bb68598ff42e6aaa3744f65e482abb5574519ad3db4c55a8797ef",
+        "id": "REL-061",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:13495be7ce87f4860a8637e5f5638055bdeae5faab8b48585183630beddba2d9",
+        "id": "REL-062",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:06cf803001773a1f00a53f36fbaf9e827ccfd4ebc101b4c06c5f888e357a1d06",
+        "id": "REL-063",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:1bda0725c938237e4416230190ef62f502e9b2ad171b6bacf6f4ea949e225fcb",
+        "id": "REL-064",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:fe07c650064a1efe0d15f6d5ec9194095b76f2c5bd68b1c68423d808d0653a63",
+        "id": "REL-065",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:b2306376fcafdb0e98c0d699b770f6ed1c121cdd8e0915b35e8e1f57357191ca",
+        "id": "REL-066",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:19f535fff71c184bd15dfe9d3acaf4f71d98d546c4a2cae3a4778128df384824",
+        "id": "REL-067",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:07de012e498dc8586c7aabbb042193663bbed10bb612efae52c3d83604152066",
+        "id": "REL-068",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:05e9e893a044065381b96920957ba94d8ed2ed8a74246fea25487a7c5bc7cf4f",
+        "id": "REL-069",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:4896b246086030ee4f7fc4404276af18101a78063e359ca314bf8d60c6961e3c",
+        "id": "REL-070",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:c44bab2d4e7ff48d148ad6a5027461ffcb21efcf3a0ba5be43478083bb04e9e6",
+        "id": "REL-071",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:968160bcf5da5edbd44c36bf343a4ec68b9edfbfa13f0730a4b516926321affe",
+        "id": "REL-072",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:44253112a0105e8e7f6354d6b532ceefd96bd8f395d153dedca1904b78e03cf2",
+        "id": "REL-073",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:f3c1ea4566c56c6d7eb07ca8b4dc97ed15e4fad878ff2bca0f510ba6c5866be0",
+        "id": "REL-074",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:0f8ad64f5d5217b8922f9c02b458d9af0040e4816b596c1ef6f750b72b62d8b1",
+        "id": "REL-075",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:94fd9d72a5089775f6d7b1a4a8fd5155c4e0866ad9a602d6cb1962396ff4c1e1",
+        "id": "REL-076",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:a6cd31295e1f4e594f67855bcd8f696e23b28cf7a3f1236db8dd25bd4d098f95",
+        "id": "REL-077",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:0a26c7959baa91890f609d4832605aa9942ca69a17fb79e1af72c82c57313eb7",
+        "id": "REL-078",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:b8be8710f7bd362bc32db1653aa8e174cf345a1aeb0b30ea3e2e6ee36c9a51c0",
+        "id": "REL-079",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:7f1f550432788ddfaa8fb4ecce4aec2e0eba77916d772fdab2e3a51a5de7894e",
+        "id": "REL-080",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:6a92814e748139fb4e939dd57c3e3edaa9e61e918a904cdced46b3557d6644c9",
+        "id": "REL-091",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:328a073ab5a23523a69a3f18474a41715bc73e2e7ece426b6277da67254186bb",
+        "id": "REL-092",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:d9eccfd0858bc7524e6b998546a686118874ec6436bba037cefbc5b1146ce83c",
+        "id": "REL-093",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:0d126b32095fa6a3a67c8aae9b6677b0532403d54097567d47a129fcde92684f",
+        "id": "REL-094",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:8abcc4e7e30c6b810eba630be20b1c244717a864fec37f1c3ff45bfc98e10634",
+        "id": "REL-095",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:9dd2d5dca911eff43c9d51d26af7736015b99bf745225f356ad4b33775b6cae9",
+        "id": "REL-096",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:2a158410b98e0ca41ab2b4891d8d4dc39ae605267056e3fe34c9ba431187a24a",
+        "id": "REL-097",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:9a0e89802cdb8549837c7477f3bbce389e357423eedde545c3c03cc76bf40088",
+        "id": "REL-098",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:9beec3342d5cad3b6dbf2d56cdd9a34091af4ce10c70281775cc4d62581403e2",
+        "id": "REL-099",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:e512245e593c89abcb66526a7f9032975779ead8020f80ddd3505830ec75b612",
+        "id": "REL-100",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:918e5d01ae610caef24855201b3fc76289d5f5b359f585a678732f1f2849f373",
+        "id": "REL-101",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:15bef882397104635770a33b5562dfddb9d3d20783f67ca484e9d2e524433955",
+        "id": "REL-102",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:29e6eb6224fa807c534a0abfb09c9d22857c0e4b1b5332d880d7a9d4d5209069",
+        "id": "REL-103",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:d2a7ab82fb75162a42ba4d2654c34b851bb395e259a876d9c12989a1cc4ab030",
+        "id": "REL-104",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:9356ece2e4941e6fc42656992348cb48121a6d3de1c6eb36b1cce38d3ebb51db",
+        "id": "REL-105",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:e30e3c0995bd506e57a737df40419c59d75235035d600d2f7a7cec97fd752020",
+        "id": "REL-106",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:57d07c7d02b78012400d116b5595d2864f697d264ee6d6b488fa6e8301d30d9f",
+        "id": "REL-107",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:9a0111b5189670494e1fe89b559b947b5bac6802de51f9544e65eceb84e919da",
+        "id": "REL-108",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:14f935b421f44f9f2426b404469232355c901fce735de050eadb343d7d1c70cd",
+        "id": "REL-109",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:f23bdb09729ca72370681593545d18c766580befd26fe4bee5579ccc5ae3f567",
+        "id": "REL-110",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:0340c196efbf3da6ff7b6c84976c9734062539143488a125492f1662e9f08a89",
+        "id": "REL-121",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:848d389659eb0b60f201164fafe0d459b9b22893c3e950060ef7eb18a1434b5a",
+        "id": "REL-122",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:323d6f623ddce822e7a7ee380626f33b8aaa563b55801667e72df86c4bbfbcec",
+        "id": "REL-123",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:d9e573030c5919562ac2191ae3fdd7ac2da358c51d12a808cc1ef5fc6e643f6a",
+        "id": "REL-124",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:dd1b6d1642a9837e5a420f601cbf4ba0011d00e06dbdaad754fc5b648b5885cc",
+        "id": "REL-125",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:3fe293612b91d2a92c1951e142d6d4a523997ac19dfbff6c34c186368fb2f031",
+        "id": "REL-126",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:826041b5227fee73f143d8a761390abdc6e3fc40ddec076dbb1eed2d070bb778",
+        "id": "REL-127",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:db947fa47822c0e34c9d193da19a2d786355ae5e548c6aba126384ee8edc971e",
+        "id": "REL-128",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:c8d0a369b9c972ecccd984b62462ec60b9cbe2a11a45f203dba9f1627e65a399",
+        "id": "REL-129",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:1aa7dc97b5545fd852bf5c1e9ab845ac786ca64486f42679ee639970652ad3b7",
+        "id": "REL-130",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:bc87b2b9c13dfedc68964fba209a41db77ac655ca8b9148a28493fb5ddb701e3",
+        "id": "REL-131",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:94bad699c514a90e35723a152bf6747e062fba4e43e886784e50d6717a33aff6",
+        "id": "REL-132",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:b96e47e32b0b4ac7230a725b4014979850d4443e74fcca153124ec6d1ae846a1",
+        "id": "REL-133",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:1ced3ca87ce7f034546763723e52c746dadfd121bbbf2658a6441f8423c86da8",
+        "id": "REL-134",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:06d0dd900c9d0b7818ac79d07b8e45109cd947997510800e1db61911c16995fd",
+        "id": "REL-135",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:b6f5853b80248211a4a86ecbc636e051be4906257f6c6bc59a429f957f1bc8d9",
+        "id": "REL-136",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:2e2898bc1ab9e43eedf9d74142ad1ad1bf68c90343edbe156679025f20361f5b",
+        "id": "REL-137",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:b91c1ce47c1ac39cc8024fbf51f96277fe8534749014fa148e67253f593db081",
+        "id": "REL-138",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:42b611549e777a50b8c1d1dd15beff51fa6c9157afb603b96d4c52b7c99ccfe9",
+        "id": "REL-139",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:aca4d906d474e059718a3bf5bd39ea7662f6016c06a271510c21c773afcb5e34",
+        "id": "REL-140",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:72c4bdb1aaa859a17c1058ce42d7889725da1d76111fb1c2d2d057b842e17deb",
+        "id": "REL-151",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:dc34bb3cc55bd2703e62772742cc2d840d8f2f4f4c62b16dc71839a4275fd711",
+        "id": "REL-152",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:34c1ad98774969f456a06eb40d251372bee3b4880888944b6d6aee0d760abf9c",
+        "id": "REL-153",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:01f87214ae878727c071bf2e4e81597641b70d564e3069b727a9b6534bd32e8e",
+        "id": "REL-154",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:3fa5d3ca792531c4b4941e045b14ecf0eb0387efdb47e2e0226708c9677fac74",
+        "id": "REL-155",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:8b0b3a3b5dead787ec154b67f273c81963ac684640bda36b38d9b100594cdca3",
+        "id": "REL-156",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:85d246932a60186081976ab44e2c0572f2b65115620c042803c62aa8818431e0",
+        "id": "REL-157",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:b74e9dcf065ad3c060f16cd72431dafd2f3fc9a8e8b111288a41b01905d4132e",
+        "id": "REL-158",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:17d10c48e50b25eb21856f71b3c72c4a4ff3e51409e40d58244619907f7fbe16",
+        "id": "REL-159",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:3ae036bb8eb90701ccedb9a065b25b13385010b50cde2c5d31eacb96ad151c43",
+        "id": "REL-160",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:e6f5eb1447b60405c0d261699b00ff794415f2980b4dd5a04a5c15eaf94bf1a3",
+        "id": "REL-161",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:f6aa55015dbe4c64044653d28d068a7a96b30984e0a8b8324e1418dcb1b536f3",
+        "id": "REL-162",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:822e723698fc4904a248fc03d2c0980d8fd807817b1c9d6fdd630da98715f070",
+        "id": "REL-163",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:4939a566f0c47a8ab9be9b8cd2b2894e1d9ae40b7bcdd75642fe99669e08391c",
+        "id": "REL-164",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:f7838278e9d8feaa5b2fb2c78928302061f7bb833378c33b50863122c1e974a6",
+        "id": "REL-165",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:8ce1ce4a9c2c64e03dcb00fc3bd9cfe23195c7422cabd2e0d760ac4f73629694",
+        "id": "REL-166",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:b5d008dd2e0d622206eebd40606ddc7be0c73058f89c8db6027f054b5bb15434",
+        "id": "REL-167",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:dd985745cae4912b70c963e94c55081feb0637769b2b122c0e8d0e04468247b8",
+        "id": "REL-168",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:c9c20b8b43c4c4aed197f5539189dab08932cbbe9aacd1854b3c85182f596325",
+        "id": "REL-169",
+        "revision": 1
+      },
+      {
+        "digest": "sha256:cc6e6d5bca242e34c98d84dec58d79dd723732cea36502a8dc5db92e8ff672c9",
+        "id": "REL-170",
+        "revision": 1
+      }
+    ],
+    "version": "lexical-v2"
+  },
+  "correction_conflicts": [],
+  "correction_history": [
+    {
+      "available_at": "2026-09-28T11:22:00+05:30",
+      "end": "2026-09-28T10:49:00+05:30",
+      "id": "EV-MACH-CORR",
+      "lane": "machines",
+      "previous_record": {
+        "available_at": "2026-09-28T10:55:00+05:30",
+        "end": "2026-09-28T10:49:00+05:30",
+        "id": "EV-MACH-1",
+        "lane": "machines",
+        "source_id": "machine-log-m12",
+        "start": "2026-09-28T10:31:00+05:30",
+        "summary": "Needle feed on machine M12 interrupted between 10:31 and 10:49; line-wide impact is not established.",
+        "type": "machine_interruption"
+      },
+      "source_id": "maintenance-confirmation-78",
+      "start": "2026-09-28T10:31:00+05:30",
+      "summary": "Maintenance confirmed machine M12 was stopped from 10:31 to 10:49; other stations continued.",
+      "supersedes_id": "EV-MACH-1",
+      "type": "machine_interruption"
+    }
+  ],
   "cutoff": "2026-09-28T11:30:00+05:30",
-  "manifest_digest": "sha256:8d9f1194db130a16fbbe04bb6756c5b32371a8ed8073f1735ccd50d2bb74d8b6",
+  "engine_version": "incident-v3",
   "execution_kind": "saved_deterministic",
-  "created_at": "2026-09-29T02:35:15.739039+00:00",
-  "completed_at": "2026-09-29T02:35:15.739039+00:00",
-  "stale": false,
-  "reviews": [],
+  "hypotheses": [
+    {
+      "category": "material",
+      "contradicting_evidence": [],
+      "mechanism": "A recorded line block establishes lost operating time. Its share of the output shortfall is unknown.",
+      "next_check": "Confirm whether the material event blocked this line and for how long.",
+      "status": "SUPPORTED",
+      "supporting_evidence": [
+        "EV-BLOCK-1",
+        "EV-MAT-1"
+      ]
+    },
+    {
+      "category": "machine",
+      "contradicting_evidence": [],
+      "mechanism": "This event may have affected production, but a line-level effect is not established.",
+      "next_check": "Confirm whether the machine event blocked this line and for how long.",
+      "status": "PLAUSIBLE",
+      "supporting_evidence": [
+        "EV-MAINT-1",
+        "EV-MACH-CORR"
+      ]
+    },
+    {
+      "category": "quality",
+      "contradicting_evidence": [],
+      "mechanism": "This event may have affected production, but a line-level effect is not established.",
+      "next_check": "Confirm whether the quality event blocked this line and for how long.",
+      "status": "PLAUSIBLE",
+      "supporting_evidence": [
+        "EV-QC-1"
+      ]
+    }
+  ],
+  "id": "saved-2a265a8f5b0fc9346bc30ca88cfc834c27d55f3498b28834d5855f4139183ab5",
+  "incident_id": "INC-001",
+  "manifest_digest": "sha256:2a265a8f5b0fc9346bc30ca88cfc834c27d55f3498b28834d5855f4139183ab5",
   "metrics": {
-    "status": "COMPLETE",
-    "planned": 200,
-    "observed": 126,
-    "variance": -74,
-    "shortfall": 74,
-    "unit": "good_units",
+    "baseline_target": 240,
+    "block_segments": [
+      {
+        "end": "2026-09-28T09:30:00+05:30",
+        "evidence": [
+          "EV-BLOCK-1"
+        ],
+        "start": "2026-09-28T09:00:00+05:30"
+      }
+    ],
+    "blocked_minutes": 30,
+    "descriptors": [
+      {
+        "formula": "sum(matched baseline plan quantities)",
+        "id": "planned",
+        "input_refs": [
+          "plan-0",
+          "out-0",
+          "plan-1",
+          "out-1",
+          "plan-2",
+          "out-2",
+          "plan-3",
+          "out-3",
+          "plan-4",
+          "out-4",
+          "plan-5",
+          "out-5",
+          "plan-6",
+          "out-6",
+          "plan-7",
+          "out-7",
+          "plan-8",
+          "out-8",
+          "plan-9",
+          "out-9"
+        ],
+        "interval": {
+          "end": "2026-09-28T11:30:00+05:30",
+          "start": "2026-09-28T09:00:00+05:30"
+        },
+        "unit": "good_units",
+        "value": 200
+      },
+      {
+        "formula": "sum(matched final-good delta quantities)",
+        "id": "observed",
+        "input_refs": [
+          "plan-0",
+          "out-0",
+          "plan-1",
+          "out-1",
+          "plan-2",
+          "out-2",
+          "plan-3",
+          "out-3",
+          "plan-4",
+          "out-4",
+          "plan-5",
+          "out-5",
+          "plan-6",
+          "out-6",
+          "plan-7",
+          "out-7",
+          "plan-8",
+          "out-8",
+          "plan-9",
+          "out-9"
+        ],
+        "interval": {
+          "end": "2026-09-28T11:30:00+05:30",
+          "start": "2026-09-28T09:00:00+05:30"
+        },
+        "unit": "good_units",
+        "value": 126
+      },
+      {
+        "formula": "observed - planned",
+        "id": "variance",
+        "input_refs": [
+          "plan-0",
+          "out-0",
+          "plan-1",
+          "out-1",
+          "plan-2",
+          "out-2",
+          "plan-3",
+          "out-3",
+          "plan-4",
+          "out-4",
+          "plan-5",
+          "out-5",
+          "plan-6",
+          "out-6",
+          "plan-7",
+          "out-7",
+          "plan-8",
+          "out-8",
+          "plan-9",
+          "out-9"
+        ],
+        "interval": {
+          "end": "2026-09-28T11:30:00+05:30",
+          "start": "2026-09-28T09:00:00+05:30"
+        },
+        "unit": "good_units",
+        "value": -74
+      },
+      {
+        "formula": "max(0, planned - observed)",
+        "id": "shortfall",
+        "input_refs": [
+          "plan-0",
+          "out-0",
+          "plan-1",
+          "out-1",
+          "plan-2",
+          "out-2",
+          "plan-3",
+          "out-3",
+          "plan-4",
+          "out-4",
+          "plan-5",
+          "out-5",
+          "plan-6",
+          "out-6",
+          "plan-7",
+          "out-7",
+          "plan-8",
+          "out-8",
+          "plan-9",
+          "out-9"
+        ],
+        "interval": {
+          "end": "2026-09-28T11:30:00+05:30",
+          "start": "2026-09-28T09:00:00+05:30"
+        },
+        "unit": "good_units",
+        "value": 74
+      },
+      {
+        "formula": "sum(all baseline plan quantities for declared window)",
+        "id": "baseline_target",
+        "input_refs": [
+          "plan-0",
+          "plan-1",
+          "plan-2",
+          "plan-3",
+          "plan-4",
+          "plan-5",
+          "plan-6",
+          "plan-7",
+          "plan-8",
+          "plan-9",
+          "plan-10",
+          "plan-11"
+        ],
+        "interval": {
+          "end": "2026-09-28T12:00:00+05:30",
+          "start": "2026-09-28T09:00:00+05:30"
+        },
+        "unit": "good_units",
+        "value": 240
+      },
+      {
+        "formula": "duration(union(explicit line-block intervals intersected with investigation window))",
+        "id": "blocked_minutes",
+        "input_refs": [
+          "EV-BLOCK-1"
+        ],
+        "interval": {
+          "end": "2026-09-28T11:30:00+05:30",
+          "start": "2026-09-28T09:00:00+05:30"
+        },
+        "unit": "minutes",
+        "value": 30
+      },
+      {
+        "formula": "max(0, baseline_target - observed)",
+        "id": "remaining_target",
+        "input_refs": [
+          "out-0",
+          "out-1",
+          "out-2",
+          "out-3",
+          "out-4",
+          "out-5",
+          "out-6",
+          "out-7",
+          "out-8",
+          "out-9",
+          "plan-0",
+          "plan-1",
+          "plan-10",
+          "plan-11",
+          "plan-2",
+          "plan-3",
+          "plan-4",
+          "plan-5",
+          "plan-6",
+          "plan-7",
+          "plan-8",
+          "plan-9"
+        ],
+        "interval": {
+          "end": "2026-09-28T12:00:00+05:30",
+          "start": "2026-09-28T11:30:00+05:30"
+        },
+        "unit": "good_units",
+        "value": 114
+      },
+      {
+        "formula": "window_end - observation_watermark (elapsed wall-clock)",
+        "id": "remaining_elapsed_minutes",
+        "input_refs": [
+          "plan-0",
+          "out-0",
+          "plan-1",
+          "out-1",
+          "plan-2",
+          "out-2",
+          "plan-3",
+          "out-3",
+          "plan-4",
+          "out-4",
+          "plan-5",
+          "out-5",
+          "plan-6",
+          "out-6",
+          "plan-7",
+          "out-7",
+          "plan-8",
+          "out-8",
+          "plan-9",
+          "out-9"
+        ],
+        "interval": {
+          "end": "2026-09-28T12:00:00+05:30",
+          "start": "2026-09-28T11:30:00+05:30"
+        },
+        "unit": "minutes",
+        "value": 30
+      },
+      {
+        "formula": "remaining_target * 60 / remaining_elapsed_minutes",
+        "id": "required_units_per_hour",
+        "input_refs": [
+          "out-0",
+          "out-1",
+          "out-2",
+          "out-3",
+          "out-4",
+          "out-5",
+          "out-6",
+          "out-7",
+          "out-8",
+          "out-9",
+          "plan-0",
+          "plan-1",
+          "plan-10",
+          "plan-11",
+          "plan-2",
+          "plan-3",
+          "plan-4",
+          "plan-5",
+          "plan-6",
+          "plan-7",
+          "plan-8",
+          "plan-9"
+        ],
+        "interval": {
+          "end": "2026-09-28T12:00:00+05:30",
+          "start": "2026-09-28T11:30:00+05:30"
+        },
+        "unit": "good_units/hour",
+        "value": 228.0
+      }
+    ],
     "formula": "variance = observed - planned; shortfall = max(0, planned - observed)",
     "inputs": [
       {
-        "start": "2026-09-28T09:00:00+05:30",
         "end": "2026-09-28T09:15:00+05:30",
+        "output": {
+          "id": "out-0",
+          "quantity": 0
+        },
         "plan": {
           "id": "plan-0",
           "quantity": 20
         },
-        "output": {
-          "id": "out-0",
-          "quantity": 0
-        }
+        "start": "2026-09-28T09:00:00+05:30"
       },
       {
-        "start": "2026-09-28T09:15:00+05:30",
         "end": "2026-09-28T09:30:00+05:30",
+        "output": {
+          "id": "out-1",
+          "quantity": 0
+        },
         "plan": {
           "id": "plan-1",
           "quantity": 20
         },
-        "output": {
-          "id": "out-1",
-          "quantity": 0
-        }
+        "start": "2026-09-28T09:15:00+05:30"
       },
       {
-        "start": "2026-09-28T09:30:00+05:30",
         "end": "2026-09-28T09:45:00+05:30",
+        "output": {
+          "id": "out-2",
+          "quantity": 8
+        },
         "plan": {
           "id": "plan-2",
           "quantity": 20
         },
-        "output": {
-          "id": "out-2",
-          "quantity": 8
-        }
+        "start": "2026-09-28T09:30:00+05:30"
       },
       {
-        "start": "2026-09-28T09:45:00+05:30",
         "end": "2026-09-28T10:00:00+05:30",
+        "output": {
+          "id": "out-3",
+          "quantity": 17
+        },
         "plan": {
           "id": "plan-3",
           "quantity": 20
         },
-        "output": {
-          "id": "out-3",
-          "quantity": 17
-        }
+        "start": "2026-09-28T09:45:00+05:30"
       },
       {
-        "start": "2026-09-28T10:00:00+05:30",
         "end": "2026-09-28T10:15:00+05:30",
+        "output": {
+          "id": "out-4",
+          "quantity": 20
+        },
         "plan": {
           "id": "plan-4",
           "quantity": 20
         },
-        "output": {
-          "id": "out-4",
-          "quantity": 20
-        }
+        "start": "2026-09-28T10:00:00+05:30"
       },
       {
-        "start": "2026-09-28T10:15:00+05:30",
         "end": "2026-09-28T10:30:00+05:30",
+        "output": {
+          "id": "out-5",
+          "quantity": 20
+        },
         "plan": {
           "id": "plan-5",
           "quantity": 20
         },
-        "output": {
-          "id": "out-5",
-          "quantity": 20
-        }
+        "start": "2026-09-28T10:15:00+05:30"
       },
       {
-        "start": "2026-09-28T10:30:00+05:30",
         "end": "2026-09-28T10:45:00+05:30",
+        "output": {
+          "id": "out-6",
+          "quantity": 12
+        },
         "plan": {
           "id": "plan-6",
           "quantity": 20
         },
-        "output": {
-          "id": "out-6",
-          "quantity": 12
-        }
+        "start": "2026-09-28T10:30:00+05:30"
       },
       {
-        "start": "2026-09-28T10:45:00+05:30",
         "end": "2026-09-28T11:00:00+05:30",
+        "output": {
+          "id": "out-7",
+          "quantity": 10
+        },
         "plan": {
           "id": "plan-7",
           "quantity": 20
         },
-        "output": {
-          "id": "out-7",
-          "quantity": 10
-        }
+        "start": "2026-09-28T10:45:00+05:30"
       },
       {
-        "start": "2026-09-28T11:00:00+05:30",
         "end": "2026-09-28T11:15:00+05:30",
+        "output": {
+          "id": "out-8",
+          "quantity": 19
+        },
         "plan": {
           "id": "plan-8",
           "quantity": 20
         },
-        "output": {
-          "id": "out-8",
-          "quantity": 19
-        }
+        "start": "2026-09-28T11:00:00+05:30"
       },
       {
-        "start": "2026-09-28T11:15:00+05:30",
         "end": "2026-09-28T11:30:00+05:30",
+        "output": {
+          "id": "out-9",
+          "quantity": 20
+        },
         "plan": {
           "id": "plan-9",
           "quantity": 20
         },
-        "output": {
-          "id": "out-9",
-          "quantity": 20
-        }
+        "start": "2026-09-28T11:15:00+05:30"
       }
     ],
     "matched_buckets": [
@@ -153,288 +1160,238 @@
     ],
     "missing_buckets": [],
     "missing_plan_buckets": [],
-    "unfinished_buckets": [],
-    "baseline_target": 240,
-    "blocked_minutes": 30,
-    "block_segments": [
-      {
-        "start": "2026-09-28T09:00:00+05:30",
-        "end": "2026-09-28T09:30:00+05:30",
-        "evidence": [
-          "EV-BLOCK-1"
-        ]
-      }
-    ],
+    "observation_watermark": "2026-09-28T11:30:00+05:30",
+    "observed": 126,
+    "planned": 200,
+    "shortfall": 74,
+    "status": "COMPLETE",
     "target_pressure": {
+      "as_of": "2026-09-28T11:30:00+05:30",
+      "assumptions": [
+        "Elapsed wall-clock time from the observation watermark to window end; breaks and shift calendars are not modeled."
+      ],
+      "baseline_units_per_hour": 80.0,
+      "remaining_elapsed_minutes": 30,
       "remaining_target": 114,
       "remaining_working_minutes": 30,
       "required_units_per_hour": 228.0,
-      "baseline_units_per_hour": 80.0,
       "target_met": false,
-      "assumptions": [
-        "Remaining scheduled time runs through the investigation window end."
-      ]
-    }
+      "time_basis": "elapsed_wall_clock"
+    },
+    "unfinished_buckets": [],
+    "unit": "good_units",
+    "variance": -74
   },
-  "timeline": [
+  "observation_watermark": "2026-09-28T11:30:00+05:30",
+  "precedents": [
     {
-      "id": "EV-BLOCK-1",
-      "end": "2026-09-28T09:30:00+05:30",
-      "lane": "production",
-      "type": "line_block",
-      "start": "2026-09-28T09:00:00+05:30",
-      "summary": "Supervisor recorded the line waiting for fabric from 09:00 to 09:30.",
-      "assertion": true,
-      "source_id": "shift-log-44",
-      "available_at": "2026-09-28T09:40:00+05:30",
-      "line_blocking": true,
-      "linked_categories": [
-        "material"
-      ]
+      "cutoff": "2026-06-02T15:35:00+05:30",
+      "differences": [
+        "Material lot, machine, and action prerequisites need separate verification."
+      ],
+      "execution_kind": "live_lexical",
+      "id": "REL-001",
+      "line": "S4",
+      "match_reason": "Shared terms in incident title or recorded events",
+      "revision": 1,
+      "score": 0.0865,
+      "title": "Synthetic material investigation 1"
     },
     {
-      "id": "EV-START-1",
-      "lane": "production",
-      "type": "line_start",
-      "summary": "First final good units recorded in the 09:30 bucket.",
-      "source_id": "output-ledger-28",
-      "occurred_at": "2026-09-28T09:30:00+05:30",
-      "available_at": "2026-09-28T09:45:00+05:30"
+      "cutoff": "2026-06-03T15:35:00+05:30",
+      "differences": [
+        "Material lot, machine, and action prerequisites need separate verification."
+      ],
+      "execution_kind": "live_lexical",
+      "id": "REL-002",
+      "line": "S4",
+      "match_reason": "Shared terms in incident title or recorded events",
+      "revision": 1,
+      "score": 0.0865,
+      "title": "Synthetic material investigation 2"
     },
     {
-      "id": "EV-MAT-1",
-      "lane": "materials",
-      "type": "material_readiness",
-      "summary": "Fabric lot F-218 reached the line at 09:32, after the scheduled start.",
-      "source_id": "material-transfer-218",
-      "occurred_at": "2026-09-28T09:32:00+05:30",
-      "available_at": "2026-09-28T09:38:00+05:30"
+      "cutoff": "2026-06-04T15:17:00+05:30",
+      "differences": [
+        "Material lot, machine, and action prerequisites need separate verification."
+      ],
+      "execution_kind": "live_lexical",
+      "id": "REL-003",
+      "line": "S4",
+      "match_reason": "Shared terms in incident title or recorded events",
+      "revision": 1,
+      "score": 0.0865,
+      "title": "Synthetic material investigation 3"
     },
     {
-      "id": "EV-MAINT-1",
-      "end": "2026-09-28T10:20:00+05:30",
-      "lane": "machines",
-      "type": "maintenance_note",
-      "start": "2026-09-28T10:10:00+05:30",
-      "summary": "Technician reported that the feed issue began around 10:14; recorded later, with no confirmed line-stop duration.",
-      "assertion": true,
-      "source_id": "maintenance-note-77",
-      "available_at": "2026-09-28T11:20:00+05:30"
+      "cutoff": "2026-06-05T15:35:00+05:30",
+      "differences": [
+        "Material lot, machine, and action prerequisites need separate verification."
+      ],
+      "execution_kind": "live_lexical",
+      "id": "REL-004",
+      "line": "S4",
+      "match_reason": "Shared terms in incident title or recorded events",
+      "revision": 1,
+      "score": 0.0865,
+      "title": "Synthetic material investigation 4"
     },
     {
-      "id": "EV-MACH-CORR",
-      "end": "2026-09-28T10:49:00+05:30",
-      "lane": "machines",
-      "type": "machine_interruption",
-      "start": "2026-09-28T10:31:00+05:30",
-      "summary": "Maintenance confirmed machine M12 was stopped from 10:31 to 10:49; other stations continued.",
-      "source_id": "maintenance-confirmation-78",
-      "available_at": "2026-09-28T11:22:00+05:30",
-      "supersedes_id": "EV-MACH-1"
-    },
-    {
-      "id": "EV-QC-1",
-      "lane": "quality",
-      "type": "qc_hold",
-      "summary": "QC placed lot L-91 on hold pending seam inspection; held units are not added to good output.",
-      "source_id": "qc-hold-l91",
-      "occurred_at": "2026-09-28T10:42:00+05:30",
-      "available_at": "2026-09-28T10:50:00+05:30"
+      "cutoff": "2026-06-06T15:35:00+05:30",
+      "differences": [
+        "Material lot, machine, and action prerequisites need separate verification."
+      ],
+      "execution_kind": "live_lexical",
+      "id": "REL-005",
+      "line": "S4",
+      "match_reason": "Shared terms in incident title or recorded events",
+      "revision": 1,
+      "score": 0.0865,
+      "title": "Synthetic material investigation 5"
     }
   ],
-  "hypotheses": [
-    {
-      "category": "material",
-      "status": "SUPPORTED",
-      "mechanism": "A recorded line block establishes lost operating time. Its share of the output shortfall is unknown.",
-      "supporting_evidence": [
-        "EV-BLOCK-1",
-        "EV-MAT-1"
-      ],
-      "contradicting_evidence": [],
-      "next_check": "Confirm whether the material event blocked this line and for how long."
-    },
-    {
-      "category": "machine",
-      "status": "PLAUSIBLE",
-      "mechanism": "This event may have affected production, but a line-level effect is not established.",
-      "supporting_evidence": [
-        "EV-MAINT-1",
-        "EV-MACH-CORR"
-      ],
-      "contradicting_evidence": [],
-      "next_check": "Confirm whether the machine event blocked this line and for how long."
-    },
-    {
-      "category": "quality",
-      "status": "PLAUSIBLE",
-      "mechanism": "This event may have affected production, but a line-level effect is not established.",
-      "supporting_evidence": [
-        "EV-QC-1"
-      ],
-      "contradicting_evidence": [],
-      "next_check": "Confirm whether the quality event blocked this line and for how long."
-    }
-  ],
-  "capabilities": {
-    "production": {
-      "status": "COMPLETE",
-      "reasons": []
-    },
-    "timeline": {
-      "status": "COMPLETE",
-      "reasons": []
-    },
-    "hypotheses": {
-      "status": "PARTIAL",
-      "reasons": [
-        "Causal attribution requires more than chronology."
-      ]
-    },
-    "actions": {
-      "status": "PARTIAL",
-      "reasons": [
-        "Proposals require human review and do not execute factory changes."
-      ]
-    }
-  },
   "proposals": [
     {
       "id": "verify-material",
-      "type": "verify_material_availability",
+      "missing_information": [
+        "Confirm whether the material event blocked this line and for how long."
+      ],
       "owner_role": "Production lead",
+      "preconditions": [
+        "Review the cited evidence and current incident revision."
+      ],
+      "purpose": "Clarify the blocker before choosing a recovery response.",
+      "state": "DRAFT",
       "supporting_evidence": [
         "EV-BLOCK-1",
         "EV-MAT-1"
       ],
-      "preconditions": [
-        "Review the cited evidence and current incident revision."
-      ],
-      "missing_information": [
-        "Confirm whether the material event blocked this line and for how long."
-      ],
-      "purpose": "Clarify the blocker before choosing a recovery response.",
-      "state": "DRAFT"
+      "type": "verify_material_availability"
     },
     {
       "id": "verify-machine",
-      "type": "request_maintenance_status",
+      "missing_information": [
+        "Confirm whether the machine event blocked this line and for how long."
+      ],
       "owner_role": "Maintenance lead",
+      "preconditions": [
+        "Review the cited evidence and current incident revision."
+      ],
+      "purpose": "Clarify the blocker before choosing a recovery response.",
+      "state": "DRAFT",
       "supporting_evidence": [
         "EV-MAINT-1",
         "EV-MACH-CORR"
       ],
-      "preconditions": [
-        "Review the cited evidence and current incident revision."
-      ],
-      "missing_information": [
-        "Confirm whether the machine event blocked this line and for how long."
-      ],
-      "purpose": "Clarify the blocker before choosing a recovery response.",
-      "state": "DRAFT"
+      "type": "request_maintenance_status"
     },
     {
       "id": "verify-quality",
-      "type": "request_qc_disposition",
-      "owner_role": "Quality reviewer",
-      "supporting_evidence": [
-        "EV-QC-1"
-      ],
-      "preconditions": [
-        "Review the cited evidence and current incident revision."
-      ],
       "missing_information": [
         "Confirm whether the quality event blocked this line and for how long."
       ],
+      "owner_role": "Quality reviewer",
+      "preconditions": [
+        "Review the cited evidence and current incident revision."
+      ],
       "purpose": "Clarify the blocker before choosing a recovery response.",
-      "state": "DRAFT"
+      "state": "DRAFT",
+      "supporting_evidence": [
+        "EV-QC-1"
+      ],
+      "type": "request_qc_disposition"
     }
   ],
-  "summary": "Recorded good output is 126 good_units against 200 planned; the observed shortfall is 74 good_units. 30 minutes of explicit line blocking are recorded. Event timing alone does not establish how much of the shortfall each event caused.",
-  "engine_version": "incident-v2",
-  "corpus_release": {
-    "version": "lexical-v2",
-    "items": [
-      {
-        "id": "INC-101",
-        "revision": 1,
-        "digest": "sha256:0ef05abcbcbf9e478e74beb70a4425bc47215fefc764cd08651e124de3fa60c1"
-      },
-      {
-        "id": "INC-102",
-        "revision": 1,
-        "digest": "sha256:0212b58c8ada419e05c4502bc41d762f746e7dafa663ecdb5ec51e807685993e"
-      },
-      {
-        "id": "INC-103",
-        "revision": 1,
-        "digest": "sha256:14ecdc2337a461495267473fe47de5ce87f314c30dadbea94d6ca136bb99c18d"
-      },
-      {
-        "id": "INC-104",
-        "revision": 1,
-        "digest": "sha256:32eb2ff283f27d469500e8214000f1c5bb09367873266512eb78a24dad542e3d"
-      },
-      {
-        "id": "INC-105",
-        "revision": 1,
-        "digest": "sha256:d9e3b7aa512c10e2379c455db5e2e8071ecb81e16f74598a9fa468657409bab3"
-      },
-      {
-        "id": "INC-106",
-        "revision": 1,
-        "digest": "sha256:6ae2d73b939bc66243d6186e1449a5ca261a8f3276bffaef12bba31d858d373b"
-      },
-      {
-        "id": "INC-107",
-        "revision": 1,
-        "digest": "sha256:281c50eaa1dc5a8d2b12f122d5a0de0bc1fda31c736eda8f7c559d711a57c62f"
-      },
-      {
-        "id": "INC-108",
-        "revision": 1,
-        "digest": "sha256:6f653ced13cc308688e9931c5ba52f561d58a9a8d8234ba1bf4650531aa4a48d"
-      },
-      {
-        "id": "INC-109",
-        "revision": 1,
-        "digest": "sha256:5a7e25e4432dbde48b469ff3b538e24c94bd04e9e0ea964c1265865b9f27ec8c"
-      },
-      {
-        "id": "INC-110",
-        "revision": 1,
-        "digest": "sha256:39eb16f5699352b47a3f83585e1378a0ed812955618c5a87358da5138e977868"
-      }
-    ],
-    "digest": "sha256:65f1aefab826cf42367be0d4d77c0202e78863629032de07961a0a8911452c2d"
+  "reviews": [],
+  "revision": 2,
+  "scope": {
+    "factory": "Synthetic Factory A",
+    "line_id": "S4",
+    "order_id": "ORD-28",
+    "stage": "sewing",
+    "style_id": "ST-42",
+    "unit": "good_units"
   },
-  "precedents": [
+  "source_coverage": {
+    "machines": true,
+    "materials": true,
+    "notes": false,
+    "production": true,
+    "quality": true,
+    "staffing": false
+  },
+  "stale": false,
+  "summary": "Recorded good output is 126 good_units against 200 planned; the observed shortfall is 74 good_units. 30 minutes of explicit line blocking are recorded. Event timing alone does not establish how much of the shortfall each event caused.",
+  "timeline": [
     {
-      "id": "INC-101",
-      "revision": 1,
-      "title": "Late fabric transfer on line S2",
-      "line": "S2",
-      "score": 0.0608,
-      "match_reason": "Shared terms in incident title or recorded events",
-      "differences": [
-        "Different sewing line (S2 versus S4).",
-        "Material lot, machine, and action prerequisites need separate verification."
+      "assertion": true,
+      "available_at": "2026-09-28T09:40:00+05:30",
+      "context_only": false,
+      "end": "2026-09-28T09:30:00+05:30",
+      "id": "EV-BLOCK-1",
+      "lane": "production",
+      "line_blocking": true,
+      "linked_categories": [
+        "material"
       ],
-      "cutoff": "2026-09-10T12:00:00+05:30",
-      "execution_kind": "live_lexical"
+      "source_id": "shift-log-44",
+      "start": "2026-09-28T09:00:00+05:30",
+      "summary": "Supervisor recorded the line waiting for fabric from 09:00 to 09:30.",
+      "type": "line_block"
     },
     {
-      "id": "INC-107",
-      "revision": 1,
-      "title": "Delayed WIP transfer on line S4",
-      "line": "S4",
-      "score": 0.0608,
-      "match_reason": "Shared terms in incident title or recorded events",
-      "differences": [
-        "Material lot, machine, and action prerequisites need separate verification."
-      ],
-      "cutoff": "2026-09-16T12:00:00+05:30",
-      "execution_kind": "live_lexical"
+      "available_at": "2026-09-28T09:45:00+05:30",
+      "context_only": false,
+      "id": "EV-START-1",
+      "lane": "production",
+      "occurred_at": "2026-09-28T09:30:00+05:30",
+      "source_id": "output-ledger-28",
+      "summary": "First final good units recorded in the 09:30 bucket.",
+      "type": "line_start"
+    },
+    {
+      "available_at": "2026-09-28T09:38:00+05:30",
+      "context_only": false,
+      "id": "EV-MAT-1",
+      "lane": "materials",
+      "occurred_at": "2026-09-28T09:32:00+05:30",
+      "source_id": "material-transfer-218",
+      "summary": "Fabric lot F-218 reached the line at 09:32, after the scheduled start.",
+      "type": "material_readiness"
+    },
+    {
+      "assertion": true,
+      "available_at": "2026-09-28T11:20:00+05:30",
+      "context_only": false,
+      "end": "2026-09-28T10:20:00+05:30",
+      "id": "EV-MAINT-1",
+      "lane": "machines",
+      "source_id": "maintenance-note-77",
+      "start": "2026-09-28T10:10:00+05:30",
+      "summary": "Technician reported that the feed issue began around 10:14; recorded later, with no confirmed line-stop duration.",
+      "type": "maintenance_note"
+    },
+    {
+      "available_at": "2026-09-28T11:22:00+05:30",
+      "context_only": false,
+      "end": "2026-09-28T10:49:00+05:30",
+      "id": "EV-MACH-CORR",
+      "lane": "machines",
+      "source_id": "maintenance-confirmation-78",
+      "start": "2026-09-28T10:31:00+05:30",
+      "summary": "Maintenance confirmed machine M12 was stopped from 10:31 to 10:49; other stations continued.",
+      "supersedes_id": "EV-MACH-1",
+      "type": "machine_interruption"
+    },
+    {
+      "available_at": "2026-09-28T10:50:00+05:30",
+      "context_only": false,
+      "id": "EV-QC-1",
+      "lane": "quality",
+      "occurred_at": "2026-09-28T10:42:00+05:30",
+      "source_id": "qc-hold-l91",
+      "summary": "QC placed lot L-91 on hold pending seam inspection; held units are not added to good output.",
+      "type": "qc_hold"
     }
   ]
 }

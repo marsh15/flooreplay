@@ -8,15 +8,16 @@ import '@fontsource/jetbrains-mono/600.css'
 import './index.css'
 
 import App from './App.tsx'
+import { AuthProvider } from '@/components/Auth'
 
 const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <AuthProvider><BrowserRouter>
         <App />
-      </BrowserRouter>
+      </BrowserRouter></AuthProvider>
     </QueryClientProvider>
   </StrictMode>,
 )

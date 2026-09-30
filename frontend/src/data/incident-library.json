@@ -1,17 +1,137 @@
 {
+  "execution_kind": "saved_library",
   "items": [
     {
-      "id": "INC-001",
-      "revision": 2,
-      "title": "Delayed start on sewing line S4",
-      "line": "S4",
-      "window_start": "2026-09-28T09:00:00+05:30",
-      "window_end": "2026-09-28T12:00:00+05:30",
       "cutoff": "2026-09-28T11:30:00+05:30",
-      "status": "COMPLETE",
+      "evidence_completeness": "4/6 available sources; timeline partial",
+      "id": "INC-001",
+      "line": "S4",
+      "revision": 2,
       "shortfall": 74,
-      "evidence_completeness": "4/6 declared sources",
-      "last_reviewed_revision": null
+      "status": "COMPLETE",
+      "title": "Delayed start on sewing line S4",
+      "window_end": "2026-09-28T12:00:00+05:30",
+      "window_start": "2026-09-28T09:00:00+05:30"
+    },
+    {
+      "cutoff": "2026-09-10T12:00:00+05:30",
+      "evidence_completeness": "2/6 available sources; timeline partial",
+      "id": "INC-101",
+      "line": "S2",
+      "revision": 1,
+      "shortfall": 48,
+      "status": "COMPLETE",
+      "title": "Late fabric transfer on line S2",
+      "window_end": "2026-09-10T12:00:00+05:30",
+      "window_start": "2026-09-10T09:00:00+05:30"
+    },
+    {
+      "cutoff": "2026-09-11T12:00:00+05:30",
+      "evidence_completeness": "2/6 available sources; timeline partial",
+      "id": "INC-102",
+      "line": "S3",
+      "revision": 1,
+      "shortfall": 22,
+      "status": "COMPLETE",
+      "title": "Feed adjustment on line S3",
+      "window_end": "2026-09-11T12:00:00+05:30",
+      "window_start": "2026-09-11T09:00:00+05:30"
+    },
+    {
+      "cutoff": "2026-09-12T12:00:00+05:30",
+      "evidence_completeness": "2/6 available sources; timeline partial",
+      "id": "INC-103",
+      "line": "S5",
+      "revision": 1,
+      "shortfall": 19,
+      "status": "COMPLETE",
+      "title": "QC hold on lot L-61",
+      "window_end": "2026-09-12T12:00:00+05:30",
+      "window_start": "2026-09-12T09:00:00+05:30"
+    },
+    {
+      "cutoff": "2026-09-13T12:00:00+05:30",
+      "evidence_completeness": "2/6 available sources; timeline partial",
+      "id": "INC-104",
+      "line": "S2",
+      "revision": 1,
+      "shortfall": 19,
+      "status": "COMPLETE",
+      "title": "Coverage gap at button operation",
+      "window_end": "2026-09-13T12:00:00+05:30",
+      "window_start": "2026-09-13T09:00:00+05:30"
+    },
+    {
+      "cutoff": "2026-09-14T12:00:00+05:30",
+      "evidence_completeness": "2/6 available sources; timeline partial",
+      "id": "INC-105",
+      "line": "S1",
+      "revision": 1,
+      "shortfall": 34,
+      "status": "COMPLETE",
+      "title": "Changeover ran beyond plan",
+      "window_end": "2026-09-14T12:00:00+05:30",
+      "window_start": "2026-09-14T09:00:00+05:30"
+    },
+    {
+      "cutoff": "2026-09-15T12:00:00+05:30",
+      "evidence_completeness": "2/6 available sources; timeline partial",
+      "id": "INC-106",
+      "line": "S6",
+      "revision": 1,
+      "shortfall": 0,
+      "status": "COMPLETE",
+      "title": "Output ledger correction on line S6",
+      "window_end": "2026-09-15T12:00:00+05:30",
+      "window_start": "2026-09-15T09:00:00+05:30"
+    },
+    {
+      "cutoff": "2026-09-16T12:00:00+05:30",
+      "evidence_completeness": "2/6 available sources; timeline partial",
+      "id": "INC-107",
+      "line": "S4",
+      "revision": 1,
+      "shortfall": 39,
+      "status": "COMPLETE",
+      "title": "Delayed WIP transfer on line S4",
+      "window_end": "2026-09-16T12:00:00+05:30",
+      "window_start": "2026-09-16T09:00:00+05:30"
+    },
+    {
+      "cutoff": "2026-09-17T12:00:00+05:30",
+      "evidence_completeness": "2/6 available sources; timeline partial",
+      "id": "INC-108",
+      "line": "S3",
+      "revision": 1,
+      "shortfall": 10,
+      "status": "COMPLETE",
+      "title": "Intermittent machine alarm on line S3",
+      "window_end": "2026-09-17T12:00:00+05:30",
+      "window_start": "2026-09-17T09:00:00+05:30"
+    },
+    {
+      "cutoff": "2026-09-18T12:00:00+05:30",
+      "evidence_completeness": "2/6 available sources; timeline partial",
+      "id": "INC-109",
+      "line": "S7",
+      "revision": 1,
+      "shortfall": 16,
+      "status": "COMPLETE",
+      "title": "Lot held for QC disposition",
+      "window_end": "2026-09-18T12:00:00+05:30",
+      "window_start": "2026-09-18T09:00:00+05:30"
+    },
+    {
+      "cutoff": "2026-09-19T12:00:00+05:30",
+      "evidence_completeness": "2/6 available sources; timeline partial",
+      "id": "INC-110",
+      "line": "S8",
+      "revision": 1,
+      "shortfall": 0,
+      "status": "COMPLETE",
+      "title": "Routine shift at baseline",
+      "window_end": "2026-09-19T12:00:00+05:30",
+      "window_start": "2026-09-19T09:00:00+05:30"
     }
   ]
 }

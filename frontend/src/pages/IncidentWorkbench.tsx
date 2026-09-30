@@ -5,7 +5,8 @@ import { incidentApi, type AnalysisReport, type Hypothesis, type RecoveryProposa
 import { api } from '@/lib/api'
 import { formatInstant } from '@/lib/status'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useAuth } from '@/components/Auth'
+import { OpenAiPanel, HybridPanel, ExportReport } from '@/components/IncidentAi'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import savedAi from '@/data/hero-ai.json'
@@ -35,14 +36,14 @@ function HypothesisCard({ item, onEvidence }: { item: Hypothesis; onEvidence: (i
 }
 
 function ProposalCard({ item, report, currentRevision, canReview, onEvidence, onChanged }: { item: RecoveryProposal; report: AnalysisReport; currentRevision: number; canReview: boolean; onEvidence: (id: string) => void; onChanged: () => void }) {
-  const [actor, setActor] = useState('Production lead')
+  const { user } = useAuth()
   const [rationale, setRationale] = useState('')
   const [reviewOpen, setReviewOpen] = useState(false)
   const [message, setMessage] = useState('')
   const stale = report.revision !== currentRevision || report.stale === true
   const reviewState = report.reviews?.filter((review) => review.proposal_id === item.id).at(-1)?.state ?? item.state
   const submit = useMutation({ mutationFn: () => incidentApi.submitProposal(report.id, item.id), onSuccess: () => { setMessage('Submitted for human review.'); onChanged() }, onError: (error) => setMessage(error.message) })
-  const review = useMutation({ mutationFn: (decision: 'APPROVED' | 'REJECTED') => incidentApi.reviewProposal(report.id, item.id, decision, actor.trim(), rationale.trim()), onSuccess: () => { setMessage('Review recorded. No factory action was executed.'); setReviewOpen(false); onChanged() }, onError: (error) => setMessage(error.message) })
+  const review = useMutation({ mutationFn: (decision: 'APPROVED' | 'REJECTED') => incidentApi.reviewProposal(report.id, item.id, decision, rationale.trim()), onSuccess: () => { setMessage('Review recorded. No factory action was executed.'); setReviewOpen(false); onChanged() }, onError: (error) => setMessage(error.message) })
   return <article className="rounded border border-zinc-200 bg-white p-4">
     <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold">{item.type.replace(/_/g, ' ')}</h3><span className="rounded bg-zinc-100 px-2 py-1 text-xs">{reviewState.replace(/_/g, ' ')}</span></div>
     <p className="mt-1 text-xs text-zinc-500">Owner: {item.owner_role.replace(/_/g, ' ')}</p>
@@ -54,13 +55,13 @@ function ProposalCard({ item, report, currentRevision, canReview, onEvidence, on
     </div>
     <div className="mt-4 border-t border-zinc-100 pt-3">
       {stale && <p className="mb-2 text-xs font-medium text-amber-800">This proposal belongs to revision {report.revision}. Open the current revision before review.</p>}
-      {!canReview && <p className="text-xs text-zinc-600">Review controls are available in local-owner mode.</p>}
+      {!canReview && <p className="text-xs text-zinc-600">Sign in as an invited reviewer to record decisions.</p>}
       {canReview && reviewState === 'DRAFT' && <Button size="sm" variant="outline" disabled={stale || submit.isPending} onClick={() => submit.mutate()}>{submit.isPending ? 'Submitting…' : 'Submit for review'}</Button>}
       {canReview && reviewState === 'PENDING_REVIEW' && !reviewOpen && <Button size="sm" variant="outline" disabled={stale} onClick={() => setReviewOpen(true)}>Record review</Button>}
       {reviewOpen && <div className="space-y-2">
-        <div><label htmlFor={`actor-${item.id}`} className="mb-1 block text-xs font-medium">Reviewer</label><Input id={`actor-${item.id}`} value={actor} onChange={(event) => setActor(event.target.value)} /></div>
+        <p className="text-xs">Reviewer: {user?.display_name}</p>
         <div><label htmlFor={`reason-${item.id}`} className="mb-1 block text-xs font-medium">Review rationale</label><textarea id={`reason-${item.id}`} value={rationale} onChange={(event) => setRationale(event.target.value)} className="min-h-20 w-full rounded border border-zinc-300 p-2 text-sm focus-visible:outline-2" /></div>
-        <div className="flex flex-wrap gap-2"><Button size="sm" disabled={!actor.trim() || !rationale.trim() || stale || review.isPending} onClick={() => review.mutate('APPROVED')}>Approve review</Button><Button size="sm" variant="outline" disabled={!actor.trim() || !rationale.trim() || stale || review.isPending} onClick={() => review.mutate('REJECTED')}>Reject</Button><Button size="sm" variant="ghost" onClick={() => setReviewOpen(false)}>Cancel</Button></div>
+        <div className="flex flex-wrap gap-2"><Button size="sm" disabled={!rationale.trim() || stale || review.isPending} onClick={() => review.mutate('APPROVED')}>Approve review</Button><Button size="sm" variant="outline" disabled={!rationale.trim() || stale || review.isPending} onClick={() => review.mutate('REJECTED')}>Reject</Button><Button size="sm" variant="ghost" onClick={() => setReviewOpen(false)}>Cancel</Button></div>
       </div>}
       {message && <p role="status" className="mt-2 text-xs text-zinc-700">{message}</p>}
       <p className="mt-2 text-xs text-zinc-500">Review records a decision against this report. It does not execute a factory change.</p>
@@ -69,7 +70,7 @@ function ProposalCard({ item, report, currentRevision, canReview, onEvidence, on
 }
 
 function SavedAiPanel({ onEvidence }: { onEvidence: (id: string) => void }) {
-  return <Section title="Saved local-model result" detail="Experimental · author-reviewed synthetic case · recorded output from an earlier local run">
+  return <Section title="Historical local-model result" detail="Qwen archive · OpenAI not evaluated · Experimental · author-reviewed synthetic case · recorded output from an earlier local run">
     <div className="rounded border border-zinc-200 bg-white p-4">
       <p className="text-xs text-zinc-600">{savedAi.model} · {savedAi.elapsed_seconds} seconds · {savedAi.execution_kind}</p>
       <p className="mt-2 text-sm text-amber-900">{savedAi.quality_notice}</p>
@@ -86,48 +87,8 @@ function SavedAiPanel({ onEvidence }: { onEvidence: (id: string) => void }) {
   </Section>
 }
 
-function LocalDraftPanel({ report, onEvidence }: { report: AnalysisReport; onEvidence: (id: string) => void }) {
-  const [question, setQuestion] = useState('Summarize the incident and next checks.')
-  const [jobId, setJobId] = useState<string | null>(null)
-  const queryClient = useQueryClient()
-  const create = useMutation({
-    mutationFn: () => incidentApi.createDraft(report.id, question.trim()),
-    onMutate: () => setJobId(null),
-    onSuccess: (job) => {
-      queryClient.setQueryData(['incident-draft', job.id], job)
-      setJobId(job.id)
-    },
-  })
-  const job = useQuery({
-    queryKey: ['incident-draft', jobId],
-    queryFn: () => incidentApi.draft(jobId!),
-    enabled: !!jobId,
-    refetchInterval: (query) => ['QUEUED', 'RUNNING'].includes(query.state.data?.status ?? '') ? 2000 : false,
-  })
-  const result = job.data?.result
-  return <Section title="Local AI draft" detail="Optional Ollama drafting. Deterministic metrics and evidence remain the source of truth.">
-    <div className="rounded border border-zinc-200 bg-white p-4">
-      <label htmlFor={`draft-question-${report.id}`} className="mb-1 block text-xs font-medium text-zinc-700">Question for the local model</label>
-      <textarea id={`draft-question-${report.id}`} value={question} maxLength={500} onChange={(event) => setQuestion(event.target.value)} className="min-h-20 w-full rounded border border-zinc-300 p-2 text-sm focus-visible:outline-2" />
-      <div className="mt-2 flex flex-wrap items-center gap-3"><Button size="sm" disabled={question.trim().length < 3 || create.isPending} onClick={() => create.mutate()}>{create.isPending ? 'Queueing…' : 'Draft answer locally'}</Button><p className="text-xs text-zinc-500">Requires the local worker and installed model. No paid API is called.</p></div>
-      {create.isError && <p role="alert" className="mt-3 text-sm text-red-700">Draft unavailable: {create.error.message}</p>}
-      {jobId && <div className="mt-4 border-t border-zinc-100 pt-4" aria-live="polite">
-        {job.isError ? <p role="alert" className="text-sm text-red-700">Could not check draft status: {job.error.message}</p> : <>
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-600">{job.data?.status ?? 'Checking draft'}{job.data?.status === 'QUEUED' ? ' · waiting for local worker' : ''}</p>
-          {['FAILED', 'CANCELLED', 'INTERRUPTED'].includes(job.data?.status ?? '') && <p role="alert" className="mt-2 text-sm text-red-700">Draft unavailable: {result?.reason ?? result?.status ?? 'The local model did not complete.'}</p>}
-          {job.data?.status === 'COMPLETED' && result?.status === 'DRAFT_NEEDS_REVIEW' && result.draft ? <div className="mt-3 space-y-4">
-            <p className="text-xs font-semibold text-amber-800">AI-drafted · needs human review · {result.model ?? 'local model'}</p>
-            {result.draft.claims.length ? <ol className="list-decimal space-y-3 pl-5 text-sm text-zinc-700">{result.draft.claims.map((claim, index) => <li key={index}><p>{claim.text}</p><div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-zinc-500"><span>Evidence:</span><EvidenceList ids={claim.evidence_ids} onOpen={onEvidence} />{claim.metric_ids.length > 0 && <span>Metrics: {claim.metric_ids.join(', ')}</span>}</div></li>)}</ol> : <p className="text-sm text-zinc-600">The model returned no validated claims.</p>}
-            {result.draft.limitations.length > 0 && <div className="rounded bg-amber-50 p-3 text-xs text-amber-900"><strong>Limitations</strong><ul className="mt-1 list-disc space-y-1 pl-4">{result.draft.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul></div>}
-          </div> : null}
-          {job.data?.status === 'COMPLETED' && result?.status !== 'DRAFT_NEEDS_REVIEW' && <p role="alert" className="mt-2 text-sm text-red-700">No validated draft is available: {result?.reason ?? result?.status ?? 'Unknown result'}</p>}
-        </>}
-      </div>}
-    </div>
-  </Section>
-}
-
 export function IncidentWorkbenchPage() {
+  const { user } = useAuth()
   const { id = '' } = useParams()
   const [params, setParams] = useSearchParams()
   const queryClient = useQueryClient()
@@ -168,7 +129,7 @@ export function IncidentWorkbenchPage() {
             {report.metrics.inputs?.length ? <div className="overflow-x-auto"><table className="w-full min-w-[560px] text-left text-sm"><caption className="sr-only">Comparable completed 15-minute production buckets used in the reported calculation</caption><thead className="bg-zinc-50 text-xs uppercase text-zinc-500"><tr><th scope="col" className="px-4 py-2">Completed interval</th><th scope="col" className="px-4 py-2">Baseline plan</th><th scope="col" className="px-4 py-2">Recorded good output</th></tr></thead><tbody className="divide-y divide-zinc-100">{report.metrics.inputs.map((input) => <tr key={`${input.start}-${input.end}`}><th scope="row" className="whitespace-nowrap px-4 py-2 text-xs font-normal text-zinc-700">{formatInstant(input.start)} – {formatInstant(input.end)}</th><td className="px-4 py-2"><span className="mr-2 tabular-nums">{input.plan.quantity}</span><EvidenceLink id={input.plan.id} onOpen={setEvidenceId} /></td><td className="px-4 py-2"><span className="mr-2 tabular-nums">{input.output.quantity}</span><EvidenceLink id={input.output.id} onOpen={setEvidenceId} /></td></tr>)}</tbody></table></div> : <p className="px-4 py-3 text-xs text-zinc-600">{report.metrics.inputs ? 'No comparable completed buckets are available.' : 'Input breakdown is unavailable in this report.'}</p>}
           </div>
           {report.capabilities?.production?.reasons.map((reason) => <p key={reason} className="text-xs text-amber-800">{reason}</p>)}
-          {report.metrics.target_pressure?.remaining_target != null && <div className="rounded border border-zinc-200 bg-white p-4 text-sm"><h3 className="font-medium">Remaining shift target</h3><p className="mt-1 text-zinc-700">{report.metrics.target_pressure.remaining_target} {report.metrics.unit.replaceAll('_', ' ')} across {report.metrics.target_pressure.remaining_working_minutes} scheduled minutes.</p><p className="mt-1 text-xs text-zinc-600">Required average: {report.metrics.target_pressure.required_units_per_hour ?? 'Unavailable'} units/hour · Baseline: {report.metrics.target_pressure.baseline_units_per_hour ?? 'Unavailable'} units/hour</p><p className="mt-1 text-xs text-zinc-500">{report.metrics.target_pressure.assumptions.join(' ')}</p></div>}
+          {report.metrics.target_pressure?.remaining_target != null && <div className="rounded border border-zinc-200 bg-white p-4 text-sm"><h3 className="font-medium">Remaining shift target</h3>{report.metrics.target_pressure.as_of && <p className="mt-1 text-xs text-zinc-600">As of recorded output: {formatInstant(report.metrics.target_pressure.as_of)}</p>}<p className="mt-1 text-zinc-700">{report.metrics.target_pressure.remaining_target} {report.metrics.unit.replaceAll('_', ' ')} across {report.metrics.target_pressure.remaining_elapsed_minutes ?? report.metrics.target_pressure.remaining_working_minutes} elapsed minutes under the report assumptions.</p><p className="mt-1 text-xs text-zinc-600">Required average: {report.metrics.target_pressure.required_units_per_hour ?? 'Unavailable'} units/hour · Baseline: {report.metrics.target_pressure.baseline_units_per_hour ?? 'Unavailable'} units/hour</p><p className="mt-1 text-xs text-zinc-500">{report.metrics.target_pressure.assumptions.join(' ')}</p></div>}
         </Section>
         <Section title="Evidence timeline" detail="Events are ordered by occurrence. Availability at the cutoff determines which records are included.">
           {report.timeline.length ? <div className="overflow-x-auto rounded border border-zinc-200 bg-white"><table className="w-full min-w-[650px] text-left text-sm"><thead className="border-b bg-zinc-50 text-xs uppercase text-zinc-500"><tr><th scope="col" className="px-4 py-2">When</th><th scope="col" className="px-4 py-2">Lane</th><th scope="col" className="px-4 py-2">Observation</th><th scope="col" className="px-4 py-2">Source</th></tr></thead><tbody className="divide-y divide-zinc-100">{report.timeline.map((event) => <tr key={event.id}><td className="whitespace-nowrap px-4 py-3 text-xs tabular-nums text-zinc-600">{formatInstant(event.occurred_at ?? event.start ?? '')}{event.end ? ` – ${formatInstant(event.end)}` : ''}</td><td className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-zinc-500">{event.lane}</td><td className="px-4 py-3">{event.summary}{event.assertion && <span className="ml-2 text-xs text-amber-800">Source assertion</span>}</td><td className="px-4 py-3"><EvidenceLink id={event.id} onOpen={setEvidenceId} /></td></tr>)}</tbody></table></div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No timeline events are available at this cutoff.</p>}
@@ -176,11 +137,12 @@ export function IncidentWorkbenchPage() {
         <Section title="Explanations and open questions" detail="A sequence of events alone does not establish causation.">
           {report.hypotheses.length ? <div className="grid gap-3 lg:grid-cols-2">{report.hypotheses.map((item, index) => <HypothesisCard key={`${item.category}-${index}`} item={item} onEvidence={setEvidenceId} />)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">Current evidence does not support a specific contributor.</p>}
         </Section>
+        <HybridPanel report={report} enabled={capabilities.data?.ai?.index_ready === true && capabilities.data?.reviews_enabled === true} />
         <Section title="Historical precedents" detail="Live lexical search. Similar cases can guide checks; differences limit what can be inferred.">{report.precedents?.length ? <div className="grid gap-3 lg:grid-cols-2">{report.precedents.map((item, index) => <article key={item.id ?? item.incident_id ?? index} className="rounded border bg-white p-4"><h3 className="text-sm font-semibold">{item.title ?? item.incident_id ?? 'Historical incident'}</h3>{item.match_reason || item.match_reasons?.length ? <p className="mt-2 text-xs text-zinc-700"><strong>Similar:</strong> {item.match_reason ?? item.match_reasons?.join('; ')}</p> : null}{item.differences?.length ? <p className="mt-2 text-xs text-zinc-700"><strong>Different:</strong> {item.differences.join('; ')}</p> : null}{(item.incident_id || item.id) && <Link className="mt-3 inline-block text-xs underline" to={`/incidents/${encodeURIComponent(item.incident_id ?? item.id!)}`}>Open precedent</Link>}</article>)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No eligible historical precedents were retrieved.</p>}</Section>
-        <Section title="Recovery options" detail="Proposals are versioned requests for human review.">{report.proposals.length ? <div className="grid gap-3 lg:grid-cols-2">{report.proposals.map((item) => <ProposalCard key={`${report.id}-${item.id}-${item.state}`} item={item} report={report} currentRevision={summary?.revision ?? revision} canReview={capabilities.data?.mode === 'local' && report.execution_kind !== 'saved_deterministic'} onEvidence={setEvidenceId} onChanged={refresh} />)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No action proposal is supported by this evidence.</p>}</Section>
-        <Section title="Shift update" detail="Evidence-linked report summary"><blockquote className="border-l-2 border-zinc-900 bg-white py-3 pl-4 text-sm leading-7 text-zinc-700">{report.summary}</blockquote><a className="inline-block rounded border border-zinc-300 bg-white px-3 py-2 text-sm hover:bg-zinc-50 focus-visible:outline-2" href={incidentApi.exportUrl(report.id)} download>Export portable report</a></Section>
+        <Section title="Recovery options" detail="Proposals are versioned requests for human review.">{report.proposals.length ? <div className="grid gap-3 lg:grid-cols-2">{report.proposals.map((item) => <ProposalCard key={`${report.id}-${item.id}-${item.state}`} item={item} report={report} currentRevision={summary?.revision ?? revision} canReview={capabilities.data?.reviews_enabled === true && report.execution_kind !== 'saved_deterministic'} onEvidence={setEvidenceId} onChanged={refresh} />)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No action proposal is supported by this evidence.</p>}</Section>
+        <Section title="Shift update" detail="Evidence-linked report summary"><blockquote className="border-l-2 border-zinc-900 bg-white py-3 pl-4 text-sm leading-7 text-zinc-700">{report.summary}</blockquote><ExportReport report={report} enabled={capabilities.data?.reviews_enabled === true} /></Section>
         {report.incident_id === savedAi.incident_id && report.revision === savedAi.revision && <SavedAiPanel onEvidence={setEvidenceId} />}
-        {capabilities.data?.mode === 'local' && report.execution_kind !== 'saved_deterministic' && <LocalDraftPanel key={report.id} report={report} onEvidence={setEvidenceId} />}
+        <OpenAiPanel key={`${report.id}:${user?.id ?? 'anonymous'}`} report={report} enabled={capabilities.data?.ai?.generation_available === true && report.execution_kind !== 'saved_deterministic'} reasons={capabilities.data?.ai?.reason ? [capabilities.data.ai.reason.replaceAll('_', ' ').toLowerCase()] : ['OpenAI drafts are available to authenticated reviewers.']} onEvidence={setEvidenceId} />
       </>}
     </>}
     <Sheet open={evidenceId !== null} onOpenChange={(open) => { if (!open) setEvidenceId(null) }}><SheetContent className="overflow-y-auto"><SheetHeader><SheetTitle>Source evidence</SheetTitle><SheetDescription>{evidenceId}</SheetDescription></SheetHeader><div className="px-4 pb-6">{evidence.isPending ? <Skeleton className="h-32" /> : evidence.isError ? <p role="alert" className="text-sm text-red-700">{evidence.error.message}</p> : evidence.data ? <dl className="space-y-3 text-sm">{Object.entries(evidence.data).map(([key, value]) => <div key={key} className="border-b border-zinc-100 pb-2"><dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">{key.replace(/_/g, ' ')}</dt><dd className="mt-1 break-words font-mono text-xs text-zinc-800">{typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value ?? '—')}</dd></div>)}</dl> : null}</div></SheetContent></Sheet>

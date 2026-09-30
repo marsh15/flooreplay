@@ -12,7 +12,7 @@ const MAX_BYTES = 2 * 1024 * 1024
 export function IncidentImportsPage() {
   const queryClient = useQueryClient()
   const capabilities = useQuery({ queryKey: ['capabilities'], queryFn: api.capabilities })
-  const incidents = useQuery({ queryKey: ['incidents'], queryFn: incidentApi.list, enabled: capabilities.data?.mode === 'local' })
+  const incidents = useQuery({ queryKey: ['incidents'], queryFn: incidentApi.list, enabled: capabilities.data?.imports_enabled })
   const [incidentId, setIncidentId] = useState('')
   const [mode, setMode] = useState<'existing' | 'new'>('existing')
   const [newId, setNewId] = useState('')
@@ -54,14 +54,15 @@ export function IncidentImportsPage() {
         window: { start: windowStart.trim(), end: windowEnd.trim() }, cutoff: cutoff.trim(), raw_text: rawText,
         source_system: sourceSystem.trim(), timezone: timezone.trim(), filename: file.name,
       } : undefined
+      if (newIncident) body.scope = newIncident.scope
       return { body, result: await incidentApi.previewImport(body), newIncident }
     },
     onSuccess: ({ body, result, newIncident }) => setPreview({ body, result, newIncident, idempotencyKey: crypto.randomUUID() }),
   })
   const publish = useMutation({
     mutationFn: () => preview!.newIncident
-      ? incidentApi.createIncident({ ...preview!.newIncident, preview_digest: preview!.result.raw_digest, idempotency_key: preview!.idempotencyKey })
-      : incidentApi.publishImport(preview!.body, preview!.result.raw_digest, preview!.idempotencyKey),
+      ? incidentApi.createIncident({ ...preview!.newIncident, preview_digest: preview!.result.preview_digest, idempotency_key: preview!.idempotencyKey })
+      : incidentApi.publishImport(preview!.body, preview!.result.preview_digest, preview!.idempotencyKey),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['incidents'] }),
   })
   const changed = () => { setPreview(null); previewMutation.reset(); publish.reset() }
@@ -75,7 +76,7 @@ export function IncidentImportsPage() {
 
   return <div className="space-y-6">
     <div><Link to="/" className="text-xs text-zinc-600 underline underline-offset-4">← Incident library</Link><p className="mt-5 text-xs font-semibold uppercase tracking-widest text-amber-700">Local owner tool</p><h1 className="mt-2 text-2xl font-semibold tracking-tight">Import incident evidence</h1><p className="mt-1 max-w-2xl text-sm text-zinc-600">Preview a local source file and its row diagnostics before adding it to an incident.</p></div>
-    {capabilities.isPending ? <Skeleton className="h-32" /> : capabilities.isError ? <div role="alert" className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-800">Could not check local capabilities: {capabilities.error.message}</div> : capabilities.data?.mode !== 'local' ? <div className="rounded border border-zinc-200 bg-white p-5 text-sm text-zinc-700">Source imports are available only in local-owner mode.</div> : <>
+    {capabilities.isPending ? <Skeleton className="h-32" /> : capabilities.isError ? <div role="alert" className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-800">Could not check permissions: {capabilities.error.message}</div> : !capabilities.data?.imports_enabled ? <div className="rounded border border-zinc-200 bg-white p-5 text-sm text-zinc-700">Sign in with an owner account to import source evidence.</div> : <>
       <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Publishing creates an immutable incident revision. Existing reports and reviews remain attached to their original revisions. A new baseline requires a new incident.</div>
       {incidents.isPending ? <Skeleton className="h-64" /> : incidents.isError ? <div role="alert" className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-800">Could not load incidents: {incidents.error.message}</div> : <form className="space-y-5 rounded border border-zinc-200 bg-white p-5" onSubmit={(event) => { event.preventDefault(); setPreview(null); previewMutation.mutate() }}>
         <div><label htmlFor="import-mode" className="mb-1 block text-xs font-medium">Import into</label><select id="import-mode" value={mode} onChange={(event) => { setMode(event.target.value as 'existing' | 'new'); changed() }} className="h-9 w-full max-w-sm rounded border border-zinc-300 bg-white px-2 text-sm focus-visible:outline-2"><option value="existing">Existing incident · new revision</option><option value="new">New incident · baseline plan</option></select></div>

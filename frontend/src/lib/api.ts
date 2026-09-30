@@ -1,3 +1,4 @@
+import { session } from '@/lib/session'
 /**
  * Typed API client for the FloorReplay backend.
  *
@@ -184,8 +185,8 @@ const BASE: string = API_BASE
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...init,
+    headers: { 'Content-Type': 'application/json', ...session.headers(), ...init?.headers },
   })
   if (!response.ok) {
     let code = 'REQUEST_FAILED'
@@ -369,6 +370,9 @@ export const api = {
     request<{
       mode: string
       imports_enabled: boolean
+      reviews_enabled?: boolean
+      export_enabled?: boolean
+      ai?: { generation_available: boolean; reason: string | null; provider: string; model: string; index_ready: boolean; evaluation_status: string }
       build_id: string
       live_parser_available: boolean
       execution_limits: {

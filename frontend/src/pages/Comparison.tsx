@@ -117,8 +117,7 @@ export function ComparisonPage() {
 
   const suite = suitesQuery.data?.items[0]
   const configurations = configsQuery.data?.items ?? []
-  const executionLocalOnly =
-    capsQuery.data?.execution_limits.comparison_execution === 'local_only'
+  const executionLocalOnly = !capsQuery.data?.imports_enabled || capsQuery.data.execution_limits.comparison_execution === 'local_only'
   const [baselineId, setBaselineId] = useState<string>('CFG-BASELINE-V1')
   const [candidateId, setCandidateId] = useState<string>('CFG-IMPROVED-V1')
   const [report, setReport] = useState<ComparisonReport | null>(null)
@@ -232,8 +231,7 @@ export function ComparisonPage() {
         </label>
         {executionLocalOnly ? (
           <p className="text-xs text-zinc-500">
-            Suite execution is limited to the local owner deployment; the saved reports below are
-            from the owner’s runs.
+            Sign in as an owner in the local deployment to execute this archived suite. Saved reports remain readable.
           </p>
         ) : (
           <Button
@@ -306,7 +304,7 @@ export function ComparisonPage() {
               </TableHeader>
               <TableBody>
                 {items.map((item) => (
-                  <Fragment key={item.scenario_id}>
+                  <Fragment key={`${item.scenario_id}:${item.title}:${item.category}`}>
                     <TableRow
                       onClick={() => setExpanded(expanded === item.scenario_id ? null : item.scenario_id)}
                       onKeyDown={(event) => {

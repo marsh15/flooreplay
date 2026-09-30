@@ -35,6 +35,8 @@ function StatusChip({ status }: { status: string }) {
 
 export function NotesPage() {
   const queryClient = useQueryClient()
+  const capabilities = useQuery({ queryKey: ['capabilities'], queryFn: api.capabilities })
+  const canAuthor = capabilities.data?.mode === 'local' && capabilities.data.imports_enabled
   const [noteText, setNoteText] = useState(EXAMPLE_NOTE)
   const [parse, setParse] = useState<NoteParseResult | null>(null)
   // The exact text the current draft was extracted from; a draft is only
@@ -114,11 +116,12 @@ export function NotesPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
-            disabled={!noteText.trim() || noteText.length > 2000 || parseMutation.isPending}
+            disabled={!canAuthor || !noteText.trim() || noteText.length > 2000 || parseMutation.isPending}
             onClick={() => parseMutation.mutate()}
           >
             {parseMutation.isPending ? 'Extracting draft…' : 'Extract draft'}
           </Button>
+          {!canAuthor && <p className="text-xs text-zinc-600">Sign in as an owner in the local deployment to extract or confirm archived floor notes.</p>}
           <Button size="sm" variant="outline" onClick={() => { setParse(null); setSourceKind('manual') }}>
             Skip parsing: manual entry
           </Button>
@@ -255,7 +258,7 @@ export function NotesPage() {
         </div>
         <div className="flex items-center gap-3">
           <Button
-            disabled={!selectedScenario || !operatorId || confirmMutation.isPending}
+            disabled={!canAuthor || !selectedScenario || !operatorId || confirmMutation.isPending}
             onClick={() => confirmMutation.mutate()}
           >
             {confirmMutation.isPending ? 'Confirming…' : 'Confirm event and fork revision'}

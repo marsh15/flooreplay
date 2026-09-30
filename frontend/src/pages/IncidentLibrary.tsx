@@ -33,10 +33,10 @@ export function IncidentLibraryPage() {
           <Input id="incident-search" type="search" placeholder="Search incident or line" value={query} onChange={(event) => setQuery(event.target.value)} />
         </div>
         {incidents.data && !query && <p className="text-xs text-zinc-500" role="status">{items.length} incidents</p>}
-        {capabilities.data?.mode === 'local' && <Link to="/incidents/imports" className="rounded border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 focus-visible:outline-2">Import incident evidence</Link>}
+        {capabilities.data?.imports_enabled && <Link to="/incidents/imports" className="rounded border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 focus-visible:outline-2">Import incident evidence</Link>}
       </div>
 
-      {saved && <div role="status" className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">API unavailable. Showing one bundled saved deterministic investigation. Live search, review, and local AI are unavailable.</div>}
+      {saved && <div role="status" className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">API unavailable. Showing one bundled saved deterministic investigation. Live search, review, and OpenAI drafts are unavailable.</div>}
 
       {incidents.isPending ? (
         <div className="space-y-2" aria-label="Loading incidents" aria-busy="true"><Skeleton className="h-16" /><Skeleton className="h-16" /><Skeleton className="h-16" /></div>
