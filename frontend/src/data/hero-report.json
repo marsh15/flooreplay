@@ -705,14 +705,14 @@
     }
   ],
   "cutoff": "2026-09-28T11:30:00+05:30",
-  "engine_version": "incident-v3",
+  "engine_version": "incident-v4",
   "execution_kind": "saved_deterministic",
   "hypotheses": [
     {
       "category": "material",
       "contradicting_evidence": [],
       "mechanism": "A recorded line block establishes lost operating time. Its share of the output shortfall is unknown.",
-      "next_check": "Confirm whether the material event blocked this line and for how long.",
+      "next_check": "Confirm affected operations, restart conditions, and any outstanding material requirements for the established block.",
       "status": "SUPPORTED",
       "supporting_evidence": [
         "EV-BLOCK-1",
@@ -741,9 +741,9 @@
       ]
     }
   ],
-  "id": "saved-2a265a8f5b0fc9346bc30ca88cfc834c27d55f3498b28834d5855f4139183ab5",
+  "id": "saved-1e434a2f6e10e387b40c1e88ed5f8f1cb4343e541c7b25a391f72c4b05d49057",
   "incident_id": "INC-001",
-  "manifest_digest": "sha256:2a265a8f5b0fc9346bc30ca88cfc834c27d55f3498b28834d5855f4139183ab5",
+  "manifest_digest": "sha256:1e434a2f6e10e387b40c1e88ed5f8f1cb4343e541c7b25a391f72c4b05d49057",
   "metrics": {
     "baseline_target": 240,
     "block_segments": [
@@ -1254,7 +1254,7 @@
     {
       "id": "verify-material",
       "missing_information": [
-        "Confirm whether the material event blocked this line and for how long."
+        "Confirm affected operations, restart conditions, and any outstanding material requirements for the established block."
       ],
       "owner_role": "Production lead",
       "preconditions": [

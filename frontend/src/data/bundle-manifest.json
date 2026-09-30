@@ -2,11 +2,11 @@
   "artifacts": {
     "evaluation-report": "sha256:70023ded5d593be9d93b53b844622d50395e204a7563c4aba355b02ce5ddf0be",
     "hero-ai": "sha256:bf0cd337b9f7d4dc249d5d27540b76836f1eb41bfb1092c24530de0f9864bb54",
-    "hero-report": "sha256:c4cef4ca097ba9d255f27c40b01a95d0542788ecc594881629e7bda54b9a0929",
+    "hero-report": "sha256:9846be9fb5d0e6c72cf3ec8b3ea8240efec93ae80d6bab0e3259df89e107a721",
     "hero-revision": "sha256:aa2a46beb1bd7c45f13cb77f0437ca0887dc29afd24b07d9b8fc4f984044752a",
-    "incident-library": "sha256:3b9575b655fad5f0721efa4d20141d9e512f482b62d9e8b378c3404f53c4dc3d"
+    "incident-library": "sha256:a5546b772fa03162900ca4bc561092a301321a0e4d541f9a9abfa5741b7d3054"
   },
-  "engine": "incident-v3",
+  "engine": "incident-v4",
   "provider_evaluation": "OPENAI_NOT_EVALUATED",
   "schema": "flooreplay.public-bundle.v1"
 }

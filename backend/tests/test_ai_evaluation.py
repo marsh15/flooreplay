@@ -13,7 +13,7 @@ from flooreplay.incident_service import create_analysis
 from flooreplay.paid_models import AIRun, SpendEntry
 
 
-def test_recorded_provider_metrics_and_append_only_claim_review(monkeypatch, owner_headers):
+def test_recorded_provider_metrics_and_append_only_claim_review(monkeypatch, owner_headers, reviewer_headers):
     client = TestClient(app, headers=owner_headers)
     actor = client.get('/api/v1/auth/me').json()['id']
     monkeypatch.setattr(settings, 'openai_api_key', 'mock')
@@ -35,6 +35,17 @@ def test_recorded_provider_metrics_and_append_only_claim_review(monkeypatch, own
         assert first.status_code == 200
         assert first.json()['actor'] == actor
         assert client.post(url, json=body).json()['id'] == first.json()['id']
+        assert first.json()['rationale'] == body['rationale']
+        assert first.json()['output_digest']
+        assert first.json()['created_at']
+        recovered = client.get(f"/api/v1/ai-runs/{run['id']}")
+        assert recovered.status_code == 200
+        assert recovered.json()['claim_reviews'] == [first.json()]
+        anonymous = TestClient(app)
+        assert anonymous.get(f"/api/v1/ai-runs/{run['id']}").status_code == 401
+        other_reviewer = TestClient(app, headers=reviewer_headers)
+        assert other_reviewer.get(f"/api/v1/ai-runs/{run['id']}").status_code == 404
+        assert other_reviewer.post(url, json=body).status_code == 404
         assert client.post(url, json={**body, 'supported':True}).status_code == 409
         assert client.post(url, json={**body, 'claim_path':'claims.00'}).status_code == 422
         with session_scope() as session:

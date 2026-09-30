@@ -56,7 +56,7 @@ test('incident import preview blocks an invalid source row', async ({ page }) =>
 test('bundled investigation remains readable while the API is unavailable', async ({ page }) => {
   await page.route('**/api/v1/**', (route) => route.abort())
   await page.goto('/')
-  await expect(page.getByText(/Showing one bundled saved deterministic investigation/)).toBeVisible()
+  await expect(page.getByText(/Showing bundled saved demo cases/)).toBeVisible()
   await page.getByRole('link', { name: 'Delayed start on sewing line S4' }).click()
   await expect(page.getByText('Saved deterministic result')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Historical local-model result' })).toBeVisible()

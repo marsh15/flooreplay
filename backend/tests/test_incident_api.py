@@ -186,3 +186,12 @@ def test_new_incident_from_previewed_production_source(owner_headers) -> None:
             session.execute(delete(IncidentAnalysis).where(IncidentAnalysis.incident_id == incident_id))
             session.execute(delete(IncidentSourceArtifact).where(IncidentSourceArtifact.incident_id == incident_id))
             session.execute(delete(IncidentRevision).where(IncidentRevision.incident_id == incident_id))
+
+
+def test_library_groups_use_provenance_not_title():
+    run_seed()
+    items = TestClient(app).get('/api/v1/incidents').json()['items']
+    hero = next(item for item in items if item['id'] == 'INC-001')
+    assert hero['library_group'] == 'curated_demo'
+    fixture = next(item for item in items if item['title'].startswith('Synthetic '))
+    assert fixture['library_group'] == 'engineering_fixture'

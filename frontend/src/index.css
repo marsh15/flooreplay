@@ -162,3 +162,17 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
+@media print {
+  @page { margin: 14mm; }
+  body, .app-shell { background: white; color: black; }
+  .app-header nav, .app-header button, .skip-link, main > section, main > div > a,
+  nav[aria-label="Investigation sections"], select, textarea,
+  button:not(.evidence-link) { display: none !important; }
+  #main-content { max-width: none; padding: 12px 0; }
+  .overflow-x-auto { overflow: visible; }
+  table { min-width: 0 !important; }
+  tr, article { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  .evidence-link { border: none; padding: 0; min-height: 0; color: black; }
+}

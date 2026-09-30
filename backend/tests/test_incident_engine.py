@@ -166,3 +166,23 @@ def test_watermark_metrics_units_and_declared_coverage():
     assert analyze_incident(revision)["capabilities"]["timeline"]["status"] == "COMPLETE"
     revision["coverage"]["operations"]["gaps"] = [{"start": revision["window"]["start"]}]
     assert analyze_incident(revision)["capabilities"]["timeline"]["status"] == "PARTIAL"
+
+
+def test_next_checks_follow_remaining_uncertainty():
+    revision = _revision()
+    report = analyze_incident(revision)
+    material = next(item for item in report['hypotheses'] if item['category'] == 'material')
+    quality = next(item for item in report['hypotheses'] if item['category'] == 'quality')
+    assert material['status'] == 'SUPPORTED'
+    assert 'restart conditions' in material['next_check']
+    assert 'whether' not in material['next_check']
+    assert 'whether' in quality['next_check']
+    proposal = next(item for item in report['proposals'] if item['id'] == 'verify-material')
+    assert proposal['missing_information'] == [material['next_check']]
+    revision['events'].append({
+        'id': 'dispute', 'type': 'note', 'summary': 'The line continued operating.',
+        'available_at': '2026-01-01T09:30:00+05:30', 'occurred_at': '2026-01-01T09:25:00+05:30', 'contradicts': 'material',
+    })
+    disputed = next(item for item in analyze_incident(revision)['hypotheses'] if item['category'] == 'material')
+    assert disputed['status'] == 'CONTRADICTED'
+    assert 'conflicting observations' in disputed['next_check']

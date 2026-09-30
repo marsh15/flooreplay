@@ -31,6 +31,15 @@ class AIClaimReview(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
 
+def claim_review_view(review: AIClaimReview) -> dict[str, Any]:
+    return {
+        "id": review.id, "run_id": review.run_id, "claim_path": review.claim_path,
+        "supported": review.supported, "actor": review.user_id,
+        "rationale": review.rationale, "output_digest": review.output_digest,
+        "created_at": review.created_at.isoformat(),
+    }
+
+
 def review_claim(run_id: str, user_id: str, request_key: str, claim_path: str, supported: bool, rationale: str, *, owner: bool = False) -> dict[str, Any]:
     with session_scope() as session:
         lock(session)
@@ -55,11 +64,11 @@ def review_claim(run_id: str, user_id: str, request_key: str, claim_path: str, s
         if existing:
             if (existing.run_id, existing.claim_path, existing.supported, existing.rationale, existing.output_digest) != (run_id, claim_path, supported, rationale, fingerprint):
                 raise ServiceError('IDEMPOTENCY_CONFLICT', 'Review identity already used for another annotation', 409)
-            return {'id': existing.id, 'run_id': run_id, 'claim_path': claim_path, 'supported': existing.supported, 'actor': existing.user_id}
+            return claim_review_view(existing)
         review = AIClaimReview(user_id=user_id, request_key=request_key, run_id=run_id, claim_path=claim_path, output_digest=fingerprint, supported=supported, rationale=rationale)
         session.add(review)
         session.flush()
-        return {'id': review.id, 'run_id': run_id, 'claim_path': claim_path, 'supported': supported, 'actor': user_id}
+        return claim_review_view(review)
 
 
 def provider_evaluation(session: Session) -> dict[str, Any]:

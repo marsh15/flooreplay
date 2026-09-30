@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { incidentApi, type AiRun, type AiTask, type AnalysisReport } from '@/lib/incidents'
+import { incidentApi, type AiClaimReview, type AiClaimReviewRequest, type AiRun, type AiTask, type AnalysisReport } from '@/lib/incidents'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/Auth'
@@ -25,7 +25,12 @@ export function OpenAiPanel({ report, enabled, reasons, onEvidence }: { report: 
   const status = useQuery({ queryKey: ['ai-run', run?.id], queryFn: () => incidentApi.aiRun(run!.id), enabled: run?.status === 'RUNNING', refetchInterval: (query) => query.state.data?.status === 'RUNNING' ? 2000 : false })
   const current = status.data ?? run
   const output = current?.status === 'COMPLETED' ? current.result?.output : undefined
-  const claims = output?.claims ?? output?.selected_claims ?? output?.hypotheses?.map((item) => item.explanation) ?? output?.assertions?.map((item) => item.assertion) ?? []
+  const claims = [
+    ...(output?.claims?.map((claim, index) => ({ claim, path: `claims.${index}` })) ?? []),
+    ...(output?.selected_claims?.map((claim, index) => ({ claim, path: `selected_claims.${index}` })) ?? []),
+    ...(output?.hypotheses?.map((item, index) => ({ claim: item.explanation, path: `hypotheses.${index}.explanation` })) ?? []),
+    ...(output?.assertions?.map((item, index) => ({ claim: item.assertion, path: `assertions.${index}.assertion` })) ?? []),
+  ]
   return <section className="space-y-4 rounded-lg border bg-card p-5"><h2 className="text-base font-semibold">OpenAI draft</h2><p className="text-xs text-zinc-600">Drafts require human review. Calculated metrics and uncertainty remain attached to every draft.</p>
     {!enabled && <p role="status" className="text-sm text-amber-900">{reasons.join(' ')}</p>}
     <div className="grid gap-4"><label className="block text-xs font-medium">Task<select aria-label="OpenAI task" className={selectClass} value={task} onChange={(event) => { const value = TASKS.find((item) => item === event.target.value); if (value) setTask(value) }}>{TASKS.map((item) => <option key={item} value={item}>{item[0].toUpperCase() + item.slice(1)}</option>)}</select></label></div>
@@ -38,7 +43,7 @@ export function OpenAiPanel({ report, enabled, reasons, onEvidence }: { report: 
     <details className="border-t pt-4"><summary className="cursor-pointer text-xs font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">Recover an interrupted request</summary><div className="mt-3 space-y-3"><label className="block space-y-1.5 text-xs">Request identity<Input aria-label="Request identity" value={requestKey} onChange={(event) => setRequestKey(event.target.value)} /></label><Button size="sm" variant="outline" disabled={!user || !requestKey.trim() || recover.isPending} onClick={() => recover.mutate()}>{recover.isPending ? 'Looking up request…' : 'Recover existing request'}</Button><p className="text-xs text-zinc-500">A lookup retrieves the original operation without starting another paid request. Keep this identity to recover after a connection interruption.</p></div></details>
     {(create.error || recover.error || status.error) && <p role="alert" className="text-sm text-red-700">{(create.error ?? recover.error ?? status.error)?.message}</p>}
     {current && <div aria-live="polite" className="space-y-3 border-t pt-3"><p className="text-xs font-semibold">{current.status} · {current.configuration?.generation_model ?? 'OpenAI'}{output ? ' · Awaiting human review' : ''}</p>{current.result?.reason && <p>{current.result.reason}</p>}{current.result?.errors?.map((error, index) => <p role="alert" key={index} className="text-sm text-red-700">{error === 'MODEL_ACCESS_UNAVAILABLE' ? 'The configured model is unavailable to this API project.' : error === 'PROVIDER_TEMPORARILY_UNAVAILABLE' ? 'The provider is temporarily unavailable.' : error}</p>)}
-      {claims.map((claim, index) => <article key={index} className="space-y-2 border-t py-4"><p className="text-sm">{claim.text}</p><div className="flex flex-wrap gap-2">{claim.evidence_ids.map((id) => <button key={id} className={evidenceLinkClass} onClick={() => onEvidence(id)}>{id}</button>)}</div>{claim.historical_refs?.map((id) => { const excerpt = current.packet?.historical_evidence?.find((item) => item.id === id); return <blockquote key={id} className="border-l border-border pl-3 text-xs leading-relaxed"><strong>Historical excerpt · {id}:</strong> {excerpt?.text ?? excerpt?.excerpt ?? 'Unavailable'}</blockquote> })}{claim.metric_ids.map((id) => { const metric = claim.rendered_metrics?.find((item) => item.id === id) ?? current.packet?.metrics?.find((item) => item.id === id); return <p key={id} className="text-xs"><strong>{id}:</strong> {metric ? `${metric.value ?? 'Unavailable'} ${metric.unit}` : 'Metric reference unavailable'}{metric?.formula && ` · ${metric.formula}`}{metric?.input_refs?.map((ref) => <button key={ref} className={`ml-2 ${evidenceLinkClass}`} onClick={() => onEvidence(ref)}>{ref}</button>)}</p> })}</article>)}
+      {claims.map(({ claim, path }) => <article key={path} className="space-y-2 border-t py-4"><p className="text-sm">{claim.text}</p><div className="flex flex-wrap gap-2">{claim.evidence_ids.map((id) => <button key={id} className={evidenceLinkClass} onClick={() => onEvidence(id)}>{id}</button>)}</div>{claim.historical_refs?.map((id) => { const excerpt = current.packet?.historical_evidence?.find((item) => item.id === id); return <blockquote key={id} className="border-l border-border pl-3 text-xs leading-relaxed"><strong>Historical excerpt · {id}:</strong> {excerpt?.text ?? excerpt?.excerpt ?? 'Unavailable'}</blockquote> })}{claim.metric_ids.map((id) => { const metric = claim.rendered_metrics?.find((item) => item.id === id) ?? current.packet?.metrics?.find((item) => item.id === id); return <p key={id} className="text-xs"><strong>{id}:</strong> {metric ? `${metric.value ?? 'Unavailable'} ${metric.unit}` : 'Metric reference unavailable'}{metric?.formula && ` · ${metric.formula}`}{metric?.input_refs?.map((ref) => <button key={ref} className={`ml-2 ${evidenceLinkClass}`} onClick={() => onEvidence(ref)}>{ref}</button>)}</p> })}<ClaimSupportReview key={`${current.id}:${path}:${user?.id ?? 'anonymous'}`} runId={current.id} claimPath={path} savedReview={current.claim_reviews?.filter((review) => review.claim_path === path).at(-1)} /></article>)}
       {output?.hypotheses?.map((item, index) => <div key={index} className="space-y-1 text-xs"><p><strong>Counterevidence:</strong> {item.counterevidence_ids.join(', ') || 'None cited'}</p><p><strong>Limitations:</strong> {item.limitations.join('; ')}</p><p><strong>Next checks:</strong> {item.next_checks.join('; ')}</p></div>)}
       {output?.assertions?.map((item, index) => <div key={index} className="space-y-1 text-xs"><blockquote className="border-l-2 pl-2">{item.source_span}</blockquote><p>Source: {item.source_id} · Mentioned: {item.mentioned_entities.join(', ')}</p><p>Uncertainty: {item.uncertainty}</p></div>)}
       {output?.proposals?.map((item, index) => <div key={index} className="space-y-2 border-t py-4 text-sm"><p>{item.catalog_action_id} · {item.owner_role}</p><p className="text-xs">Prerequisites: {item.prerequisites.join('; ')}</p><div className="flex gap-2">{item.evidence_ids.map((id) => <button key={id} className={evidenceLinkClass} onClick={() => onEvidence(id)}>{id}</button>)}</div><p className="text-xs text-amber-900">Draft recommendation · requires a version-bound human review.</p></div>)}
@@ -46,6 +51,38 @@ export function OpenAiPanel({ report, enabled, reasons, onEvidence }: { report: 
       {current.task === 'note' && output && <p className="text-xs text-amber-900">Extracted assertions are drafts. An owner must confirm the source and import it before it becomes incident evidence.</p>}
     </div>}
   </section>
+}
+
+
+function ClaimSupportReview({ runId, claimPath, savedReview }: { runId: string; claimPath: string; savedReview?: AiClaimReview }) {
+  const { user } = useAuth()
+  const client = useQueryClient()
+  const [decision, setDecision] = useState<'supported' | 'unsupported'>('supported')
+  const [rationale, setRationale] = useState('')
+  const [request, setRequest] = useState<AiClaimReviewRequest | null>(null)
+  const review = useMutation({
+    mutationFn: (body: AiClaimReviewRequest) => incidentApi.reviewAiClaim(runId, body),
+    onSuccess: () => { setRequest(null); void client.invalidateQueries({ queryKey: ['incident-evaluation'] }) },
+  })
+  const receipt = review.data ?? savedReview
+  if (!user) return <p className="text-xs text-muted-foreground">Sign in as a reviewer to assess claim support.</p>
+  return <form className="space-y-3 rounded-md border bg-background p-3" aria-label={`Claim support review ${claimPath}`} aria-busy={review.isPending} onSubmit={(event) => {
+    event.preventDefault()
+    if (review.isPending || rationale.trim().length < 3) return
+    const body = request ?? { idempotency_key: crypto.randomUUID(), claim_path: claimPath, supported: decision === 'supported', rationale: rationale.trim() }
+    setRequest(body)
+    review.mutate(body)
+  }}>
+    <p className="text-xs font-semibold">Factual support review</p>
+    <p className="text-xs leading-relaxed text-muted-foreground">Check whether the cited source or calculated metric directly supports the wording. A citation alone is insufficient. This records an annotation; recovery actions still need separate approval.</p>
+    {receipt && <p role="status" className="text-xs">Recorded: {receipt.supported ? 'Supported' : 'Unsupported'} · reviewer {receipt.actor} · review {receipt.id}{receipt.rationale && <> · {receipt.rationale}</>}</p>}
+    {receipt?.output_digest && <details className="text-xs text-muted-foreground"><summary className="cursor-pointer">Recorded output identity</summary><p className="mt-1 break-all font-mono">{receipt.output_digest}</p>{receipt.created_at && <p>{receipt.created_at}</p>}</details>}
+    <label className="block text-xs font-medium">Claim support<select className={selectClass} value={decision} disabled={request !== null} onChange={(event) => setDecision(event.target.value === 'supported' ? 'supported' : 'unsupported')}><option value="supported">Supported by cited evidence</option><option value="unsupported">Unsupported by cited evidence</option></select></label>
+    <label className="block space-y-1.5 text-xs font-medium"><span>Support rationale</span><textarea value={rationale} disabled={request !== null} minLength={3} maxLength={1000} required className="min-h-20 w-full rounded-md border border-input bg-background p-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:opacity-50" onChange={(event) => setRationale(event.target.value)} placeholder="Explain which source supports the wording, or what the evidence fails to establish." /></label>
+    {review.error && <p role="alert" className="text-xs text-red-700">{review.error.message} Retry sends the same annotation identity.</p>}
+    <div className="flex flex-wrap gap-2"><Button type="submit" size="sm" variant="outline" disabled={review.isPending || rationale.trim().length < 3}>{review.isPending ? 'Saving support review…' : review.isError ? 'Retry support review' : receipt ? 'Record another support review' : 'Record support review'}</Button>{review.isError && <Button type="button" size="sm" variant="ghost" onClick={() => { setRequest(null); review.reset() }}>Edit as a new annotation</Button>}</div>
+    <p className="font-mono text-xs text-muted-foreground">Run {runId} · {claimPath}</p>
+  </form>
 }
 
 export function HybridPanel({ report, enabled }: { report: AnalysisReport; enabled: boolean }) {

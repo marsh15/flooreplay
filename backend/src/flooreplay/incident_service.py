@@ -28,6 +28,7 @@ def incident_list(session: Session) -> list[dict[str, Any]]:
     latest: dict[str, IncidentRevision] = {}
     for row in rows:
         latest[row.incident_id] = row
+    imported_ids = set(session.scalars(select(IncidentSourceArtifact.incident_id).distinct()).all())
     items = []
     for row in latest.values():
         report = analyze_incident(row.payload)
@@ -46,6 +47,7 @@ def incident_list(session: Session) -> list[dict[str, Any]]:
             "status": metric["status"], "shortfall": metric["shortfall"],
             "evidence_completeness": f"{available}/{total} available sources; timeline {report['capabilities']['timeline']['status'].lower()}" if total else "Unknown coverage",
             "last_reviewed_revision": reviewed,
+            "library_group": "engineering_fixture" if row.payload.get("dataset_split") else "operational" if row.incident_id in imported_ids else "curated_demo",
         })
     return items
 
@@ -107,7 +109,7 @@ def create_analysis(session: Session, incident_id: str, revision: int, key: str,
             raise ServiceError("IDEMPOTENCY_CONFLICT", "Key already used for another analysis", 409)
         return existing
     report = analyze_incident(row.payload)
-    report["engine_version"] = "incident-v3"
+    report["engine_version"] = "incident-v4"
     eligible = session.execute(
         select(IncidentRevision).where(
             IncidentRevision.cutoff < row.cutoff,
@@ -133,7 +135,7 @@ def create_analysis(session: Session, incident_id: str, revision: int, key: str,
     now = datetime.now(UTC)
     analysis = IncidentAnalysis(
         idempotency_key=key, incident_id=incident_id, revision=revision,
-        manifest_digest=digest({"incident_digest": incident_digest(row.payload), "corpus_digest": report["corpus_release"]["digest"], "engine": "incident-v3"}),
+        manifest_digest=digest({"incident_digest": incident_digest(row.payload), "corpus_digest": report["corpus_release"]["digest"], "engine": "incident-v4"}),
         report=report, execution_kind="live_deterministic", created_at=now, completed_at=now,
     )
     session.add(analysis)

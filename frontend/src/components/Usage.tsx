@@ -8,7 +8,7 @@ export function UsagePanel() {
   const usage = useQuery({ queryKey: ['usage'], queryFn: incidentApi.usage, enabled: user?.role === 'owner', refetchInterval: 30000 })
   if (user?.role !== 'owner') return null
   return (
-    <details className="mb-6 rounded-lg border bg-card text-xs">
+    <details className="mb-6 rounded-lg border bg-card text-xs print:hidden">
       <summary className="cursor-pointer rounded-lg px-4 py-3 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">Owner API allowance</summary>
       {usage.data ? (
         <div className="space-y-4 border-t px-4 py-4">

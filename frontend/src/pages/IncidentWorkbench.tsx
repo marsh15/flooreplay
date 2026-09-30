@@ -11,6 +11,7 @@ import { OpenAiPanel, HybridPanel, ExportReport } from '@/components/IncidentAi'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import savedAi from '@/data/hero-ai.json'
+import { RevisionComparison } from '@/components/RevisionComparison'
 
 function EvidenceLink({ id, onOpen }: { id: string; onOpen: (id: string) => void }) {
   return <button type="button" onClick={() => onOpen(id)} className="evidence-link inline-flex items-center rounded border border-zinc-300 bg-white px-2 py-1 font-mono text-xs text-zinc-700 underline-offset-2 hover:underline focus-visible:outline-2">{id}</button>
@@ -54,7 +55,7 @@ function ProposalCard({ item, report, currentRevision, canReview, onEvidence, on
       {item.missing_information.length > 0 && <p><strong>Still needed:</strong> {item.missing_information.join('; ')}</p>}
       <div><span className="mb-1 block font-medium">Evidence</span><EvidenceList ids={item.supporting_evidence} onOpen={onEvidence} /></div>
     </div>
-    <div className="mt-4 border-t border-zinc-100 pt-3">
+    <div className="mt-4 border-t border-zinc-100 pt-3 print:hidden">
       {stale && <p className="mb-2 text-xs font-medium text-amber-800">This proposal belongs to revision {report.revision}. Open the current revision before review.</p>}
       {!canReview && <p className="text-xs text-zinc-600">Sign in as an invited reviewer to record decisions.</p>}
       {canReview && reviewState === 'DRAFT' && <Button size="sm" variant="outline" disabled={stale || submit.isPending} onClick={() => submit.mutate()}>{submit.isPending ? 'Submitting…' : 'Submit for review'}</Button>}
@@ -71,7 +72,7 @@ function ProposalCard({ item, report, currentRevision, canReview, onEvidence, on
 }
 
 function SavedAiPanel({ onEvidence }: { onEvidence: (id: string) => void }) {
-  return <Section title="Historical local-model result" detail="Qwen archive · OpenAI not evaluated · Experimental · author-reviewed synthetic case · recorded output from an earlier local run">
+  return <Section title="Historical local-model result" detail="Qwen archive · historical provider evidence · Experimental · author-reviewed synthetic case · recorded output from an earlier local run">
     <div className="rounded border border-zinc-200 bg-white p-4">
       <p className="text-xs text-zinc-600">{savedAi.model} · {savedAi.elapsed_seconds} seconds · {savedAi.execution_kind}</p>
       <p className="mt-2 text-sm text-amber-900">{savedAi.quality_notice}</p>
@@ -117,9 +118,13 @@ export function IncidentWorkbenchPage() {
     {incident.isPending ? <div aria-busy="true" aria-label="Loading incident"><Skeleton className="h-12 w-2/3" /><Skeleton className="mt-4 h-32" /></div> : incident.isError ? <div role="alert" className="rounded border border-red-200 bg-red-50 p-5 text-sm text-red-800">Could not load incident: {incident.error.message} <Button variant="outline" size="sm" onClick={() => incident.refetch()}>Retry</Button></div> : <>
       <header className="border-b border-zinc-200 pb-5">
         <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{incident.data.title}</h1><p className="mt-1 text-sm text-zinc-600">{incident.data.scope.line_id} · {formatInstant(incident.data.window.start)} to {formatInstant(incident.data.window.end)}</p></div><div className="flex items-end gap-2"><div><label htmlFor="revision" className="mb-1 block text-xs font-medium text-zinc-600">Evidence revision</label><select id="revision" value={revision} onChange={(event) => changeRevision(Number(event.target.value))} className="h-9 rounded border border-zinc-300 bg-white px-3 text-sm focus-visible:outline-2">{(report?.execution_kind === 'saved_deterministic' ? [revision] : incident.data.available_revisions).map((value) => <option key={value} value={value}>Revision {value}</option>)}</select></div></div></div>
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-500"><span>Knowledge cutoff: {formatInstant(incident.data.cutoff)}</span><span>Report: {reportQuery.isPending ? 'Building analysis' : reportQuery.isError ? 'Analysis unavailable' : report?.execution_kind === 'saved_deterministic' ? 'Saved deterministic result' : 'Live deterministic analysis'}</span><span>Factory data: synthetic</span></div>
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-500"><span>Evidence available by: {formatInstant(incident.data.cutoff)}</span><span>Report: {reportQuery.isPending ? 'Building analysis' : reportQuery.isError ? 'Analysis unavailable' : report?.execution_kind === 'saved_deterministic' ? 'Saved deterministic result' : 'Live deterministic analysis'}</span><span>Factory data: synthetic</span></div>
       </header>
       {reportQuery.isPending ? <div aria-busy="true" aria-label="Building analysis" className="space-y-3"><Skeleton className="h-28" /><Skeleton className="h-48" /><Skeleton className="h-48" /></div> : reportQuery.isError ? <div role="alert" className="rounded border border-red-200 bg-red-50 p-5"><h2 className="text-sm font-semibold text-red-900">Analysis unavailable</h2><p className="mt-1 text-sm text-red-800">{reportQuery.error.message}</p><Button className="mt-3" size="sm" variant="outline" onClick={() => reportQuery.refetch()}>Retry analysis</Button></div> : report && <>
+        <p className="hidden text-xs print:block">FloorReplay · Evidence revision {report.revision} · Report {report.id} · Evidence available by {formatInstant(report.cutoff)} · Synthetic data</p>
+        <RevisionComparison key={`${id}:${revision}`} incident={incident.data} report={report} />
+        <Button variant="outline" size="sm" className="print:hidden" onClick={() => window.print()}>Print investigation report</Button>
+        <p className="text-xs text-zinc-600">Calculation coverage: {report.metrics.status.toLowerCase()}. Investigation resolution and task completion are not recorded by this report.</p>
         <nav aria-label="Investigation sections" className="flex flex-wrap gap-x-5 gap-y-2 border-b border-zinc-200 pb-4 text-xs font-medium text-zinc-600">
           {['Observed situation', 'Evidence timeline', 'Explanations and open questions', 'Recovery options', 'Shift update'].map((title) => <a key={title} href={`#${title.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-')}`} className="inline-flex min-h-8 items-center rounded-sm hover:text-zinc-900 hover:underline">{title}</a>)}
         </nav>
@@ -149,7 +154,7 @@ export function IncidentWorkbenchPage() {
         <Section title="Recovery options" detail="Proposals are versioned requests for human review.">{report.proposals.length ? <div className="grid gap-3 lg:grid-cols-2">{report.proposals.map((item) => <ProposalCard key={`${report.id}-${item.id}-${item.state}`} item={item} report={report} currentRevision={summary?.revision ?? revision} canReview={capabilities.data?.reviews_enabled === true && report.execution_kind !== 'saved_deterministic'} onEvidence={setEvidenceId} onChanged={refresh} />)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No action proposal is supported by this evidence.</p>}</Section>
         <Section title="Shift update" detail="Evidence-linked report summary"><blockquote className="rounded-lg border border-zinc-200 bg-white p-5 text-sm leading-7 text-zinc-700">{report.summary}</blockquote><ExportReport report={report} enabled={capabilities.data?.reviews_enabled === true} /></Section>
         {report.incident_id === savedAi.incident_id && report.revision === savedAi.revision && <SavedAiPanel onEvidence={setEvidenceId} />}
-        <OpenAiPanel key={`${report.id}:${user?.id ?? 'anonymous'}`} report={report} enabled={capabilities.data?.ai?.generation_available === true && report.execution_kind !== 'saved_deterministic'} reasons={capabilities.data?.ai?.reason ? [capabilities.data.ai.reason.replaceAll('_', ' ').toLowerCase()] : ['OpenAI drafts are available to authenticated reviewers.']} onEvidence={setEvidenceId} />
+        <div className="print:hidden"><OpenAiPanel key={`${report.id}:${user?.id ?? 'anonymous'}`} report={report} enabled={capabilities.data?.ai?.generation_available === true && report.execution_kind !== 'saved_deterministic'} reasons={capabilities.data?.ai?.reason ? [capabilities.data.ai.reason.replaceAll('_', ' ').toLowerCase()] : ['OpenAI drafts are available to authenticated reviewers.']} onEvidence={setEvidenceId} /></div>
       </>}
     </>}
     <Sheet open={evidenceId !== null} onOpenChange={(open) => { if (!open) setEvidenceId(null) }}><SheetContent className="overflow-y-auto"><SheetHeader><SheetTitle className="flex items-center gap-2"><FileText aria-hidden="true" size={18} />Source evidence</SheetTitle><SheetDescription className="break-all font-mono text-xs">{evidenceId}</SheetDescription></SheetHeader><div className="px-4 pb-6">{evidence.isPending ? <Skeleton className="h-32" /> : evidence.isError ? <p role="alert" className="text-sm text-red-700">{evidence.error.message}</p> : evidence.data ? <dl className="space-y-3 text-sm">{Object.entries(evidence.data).map(([key, value]) => <div key={key} className="border-b border-zinc-100 pb-2"><dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">{key.replace(/_/g, ' ')}</dt><dd className="mt-1 whitespace-pre-wrap break-words font-mono text-xs leading-5 text-zinc-800">{typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value ?? '—')}</dd></div>)}</dl> : null}</div></SheetContent></Sheet>

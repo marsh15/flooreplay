@@ -7,6 +7,7 @@ import savedReport from '@/data/hero-report.json'
 import savedEvaluation from '@/data/evaluation-report.json'
 
 export interface IncidentSummary {
+  library_group?: 'curated_demo' | 'engineering_fixture' | 'operational'
   id: string
   revision: number
   title: string
@@ -158,6 +159,7 @@ export interface AiClaim { text: string; evidence_ids: string[]; metric_ids: str
 export interface AiRun {
   id: string; status: string; analysis_id: string; task: AiTask; request_key: string;
   result: { status?: string; reason?: string; errors?: string[]; output?: { claims?: AiClaim[]; selected_claims?: AiClaim[]; limitations?: string[]; abstention_reasons?: string[]; hypotheses?: { explanation: AiClaim; counterevidence_ids: string[]; limitations: string[]; next_checks: string[] }[]; assertions?: { assertion: AiClaim; source_id: string; source_span: string; mentioned_entities: string[]; uncertainty: string }[]; proposals?: { catalog_action_id: string; prerequisites: string[]; evidence_ids: string[]; owner_role: string }[]; unresolved_issues?: string[] }; validation?: { errors?: string[] } } | null;
+  claim_reviews?: AiClaimReview[];
   packet?: { metrics?: AiMetric[]; historical_evidence?: HistoricalExcerpt[] };
   configuration?: { generation_model?: string; task?: AiTask };
 }
@@ -195,6 +197,8 @@ export interface IncidentEvaluationReport {
 }
 
 export type IncidentImportBody = Omit<components['schemas']['IncidentImportRequest'], 'profile'> & { profile: 'production-v1' | 'operations-v1' | 'notes-v1' }
+export type AiClaimReviewRequest = components['schemas']['AIClaimReviewRequest']
+export interface AiClaimReview { id: string; run_id: string; claim_path: string; supported: boolean; actor: string; rationale?: string; output_digest?: string; created_at?: string }
 export type AiRunRequest = Omit<components['schemas']['IncidentDraftRequest'], 'task' | 'retrieval_mode'> & { task: AiTask; retrieval_mode: 'evidence_only' | 'hybrid' }
 export type HybridRequest = components['schemas']['HybridRequest']
 export type IncidentReviewRequest = components['schemas']['IncidentReviewRequest']
@@ -250,7 +254,7 @@ const pathId = (id: string) => encodeURIComponent(id)
 export const incidentApi = {
   list: async (): Promise<{ items: IncidentSummary[]; execution_kind?: string }> => {
     try { return await request<{ items: IncidentSummary[] }>('/incidents') }
-    catch (error) { if (!unavailable(error)) throw error; return { items: savedLibrary.items, execution_kind: 'saved_deterministic' } }
+    catch (error) { if (!unavailable(error)) throw error; return { items: savedLibrary.items.map((item) => ({ ...item, library_group: item.library_group === 'curated_demo' || item.library_group === 'engineering_fixture' || item.library_group === 'operational' ? item.library_group : undefined })), execution_kind: 'saved_deterministic' } }
   },
   revision: async (id: string, revision: number): Promise<IncidentRevision> => {
     try { return await request<IncidentRevision>(`/incidents/${pathId(id)}/revisions/${revision}`) }
@@ -291,6 +295,7 @@ export const incidentApi = {
   },
   createAiRun: (analysisId: string, body: AiRunRequest) => request<AiRun>(`/analyses/${pathId(analysisId)}/ai-runs`, { method: 'POST', body: JSON.stringify(body) }),
   aiRunByRequest: (key: string) => request<AiRun>(`/ai-runs/by-request/${pathId(key)}`),
+  reviewAiClaim: (runId: string, body: AiClaimReviewRequest) => request<AiClaimReview>(`/ai-runs/${pathId(runId)}/claim-review`, { method: 'POST', body: JSON.stringify(body) }),
   aiRun: (id: string) => request<AiRun>(`/ai-runs/${pathId(id)}`),
   usage: () => request<{ total_ceiling_inr: number; committed_inr: number; available_inr: number; active_operations: number; purpose_available_inr: Record<string, number>; entries: { id: string; status: string; charged_inr: number; reserved_inr: number; purpose: string; operation: string }[] }>('/usage'),
   corpora: () => request<{ items: { id: string; indexed?: boolean }[] }>('/corpora'),

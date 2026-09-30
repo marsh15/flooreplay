@@ -43,7 +43,12 @@ def lookup_run(run_id: str, user_id: str, owner: bool = False) -> dict[str, Any]
             run.completed_at = now()
             run.result = {"errors": ["Execution interrupted; reservation retained because provider billing is uncertain"]}
             settle(session, entry.id, 0, run.result, uncertain=True)
-        return view(run)
+        from .ai_evaluation import AIClaimReview, claim_review_view
+        reviews = session.scalars(
+            select(AIClaimReview).where(AIClaimReview.run_id == run.id)
+            .order_by(AIClaimReview.created_at, AIClaimReview.id)
+        ).all()
+        return {**view(run), "claim_reviews": [claim_review_view(review) for review in reviews]}
 
 
 def lookup_request(key: str, user_id: str) -> dict[str, Any]:
