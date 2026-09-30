@@ -175,8 +175,8 @@ export function ImportsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight">Imports</h1>
-        <p className="mt-0.5 text-sm text-zinc-500">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Imports</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
           Upload a source export, inspect exactly what the system understood, and publish it as
           an immutable snapshot. Publication is all-or-nothing: a malformed row can never quietly
           disappear.
@@ -185,7 +185,7 @@ export function ImportsPage() {
 
       {/* Step 1: profile */}
       <section className="space-y-2">
-        <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+        <h2 className="text-sm font-semibold text-zinc-800">
           Source profile
         </h2>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -218,7 +218,7 @@ export function ImportsPage() {
 
       {/* Step 2: metadata + CSV */}
       <section className="space-y-2">
-        <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+        <h2 className="text-sm font-semibold text-zinc-800">
           Upload and source metadata
         </h2>
         <div className="space-y-3 rounded-lg border bg-white p-3">
@@ -233,7 +233,7 @@ export function ImportsPage() {
                 className="w-full rounded-md border border-zinc-300 px-2 py-1.5 font-mono text-xs focus-visible:outline-2"
                 placeholder="2026-09-22T07:55:00+05:30"
               />
-              <span className="mt-1 block text-zinc-400">
+              <span className="mt-1 block text-zinc-600">
                 Never taken from the upload clock; must carry a UTC offset.
               </span>
             </label>
@@ -248,7 +248,7 @@ export function ImportsPage() {
                 <span className="block font-medium text-zinc-600">
                   Source asserts complete coverage
                 </span>
-                <span className="mt-1 block text-zinc-400">
+                <span className="mt-1 block text-zinc-600">
                   The application cannot prove an external export's completeness; this is the
                   importer's assertion and it is recorded on the snapshot.
                 </span>
@@ -280,7 +280,7 @@ export function ImportsPage() {
               Choose CSV file
             </Button>
             <Separator orientation="vertical" className="h-5" />
-            <span className="text-xs text-zinc-400">Curated examples:</span>
+            <span className="text-xs text-zinc-600">Curated examples:</span>
             {CURATED_EXAMPLES.map((example) => (
               <Button key={example.id} variant="secondary" size="sm" onClick={() => loadExample(example)}>
                 {example.label}
@@ -294,7 +294,7 @@ export function ImportsPage() {
       {/* Step 3: preview */}
       <section className="space-y-2">
         <div className="flex items-center gap-3">
-          <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+          <h2 className="text-sm font-semibold text-zinc-800">
             Normalized preview
           </h2>
           <Button
@@ -336,11 +336,11 @@ export function ImportsPage() {
                 {preview.counts.warning} warnings
               </Badge>
               {preview.ignored_columns.length > 0 ? (
-                <span className="text-zinc-400">
+                <span className="text-zinc-600">
                   Ignored extra columns: {preview.ignored_columns.join(', ')}
                 </span>
               ) : null}
-              <span className="ml-auto text-zinc-400">
+              <span className="ml-auto text-zinc-600">
                 Evidence time {formatInstant(preview.declared_evidence_at)} ·{' '}
                 <Mono>{shortDigest(preview.preview_digest)}</Mono>
               </span>
@@ -374,7 +374,7 @@ export function ImportsPage() {
                       }
                     >
                       <TableCell>
-                        <Mono className="text-zinc-400">{row.row}</Mono>
+                        <Mono className="text-zinc-600">{row.row}</Mono>
                       </TableCell>
                       <TableCell className="font-mono text-[11px] text-zinc-500">
                         {Object.entries(row.raw)
@@ -428,7 +428,7 @@ export function ImportsPage() {
       {/* Step 4: publish + fork */}
       {published ? (
         <section className="space-y-2">
-          <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+          <h2 className="text-sm font-semibold text-zinc-800">
             Published
           </h2>
           <div className="rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-3">

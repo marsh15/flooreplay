@@ -50,7 +50,7 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
+    --background: #f7f7f4;
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
@@ -61,13 +61,13 @@
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
+    --muted-foreground: #61615c;
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --ring: #84652f;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
@@ -128,4 +128,37 @@
   html {
     @apply font-sans;
     }
+}
+/* Quiet surfaces and precise browser affordances for evidence inspection. */
+:root { --ease-out: cubic-bezier(0.23, 1, 0.32, 1); }
+body { margin: 0; -webkit-font-smoothing: antialiased; }
+::selection { background: #eadbbd; color: #24221e; }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+#main-content:focus { outline: none; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { text-underline-offset: 4px; }
+button, summary, select { -webkit-tap-highlight-color: transparent; }
+button:not(:disabled), summary, select { cursor: pointer; }
+input, textarea { caret-color: #84652f; }
+input::placeholder, textarea::placeholder { color: #686863; }
+select, textarea { max-width: 100%; }
+table { font-variant-numeric: tabular-nums; }
+th { vertical-align: middle; }
+td { vertical-align: top; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.app-shell { background: var(--background); }
+.nav-link { transition: background-color 140ms ease, color 140ms ease; }
+.skip-link { position: fixed; left: 16px; top: 12px; z-index: 100; padding: 10px 16px; background: #24221e; color: white; border-radius: 6px; transform: translateY(-160%); }
+.skip-link:focus { transform: translateY(0); }
+.evidence-link { min-height: 28px; transition: background-color 140ms ease, border-color 140ms ease; }
+@media (hover: hover) and (pointer: fine) {
+  .evidence-link:hover { background: #f4efe4; border-color: #b4a17b; }
+  tbody tr:hover { background-color: #f7f7f4; }
+}
+@media (pointer: coarse) {
+  button[data-slot="button"], .evidence-link, select { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

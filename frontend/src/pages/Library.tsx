@@ -67,10 +67,10 @@ export function LibraryPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight">Scenario library</h1>
-        <p className="mt-0.5 text-sm text-zinc-500">
+    <div className="space-y-6">
+      <div className="border-b border-zinc-200 pb-5">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Scenario library</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
           Pinned operational episodes. Each revision freezes its evidence; corrections create new
           revisions and never rewrite history.
         </p>
@@ -91,7 +91,7 @@ export function LibraryPage() {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border bg-white">
-          <Table>
+          <Table className="min-w-[800px]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[26%]">Scenario</TableHead>
@@ -114,7 +114,7 @@ export function LibraryPage() {
                         {item.title}
                       </Link>
                       <div className="mt-1 flex flex-wrap items-center gap-1">
-                        <Mono className="text-zinc-400">
+                        <Mono className="text-zinc-600">
                           {item.scenario_id}@{item.revision}
                         </Mono>
                         {Array.from(new Set(item.tags)).map((tag) => (
@@ -132,11 +132,11 @@ export function LibraryPage() {
                     </TableCell>
                     <TableCell>
                       {attempts.length === 0 ? (
-                        <span className="text-xs text-zinc-400">Not run in this database yet</span>
+                        <span className="text-xs text-zinc-600">Not run in this database yet</span>
                       ) : (
                         <ul className="space-y-1.5">
                           {attempts.map((attempt) => (
-                            <li key={attempt.configuration_id} className="flex items-center gap-2">
+                            <li key={attempt.configuration_id} className="flex flex-wrap items-center gap-2">
                               <Mono className="w-14 shrink-0 text-zinc-500">
                                 <ConfigLabel id={attempt.configuration_id} />
                               </Mono>

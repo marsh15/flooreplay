@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { api, type EvidenceRef } from '@/lib/api'
 import { formatInstant } from '@/lib/status'
 import { Mono } from '@/components/status'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -42,7 +43,7 @@ export function EvidenceDrawer({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const { data, isPending, isError, error } = useQuery({
+  const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ['snapshot', evidence?.snapshot_id],
     queryFn: () => api.snapshot(evidence!.snapshot_id),
     enabled: open && evidence !== null && evidence.snapshot_id !== 'event',
@@ -55,9 +56,9 @@ export function EvidenceDrawer({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
-        <SheetHeader>
-          <SheetTitle className="font-mono text-sm">
+      <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
+        <SheetHeader className="border-b p-6 pr-16">
+          <SheetTitle className="break-all font-mono text-sm">
             {evidence ? evidence.snapshot_id : ''}
           </SheetTitle>
           <SheetDescription>
@@ -69,28 +70,26 @@ export function EvidenceDrawer({
           </SheetDescription>
         </SheetHeader>
 
-        {isPending && !isEvent ? (
-          <div className="space-y-2 px-4">
+        {isPending && evidence && !isEvent ? (
+          <div role="status" aria-label="Loading pinned snapshot" className="space-y-2 px-6">
             <Skeleton className="h-6 w-3/4" />
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-6 w-5/6" />
           </div>
         ) : isError ? (
-          <p className="px-4 text-sm text-red-700">
-            Snapshot could not be loaded: {error.message}
-          </p>
+          <div role="alert" className="space-y-3 px-6 text-sm"><p className="text-red-800">Snapshot could not be loaded: {error.message}</p><Button variant="outline" size="sm" onClick={() => void refetch()}>Retry snapshot</Button></div>
         ) : isEvent ? (
-          <div className="px-4 text-sm">
+          <div className="px-6 text-sm leading-relaxed">
             <p className="text-muted-foreground">
               This evidence reference points at the confirmed unavailability event pinned to the
               scenario revision, not a snapshot row.
             </p>
           </div>
         ) : data ? (
-          <div className="space-y-4 px-4 pb-8">
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
+          <div className="space-y-6 px-6 pb-8">
+            <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-xs">
               <dt className="text-muted-foreground">Scope</dt>
-              <dd>{data.scope}</dd>
+              <dd className="break-words">{data.scope}</dd>
               <dt className="text-muted-foreground">Evidence time</dt>
               <dd>{formatInstant(data.declared_evidence_at)}</dd>
               <dt className="text-muted-foreground">Coverage</dt>
@@ -101,13 +100,14 @@ export function EvidenceDrawer({
               </dd>
             </dl>
 
+            {evidence?.source_ref && <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">Referenced source row: <Mono className="break-all">{evidence.source_ref}</Mono>{rows.some((row) => row.source_ref === evidence.source_ref) ? ' · Marked below' : ' · No matching row in this snapshot'}</p>}
             {rows.length > 0 ? (
               <div className="rounded-lg border">
-                <Table>
+                <Table aria-label="Pinned source rows">
                   <TableHeader>
                     <TableRow>
                       {columns.map((column) => (
-                        <TableHead key={column} className="text-xs">
+                        <TableHead scope="col" key={column} className="text-xs">
                           {column}
                         </TableHead>
                       ))}
@@ -120,12 +120,13 @@ export function EvidenceDrawer({
                       return (
                         <TableRow
                           key={index}
-                          className={highlighted ? 'bg-amber-500/15' : undefined}
+                          aria-current={highlighted ? true : undefined}
+                          className={highlighted ? 'bg-amber-50 hover:bg-amber-50' : undefined}
                         >
                           {columns.map((column) => (
                             <TableCell key={column} className="px-2 py-1.5 text-xs">
                               {column === 'source_ref' ? (
-                                <Mono>{String(row[column] ?? '')}</Mono>
+                                <><Mono>{String(row[column] ?? '')}</Mono>{highlighted && <span className="ml-2 inline-block rounded border border-amber-200 px-1.5 py-0.5 text-[10px] font-medium text-amber-950">Referenced</span>}</>
                               ) : (
                                 String(row[column] ?? '')
                               )}

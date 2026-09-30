@@ -49,7 +49,7 @@ function ClassificationBadge({ classification }: { classification: Classificatio
 function SidePanel({ title, side }: { title: string; side: ComparisonSide }) {
   return (
     <div className="rounded-lg border bg-white p-3">
-      <p className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">{title}</p>
+      <p className="text-sm font-semibold text-zinc-800">{title}</p>
       <div className="mt-1.5 flex flex-wrap items-center gap-2">
         {side.outcome ? <OutcomeBadge outcome={side.outcome} /> : null}
         <Badge variant="secondary" className="text-[10px]">
@@ -190,23 +190,23 @@ export function ComparisonPage() {
   const totals = report?.totals
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight">Comparison report</h1>
-        <p className="mt-0.5 text-sm text-zinc-500">
+    <div className="space-y-6">
+      <div className="border-b border-zinc-200 pb-5">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Comparison report</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
           Execute the pinned suite ({suite?.case_count ?? 0} cases) under two configurations and
           inspect which behavior changed. Pass/fail is judgment; behavior changes are reported
           separately.
         </p>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-white p-3">
+      <div className="grid items-end gap-4 rounded-xl border bg-white p-5 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
         <label className="text-xs">
           <span className="mb-1 block font-medium text-zinc-600">Baseline configuration</span>
           <select
             value={baselineId}
             onChange={(event) => setBaselineId(event.target.value)}
-            className="rounded-md border border-zinc-300 px-2 py-1.5 text-sm focus-visible:outline-2"
+            className="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm focus-visible:outline-2"
           >
             {configurations.map((config) => (
               <option key={config.id} value={config.id}>
@@ -220,7 +220,7 @@ export function ComparisonPage() {
           <select
             value={candidateId}
             onChange={(event) => setCandidateId(event.target.value)}
-            className="rounded-md border border-zinc-300 px-2 py-1.5 text-sm focus-visible:outline-2"
+            className="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm focus-visible:outline-2"
           >
             {configurations.map((config) => (
               <option key={config.id} value={config.id}>
@@ -258,7 +258,7 @@ export function ComparisonPage() {
             </Alert>
           ) : null}
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-y-5 rounded-xl border bg-white px-5 py-5 sm:grid-cols-4">
             {(
               [
                 ['unchanged_pass', 'Unchanged pass'],
@@ -267,14 +267,14 @@ export function ComparisonPage() {
                 ['unchanged_fail', 'Unchanged fail'],
               ] as const
             ).map(([key, label]) => (
-              <div key={key} className="rounded-lg border bg-white p-3">
-                <p className="text-2xl font-semibold tabular-nums">{totals?.[key] ?? 0}</p>
+              <div key={key} className="px-3">
+                <p className="text-lg font-semibold tabular-nums">{totals?.[key] ?? 0}</p>
                 <p className="mt-0.5 text-xs text-zinc-500">{label}</p>
               </div>
             ))}
           </div>
 
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-zinc-600">
             Baseline <Mono>{report.baseline_config_id}</Mono> vs candidate{' '}
             <Mono>{report.candidate_config_id}</Mono> · Suite {report.suite_id}@
             {report.suite_revision} · executed {formatInstant(report.created_at)} · persisted
@@ -282,7 +282,7 @@ export function ComparisonPage() {
           </p>
 
           <div className="overflow-x-auto rounded-lg border bg-white">
-            <Table>
+            <Table className="min-w-[860px]">
               <TableHeader>
                 <TableRow>
                   <SortHead sort="scenario" activeKey={sortKey} ascending={sortAsc} onSort={headerClick}>
@@ -316,7 +316,7 @@ export function ComparisonPage() {
                       tabIndex={0}
                       aria-label={`Toggle detail for ${item.scenario_id}`}
                       className={cn(
-                        'cursor-pointer',
+                        'cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px]',
                         expanded === item.scenario_id && 'bg-zinc-100',
                         item.classification === 'REGRESSION' && 'bg-red-600/5',
                       )}
@@ -324,7 +324,7 @@ export function ComparisonPage() {
                     >
                       <TableCell>
                         <span className="font-medium">{item.title}</span>
-                        <Mono className="ml-1 text-zinc-400">{item.scenario_id}</Mono>
+                        <Mono className="ml-1 text-zinc-600">{item.scenario_id}</Mono>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-[10px]">
@@ -332,7 +332,7 @@ export function ComparisonPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           <ClassificationBadge classification={item.classification} />
                           {item.behavior_changed ? (
                             <Badge variant="outline" className="border-blue-600/25 bg-blue-600/10 text-[10px] text-blue-800">
@@ -342,7 +342,7 @@ export function ComparisonPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           {item.baseline.outcome ? (
                             <OutcomeBadge outcome={item.baseline.outcome} />
                           ) : null}
@@ -352,7 +352,7 @@ export function ComparisonPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           {item.candidate.outcome ? (
                             <OutcomeBadge outcome={item.candidate.outcome} />
                           ) : null}
@@ -400,7 +400,7 @@ export function ComparisonPage() {
 
       {historyQuery.data && historyQuery.data.items.length > 0 ? (
         <section className="space-y-2">
-          <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+          <h2 className="text-sm font-semibold text-zinc-800">
             Recent comparisons
           </h2>
           <ul className="divide-y divide-zinc-200 rounded-lg border bg-white text-sm">
@@ -423,7 +423,7 @@ export function ComparisonPage() {
                     regression {entry.totals.regression}
                   </Badge>
                 ) : null}
-                <span className="ml-auto text-xs text-zinc-400">
+                <span className="ml-auto text-xs text-zinc-600">
                   {formatInstant(entry.created_at)}
                 </span>
               </li>
