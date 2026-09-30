@@ -110,3 +110,59 @@ def test_hero_later_evidence_changes_report_without_rewriting_early_view():
     assert first["metrics"]["blocked_minutes"] == second["metrics"]["blocked_minutes"] == 30
     assert first["metrics"]["status"] == second["metrics"]["status"] == "COMPLETE"
     assert first["metrics"]["shortfall"] is not None
+
+@pytest.mark.parametrize("mutation,reason", [
+    ({"supersedes_id": "absent"}, "unknown record"),
+    ({"line_id": "other"}, "scope"),
+    ({"kind": "baseline_plan"}, "category"),
+    ({"available_at": "2026-01-01T09:30:00+05:30"}, "after"),
+    ({"start": "2026-01-01T09:00:00+05:30"}, "interval"),
+])
+def test_corrections_cannot_remove_unrelated_or_later_records(mutation, reason):
+    revision = _revision()
+    revision["output_buckets"].append({**revision["output_buckets"][1], "id": "replacement", "supersedes_id": "o1", "available_at": "2026-01-01T09:35:00+05:30", **mutation})
+    with pytest.raises(ValueError, match=reason):
+        analyze_incident(revision)
+
+
+def test_cycles_rejected_and_competing_replacements_remain_conflicting():
+    revision = _revision()
+    original = revision["output_buckets"][1]
+    revision["output_buckets"].extend({**original, "id": name, "supersedes_id": "o1", "quantity": quantity, "available_at": "2026-01-01T09:35:00+05:30"} for name, quantity in (("c1", 4), ("c2", 8)))
+    report = analyze_incident(revision)
+    assert report["metrics"]["status"] == "CONFLICTING"
+    assert report["correction_conflicts"] == [{"record_id": "o1", "replacement_ids": ["c1", "c2"]}]
+    assert len(report["correction_history"]) == 2
+    original["supersedes_id"] = "c1"
+    with pytest.raises(ValueError, match="cycle"):
+        analyze_incident(revision)
+
+
+def test_historical_event_is_context_and_explicit_unresolved_carry_in_is_plausible():
+    revision = _revision()
+    revision["events"] = [{"id": "prior", "type": "machine_interruption", "summary": "Yesterday's interruption", "occurred_at": "2025-12-31T09:00:00+05:30", "available_at": "2025-12-31T09:01:00+05:30", "line_blocking": True}]
+    report = analyze_incident(revision)
+    assert not report["hypotheses"]
+    assert report["timeline"][0]["context_only"]
+    assert report["metrics"]["blocked_minutes"] == 0
+    revision["events"][0]["carry_in_state"] = "UNRESOLVED"
+    report = analyze_incident(revision)
+    assert report["hypotheses"][0]["status"] == "PLAUSIBLE"
+    assert report["metrics"]["blocked_minutes"] == 0
+
+
+def test_watermark_metrics_units_and_declared_coverage():
+    revision = _revision()
+    report = analyze_incident(revision)
+    pressure = report["metrics"]["target_pressure"]
+    assert pressure["as_of"] == "2026-01-01T09:30:00+05:30"
+    assert pressure["remaining_elapsed_minutes"] == 30
+    assert pressure["required_units_per_hour"] == 100
+    descriptors = {metric["id"]: metric for metric in report["metrics"]["descriptors"]}
+    assert descriptors["blocked_minutes"]["unit"] == "minutes"
+    assert descriptors["observed"]["input_refs"] == ["p0", "o0", "p1", "o1"]
+    assert report["capabilities"]["timeline"]["status"] == "PARTIAL"
+    revision["coverage"] = {"operations": {"complete": True, **revision["window"], "gaps": []}}
+    assert analyze_incident(revision)["capabilities"]["timeline"]["status"] == "COMPLETE"
+    revision["coverage"]["operations"]["gaps"] = [{"start": revision["window"]["start"]}]
+    assert analyze_incident(revision)["capabilities"]["timeline"]["status"] == "PARTIAL"

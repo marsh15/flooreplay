@@ -9,7 +9,7 @@ Two providers:
 - RuleBaselineParser: the documented exact-ID/rule baseline. Deterministic,
   offline, always available. This is the demo default; capabilities reports
   the live parser as unavailable when no key is configured.
-- OpenAIStructuredParser: pinned gpt-4.1-mini-2025-04-14 with structured
+- Archived OpenAI runs: pinned gpt-4.1-mini-2025-04-14 with structured
   outputs over raw httpx (no SDK, so no hidden retries). A 15-second total
   budget owns at most one transient-failure retry.
 
@@ -20,7 +20,6 @@ takes over.
 
 from __future__ import annotations
 
-import json
 import re
 from dataclasses import dataclass, field
 from typing import Protocol
@@ -218,115 +217,11 @@ class RuleBaselineParser:
 # OpenAI structured output (only when a key is configured)
 # ---------------------------------------------------------------------------
 
+# Historical model identity used by archived evaluation reports.
 OPENAI_MODEL = "gpt-4.1-mini-2025-04-14"
-_TOTAL_BUDGET_SECONDS = 15.0
-
-_EXTRACTION_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "event_category": {
-            "type": "string",
-            "enum": ["OPERATOR_UNAVAILABLE", "UNSUPPORTED"],
-        },
-        "subject_mentions": {"type": "array", "items": {"type": "string"}},
-        "operation_mentions": {"type": "array", "items": {"type": "string"}},
-        "polarity": {
-            "type": "string",
-            "enum": ["REPORTED_UNAVAILABLE", "REPORTED", "DENIED", "UNKNOWN"],
-        },
-        "uncertainty_phrase": {"type": ["string", "null"]},
-        "raw_temporal_expressions": {"type": "array", "items": {"type": "string"}},
-        "ambiguity_notes": {"type": "array", "items": {"type": "string"}},
-    },
-    "required": [
-        "event_category",
-        "subject_mentions",
-        "operation_mentions",
-        "polarity",
-        "raw_temporal_expressions",
-        "ambiguity_notes",
-    ],
-    "additionalProperties": False,
-}
-
-_PROMPT_TEMPLATE = (
-    "Extract a draft operational event from this floor note. Report only what "
-    "the note says; do not resolve names to ids, judge feasibility, or propose "
-    "coverage. If the note describes anything other than an operator being "
-    "unable to cover an operation, return UNSUPPORTED. Note: {note}"
-)
-
-
-class OpenAIStructuredParser:
-    kind = "openai-structured"
-    model = OPENAI_MODEL
-
-    def __init__(self, api_key: str) -> None:
-        self.api_key = api_key
-
-    def parse(self, note_text: str, catalog: Catalog) -> DraftExtraction:
-        import hashlib
-        import time
-
-        import httpx
-
-        prompt = _PROMPT_TEMPLATE.format(note=note_text)
-        prompt_digest = "sha256:" + hashlib.sha256(prompt.encode()).hexdigest()
-        deadline = time.monotonic() + _TOTAL_BUDGET_SECONDS
-
-        body = {
-            "model": OPENAI_MODEL,
-            "input": prompt,
-            "text": {"format": {"type": "json_schema", "name": "draft_extraction", "schema": _EXTRACTION_SCHEMA}},
-        }
-        headers = {"Authorization": f"Bearer {self.api_key}"}
-
-        last_error: Exception | None = None
-        for attempt in (1, 2):  # at most one retry for transient failures
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                break
-            try:
-                response = httpx.post(
-                    "https://api.openai.com/v1/responses",
-                    json=body,
-                    headers=headers,
-                    timeout=min(remaining, 12.0),
-                )
-                if response.status_code in (429, 500, 502, 503, 504) and attempt == 1:
-                    last_error = RuntimeError(f"transient provider status {response.status_code}")
-                    continue
-                response.raise_for_status()
-                payload = response.json()
-                raw = payload["output"][0]["content"][0]["text"]
-                parsed = json.loads(raw)
-                return DraftExtraction(
-                    event_category=parsed["event_category"],
-                    subject_mentions=tuple(parsed.get("subject_mentions", ())),
-                    operation_mentions=tuple(parsed.get("operation_mentions", ())),
-                    polarity=parsed.get("polarity", "UNKNOWN"),
-                    uncertainty_phrase=parsed.get("uncertainty_phrase"),
-                    raw_temporal_expressions=tuple(parsed.get("raw_temporal_expressions", ())),
-                    ambiguity_notes=tuple(parsed.get("ambiguity_notes", ())),
-                    parser_kind=self.kind,
-                    model=OPENAI_MODEL,
-                    prompt_digest=prompt_digest,
-                    usage={
-                        "input_tokens": payload.get("usage", {}).get("input_tokens", 0),
-                        "output_tokens": payload.get("usage", {}).get("output_tokens", 0),
-                    },
-                )
-            except (httpx.HTTPError, KeyError, IndexError, json.JSONDecodeError) as exc:
-                last_error = exc
-                if attempt == 2:
-                    break
-        raise ParserUnavailable(
-            f"live parser did not answer within its {_TOTAL_BUDGET_SECONDS:.0f}s budget"
-            + (f": {last_error}" if last_error else "")
-        )
 
 
 def get_parser(api_key: str | None) -> NoteParser:
     if api_key:
-        return OpenAIStructuredParser(api_key)
+        raise ParserUnavailable("Archived coverage parsing is offline. Use authenticated incident AI runs with the shared allowance")
     return RuleBaselineParser()

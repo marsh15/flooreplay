@@ -16,11 +16,11 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.fixture(scope="module")
-def client() -> TestClient:
+def client(owner_headers) -> TestClient:
     from flooreplay.seeding import run_seed
 
     run_seed()
-    return TestClient(app)
+    return TestClient(app, headers=owner_headers)
 
 
 def _compare(client: TestClient, baseline: str, candidate: str) -> dict:

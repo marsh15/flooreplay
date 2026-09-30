@@ -27,11 +27,11 @@ SKILL_HEADERS = "operator_id,operation_id,level,assessed_at\n"
 
 
 @pytest.fixture(scope="module")
-def client() -> TestClient:
+def client(owner_headers) -> TestClient:
     from flooreplay.seeding import run_seed
 
     run_seed()
-    return TestClient(app)
+    return TestClient(app, headers=owner_headers)
 
 
 def _preview(client: TestClient, profile: str, csv_text: str, **meta: object) -> object:
@@ -274,7 +274,7 @@ def test_publish_is_idempotent_and_forks_cleanly(client: TestClient):
     assert historical.json()["domain_outcome"] == "NEEDS_CONTEXT"
 
 
-def test_public_mode_mounts_no_import_routes():
+def test_public_mode_mounts_no_import_routes(owner_headers):
     public_app = __import__("flooreplay.api", fromlist=["create_app"]).create_app(mode="public")
     public_client = TestClient(public_app)
     assert (

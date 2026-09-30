@@ -1,0 +1,19 @@
+{
+  "arithmetic_and_structure_cases_checked": 60,
+  "authored_templates": 24,
+  "leakage_audit": "template/lineage identities and hidden-field separation; semantic paraphrase audit remains pending",
+  "limitations": [
+    "Synthetic scenarios with authored procedural generation, not real manufacturing data",
+    "Generator author review only; no manufacturing expert annotation",
+    "Independent semantic support review pending",
+    "Category-level retrieval labels test precedent topic relevance, not transferability of historical actions"
+  ],
+  "problems": [],
+  "release": "incident-synthetic-180-v1",
+  "split_counts": {
+    "development": 30,
+    "historical": 120,
+    "locked": 30
+  },
+  "status": "PASSED"
+}

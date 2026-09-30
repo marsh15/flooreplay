@@ -1,0 +1,1082 @@
+[
+  {
+    "id": "REL-001",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-002",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-003",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-004",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-005",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-006",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-007",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-008",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-009",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-010",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-011",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-012",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-013",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-014",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-015",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-016",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-017",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-018",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-019",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-020",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-021",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-022",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-023",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-024",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-025",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-026",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-027",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-028",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-029",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-030",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "material"
+  },
+  {
+    "id": "REL-031",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-032",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-033",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-034",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-035",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-036",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-037",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-038",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-039",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-040",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-041",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-042",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-043",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-044",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-045",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-046",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-047",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-048",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-049",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-050",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-051",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-052",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-053",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-054",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-055",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-056",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-057",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-058",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-059",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-060",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "machine"
+  },
+  {
+    "id": "REL-061",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-062",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-063",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-064",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-065",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-066",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-067",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-068",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-069",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-070",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-071",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-072",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-073",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-074",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-075",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-076",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-077",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-078",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-079",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-080",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-081",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-082",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-083",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-084",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-085",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-086",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-087",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-088",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-089",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-090",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "staffing"
+  },
+  {
+    "id": "REL-091",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-092",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-093",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-094",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-095",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-096",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-097",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-098",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-099",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-100",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-101",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-102",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-103",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-104",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-105",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-106",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-107",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-108",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-109",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-110",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-111",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-112",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-113",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-114",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-115",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-116",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-117",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-118",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-119",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-120",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "quality"
+  },
+  {
+    "id": "REL-121",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-122",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-123",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-124",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-125",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-126",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-127",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-128",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-129",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-130",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-131",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-132",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-133",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-134",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-135",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-136",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-137",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-138",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-139",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-140",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-141",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-142",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-143",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-144",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-145",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-146",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-147",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-148",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-149",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-150",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "changeover"
+  },
+  {
+    "id": "REL-151",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-152",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-153",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-154",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-155",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-156",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-157",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-158",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-159",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-160",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "documented-block",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-161",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-162",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-163",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-164",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-165",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-166",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-167",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-168",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-169",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-170",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unsuccessful-intervention",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-171",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-172",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-173",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-174",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-175",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "unconfirmed-source-assertion",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-176",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": null
+  },
+  {
+    "id": "REL-177",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-178",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-179",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "planning_reporting"
+  },
+  {
+    "id": "REL-180",
+    "later_resolution": "Synthetic world state only; withheld from available observations",
+    "structure": "conflicting-observation",
+    "underlying_category": "planning_reporting"
+  }
+]

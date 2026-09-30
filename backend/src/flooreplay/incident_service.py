@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from hashlib import sha256
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select, tuple_
 from sqlalchemy.orm import Session
 
 from .domain.hashing import digest, incident_digest
@@ -44,7 +44,7 @@ def incident_list(session: Session) -> list[dict[str, Any]]:
             "line": row.line_id, "window_start": row.window_start.isoformat(),
             "window_end": row.window_end.isoformat(), "cutoff": row.cutoff.isoformat(),
             "status": metric["status"], "shortfall": metric["shortfall"],
-            "evidence_completeness": f"{available}/{total} declared sources" if total else "Unknown coverage",
+            "evidence_completeness": f"{available}/{total} available sources; timeline {report['capabilities']['timeline']['status'].lower()}" if total else "Unknown coverage",
             "last_reviewed_revision": reviewed,
         })
     return items
@@ -60,12 +60,19 @@ def search_incidents(
     session: Session, query: str, *, cutoff: datetime | None = None,
     exclude_incident_id: str | None = None, stage: str | None = None,
     query_line: str | None = None, limit: int = 5,
+    corpus_rows: list[IncidentRevision] | None = None,
 ) -> list[dict[str, Any]]:
     if not query.strip():
         return []
     vector = func.to_tsvector("english", IncidentRevision.evidence_card)
     terms = func.websearch_to_tsquery("english", query[:200])
     statement = select(IncidentRevision, func.ts_rank(vector, terms).label("score")).where(vector.op("@@")(terms))
+    split = IncidentRevision.payload["dataset_split"].astext
+    statement = statement.where(or_(split.is_(None), split.not_in(["development", "dev", "locked"])))
+    if corpus_rows is not None:
+        if not corpus_rows:
+            return []
+        statement = statement.where(tuple_(IncidentRevision.incident_id, IncidentRevision.revision).in_([(row.incident_id, row.revision) for row in corpus_rows]))
     if cutoff is not None:
         statement = statement.where(IncidentRevision.cutoff < cutoff)
     if exclude_incident_id:
@@ -91,7 +98,7 @@ def search_incidents(
     return results
 
 
-def create_analysis(session: Session, incident_id: str, revision: int, key: str) -> IncidentAnalysis:
+def create_analysis(session: Session, incident_id: str, revision: int, key: str, *, corpus_incident_ids: set[str] | None = None) -> IncidentAnalysis:
     row = _revision(session, incident_id, revision)
     session.execute(select(func.pg_advisory_xact_lock(func.hashtext(key))))
     existing = session.execute(select(IncidentAnalysis).where(IncidentAnalysis.idempotency_key == key)).scalar_one_or_none()
@@ -100,7 +107,7 @@ def create_analysis(session: Session, incident_id: str, revision: int, key: str)
             raise ServiceError("IDEMPOTENCY_CONFLICT", "Key already used for another analysis", 409)
         return existing
     report = analyze_incident(row.payload)
-    report["engine_version"] = "incident-v2"
+    report["engine_version"] = "incident-v3"
     eligible = session.execute(
         select(IncidentRevision).where(
             IncidentRevision.cutoff < row.cutoff,
@@ -108,15 +115,25 @@ def create_analysis(session: Session, incident_id: str, revision: int, key: str)
             IncidentRevision.payload["scope"]["stage"].astext == row.payload["scope"]["stage"],
         ).order_by(IncidentRevision.incident_id, IncidentRevision.revision)
     ).scalars().all()
+    if corpus_incident_ids is not None:
+        eligible = [item for item in eligible if item.incident_id in corpus_incident_ids]
+    selected: dict[str, IncidentRevision] = {}
+    for item in eligible:
+        if item.payload.get("dataset_split") in {"development", "dev", "locked"}:
+            continue
+        if row.payload.get("lineage_id") and item.payload.get("lineage_id") == row.payload["lineage_id"]:
+            continue
+        selected[item.incident_id] = item
+    eligible = list(selected.values())
     corpus_items = [{"id": item.incident_id, "revision": item.revision, "digest": incident_digest(item.payload)} for item in eligible]
     report["corpus_release"] = {"version": "lexical-v2", "items": corpus_items, "digest": digest(corpus_items)}
     categories = [h["category"].replace("_", " ") for h in report.get("hypotheses", []) if h["status"] == "SUPPORTED"]
     query = " ".join(categories) or " ".join(event.get("type", "") for event in report.get("timeline", [])[:2])
-    report["precedents"] = search_incidents(session, query, cutoff=row.cutoff, exclude_incident_id=incident_id, stage=row.payload["scope"]["stage"], query_line=row.line_id)
+    report["precedents"] = search_incidents(session, query, cutoff=row.cutoff, exclude_incident_id=incident_id, stage=row.payload["scope"]["stage"], query_line=row.line_id, corpus_rows=eligible)
     now = datetime.now(UTC)
     analysis = IncidentAnalysis(
         idempotency_key=key, incident_id=incident_id, revision=revision,
-        manifest_digest=digest({"incident_digest": incident_digest(row.payload), "corpus_digest": report["corpus_release"]["digest"], "engine": "incident-v2"}),
+        manifest_digest=digest({"incident_digest": incident_digest(row.payload), "corpus_digest": report["corpus_release"]["digest"], "engine": "incident-v3"}),
         report=report, execution_kind="live_deterministic", created_at=now, completed_at=now,
     )
     session.add(analysis)
@@ -146,6 +163,8 @@ def analysis_evidence(session: Session, analysis: IncidentAnalysis, evidence_id:
         for entry in analysis.report.get("metrics", {}).get("inputs", [])
         for record in (entry["plan"], entry["output"])
     )
+    permitted.update(str(record["id"]) for row in analysis.report.get("correction_history", []) for record in (row, row["previous_record"]))
+    permitted.update(ref for metric in analysis.report.get("metrics", {}).get("descriptors", []) for ref in metric.get("input_refs", []))
     if evidence_id not in permitted:
         raise ServiceError("EVIDENCE_UNKNOWN", "Evidence is not in this report", 404)
     source = next(
@@ -213,7 +232,7 @@ def publish_source(
         if (
             existing.incident_id != incident_id or existing.revision != base_revision + 1
             or existing.raw_digest != sha256(raw_text.encode("utf-8")).hexdigest()
-            or existing.raw_digest != preview_digest
+            or existing.preview.get("preview_digest") != preview_digest
             or existing.profile != profile or existing.source_system != source_system
             or existing.filename != filename or existing.preview.get("timezone") != timezone
             or existing.preview.get("requested_unit") != unit
@@ -221,12 +240,13 @@ def publish_source(
         ):
             raise ServiceError("IDEMPOTENCY_CONFLICT", "Key already used for another import", 409)
         return incident_detail(session, incident_id, existing.revision)
+    base = _revision(session, incident_id, base_revision)
     try:
-        preview = preview_incident_import(raw_text.encode("utf-8"), profile=profile, source_system=source_system, timezone=timezone, filename=filename, unit=unit)
+        preview = preview_incident_import(raw_text.encode("utf-8"), scope=base.payload["scope"], profile=profile, source_system=source_system, timezone=timezone, filename=filename, unit=unit)
     except ValueError as exc:
         raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
-    if preview["raw_digest"] != preview_digest:
-        raise ServiceError("PREVIEW_MISMATCH", "File changed since preview", 409)
+    if preview["preview_digest"] != preview_digest:
+        raise ServiceError("PREVIEW_MISMATCH", "Source data or interpretation changed since preview", 409)
     if preview["status"] != "READY":
         raise ServiceError("IMPORT_BLOCKED", "Fix row diagnostics before publication", 422)
     session.execute(select(func.pg_advisory_xact_lock(func.hashtext(incident_id))))
@@ -291,7 +311,7 @@ def create_incident_from_source(
         row = _revision(session, existing.incident_id, existing.revision)
         if (
             existing.incident_id != incident_id or existing.raw_digest != sha256(raw_text.encode()).hexdigest()
-            or existing.raw_digest != preview_digest or existing.source_system != source_system
+            or existing.preview.get("preview_digest") != preview_digest or existing.source_system != source_system
             or existing.filename != filename or existing.preview.get("timezone") != timezone
             or row.title != title or row.payload["scope"] != scope
             or row.payload["window"] != window or row.payload["cutoff"] != cutoff
@@ -313,11 +333,11 @@ def create_incident_from_source(
     if any(value.tzinfo is None for value in (start, end, cutoff_at)) or not start < end or cutoff_at < start:
         raise ServiceError("INVALID_WINDOW", "Window and cutoff are invalid", 422)
     try:
-        preview = preview_incident_import(raw_text.encode("utf-8"), profile="production-v1", source_system=source_system, timezone=timezone, filename=filename, unit="good_units")
+        preview = preview_incident_import(raw_text.encode("utf-8"), profile="production-v1", source_system=source_system, timezone=timezone, filename=filename, unit="good_units", scope=scope)
     except ValueError as exc:
         raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
-    if preview["raw_digest"] != preview_digest:
-        raise ServiceError("PREVIEW_MISMATCH", "File changed since preview", 409)
+    if preview["preview_digest"] != preview_digest:
+        raise ServiceError("PREVIEW_MISMATCH", "Source data or interpretation changed since preview", 409)
     if preview["status"] != "READY" or not preview["plan_buckets"]:
         raise ServiceError("IMPORT_BLOCKED", "A valid baseline plan is required", 422)
     additions = publish_incident_import(preview)
@@ -334,7 +354,7 @@ def create_incident_from_source(
     except (ValueError, KeyError) as exc:
         raise ServiceError("INVALID_REVISION", str(exc), 422) from exc
     row = IncidentRevision(incident_id=incident_id, revision=1, title=title, line_id=scope["line_id"], cutoff=cutoff_at, window_start=start, window_end=end, payload=payload, content_digest=incident_digest(payload), evidence_card=incident_evidence_card(payload))
-    artifact = IncidentSourceArtifact(idempotency_key=idempotency_key, incident_id=incident_id, revision=1, profile="production-v1", source_system=source_system, filename=filename, raw_digest=preview_digest, raw_bytes=raw_text.encode(), preview=preview)
+    artifact = IncidentSourceArtifact(idempotency_key=idempotency_key, incident_id=incident_id, revision=1, profile="production-v1", source_system=source_system, filename=filename, raw_digest=preview["raw_digest"], raw_bytes=raw_text.encode(), preview=preview)
     session.add_all([row, artifact])
     session.flush()
     return incident_detail(session, incident_id, 1)

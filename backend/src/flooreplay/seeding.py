@@ -26,6 +26,7 @@ from .fixtures import (
     review_stale_context,
 )
 from .fixtures_suite import SUITE_ID, suite_cases
+from .incident_dataset import dataset_fixtures
 from .incident_engine import incident_evidence_card
 from .incident_fixtures import incident_fixtures
 from .models import (
@@ -298,7 +299,7 @@ def seed(session: Session) -> dict[str, int]:
             f"Suite {SUITE_ID} membership changed after publication; publish a new suite revision."
         )
 
-    for item in incident_fixtures():
+    for item in [*incident_fixtures(), *dataset_fixtures()]:
         key = (item["id"], item["revision"])
         content_digest = incident_digest(item)
         existing_incident = session.get(IncidentRevision, key)

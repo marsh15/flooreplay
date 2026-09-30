@@ -26,12 +26,10 @@ from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
-from .config import settings
 from .domain.types import Catalog
 from .fixtures import CATALOG
 from .fixtures_eval import HELD_OUT_NOTES, NoteCase
 from .parsing import (
-    OPENAI_MODEL,
     NoteParser,
     ParserUnavailable,
     get_parser,
@@ -192,15 +190,18 @@ def main(argv: list[str] | None = None) -> int:
     argument_parser.add_argument(
         "--live",
         action="store_true",
-        help=f"use the live OpenAI parser ({OPENAI_MODEL}); needs FLOORREPLAY_OPENAI_API_KEY",
+        help="archived flag; live evaluation now uses budgeted incident AI runs",
     )
     argument_parser.add_argument(
         "--budget-inr", type=float, default=500.0, help="maximum spend in rupees (default 500)"
     )
     args = argument_parser.parse_args(argv)
 
+    if args.live:
+        print("Use python -m flooreplay eval-openai for authenticated, ledger-controlled evaluation", file=sys.stderr)
+        return 1
     try:
-        parser = get_parser(settings.openai_api_key if args.live else None)
+        parser = get_parser(None)
     except ParserUnavailable as exc:
         print(f"cannot start live evaluation: {exc}", file=sys.stderr)
         return 1

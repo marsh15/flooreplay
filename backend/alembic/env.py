@@ -7,6 +7,9 @@ from sqlalchemy import engine_from_config, pool
 
 from flooreplay.config import settings
 from flooreplay.models import Base
+import flooreplay.ai_evaluation  # register claim review metadata
+import flooreplay.auth  # register account metadata
+import flooreplay.paid_models  # register provider and retrieval metadata
 
 config = context.config
 if config.config_file_name is not None:

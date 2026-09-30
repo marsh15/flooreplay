@@ -12,6 +12,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from .ai_evaluation import provider_evaluation
 from .incident_ai import evaluate_drafts
 from .incident_engine import analyze_incident
 from .incident_service import search_incidents
@@ -69,7 +70,8 @@ def evaluation_report(session: Session) -> dict[str, Any]:
     retrieval: list[dict[str, Any]] = []
     if hero is not None:
         for query, relevant in RETRIEVAL_LABELS.items():
-            found = search_incidents(session, query, cutoff=hero.cutoff, exclude_incident_id=hero.incident_id)
+            pinned_rows = session.scalars(select(IncidentRevision).where(IncidentRevision.incident_id.in_(LABELS), IncidentRevision.revision == 1)).all()
+            found = search_incidents(session, query, cutoff=hero.cutoff, exclude_incident_id=hero.incident_id, corpus_rows=list(pinned_rows))
             retrieved = [item["id"] for item in found]
             hits = relevant.intersection(retrieved)
             title_vector = func.to_tsvector("english", IncidentRevision.title)
@@ -78,6 +80,7 @@ def evaluation_report(session: Session) -> dict[str, Any]:
                 select(IncidentRevision.incident_id)
                 .where(
                     title_vector.op("@@")(terms), IncidentRevision.cutoff < hero.cutoff,
+                    IncidentRevision.incident_id.in_(LABELS), IncidentRevision.revision == 1,
                     IncidentRevision.incident_id != hero.incident_id,
                     IncidentRevision.payload["scope"]["stage"].astext == hero.payload["scope"]["stage"],
                 )
@@ -110,8 +113,10 @@ def evaluation_report(session: Session) -> dict[str, Any]:
     }
     return {
         "id": "incident-core-v1", "dataset_revision": "authored-synthetic-10-v1",
-        "label_revision": "observable-labels-v1", "configuration": "deterministic-v2+postgres-visible-card",
+        "label_revision": "observable-labels-v1", "configuration": "deterministic-v3+postgres-visible-card",
         "execution_kind": "live_evaluation", "case_count": len(cases),
+        "current_provider": provider_evaluation(session),
+        "historical_provider": model_evaluation,
         "metrics": metrics, "model_evaluation": model_evaluation,
         "baseline_comparison": baseline_comparison,
         "model": model_evaluation["model"] if model_evaluation else None,
@@ -122,7 +127,7 @@ def evaluation_report(session: Session) -> dict[str, Any]:
             "Author-reviewed synthetic regression set; no factory validation.",
             "Category coverage is not causal accuracy. Historical notes do not establish line-level impact.",
             "Local-model quality uses ten packets and single-author claim review; see the failed model cases and reviewed-claim denominator." if model_evaluation else "Local-model quality has not yet been measured.",
-            "The recorded local-model run used incident-v1; its ten evidence packets were checked for exact equality with incident-v2 packets after review fixes.",
+            "The recorded Qwen run uses archived v1/v2 evidence packets; current v3 packets have changed and historical labels do not evaluate OpenAI.",
             "Ten cases and three retrieval queries are too small for generalization.",
         ],
     }

@@ -79,3 +79,26 @@ def test_file_boundaries_and_declared_timezone():
         preview_incident_import(b"\xff", **META)
     with pytest.raises(ValueError, match="Unknown timezone"):
         preview_incident_import(_production(), **{**META, "timezone": "Mars/Base"})
+
+
+def test_preview_identity_binds_timezone_scope_and_normalized_interpretation():
+    raw = _production()
+    first = preview_incident_import(raw, **META, scope={"line_id": "S4"})
+    alternate = preview_incident_import(raw, **{**META, "timezone": "UTC"}, scope={"line_id": "S4"})
+    changed_scope = preview_incident_import(raw, **META, scope={"line_id": "S5"})
+    assert first["raw_digest"] == alternate["raw_digest"] == changed_scope["raw_digest"]
+    assert len({first["preview_digest"], alternate["preview_digest"], changed_scope["preview_digest"]}) == 3
+
+
+def test_imported_links_support_and_counterevidence_reproduce_engine_relationships():
+    from flooreplay.incident_engine import analyze_incident
+    records = [
+        {"id": "block", "record_type": "line_block", "line_id": "S4", "summary": "Line awaiting fabric", "start": "2026-09-28T09:00:00", "end": "2026-09-28T09:15:00", "available_at": "2026-09-28T09:20:00", "line_blocking": True, "hypothesis_links": [{"category": "material", "relation": "SUPPORTS"}]},
+        {"id": "denial", "record_type": "routine_note", "line_id": "S4", "summary": "Material was ready", "occurred_at": "2026-09-28T09:10:00", "available_at": "2026-09-28T09:21:00", "contradiction_refs": ["block"]},
+    ]
+    preview = preview_incident_import(json.dumps(records).encode(), profile="operations-v1", source_system="shift-log", timezone="Asia/Kolkata", filename="operations.json")
+    assert preview["status"] == "READY"
+    assert preview["events"][0]["hypothesis_links"][0]["source_id"] == "shift-log:block"
+    report = analyze_incident({"scope": {"line_id": "S4", "unit": "good_units"}, "window": {"start": "2026-09-28T09:00:00+05:30", "end": "2026-09-28T09:30:00+05:30"}, "cutoff": "2026-09-28T09:30:00+05:30", **publish_incident_import(preview)})
+    assert report["hypotheses"][0]["status"] == "CONTRADICTED"
+    assert report["hypotheses"][0]["contradicting_evidence"] == ["denial"]

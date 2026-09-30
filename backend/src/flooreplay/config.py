@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="FLOORREPLAY_", env_file=".env")
+    model_config = SettingsConfigDict(env_prefix="FLOORREPLAY_", env_file=".env", allow_inf_nan=False)
 
     database_url: str = "postgresql+psycopg://localhost:5433/flooreplay"
     mode: str = "local"  # "local" (owner) or "public" (curated demo)
@@ -15,8 +16,10 @@ class Settings(BaseSettings):
     suite_budget_seconds: float = 30.0
     max_concurrent_executions: int = 2
     openai_api_key: str = ""
-    allow_paid_parser: bool = False
-    local_model: str = "qwen3:1.7b"
+    openai_generation_model: str = "gpt-4.1-mini-2025-04-14"
+    openai_embedding_model: str = "text-embedding-3-small"
+    openai_embedding_dimensions: int = 512
+    openai_inr_per_usd: float = Field(default=90.0, gt=0)
     # Public-demo execution limits. The comparison suite executes 64 replays,
     # so it stays a local-owner action; single replays are rate limited per
     # client (in-memory, per process — resets on restart, which is honest for

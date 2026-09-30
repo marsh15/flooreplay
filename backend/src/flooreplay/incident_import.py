@@ -25,6 +25,24 @@ EVENT_TYPES = {
 }
 NOTE_TYPES = {"maintenance_note", "supervisor_note"}
 
+HYPOTHESIS_CATEGORIES = {"material", "machine", "quality", "staffing", "changeover", "planning_reporting"}
+
+
+def _list_field(value: Any) -> list[Any]:
+    if value in (None, ""):
+        return []
+    if isinstance(value, str):
+        value = json.loads(value)
+    if not isinstance(value, list):
+        raise ValueError("Relationship fields must be JSON arrays")
+    return value
+
+
+def preview_identity(preview: dict[str, Any]) -> str:
+    fields = ("raw_digest", "profile", "source_system", "timezone", "filename", "requested_unit", "scope", "interpretation_version", "plan_buckets", "output_buckets", "events", "issues", "status")
+    encoded = json.dumps({field: preview.get(field) for field in fields}, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
 
 def _issue(row: int, field: str, code: str, message: str) -> dict[str, Any]:
     return {"row": row, "field": field, "code": code, "severity": "BLOCKING", "message": message}
@@ -131,6 +149,27 @@ def _normalize(row: dict[str, Any], profile: str, source_system: str, timezone: 
             raise ValueError("Notes require author_role attribution")
         event["assertion"] = True
         event["author_role"] = str(row["author_role"])
+    links = _list_field(row.get("hypothesis_links"))
+    for link in links:
+        if not isinstance(link, dict) or set(link) - {"category", "relation", "source_id"} or link.get("category") not in HYPOTHESIS_CATEGORIES or link.get("relation") not in {"SUPPORTS", "CONTRADICTS"}:
+            raise ValueError("Hypothesis links require a known category and SUPPORTS or CONTRADICTS relation")
+    # Preserve legacy category fields as typed, source-attributed links.
+    for field, relation in (("linked_categories", "SUPPORTS"), ("contradicts_categories", "CONTRADICTS")):
+        for category in _list_field(row.get(field)):
+            if category not in HYPOTHESIS_CATEGORIES:
+                raise ValueError("Unknown hypothesis category")
+            links.append({"category": category, "relation": relation})
+    event["hypothesis_links"] = [{**link, "source_id": common["source_id"]} for link in links]
+    refs = _list_field(row.get("contradiction_refs"))
+    if row.get("contradicts"):
+        refs.append(row["contradicts"])
+    if any(not isinstance(ref, str) or not ref.strip() for ref in refs):
+        raise ValueError("Contradiction references must be record IDs")
+    event["contradiction_refs"] = refs
+    if row.get("carry_in_state"):
+        if row["carry_in_state"] != "UNRESOLVED":
+            raise ValueError("carry_in_state must be UNRESOLVED")
+        event["carry_in_state"] = "UNRESOLVED"
     if row.get("occurred_at"):
         event["occurred_at"] = _time(row["occurred_at"], timezone)
     if row.get("start"):
@@ -150,7 +189,7 @@ def _normalize(row: dict[str, Any], profile: str, source_system: str, timezone: 
 
 def preview_incident_import(
     raw: bytes, *, profile: str, source_system: str, timezone: str,
-    filename: str, unit: str | None = None,
+    filename: str, unit: str | None = None, scope: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Return diagnostics and normalized records; any issue blocks publication."""
     if profile not in PROFILES or not source_system.strip() or not timezone.strip():
@@ -187,12 +226,15 @@ def preview_incident_import(
             normalized[section].append(value)
         except ValueError as exc:
             issues.append(_issue(number, "record", "INVALID_RECORD", str(exc)))
-    return {
+    preview = {
+        "requested_unit": unit, "scope": scope, "interpretation_version": "incident-import-v2",
         "status": "READY" if not issues else "BLOCKED", "profile": profile,
         "source_system": source_system, "timezone": timezone, "filename": filename,
         "raw_digest": hashlib.sha256(raw).hexdigest(), "row_count": len(rows),
         "issues": issues, **normalized,
     }
+    preview["preview_digest"] = preview_identity(preview)
+    return preview
 
 
 def publish_incident_import(preview: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:

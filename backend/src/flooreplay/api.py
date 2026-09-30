@@ -9,24 +9,36 @@ import logging
 import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
+from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
-from sqlalchemy import select
+from pydantic import BaseModel, Field, StrictBool
+from sqlalchemy import select, text
 
+from .ai_evaluation import review_claim
+from .ai_runs import capabilities as provider_capabilities
+from .ai_runs import lookup_request, lookup_run, run_ai
+from .auth import (
+    Account,
+    current_user,
+    enforce_access_limit,
+    require_owner,
+    require_reviewer,
+    sign_in,
+    sign_out,
+    user_view,
+)
 from .config import settings
 from .db import session_scope
 from .fixtures import CATALOG, CONFIGURATIONS
 from .importing import ImportStructuralError, preview_import
 from .incident_evaluation import evaluation_report
 from .incident_import import preview_incident_import
-from .incident_jobs import enqueue_draft, job_view
 from .incident_service import (
     analysis_evidence,
     analysis_view,
@@ -42,7 +54,6 @@ from .models import (
     ComparisonReport,
     ExecutionConfiguration,
     IncidentAnalysis,
-    IncidentModelJob,
     ParserCall,
     ReplayAttempt,
     ReviewCheck,
@@ -56,6 +67,7 @@ from .parsing import (
     resolve_draft,
 )
 from .ratelimit import enforce, make_execution_limiter
+from .retrieval import hybrid_search
 from .service import (
     ServiceError,
     confirm_event_and_fork,
@@ -69,6 +81,7 @@ from .service import (
     review_check,
     run_comparison,
 )
+from .spending import usage_view
 
 logger = logging.getLogger("flooreplay.api")
 
@@ -138,17 +151,20 @@ class IncidentAnalysisRequest(BaseModel):
 
 class IncidentReviewRequest(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=120)
-    actor: str = Field(min_length=2, max_length=120)
     rationale: str = Field(min_length=3, max_length=1000)
     decision: str
 
 
 class IncidentDraftRequest(BaseModel):
+    corpus_id: str | None = None
+    task: str = Field(default="question", pattern="^(question|investigation|summary|recovery|note)$")
+    retrieval_mode: str = Field(default="evidence_only", pattern="^(evidence_only|hybrid)$")
     question: str = Field(default="Summarize the incident and next checks.", min_length=3, max_length=500)
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
 class IncidentImportRequest(BaseModel):
+    scope: dict[str, str] | None = None
     incident_id: str = Field(min_length=1, max_length=64)
     base_revision: int = Field(ge=0)
     cutoff: str = Field(min_length=10, max_length=64)
@@ -177,6 +193,40 @@ class IncidentCreateRequest(BaseModel):
     filename: str = Field(min_length=1, max_length=120)
     preview_digest: str
     idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class AIClaimReviewRequest(BaseModel):
+    idempotency_key: str = Field(min_length=8, max_length=120)
+    claim_path: str = Field(min_length=1, max_length=120)
+    supported: StrictBool
+    rationale: str = Field(min_length=3, max_length=1000)
+
+
+class LoginRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=120)
+    password: str = Field(min_length=1, max_length=256)
+
+
+class HybridRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=200)
+    corpus_id: str
+    cutoff: str
+    exclude_id: str | None = None
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+def ai_capabilities(user: Account | None) -> dict[str, Any]:
+    from .paid_models import CorpusRelease, EmbeddingArtifact
+    from .retrieval import embedding_identity
+    try:
+        result = provider_capabilities(user.id if user else "")
+        with session_scope() as session:
+            corpora = session.scalars(select(CorpusRelease)).all()
+            index_ready = any(row.cards and all(session.get(EmbeddingArtifact, embedding_identity(card["content"], settings.openai_embedding_model)[0]) is not None for card in row.cards) for row in corpora)
+        reasons = result.get("reasons", [])
+        return {**result, "generation_available": result["ready"], "reason": reasons[0] if reasons else None, "index_ready": index_ready}
+    except Exception:
+        return {"provider": "openai", "model": settings.openai_generation_model, "generation_available": False, "reason": "DATABASE_UNAVAILABLE", "index_ready": False, "evaluation_status": "OPENAI_NOT_EVALUATED"}
 
 
 def create_app(mode: str | None = None) -> FastAPI:
@@ -260,14 +310,31 @@ def create_app(mode: str | None = None) -> FastAPI:
             ).model_dump(),
         )
 
+    @app.post("/api/v1/auth/login")
+    def login(body: LoginRequest, request: Request) -> dict[str, Any]:
+        return sign_in(body.username, body.password, request.client.host if request.client else "unknown")
+
+    @app.get("/api/v1/auth/me")
+    def identity(user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, str]:
+        return user_view(user)
+
+    @app.post("/api/v1/auth/logout")
+    def logout(request: Request, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, bool]:
+        sign_out(request)
+        return {"logged_out": True}
+
     @app.get("/api/v1/capabilities")
-    def capabilities() -> dict[str, Any]:
+    def capabilities(user: Annotated[Account | None, Depends(current_user)]) -> dict[str, Any]:
         return {
             "mode": effective_mode,
-            "imports_enabled": effective_mode == "local",
+            "imports_enabled": bool(user and user.role == "owner"),
+            "reviews_enabled": user is not None,
+            "export_enabled": user is not None,
+            "user": user_view(user) if user else None,
+            "ai": ai_capabilities(user),
             "build_id": settings.build_id,
-            "live_parser_available": bool(settings.allow_paid_parser and settings.openai_api_key),
-            "parser_kind": "openai-structured" if settings.allow_paid_parser and settings.openai_api_key else "rule-baseline",
+            "live_parser_available": False,
+            "parser_kind": "rule-baseline",
             "execution_limits": {
                 "replays_per_hour_per_client": (
                     settings.public_replays_per_hour if effective_mode == "public" else None
@@ -289,15 +356,27 @@ def create_app(mode: str | None = None) -> FastAPI:
     def ready() -> dict[str, str]:
         try:
             with session_scope() as session:
-                session.execute(select(1))
+                revision = session.scalar(text("SELECT version_num FROM alembic_version"))
+                if revision != "20260930_claim_reviews":
+                    raise ServiceError("MIGRATION_REQUIRED", "Database migration must finish before serving traffic", 503)
+        except ServiceError:
+            raise
         except Exception as exc:  # pragma: no cover - infra failure path
-            raise ServiceError("DATABASE_UNAVAILABLE", str(exc), 503) from exc
+            raise ServiceError("DATABASE_UNAVAILABLE", "Database is unavailable or migrations have not run", 503) from exc
         return {"status": "ready"}
 
     @app.get("/api/v1/incidents")
     def list_incidents() -> dict[str, Any]:
         with session_scope() as session:
             return {"items": incident_list(session)}
+
+    @app.get("/api/v1/evaluation-reports/incident-release-v1")
+    def release_eval_report() -> dict[str, Any]:
+        from .ai_evaluation import provider_evaluation
+        from .dataset_evaluation import evaluate_dataset
+        with session_scope() as session:
+            provider = provider_evaluation(session)
+        return {**evaluate_dataset(), "provider": "openai", "provider_status": provider["status"], "human_support_precision": None, "independent_semantic_review_status": "PENDING"}
 
     @app.get("/api/v1/evaluation-reports/incident-core-v1")
     def incident_eval_report() -> dict[str, Any]:
@@ -349,77 +428,82 @@ def create_app(mode: str | None = None) -> FastAPI:
             return analysis_evidence(session, analysis, evidence_id)
 
     @app.get("/api/v1/analyses/{analysis_id}/export")
-    def export_incident_analysis(analysis_id: str) -> dict[str, Any]:
+    def export_incident_analysis(analysis_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         with session_scope() as session:
             analysis = session.get(IncidentAnalysis, analysis_id)
             if analysis is None:
                 raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
             return {"schema": "flooreplay.incident-report.v1", "report": analysis_view(session, analysis)}
 
-    if effective_mode == "local":
-        @app.post("/api/v1/incidents")
-        def create_incident(body: IncidentCreateRequest) -> dict[str, Any]:
-            with session_scope() as session:
-                return create_incident_from_source(session, **body.model_dump())
-
-        @app.post("/api/v1/incidents/imports/preview")
-        def preview_incident_source(body: IncidentImportRequest) -> dict[str, Any]:
-            try:
-                return preview_incident_import(body.raw_text.encode("utf-8"), profile=body.profile, source_system=body.source_system, timezone=body.timezone, filename=body.filename, unit=body.unit)
-            except ValueError as exc:
-                raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
-
-        @app.post("/api/v1/incidents/imports/publish")
-        def publish_incident_source(body: IncidentPublishRequest) -> dict[str, Any]:
-            with session_scope() as session:
-                return publish_source(session, **body.model_dump())
-
-        @app.post("/api/v1/analyses/{analysis_id}/drafts")
-        def queue_incident_draft(analysis_id: str, body: IncidentDraftRequest) -> dict[str, Any]:
-            with session_scope() as session:
-                analysis = session.get(IncidentAnalysis, analysis_id)
-                if analysis is None:
-                    raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
-                return job_view(enqueue_draft(session, analysis, body.idempotency_key, body.question))
-
-        @app.post("/api/v1/drafts/{job_id}/cancel")
-        def cancel_incident_draft(job_id: str) -> dict[str, Any]:
-            with session_scope() as session:
-                job = session.get(IncidentModelJob, job_id)
-                if job is None:
-                    raise ServiceError("DRAFT_UNKNOWN", "Unknown draft", 404)
-                if job.status in ("QUEUED", "RUNNING"):
-                    job.status = "CANCELLED"
-                    job.completed_at = datetime.now(UTC)
-                return job_view(job)
-
-        @app.post("/api/v1/analyses/{analysis_id}/proposals/{proposal_id}/submit")
-        def submit_incident_proposal(analysis_id: str, proposal_id: str, body: IncidentReviewRequest) -> dict[str, Any]:
-            with session_scope() as session:
-                analysis = session.get(IncidentAnalysis, analysis_id)
-                if analysis is None:
-                    raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
-                review = review_proposal(session, analysis, proposal_id, "PENDING_REVIEW", body.actor, body.rationale, body.idempotency_key)
-                return {"id": review.id, "state": review.state, "analysis_id": review.analysis_id, "proposal_id": review.proposal_id}
-
-        @app.post("/api/v1/analyses/{analysis_id}/proposals/{proposal_id}/review")
-        def decide_incident_proposal(analysis_id: str, proposal_id: str, body: IncidentReviewRequest) -> dict[str, Any]:
-            if body.decision not in ("APPROVED", "REJECTED"):
-                raise ServiceError("REVIEW_DECISION", "Decision must be APPROVED or REJECTED", 422)
-            with session_scope() as session:
-                analysis = session.get(IncidentAnalysis, analysis_id)
-                if analysis is None:
-                    raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
-                review = review_proposal(session, analysis, proposal_id, body.decision, body.actor, body.rationale, body.idempotency_key)
-                return {"id": review.id, "state": review.state, "analysis_id": review.analysis_id, "proposal_id": review.proposal_id}
-
-    @app.get("/api/v1/drafts/{job_id}")
-    def get_incident_draft(job_id: str) -> dict[str, Any]:
+    @app.post("/api/v1/incidents")
+    def create_incident(body: IncidentCreateRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
         with session_scope() as session:
-            job = session.get(IncidentModelJob, job_id)
-            if job is None:
-                raise ServiceError("DRAFT_UNKNOWN", "Unknown draft", 404)
-            return job_view(job)
+            return create_incident_from_source(session, **body.model_dump())
+
+    @app.post("/api/v1/incidents/imports/preview")
+    def preview_incident_source(body: IncidentImportRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
+        try:
+            return preview_incident_import(body.raw_text.encode("utf-8"), profile=body.profile, source_system=body.source_system, timezone=body.timezone, filename=body.filename, unit=body.unit, scope=body.scope)
+        except ValueError as exc:
+            raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
+
+    @app.post("/api/v1/incidents/imports/publish")
+    def publish_incident_source(body: IncidentPublishRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return publish_source(session, **body.model_dump(exclude={"scope"}))
+
+    @app.post("/api/v1/analyses/{analysis_id}/proposals/{proposal_id}/submit")
+    def submit_incident_proposal(analysis_id: str, proposal_id: str, body: IncidentReviewRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            analysis = session.get(IncidentAnalysis, analysis_id)
+            if analysis is None:
+                raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
+            review = review_proposal(session, analysis, proposal_id, "PENDING_REVIEW", user.id, body.rationale, body.idempotency_key)
+            return {"id": review.id, "state": review.state, "analysis_id": review.analysis_id, "proposal_id": review.proposal_id}
+
+    @app.post("/api/v1/analyses/{analysis_id}/proposals/{proposal_id}/review")
+    def decide_incident_proposal(analysis_id: str, proposal_id: str, body: IncidentReviewRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        if body.decision not in ("APPROVED", "REJECTED"):
+            raise ServiceError("REVIEW_DECISION", "Decision must be APPROVED or REJECTED", 422)
+        with session_scope() as session:
+            analysis = session.get(IncidentAnalysis, analysis_id)
+            if analysis is None:
+                raise ServiceError("ANALYSIS_UNKNOWN", "Unknown analysis", 404)
+            review = review_proposal(session, analysis, proposal_id, body.decision, user.id, body.rationale, body.idempotency_key)
+            return {"id": review.id, "state": review.state, "analysis_id": review.analysis_id, "proposal_id": review.proposal_id}
+
+    @app.post("/api/v1/analyses/{analysis_id}/ai-runs")
+    def create_ai_run(analysis_id: str, body: IncidentDraftRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        enforce_access_limit("paid:" + user.id, 30, 3600)
+        return run_ai(analysis_id, user.id, body.idempotency_key, body.task, body.question, purpose="reviewer", retrieval_mode=body.retrieval_mode, corpus_id=body.corpus_id)
+
+    @app.get("/api/v1/ai-runs/by-request/{request_key}")
+    def get_ai_request(request_key: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return lookup_request(request_key, user.id)
+
+    @app.get("/api/v1/ai-runs/{run_id}")
+    def get_ai_run(run_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return lookup_run(run_id, user.id, owner=user.role == "owner")
+
+    @app.post("/api/v1/ai-runs/{run_id}/claim-review")
+    def annotate_ai_claim(run_id: str, body: AIClaimReviewRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return review_claim(run_id, user.id, body.idempotency_key, body.claim_path, body.supported, body.rationale, owner=user.role == "owner")
+
+    @app.get("/api/v1/usage")
+    def get_usage(user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return usage_view(session)
+
+    @app.get("/api/v1/corpora")
+    def corpora() -> dict[str, Any]:
+        from .paid_models import CorpusRelease
+        with session_scope() as session:
+            return {"items": [{"id": row.id, "cutoff": row.cutoff.isoformat(), "digest": row.digest, "card_count": len(row.cards)} for row in session.scalars(select(CorpusRelease)).all()]}
+
+    @app.post("/api/v1/incidents/search/hybrid")
+    def hybrid(body: HybridRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        enforce_access_limit("paid:" + user.id, 30, 3600)
+        return hybrid_search(body.query, user.id, body.idempotency_key, body.corpus_id, datetime.fromisoformat(body.cutoff), exclude_id=body.exclude_id)
 
     @app.get("/api/v1/scenarios")
     def list_scenarios() -> dict[str, Any]:
@@ -618,11 +702,11 @@ def create_app(mode: str | None = None) -> FastAPI:
 
     if effective_mode == "local":
         @app.post("/api/v1/imports/preview")
-        def import_preview(body: ImportRequestBody) -> dict[str, Any]:
+        def import_preview(body: ImportRequestBody, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
             return _preview_body(body)
 
         @app.post("/api/v1/imports/publish")
-        def import_publish(body: PublishRequestBody) -> dict[str, Any]:
+        def import_publish(body: PublishRequestBody, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
             preview = preview_import(
                 body.profile_id,
                 body.csv_text,
@@ -640,8 +724,8 @@ def create_app(mode: str | None = None) -> FastAPI:
                 return publish_import(session, preview, body.csv_text)
 
         @app.post("/api/v1/notes/parse")
-        def parse_note(body: NoteParseRequest) -> dict[str, Any]:
-            parser = get_parser(settings.openai_api_key if settings.allow_paid_parser else None)
+        def parse_note(body: NoteParseRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
+            parser = get_parser(None)
             draft = parser.parse(body.text, CATALOG)
             resolution = resolve_draft(draft, CATALOG)
             with session_scope() as session:
@@ -675,7 +759,7 @@ def create_app(mode: str | None = None) -> FastAPI:
                 }
 
         @app.post("/api/v1/notes/confirm")
-        def confirm_note(body: NoteConfirmRequest) -> dict[str, Any]:
+        def confirm_note(body: NoteConfirmRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
             with session_scope() as session:
                 source_ref = f"{body.source_kind}:{body.parser_call_id or 'entry'}"
                 return confirm_event_and_fork(
@@ -692,7 +776,7 @@ def create_app(mode: str | None = None) -> FastAPI:
                 )
 
         @app.post("/api/v1/scenarios/{scenario_id}/revisions/{revision}/fork")
-        def scenario_fork(scenario_id: str, revision: int, body: ForkRequest) -> dict[str, Any]:
+        def scenario_fork(scenario_id: str, revision: int, body: ForkRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
             with session_scope() as session:
                 fork = fork_scenario(session, scenario_id, revision, body.snapshot_id)
                 return {
@@ -737,7 +821,7 @@ def create_app(mode: str | None = None) -> FastAPI:
         # budget — a local-owner action, absent from the public demo. Saved
         # reports stay viewable everywhere.
         @app.post("/api/v1/comparisons")
-        def create_comparison(body: ComparisonRequest) -> dict[str, Any]:
+        def create_comparison(body: ComparisonRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
             with session_scope() as session:
                 report = run_comparison(
                     session,
