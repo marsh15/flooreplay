@@ -144,8 +144,8 @@ input, textarea { caret-color: #84652f; }
 input::placeholder, textarea::placeholder { color: #686863; }
 select, textarea { max-width: 100%; }
 table { font-variant-numeric: tabular-nums; }
-th { vertical-align: middle; }
-td { vertical-align: top; }
+th { vertical-align: middle; overflow-wrap: anywhere; }
+td { vertical-align: top; overflow-wrap: anywhere; }
 pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .app-shell { background: var(--background); }
 .nav-link { transition: background-color 140ms ease, color 140ms ease; }
