@@ -1,43 +1,34 @@
 # Product
 
-## Register
+FloorReplay helps a production supervisor investigate a sewing-line shortfall and coordinate the next checks. The supervisor starts when observed output falls behind a plan or records disagree. The investigation ends when the supervisor has a defensible account of what is known, an owner for each remaining check, and recorded follow-up evidence and outcomes.
 
-product
+## Current scope
 
-## Users
+The application reconstructs an incident from records available at a selected evidence cutoff. It calculates production shortfall, separates supported hypotheses from unanswered questions, retrieves historical precedents, and records proposal review against immutable revisions. Imports preserve their source bytes and interpretation. Corrections create a new revision. AI drafts require human assessment.
 
-Applied AI engineers and forward-deployed engineers investigating whether an operational recommendation stays trustworthy when source data, decision rules, or software versions change. Secondary audience: the hiring team evaluating the build. They open the workbench mid-investigation: they want to trace why a policy proposed (or refused) a coverage action, down to the exact source row, and compare two configurations across a pinned suite. They are expert readers who distrust unexplained numbers.
+All factory records are synthetic. No factory validation or measured operational benefit is established. Proposal approval currently records a review decision; it does not establish that someone performed the action or resolved the incident. Assigned checks and outcome tracking remain follow-up deliverables. The current improvement adds guided entry, library filters and pagination, revision comparisons, state-aware next checks, claim annotations and printable deterministic reports.
 
-## Product Purpose
+The primary user is a production supervisor. Maintenance staff, planners and industrial engineers may supply evidence or complete checks. Engineers and hiring reviewers are secondary users of the evaluation lab and implementation evidence. The older operator-coverage workbench remains an archived engineering demonstration.
 
-FloorReplay reconstructs a bounded manufacturing situation from immutable evidence, decides whether the evidence supports a decision, runs a recommendation policy, validates its proposal, and compares the result against explicit expectations. One narrow workflow: an operator cannot cover a planned sewing operation; can an available, qualified operator cover that vacant slot on its designated machine? Success = a reviewer can follow the hero episode end to end (stale evidence gate, corrected revision, baseline rejection, improved proposal, regression catch) and trust every link.
+## What a supervisor needs to decide
 
-## Brand Personality
+- Which production intervals and source records support the reported shortfall?
+- Which explanations have evidence, which have contradictions, and which need a check?
+- Who should answer each unresolved question and by when?
+- What changed after a correction or response?
+- What action actually happened, and what uncertainty remains afterward?
 
-Precise, restrained, honest. An engineering instrument, not a dashboard product. Three words: exact, quiet, inspectable.
+A first-time walkthrough should let a user answer these questions without the author narrating the application. Practitioner interviews and a comparative pilot will test whether this is the right recurring job. [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) defines those gates.
 
-## Anti-references
+## Design requirements
 
-- Artificial confidence percentages or single "accuracy" scores
-- Decorative charts, gauges, score dials
-- Animation that delays inspection; orchestrated page-load sequences
-- Marketing voice ("seamless", "AI-powered", "next-gen")
-- Dark cockpit dashboards with neon accents; the plan calls for light neutral surfaces
-- A red badge with no explanation; color must never be the only signal
+1. Show the result and its evidence together. Every metric and finding must lead to its input records.
+2. Keep calculation coverage, evidence completeness, investigation progress and action completion distinct.
+3. Say when evidence entered the system. Explain the cutoff as the latest information this report may use.
+4. Label live deterministic results, saved reports and generated drafts separately.
+5. Preserve the previous report when new evidence creates a revision.
+6. Keep source inspection usable on narrow screens and through keyboard navigation.
+7. Use written status labels and visible focus. Color alone must not carry meaning.
+8. Provide loading, empty, interrupted, unavailable and error states.
 
-## Design Principles
-
-1. Evidence before conclusion. Every issue and failed constraint links to the source row or canonical fact that caused it.
-2. Result first, then the chain. Main outcome at top; event, issues, proposal, constraints, manifest in reading order.
-3. Distinguish live execution, previously computed result, and saved release report. A saved report must never look freshly executed.
-4. Color supplements labels and icons; never replaces them.
-5. Monospaced identifiers, compact tables, strong typographic hierarchy. Density is a feature; decoration is a defect.
-6. Immutability is visible. Historical results never change; corrections create new revisions.
-
-## Accessibility & Inclusion
-
-- Full keyboard navigation, visible focus
-- Accessible table headings and screen-reader labels for statuses
-- Readable narrow-screen layouts (tables collapse gracefully)
-- Loading, empty, interrupted, unavailable, and error states for every data surface
-- WCAG AA contrast on light neutral surfaces
+Avoid confidence percentages without a defensible measurement, unsupported causal claims, decorative gauges and claims of factory readiness based only on synthetic software tests.

@@ -26,4 +26,12 @@ The React/Vite frontend calls FastAPI. PostgreSQL stores immutable incident revi
 
 Compose provides pgvector/PostgreSQL, an API and an nginx static frontend with SPA rewrites. Vercel serves the static frontend; Render runs the API with Neon storage. The frontend uses the absolute HTTPS API base, and the API allows exact frontend origins. CI uses a disposable database and mocked provider calls. Live model evaluation and actual hosted smoke evidence are separate release gates. `release_tools.py` exports canonical saved reports and a content-digest manifest; frontend types derive from exported OpenAPI.
 
-Historical Qwen results remain archived evidence. The current provider remains unevaluated until actual OpenAI runs and separate human review are recorded.
+Historical Qwen results remain archived evidence. Recorded OpenAI evidence-only smoke and pilot, and hybrid smoke, measure structure and retain provider receipts. The locked stage stopped at a validation failure. Independent human review of these outputs remains pending; historical Qwen support labels cannot establish current-provider quality.
+
+## Workflow completion
+
+Proposal submission and approval record a judgment against a pinned analysis. They do not record factory execution or prove incident resolution. Assigned evidence checks, responses and outcomes are an extension of this boundary. Their implementation and verification must preserve authenticated authorship, immutable source records and separate action and incident states. See [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) for the deliverables and external acceptance gates.
+
+## Current investigation controls
+
+Revision comparisons derive earlier metrics, newly available and corrected sources, hypothesis changes and proposal-review reminders from pinned reports. State-aware next checks refine questions when evidence already establishes a block. The frontend separates engineering fixtures from curated incidents and provides filters and pagination. Claim annotations support all four claim-bearing output structures and preserve the output digest, rationale, authenticated actor and durable receipt. The printable deterministic report includes revision and report identity and excludes the AI panel. Saved report bundles use engine incident-v4.
