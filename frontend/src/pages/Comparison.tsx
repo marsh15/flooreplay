@@ -267,7 +267,7 @@ export function ComparisonPage() {
                 ['unchanged_fail', 'Unchanged fail'],
               ] as const
             ).map(([key, label]) => (
-              <div key={key} className="px-3">
+              <div key={key} role="group" aria-label={label} className="px-3">
                 <p className="text-lg font-semibold tabular-nums">{totals?.[key] ?? 0}</p>
                 <p className="mt-0.5 text-xs text-zinc-500">{label}</p>
               </div>

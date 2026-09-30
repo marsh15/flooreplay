@@ -1185,7 +1185,7 @@
   "observation_watermark": "2026-09-28T11:30:00+05:30",
   "precedents": [
     {
-      "cutoff": "2026-06-02T15:35:00+05:30",
+      "cutoff": "2026-06-02T10:05:00+00:00",
       "differences": [
         "Material lot, machine, and action prerequisites need separate verification."
       ],
@@ -1198,7 +1198,7 @@
       "title": "Synthetic material investigation 1"
     },
     {
-      "cutoff": "2026-06-03T15:35:00+05:30",
+      "cutoff": "2026-06-03T10:05:00+00:00",
       "differences": [
         "Material lot, machine, and action prerequisites need separate verification."
       ],
@@ -1211,7 +1211,7 @@
       "title": "Synthetic material investigation 2"
     },
     {
-      "cutoff": "2026-06-04T15:17:00+05:30",
+      "cutoff": "2026-06-04T09:47:00+00:00",
       "differences": [
         "Material lot, machine, and action prerequisites need separate verification."
       ],
@@ -1224,7 +1224,7 @@
       "title": "Synthetic material investigation 3"
     },
     {
-      "cutoff": "2026-06-05T15:35:00+05:30",
+      "cutoff": "2026-06-05T10:05:00+00:00",
       "differences": [
         "Material lot, machine, and action prerequisites need separate verification."
       ],
@@ -1237,7 +1237,7 @@
       "title": "Synthetic material investigation 4"
     },
     {
-      "cutoff": "2026-06-06T15:35:00+05:30",
+      "cutoff": "2026-06-06T10:05:00+00:00",
       "differences": [
         "Material lot, machine, and action prerequisites need separate verification."
       ],

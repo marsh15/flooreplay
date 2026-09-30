@@ -41,8 +41,8 @@ def incident_list(session: Session) -> list[dict[str, Any]]:
         total = len(row.payload.get("coverage", {}))
         items.append({
             "id": row.incident_id, "revision": row.revision, "title": row.title,
-            "line": row.line_id, "window_start": row.window_start.isoformat(),
-            "window_end": row.window_end.isoformat(), "cutoff": row.cutoff.isoformat(),
+            "line": row.line_id, "window_start": row.payload["window"]["start"],
+            "window_end": row.payload["window"]["end"], "cutoff": row.payload["cutoff"],
             "status": metric["status"], "shortfall": metric["shortfall"],
             "evidence_completeness": f"{available}/{total} available sources; timeline {report['capabilities']['timeline']['status'].lower()}" if total else "Unknown coverage",
             "last_reviewed_revision": reviewed,
@@ -91,7 +91,7 @@ def search_incidents(
             "line": row.line_id, "score": round(float(score), 4),
             "match_reason": "Shared terms in incident title or recorded events",
             "differences": ([f"Different sewing line ({row.line_id} versus {query_line})."] if query_line and row.line_id != query_line else []) + ["Material lot, machine, and action prerequisites need separate verification."],
-            "cutoff": row.cutoff.isoformat(), "execution_kind": "live_lexical",
+            "cutoff": row.payload["cutoff"], "execution_kind": "live_lexical",
         })
         if len(results) == limit:
             break

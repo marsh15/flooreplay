@@ -18,7 +18,7 @@ def export_demo(directory: Path) -> dict[str, Any]:
     fixture_ids = {item['id'] for item in incident_fixtures()}
     corpus_ids = fixture_ids | {item['id'] for item in dataset_fixtures() if item['dataset_split'] == 'historical'}
     with session_scope() as session:
-        analysis = create_analysis(session, 'INC-001', 2, 'release-demo-v3-' + digest(sorted(corpus_ids))[-32:], corpus_incident_ids=corpus_ids)
+        analysis = create_analysis(session, 'INC-001', 2, 'release-demo-v4-' + digest(sorted(corpus_ids))[-32:], corpus_incident_ids=corpus_ids)
         # Stable bundle identity describes content; database execution IDs/times stay in DB.
         report = {**analysis.report, 'id': 'saved-' + analysis.manifest_digest.removeprefix('sha256:'), 'incident_id':'INC-001', 'revision':2, 'cutoff':incident_detail(session, 'INC-001', 2)['cutoff'], 'manifest_digest':analysis.manifest_digest, 'execution_kind':'saved_deterministic', 'stale':False, 'reviews':[], 'bundle_schema':'flooreplay.public-bundle.v1'}
         library = {'items':[{k:v for k,v in item.items() if k != 'last_reviewed_revision'} for item in incident_list(session) if item['id'] in fixture_ids], 'execution_kind':'saved_library'}

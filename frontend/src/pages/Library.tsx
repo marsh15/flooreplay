@@ -91,13 +91,13 @@ export function LibraryPage() {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border bg-white">
-          <Table className="min-w-[800px]">
+          <Table className="min-w-[1000px] table-fixed" aria-label="Coverage scenarios">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[26%]">Scenario</TableHead>
-                <TableHead>Behavior it tests</TableHead>
-                <TableHead className="w-44">Decision time</TableHead>
-                <TableHead className="w-[38%]">Latest result by configuration</TableHead>
+                <TableHead className="w-[32%]">Behavior it tests</TableHead>
+                <TableHead className="w-[18%]">Decision time</TableHead>
+                <TableHead className="w-[24%]">Latest result by configuration</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -124,10 +124,10 @@ export function LibraryPage() {
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-md text-sm text-zinc-600">
+                    <TableCell className="text-sm leading-6 text-zinc-600">
                       {item.defect_statement}
                     </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-zinc-600">
+                    <TableCell className="text-sm leading-6 text-zinc-600">
                       {formatInstant(item.decision_at)}
                     </TableCell>
                     <TableCell>

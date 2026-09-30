@@ -2,7 +2,7 @@
   "artifacts": {
     "evaluation-report": "sha256:70023ded5d593be9d93b53b844622d50395e204a7563c4aba355b02ce5ddf0be",
     "hero-ai": "sha256:bf0cd337b9f7d4dc249d5d27540b76836f1eb41bfb1092c24530de0f9864bb54",
-    "hero-report": "sha256:9306ba64e74c9faf073e8914f09720a2b89e14ba8496f421d869693285838e6e",
+    "hero-report": "sha256:c4cef4ca097ba9d255f27c40b01a95d0542788ecc594881629e7bda54b9a0929",
     "hero-revision": "sha256:aa2a46beb1bd7c45f13cb77f0437ca0887dc29afd24b07d9b8fc4f984044752a",
     "incident-library": "sha256:3b9575b655fad5f0721efa4d20141d9e512f482b62d9e8b378c3404f53c4dc3d"
   },
