@@ -95,8 +95,8 @@ export function NotesPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight">Floor notes</h1>
-        <p className="mt-0.5 text-sm text-zinc-500">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Floor notes</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
           The parser produces a draft, never an event. Mentions resolve by exact id or curated
           alias; ambiguity stays ambiguous. A human confirms the structured event, which forks a
           new scenario revision. History is never rewritten.
@@ -104,7 +104,7 @@ export function NotesPage() {
       </div>
 
       <section className="space-y-2">
-        <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+        <h2 className="text-sm font-semibold text-zinc-800">
           Note (English, max 2,000 characters)
         </h2>
         <textarea
@@ -125,7 +125,7 @@ export function NotesPage() {
           <Button size="sm" variant="outline" onClick={() => { setParse(null); setSourceKind('manual') }}>
             Skip parsing: manual entry
           </Button>
-          <span className="ml-auto text-xs text-zinc-400">
+          <span className="ml-auto text-xs text-zinc-600">
             {parse ? (
               <>
                 draft by <Mono>{parse.parser_kind}</Mono>
@@ -146,7 +146,7 @@ export function NotesPage() {
 
       {parse ? (
         <section className="space-y-2">
-          <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+          <h2 className="text-sm font-semibold text-zinc-800">
             Draft and resolution
           </h2>
           {!draftIsCurrent ? (
@@ -204,7 +204,7 @@ export function NotesPage() {
       ) : null}
 
       <section className="space-y-2">
-        <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+        <h2 className="text-sm font-semibold text-zinc-800">
           Confirm structured event
         </h2>
         <div className="grid gap-3 rounded-lg border bg-white p-3 sm:grid-cols-2">
