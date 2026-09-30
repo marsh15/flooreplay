@@ -80,7 +80,7 @@ jobs:
         run: |
           cd backend
           uv run python -c 'import os; from flooreplay.auth import create_account; create_account(os.environ["E2E_USERNAME"], os.environ["E2E_PASSWORD"], "owner")'
-          uv run uvicorn flooreplay.api:app --host 127.0.0.1 --port 8000 > /tmp/flooreplay-api.log 2>&1 &
+          .venv/bin/python -m uvicorn flooreplay.api:app --host 127.0.0.1 --port 8000 > /tmp/flooreplay-api.log 2>&1 &
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:8000/api/v1/health/ready; then exit 0; fi
             sleep 1
