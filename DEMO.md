@@ -15,7 +15,7 @@ Run `docker compose up --build --wait` and open [the application](http://localho
 5. Sign in and submit/review a current proposal with a rationale. Explain exactly what that records. Approval does not execute factory work or prove resolution.
 6. Print the deterministic report and inspect its revision, report identity, evidence and assumptions. The AI panel is excluded from this print view. The portable JSON export remains available to authenticated users.
 
-Assigned checks, responses and completion evidence remain planned extensions. Do not present proposal approval as completed operational work.
+The second pass adds the assigned-check walkthrough below, with local acceptance recorded on October 1, 2026. Do not present proposal approval as completed operational work.
 
 ## Optional engineering walkthrough
 
@@ -28,3 +28,11 @@ A citation check proves that a reference belongs to the permitted evidence packe
 Trace one CSV through preview validation, immutable revision publication and cutoff filtering. Explain a shortfall calculation using its complete intervals. Explain why late evidence cannot enter an earlier report. Show how the request identity recovers a saved AI result after an interruption, and why an uncertain paid request cannot silently repeat.
 
 The older qualified-operator coverage workflow is archived in [COVERAGE_ARCHIVE.md](COVERAGE_ARCHIVE.md) and the `coverage-v1` Git tag.
+
+## Assigned-check walkthrough
+
+Sign in and create a check from a current proposal. Select an active assignee and a due time. Start the check, then submit a source-linked response with all requested fields. Inspect the resulting evidence revision and confirm that the original report remains unchanged.
+
+Record the action actually taken, completion time, assessment and remaining uncertainty. Optional observed output must include its observation time. Explain that subsequent output does not prove the action caused a change. Show the shift handover and its outstanding checks, owners and deadlines.
+
+Mark the incident resolved only as a separate decision with a rationale, after all checks are completed or cancelled and at least one has a completed outcome. Explain that new evidence makes the old revision-bound resolution stale. Review the full rules in [incident workflow](docs/incident-workflow.md).

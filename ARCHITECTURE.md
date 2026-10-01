@@ -30,7 +30,11 @@ Historical Qwen results remain archived evidence. Recorded OpenAI evidence-only 
 
 ## Workflow completion
 
-Proposal submission and approval record a judgment against a pinned analysis. They do not record factory execution or prove incident resolution. Assigned evidence checks, responses and outcomes are an extension of this boundary. Their implementation and verification must preserve authenticated authorship, immutable source records and separate action and incident states. See [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) for the deliverables and external acceptance gates.
+Proposal submission and approval record a judgment against a pinned analysis. They do not record factory execution or prove incident resolution. `incident_workflow.py` stores assigned checks, append-only activities, outcome records, revision-bound resolution and actor-scoped idempotency receipts. Workflow mutations serialize under the same incident advisory lock as source publication. Task updates also use row locks and an expected-update timestamp. Identical request identities return their saved results; a changed payload conflicts.
+
+Owners and reviewers can read the workflow, assign checks, comment and record resolution. The assignee or owner starts, responds to and completes a check. The creator or owner cancels, reassigns or changes its deadline. Terminal checks accept comments but reject other edits. A source response publishes an immutable revision and raw source artifact. Completion records an action and assessment; it does not establish causation or incident resolution. Resolution requires terminal checks and a completed outcome, pins the current revision and becomes effectively open when new evidence supersedes that revision.
+
+Task metadata and assignee lists require authentication. Published source responses become evidence in the existing public synthetic incident reports. This is not a private customer workspace boundary. The frontend presents latest workflow state separately from the selected historical report and includes its cutoff, open checks and ownership in the printable handover. See [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) for the deliverables and external acceptance gates.
 
 ## Current investigation controls
 

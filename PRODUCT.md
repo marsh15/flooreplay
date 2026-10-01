@@ -6,7 +6,7 @@ FloorReplay helps a production supervisor investigate a sewing-line shortfall an
 
 The application reconstructs an incident from records available at a selected evidence cutoff. It calculates production shortfall, separates supported hypotheses from unanswered questions, retrieves historical precedents, and records proposal review against immutable revisions. Imports preserve their source bytes and interpretation. Corrections create a new revision. AI drafts require human assessment.
 
-All factory records are synthetic. No factory validation or measured operational benefit is established. Proposal approval currently records a review decision; it does not establish that someone performed the action or resolved the incident. Assigned checks and outcome tracking remain follow-up deliverables. The current improvement adds guided entry, library filters and pagination, revision comparisons, state-aware next checks, claim annotations and printable deterministic reports.
+All factory records are synthetic. No factory validation or measured operational benefit is established. Proposal approval currently records a review decision; it does not establish that someone performed the action or resolved the incident. The second improvement pass adds assigned checks, evidence responses, completion outcomes and shift handover, verified locally on October 1, 2026. Incident resolution remains a separate decision tied to a revision. The current improvement adds guided entry, library filters and pagination, revision comparisons, state-aware next checks, claim annotations and printable deterministic reports.
 
 The primary user is a production supervisor. Maintenance staff, planners and industrial engineers may supply evidence or complete checks. Engineers and hiring reviewers are secondary users of the evaluation lab and implementation evidence. The older operator-coverage workbench remains an archived engineering demonstration.
 
@@ -32,3 +32,5 @@ A first-time walkthrough should let a user answer these questions without the au
 8. Provide loading, empty, interrupted, unavailable and error states.
 
 Avoid confidence percentages without a defensible measurement, unsupported causal claims, decorative gauges and claims of factory readiness based only on synthetic software tests.
+
+The [incident workflow](docs/incident-workflow.md) defines task states, assignment permissions, immutable evidence responses and outcome limitations. Task metadata requires authentication, but source responses become evidence in public synthetic demo reports. Authenticated task access does not establish private workspace confidentiality.

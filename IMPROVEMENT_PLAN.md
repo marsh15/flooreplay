@@ -7,7 +7,7 @@ This is an ordered backlog, not a claim that all items are implemented. Syntheti
 ## Delivery order
 
 1. Correct the product story and make the existing example understandable. Keep engineering fixtures outside the default supervisor library.
-2. Refine next checks, compare revisions and provide printable deterministic reports in this pass. Follow with assigned evidence checks and outcomes. Keep approval, completed action and resolved incident distinct.
+2. Refine next checks, compare revisions and provide printable deterministic reports in this pass. The second pass adds assigned evidence checks, responses, outcomes and shift handover, verified locally on October 1, 2026. Keep approval, completed action and resolved incident distinct.
 3. Next, reduce import preparation through examples and explicit column interpretation. Preserve the raw input, preview digest and corrected revisions.
 4. Enable claim annotation against the exact generated output. Repair any contract defect on development cases and use a fresh holdout for acceptance.
 5. Obtain practitioner feedback before building broader integrations, calendars or plan revision behavior. Use the interview and pilot protocols below.
@@ -24,12 +24,12 @@ The number maps to the original review. "Now" means a bounded deliverable in the
 | 3. Measure the existing process | External | Comparable spreadsheet/phone and FloorReplay cases | Actual timed observations, errors and assistance; [pilot template](docs/comparative-pilot.md) |
 | 4. Correct documentation | Now | Product, demo, architecture, README and release evidence agree | No legacy workflow or unsupported release claims |
 | 5. Explain the project | Now | Unscripted end-to-end explanation checklist in demo | Author traces and changes one real flow; demonstration still needs a person |
-| 6. Assign and complete actions | Next | Assignee, due time, status, comments and completion evidence | Authenticated user assigns, answers and closes a check; escalation is a subsequent requirement |
-| 7. Request missing evidence | Next | Specific requested fields and finding reference; response creates evidence | New revision reflects response; prior report remains unchanged |
-| 8. Record outcomes | Next | Action taken, completion time, observed output and supervisor assessment | Outcome preserves causal uncertainty and authorship |
+| 6. Assign and complete actions | Verified locally | Assignee, due time, status, comments and completion evidence | Authenticated user assigns, answers and closes a check; manual escalation records a reassignment reason; automated notifications remain follow-up work |
+| 7. Request missing evidence | Verified locally | Specific requested fields and finding reference; response creates evidence | New revision reflects response; prior report remains unchanged |
+| 8. Record outcomes | Verified locally | Action taken, completion time, observed output and supervisor assessment | Outcome preserves causal uncertainty and authorship |
 | 9. Compare revisions | Now | Added/corrected sources, metric changes and stale proposals | User explains the change without mentally combining two reports |
 | 10. Refine next checks | Now | Questions depend on supported and unresolved findings | Confirmed interval removes the redundant confirmation question |
-| 11. Shift handover | Next | Printable summary with open checks, owners and latest evidence time | Next supervisor can continue from the report |
+| 11. Shift handover | Verified locally | Printable summary with open checks, owners and latest evidence time | Next supervisor can continue from the report |
 | 12. Spreadsheet ingestion | Next | Downloadable examples and explicit column mapping with previews | Unfamiliar CSV imports without code changes; saved mappings and XLSX follow practitioner need |
 | 13. Cumulative output | Next | Explicit delta/cumulative interpretation and preserved readings | Resets, duplicates and gaps remain traceable or unresolved |
 | 14. Identifier reconciliation | Next | Reviewed alias map with original identity and version | Ambiguous matches stop for review |
@@ -48,7 +48,7 @@ The number maps to the original review. "Now" means a bounded deliverable in the
 | 27. Separate status meanings | Now | Calculation, evidence and action labels | Completed arithmetic cannot imply confirmed cause or resolved incident |
 | 28. Hide evaluation fixtures | Now | Curated library with explicit engineering view, filters and pagination | Default browsing excludes development/locked fixtures; filtering and pagination work in the current build |
 | 29. Safe interactive demo | Next | Isolated workspace or clearly labeled local simulation | Visitor completes a flow without shared mutation or owner access |
-| 30. Supervisor exports | Now | Printable deterministic report with facts, uncertainties, revision/report identity and existing reviewer roles | Report works outside the app; named action assignees await the task lifecycle; Tamil support follows terminology research |
+| 30. Supervisor exports | Now | Printable deterministic report with facts, uncertainties, revision/report identity and existing reviewer roles | Report works outside the app; named action assignees are covered by the workflow extension; Tamil support follows terminology research |
 | 31. Hosted acceptance | External | Dated commit/URL report for login, roles, import, review, export and recovery | Actual authenticated hosted observations, not configuration tests |
 | 32. Monitoring | Next | Searchable operation IDs, failures, latency, import health and allowance | Injected failure can be traced; actionable alert destination configured |
 | 33. Long-running operations | Next | Inspect current durable requests under interruption/concurrency | Add worker only if evidence warrants it; no duplicate possibly billed request |
@@ -68,4 +68,4 @@ Record each implementation gate with the commit, commands or steps, actual resul
 
 ## Current pass implementation
 
-The current pass implements guided entry, the curated library with filters and pagination, distinct status labels, revision comparisons, state-aware next checks, authenticated claim review and printable deterministic reports. Assigned operational tasks, responses, outcomes and spreadsheet column mapping remain follow-up work. Local verification results are recorded in [RELEASE_STATUS.md](RELEASE_STATUS.md).
+The current pass implements guided entry, the curated library with filters and pagination, distinct status labels, revision comparisons, state-aware next checks, authenticated claim review and printable deterministic reports. The second pass implements assigned checks, evidence responses, completion outcomes and shift handover, verified locally on October 1, 2026. Spreadsheet column mapping remains the third-pass priority. See [incident workflow](docs/incident-workflow.md) for status, permission and revision rules. Local verification results are recorded in [RELEASE_STATUS.md](RELEASE_STATUS.md).
