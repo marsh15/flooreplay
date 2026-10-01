@@ -396,6 +396,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/incidents/imports/inspect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Inspect Incident Columns */
+        post: operations["inspect_incident_columns_api_v1_incidents_imports_inspect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/incidents/imports/preview": {
         parameters: {
             query?: never;
@@ -1021,6 +1038,14 @@ export interface components {
             incident_id: string;
             /** Title */
             title: string;
+            /** Column Mapping */
+            column_mapping?: {
+                [key: string]: string;
+            } | null;
+            /** Field Defaults */
+            field_defaults?: {
+                [key: string]: string;
+            } | null;
             /** Scope */
             scope: {
                 [key: string]: string;
@@ -1043,6 +1068,15 @@ export interface components {
             preview_digest: string;
             /** Idempotency Key */
             idempotency_key: string;
+        };
+        /** IncidentCsvInspectRequest */
+        IncidentCsvInspectRequest: {
+            /** Raw Text */
+            raw_text: string;
+            /** Filename */
+            filename: string;
+            /** Profile */
+            profile: string;
         };
         /** IncidentDraftRequest */
         IncidentDraftRequest: {
@@ -1090,6 +1124,14 @@ export interface components {
             filename: string;
             /** Unit */
             unit?: string | null;
+            /** Column Mapping */
+            column_mapping?: {
+                [key: string]: string;
+            } | null;
+            /** Field Defaults */
+            field_defaults?: {
+                [key: string]: string;
+            } | null;
         };
         /** IncidentPublishRequest */
         IncidentPublishRequest: {
@@ -1115,6 +1157,14 @@ export interface components {
             filename: string;
             /** Unit */
             unit?: string | null;
+            /** Column Mapping */
+            column_mapping?: {
+                [key: string]: string;
+            } | null;
+            /** Field Defaults */
+            field_defaults?: {
+                [key: string]: string;
+            } | null;
             /** Preview Digest */
             preview_digest: string;
             /** Idempotency Key */
@@ -1939,6 +1989,41 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inspect_incident_columns_api_v1_incidents_imports_inspect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncidentCsvInspectRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

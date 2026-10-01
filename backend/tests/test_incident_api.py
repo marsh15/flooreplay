@@ -168,7 +168,7 @@ def test_new_incident_from_previewed_production_source(owner_headers) -> None:
     ]
     client = TestClient(app, headers=owner_headers)
     raw = json.dumps(rows)
-    preview_body = {"incident_id": incident_id, "base_revision": 1, "cutoff": "2026-09-20T09:15:00+05:30", "raw_text": raw, "profile": "production-v1", "source_system": "test-ledger", "timezone": "Asia/Kolkata", "filename": "new.json", "unit": "good_units", "scope": scope}
+    preview_body = {"incident_id": incident_id, "base_revision": 0, "cutoff": "2026-09-20T09:15:00+05:30", "raw_text": raw, "profile": "production-v1", "source_system": "test-ledger", "timezone": "Asia/Kolkata", "filename": "new.json", "unit": "good_units", "scope": scope}
     preview = client.post("/api/v1/incidents/imports/preview", json=preview_body)
     assert preview.status_code == 200 and preview.json()["status"] == "READY"
     create_body = {"incident_id": incident_id, "title": "Test line start", "scope": scope, "window": {"start": "2026-09-20T09:00:00+05:30", "end": "2026-09-20T09:15:00+05:30"}, "cutoff": preview_body["cutoff"], "raw_text": raw, "source_system": "test-ledger", "timezone": "Asia/Kolkata", "filename": "new.json", "preview_digest": preview.json()["preview_digest"], "idempotency_key": f"new-{uuid.uuid4().hex}"}

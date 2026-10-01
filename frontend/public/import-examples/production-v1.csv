@@ -1,0 +1,2 @@
+id,record_type,available_at,start,end,quantity,unit,count_mode,factory,line_id,order_id,style_id,stage,supersedes_id
+csv-plan-1,baseline_plan,2026-09-28T08:45:00+05:30,2026-09-28T09:00:00+05:30,2026-09-28T09:15:00+05:30,20,good_units,delta,Synthetic CSV factory,S-CSV,ORD-CSV,STYLE-CSV,sewing,

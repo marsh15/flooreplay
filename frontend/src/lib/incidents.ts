@@ -197,6 +197,13 @@ export interface IncidentEvaluationReport {
 }
 
 export type IncidentImportBody = Omit<components['schemas']['IncidentImportRequest'], 'profile'> & { profile: 'production-v1' | 'operations-v1' | 'notes-v1' }
+export interface IncidentCsvInspection {
+  headers: string[]
+  sample_rows: Record<string, string>[]
+  row_count: number
+  fields: { name: string; required: boolean; description: string }[]
+}
+export type IncidentCsvInspectRequest = Omit<components['schemas']['IncidentCsvInspectRequest'], 'profile'> & { profile: IncidentImportBody['profile'] }
 export type AiClaimReviewRequest = components['schemas']['AIClaimReviewRequest']
 export interface AiClaimReview { id: string; run_id: string; claim_path: string; supported: boolean; actor: string; rationale?: string; output_digest?: string; created_at?: string }
 export type AiRunRequest = Omit<components['schemas']['IncidentDraftRequest'], 'task' | 'retrieval_mode'> & { task: AiTask; retrieval_mode: 'evidence_only' | 'hybrid' }
@@ -308,6 +315,7 @@ export const incidentApi = {
       return savedEvaluation as IncidentEvaluationReport
     }
   },
+  inspectCsv: (body: IncidentCsvInspectRequest) => request<IncidentCsvInspection>('/incidents/imports/inspect', { method: 'POST', body: JSON.stringify(body) }),
   previewImport: (body: IncidentImportBody) => request<IncidentImportPreview>('/incidents/imports/preview', { method: 'POST', body: JSON.stringify(body) }),
   publishImport: (body: IncidentImportBody, previewDigest: string, idempotencyKey: string) => request<IncidentRevision>('/incidents/imports/publish', { method: 'POST', body: JSON.stringify({ ...body, preview_digest: previewDigest, idempotency_key: idempotencyKey } satisfies components['schemas']['IncidentPublishRequest']) }),
   createIncident: (body: NewIncidentBody) => request<IncidentRevision>('/incidents', { method: 'POST', body: JSON.stringify(body) }),

@@ -39,7 +39,9 @@ def _list_field(value: Any) -> list[Any]:
 
 
 def preview_identity(preview: dict[str, Any]) -> str:
-    fields = ("raw_digest", "profile", "source_system", "timezone", "filename", "requested_unit", "scope", "interpretation_version", "plan_buckets", "output_buckets", "events", "issues", "status")
+    fields: tuple[str, ...] = ("raw_digest", "profile", "source_system", "timezone", "filename", "requested_unit", "scope", "interpretation_version", "plan_buckets", "output_buckets", "events", "issues", "status")
+    if "column_mapping" in preview or "field_defaults" in preview:
+        fields += ("column_mapping", "field_defaults")
     encoded = json.dumps({field: preview.get(field) for field in fields}, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
@@ -63,21 +65,82 @@ def _time(value: Any, timezone: ZoneInfo) -> str:
     return moment.isoformat()
 
 
+FIELD_DESCRIPTIONS = {
+    "id": "Unique source record ID; retained in evidence links.",
+    "record_type": "Production: baseline_plan/final_good_delta; otherwise a supported operations or note type.",
+    "available_at": "ISO timestamp when this source became available, independently of occurrence.",
+    "source_id": "Optional original source identity; otherwise source_system:id.",
+    "supersedes_id": "Original record ID corrected by this row; originals remain immutable.",
+    "factory": "Factory scope name.", "line_id": "Line scope ID.",
+    "order_id": "Order scope ID.", "style_id": "Style scope ID.", "stage": "Production stage; launch supports sewing.",
+    "start": "ISO start timestamp; production needs a 15-minute boundary, block intervals need start and end.",
+    "end": "ISO end timestamp; production must be exactly 15 minutes after start.",
+    "quantity": "Nonnegative integer good-unit delta for this interval; never cumulative.",
+    "unit": "Explicit good_units declaration, or the separately declared import unit.",
+    "count_mode": "Mapped production must explicitly declare delta, through a column or constant; cumulative counts are unsupported.",
+    "summary": "Source observation text, 1–2000 characters; text is an alternative.",
+    "text": "Alternative source observation text when summary is absent.",
+    "occurred_at": "ISO observation timestamp; provide occurred_at or start for each event.",
+    "author_role": "Required source attribution for maintenance and supervisor notes.",
+    "line_blocking": "Explicit true only for a line_block with start/end; prose never confirms a block.",
+    "hypothesis_links": "JSON array of category/relation links; relation is SUPPORTS or CONTRADICTS.",
+    "linked_categories": "JSON array of supported hypothesis categories.",
+    "contradicts_categories": "JSON array of contradicted hypothesis categories.",
+    "contradiction_refs": "JSON array of conflicting source record IDs.",
+    "contradicts": "Single conflicting source record ID.",
+    "carry_in_state": "Optional UNRESOLVED for observations carried into this window.",
+}
+
+
+def import_fields(profile: str) -> list[dict[str, Any]]:
+    if profile not in PROFILES:
+        raise ValueError("Choose a supported incident import profile")
+    required = {"id", "record_type", "available_at", "line_id"}
+    names = ["id", "record_type", "available_at", "source_id", "supersedes_id", "factory", "line_id", "order_id", "style_id", "stage"]
+    if profile == "production-v1":
+        names += ["start", "end", "quantity", "unit", "count_mode"]
+        required.update({"factory", "order_id", "style_id", "stage", "start", "end", "quantity", "unit", "count_mode"})
+    else:
+        names += ["summary", "text", "occurred_at", "start", "end", "line_blocking", "hypothesis_links", "linked_categories", "contradicts_categories", "contradiction_refs", "contradicts", "carry_in_state"]
+        if profile == "notes-v1":
+            names.append("author_role")
+            required.add("author_role")
+    return [{"name": name, "required": name in required, "description": FIELD_DESCRIPTIONS[name]} for name in names]
+
+
+def _csv_records(raw: bytes) -> tuple[list[str], list[dict[str, str]]]:
+    if not raw or len(raw) > MAX_BYTES:
+        raise ValueError("File must contain 1 byte to 2 MiB")
+    reader = csv.DictReader(io.StringIO(raw.decode("utf-8-sig"), newline=""), strict=True)
+    headers = reader.fieldnames
+    if not headers or any(not header.strip() for header in headers) or len(headers) != len(set(headers)):
+        raise ValueError("CSV needs unique nonblank headers")
+    rows: list[dict[str, str]] = []
+    for row in reader:
+        if None in row or any(value is None for value in row.values()):
+            raise ValueError(f"CSV row {reader.line_num} has a different number of cells than headers")
+        rows.append(row)
+        if len(rows) > MAX_ROWS:
+            raise ValueError("More than 10,000 rows")
+    return list(headers), rows
+
+
+def inspect_incident_csv(raw: bytes, *, filename: str, profile: str) -> dict[str, Any]:
+    if PurePath(filename).suffix.lower() != ".csv" or filename.startswith(("http://", "https://")):
+        raise ValueError("Column inspection requires a local .csv file")
+    fields = import_fields(profile)
+    try:
+        headers, rows = _csv_records(raw)
+    except (UnicodeDecodeError, csv.Error) as exc:
+        raise ValueError(f"File cannot be decoded: {type(exc).__name__}") from exc
+    return {"headers": headers, "sample_rows": rows[:5], "row_count": len(rows), "fields": fields}
+
+
 def _records(raw: bytes, filename: str) -> list[dict[str, Any]]:
-    text = raw.decode("utf-8-sig")
     suffix = PurePath(filename).suffix.lower()
     if suffix == ".csv":
-        reader = csv.DictReader(io.StringIO(text, newline=""), strict=True)
-        if not reader.fieldnames or len(reader.fieldnames) != len(set(reader.fieldnames)):
-            raise ValueError("CSV needs unique headers")
-        csv_rows: list[dict[str, Any]] = []
-        for row in reader:
-            if None in row:
-                raise ValueError("CSV row has more cells than headers")
-            csv_rows.append(row)
-            if len(csv_rows) > MAX_ROWS:
-                raise ValueError("More than 10,000 rows")
-        return csv_rows
+        return list(_csv_records(raw)[1])
+    text = raw.decode("utf-8-sig")
     if suffix == ".json":
         payload = json.loads(text)
         rows = payload.get("records") if isinstance(payload, dict) else payload
@@ -90,6 +153,30 @@ def _records(raw: bytes, filename: str) -> list[dict[str, Any]]:
     if len(rows) > MAX_ROWS:
         raise ValueError("More than 10,000 rows")
     return rows
+
+
+def _mapped_records(raw: bytes, filename: str, profile: str, column_mapping: dict[str, str] | None, field_defaults: dict[str, str] | None) -> list[dict[str, Any]]:
+    if column_mapping is None and field_defaults is None:
+        return _records(raw, filename)
+    if PurePath(filename).suffix.lower() != ".csv":
+        raise ValueError("Column mappings and field defaults apply only to CSV files")
+    headers, rows = _csv_records(raw)
+    allowed = {field["name"] for field in import_fields(profile)}
+    mapping = column_mapping if column_mapping is not None else {header: header for header in headers if header in allowed}
+    defaults = field_defaults or {}
+    if (set(mapping) | set(defaults)) - allowed:
+        raise ValueError("Unknown canonical field in column mapping or defaults")
+    if set(mapping) & set(defaults):
+        raise ValueError("A field cannot have both a mapped column and a default")
+    if profile == "production-v1" and "count_mode" not in mapping and "count_mode" not in defaults:
+        raise ValueError("Mapped production requires explicit count_mode: map a delta column or declare a delta default")
+    if len(set(mapping.values())) != len(mapping):
+        raise ValueError("A source header cannot map to more than one canonical field")
+    if any(header not in headers for header in mapping.values()):
+        raise ValueError("Mapped source header is missing from the CSV")
+    if any(not isinstance(value, str) or not value.strip() or len(value) > 2000 for value in defaults.values()):
+        raise ValueError("Field defaults must contain 1–2000 characters")
+    return [{**defaults, **{field: row[header] for field, header in mapping.items()}} for row in rows]
 
 
 def _normalize(row: dict[str, Any], profile: str, source_system: str, timezone: ZoneInfo, unit: str | None) -> tuple[str, dict[str, Any]]:
@@ -190,6 +277,7 @@ def _normalize(row: dict[str, Any], profile: str, source_system: str, timezone: 
 def preview_incident_import(
     raw: bytes, *, profile: str, source_system: str, timezone: str,
     filename: str, unit: str | None = None, scope: dict[str, str] | None = None,
+    column_mapping: dict[str, str] | None = None, field_defaults: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Return diagnostics and normalized records; any issue blocks publication."""
     if profile not in PROFILES or not source_system.strip() or not timezone.strip():
@@ -203,7 +291,7 @@ def preview_incident_import(
     if not raw or len(raw) > MAX_BYTES:
         raise ValueError("File must contain 1 byte to 2 MiB")
     try:
-        rows = _records(raw, filename)
+        rows = _mapped_records(raw, filename, profile, column_mapping, field_defaults)
     except (UnicodeDecodeError, csv.Error, json.JSONDecodeError) as exc:
         raise ValueError(f"File cannot be decoded: {type(exc).__name__}") from exc
     if not rows:
@@ -233,6 +321,8 @@ def preview_incident_import(
         "raw_digest": hashlib.sha256(raw).hexdigest(), "row_count": len(rows),
         "issues": issues, **normalized,
     }
+    if column_mapping is not None or field_defaults is not None:
+        preview.update(column_mapping=column_mapping, field_defaults=field_defaults, interpretation_version="incident-import-v3")
     preview["preview_digest"] = preview_identity(preview)
     return preview
 

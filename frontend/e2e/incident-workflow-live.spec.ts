@@ -23,14 +23,14 @@ async function createIsolatedInvestigation(request: APIRequestContext) {
     { ...scope, ...interval, id: `plan-${index}`, record_type: 'baseline_plan', quantity: 20, available_at: '2026-09-20T08:00:00+05:30' },
     { ...scope, ...interval, id: `output-${index}`, record_type: 'final_good_delta', quantity: 10, available_at: interval.end },
   ])
-  const production = { incident_id: incidentId, base_revision: 1, cutoff: intervals[1].end, raw_text: JSON.stringify(rows), profile: 'production-v1', source_system: 'synthetic-output-ledger', timezone: 'Asia/Kolkata', filename: 'production.json', unit: 'good_units', scope }
+  const production = { incident_id: incidentId, base_revision: 0, cutoff: intervals[1].end, raw_text: JSON.stringify(rows), profile: 'production-v1', source_system: 'synthetic-output-ledger', timezone: 'Asia/Kolkata', filename: 'production.json', unit: 'good_units', scope }
   const preview = await request.post(`${apiBase}/incidents/imports/preview`, { headers, data: production })
   expect(preview.ok()).toBeTruthy()
   const parsedPreview = await preview.json()
   expect(parsedPreview.status).toBe('READY')
   const created = await request.post(`${apiBase}/incidents`, { headers, data: { ...production, title: 'Synthetic assigned maintenance check', window: { start: intervals[0].start, end: intervals[1].end }, preview_digest: parsedPreview.preview_digest, idempotency_key: crypto.randomUUID() } })
   expect(created.ok()).toBeTruthy()
-  const operations = { ...production, cutoff: '2026-09-20T09:45:00+05:30', profile: 'operations-v1', filename: 'operations.json', raw_text: JSON.stringify([{ ...scope, id: 'machine-stop', record_type: 'machine_interruption', summary: 'Machine WF12 stopped; line impact needs confirmation.', start: '2026-09-20T09:10:00+05:30', end: '2026-09-20T09:20:00+05:30', available_at: '2026-09-20T09:35:00+05:30' }]) }
+  const operations = { ...production, base_revision: 1, cutoff: '2026-09-20T09:45:00+05:30', profile: 'operations-v1', filename: 'operations.json', raw_text: JSON.stringify([{ ...scope, id: 'machine-stop', record_type: 'machine_interruption', summary: 'Machine WF12 stopped; line impact needs confirmation.', start: '2026-09-20T09:10:00+05:30', end: '2026-09-20T09:20:00+05:30', available_at: '2026-09-20T09:35:00+05:30' }]) }
   const operationsPreview = await request.post(`${apiBase}/incidents/imports/preview`, { headers, data: operations })
   expect(operationsPreview.ok()).toBeTruthy()
   const published = await request.post(`${apiBase}/incidents/imports/publish`, { headers, data: { ...operations, preview_digest: (await operationsPreview.json()).preview_digest, idempotency_key: crypto.randomUUID() } })

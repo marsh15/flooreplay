@@ -232,6 +232,7 @@ def publish_source(
     session: Session, *, incident_id: str, base_revision: int, cutoff: str,
     raw_text: str, profile: str, source_system: str, timezone: str,
     filename: str, unit: str | None, idempotency_key: str, preview_digest: str,
+    column_mapping: dict[str, str] | None = None, field_defaults: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     try:
         new_cutoff = datetime.fromisoformat(cutoff.replace("Z", "+00:00"))
@@ -248,13 +249,15 @@ def publish_source(
             or existing.profile != profile or existing.source_system != source_system
             or existing.filename != filename or existing.preview.get("timezone") != timezone
             or existing.preview.get("requested_unit") != unit
+            or existing.preview.get("column_mapping") != column_mapping
+            or existing.preview.get("field_defaults") != field_defaults
             or prior.cutoff != new_cutoff
         ):
             raise ServiceError("IDEMPOTENCY_CONFLICT", "Key already used for another import", 409)
         return incident_detail(session, incident_id, existing.revision)
     base = _revision(session, incident_id, base_revision)
     try:
-        preview = preview_incident_import(raw_text.encode("utf-8"), scope=base.payload["scope"], profile=profile, source_system=source_system, timezone=timezone, filename=filename, unit=unit)
+        preview = preview_incident_import(raw_text.encode("utf-8"), scope=base.payload["scope"], profile=profile, source_system=source_system, timezone=timezone, filename=filename, unit=unit, column_mapping=column_mapping, field_defaults=field_defaults)
     except ValueError as exc:
         raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
     if preview["preview_digest"] != preview_digest:
@@ -315,6 +318,7 @@ def create_incident_from_source(
     session: Session, *, incident_id: str, title: str, scope: dict[str, str],
     window: dict[str, str], cutoff: str, raw_text: str, source_system: str,
     timezone: str, filename: str, preview_digest: str, idempotency_key: str,
+    column_mapping: dict[str, str] | None = None, field_defaults: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     session.execute(select(func.pg_advisory_xact_lock(func.hashtext(idempotency_key))))
     session.execute(select(func.pg_advisory_xact_lock(func.hashtext(incident_id))))
@@ -325,6 +329,8 @@ def create_incident_from_source(
             existing.incident_id != incident_id or existing.raw_digest != sha256(raw_text.encode()).hexdigest()
             or existing.preview.get("preview_digest") != preview_digest or existing.source_system != source_system
             or existing.filename != filename or existing.preview.get("timezone") != timezone
+            or existing.preview.get("column_mapping") != column_mapping
+            or existing.preview.get("field_defaults") != field_defaults
             or row.title != title or row.payload["scope"] != scope
             or row.payload["window"] != window or row.payload["cutoff"] != cutoff
         ):
@@ -345,7 +351,7 @@ def create_incident_from_source(
     if any(value.tzinfo is None for value in (start, end, cutoff_at)) or not start < end or cutoff_at < start:
         raise ServiceError("INVALID_WINDOW", "Window and cutoff are invalid", 422)
     try:
-        preview = preview_incident_import(raw_text.encode("utf-8"), profile="production-v1", source_system=source_system, timezone=timezone, filename=filename, unit="good_units", scope=scope)
+        preview = preview_incident_import(raw_text.encode("utf-8"), profile="production-v1", source_system=source_system, timezone=timezone, filename=filename, unit="good_units", scope=scope, column_mapping=column_mapping, field_defaults=field_defaults)
     except ValueError as exc:
         raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
     if preview["preview_digest"] != preview_digest:

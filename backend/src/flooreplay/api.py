@@ -38,7 +38,7 @@ from .db import session_scope
 from .fixtures import CATALOG, CONFIGURATIONS
 from .importing import ImportStructuralError, preview_import
 from .incident_evaluation import evaluation_report
-from .incident_import import preview_incident_import
+from .incident_import import inspect_incident_csv, preview_incident_import
 from .incident_service import (
     analysis_evidence,
     analysis_view,
@@ -183,6 +183,14 @@ class IncidentImportRequest(BaseModel):
     timezone: str = Field(min_length=1, max_length=64)
     filename: str = Field(min_length=1, max_length=120)
     unit: str | None = None
+    column_mapping: dict[str, str] | None = None
+    field_defaults: dict[str, str] | None = None
+
+
+class IncidentCsvInspectRequest(BaseModel):
+    raw_text: str = Field(min_length=1, max_length=2 * 1024 * 1024)
+    filename: str = Field(min_length=1, max_length=120)
+    profile: str = Field(min_length=1, max_length=32)
 
 
 class IncidentPublishRequest(IncidentImportRequest):
@@ -193,6 +201,8 @@ class IncidentPublishRequest(IncidentImportRequest):
 class IncidentCreateRequest(BaseModel):
     incident_id: str = Field(min_length=1, max_length=64)
     title: str = Field(min_length=3, max_length=200)
+    column_mapping: dict[str, str] | None = None
+    field_defaults: dict[str, str] | None = None
     scope: dict[str, str]
     window: dict[str, str]
     cutoff: str
@@ -537,10 +547,23 @@ def create_app(mode: str | None = None) -> FastAPI:
         with session_scope() as session:
             return create_incident_from_source(session, **body.model_dump())
 
+    @app.post("/api/v1/incidents/imports/inspect")
+    def inspect_incident_columns(body: IncidentCsvInspectRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
+        try:
+            return inspect_incident_csv(body.raw_text.encode("utf-8"), filename=body.filename, profile=body.profile)
+        except ValueError as exc:
+            raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
+
     @app.post("/api/v1/incidents/imports/preview")
     def preview_incident_source(body: IncidentImportRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
+        scope = body.scope
+        if body.base_revision > 0:
+            with session_scope() as session:
+                scope = incident_detail(session, body.incident_id, body.base_revision)["scope"]
+            if body.scope is not None and body.scope != scope:
+                raise ServiceError("SCOPE_MISMATCH", "Use the scope pinned to this incident revision", 422)
         try:
-            return preview_incident_import(body.raw_text.encode("utf-8"), profile=body.profile, source_system=body.source_system, timezone=body.timezone, filename=body.filename, unit=body.unit, scope=body.scope)
+            return preview_incident_import(body.raw_text.encode("utf-8"), profile=body.profile, source_system=body.source_system, timezone=body.timezone, filename=body.filename, unit=body.unit, scope=scope, column_mapping=body.column_mapping, field_defaults=body.field_defaults)
         except ValueError as exc:
             raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
 

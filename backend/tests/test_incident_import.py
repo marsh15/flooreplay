@@ -102,3 +102,79 @@ def test_imported_links_support_and_counterevidence_reproduce_engine_relationshi
     report = analyze_incident({"scope": {"line_id": "S4", "unit": "good_units"}, "window": {"start": "2026-09-28T09:00:00+05:30", "end": "2026-09-28T09:30:00+05:30"}, "cutoff": "2026-09-28T09:30:00+05:30", **publish_incident_import(preview)})
     assert report["hypotheses"][0]["status"] == "CONTRADICTED"
     assert report["hypotheses"][0]["contradicting_evidence"] == ["denial"]
+
+
+def test_inspection_keeps_original_headers_and_bounds_samples():
+    from flooreplay.incident_import import inspect_incident_csv
+
+    raw = b'Row ID,Good Output\n' + b''.join(f'r{i},{i}\n'.encode() for i in range(7))
+    inspected = inspect_incident_csv(raw, filename='shift.csv', profile='production-v1')
+    assert inspected['headers'] == ['Row ID', 'Good Output']
+    assert inspected['row_count'] == 7 and len(inspected['sample_rows']) == 5
+    assert inspected['sample_rows'][0] == {'Row ID': 'r0', 'Good Output': '0'}
+    fields = {field['name']: field for field in inspected['fields']}
+    assert fields['count_mode']['required'] is True
+    assert {'source_id', 'supersedes_id'} <= set(fields)
+    notes = inspect_incident_csv(raw, filename='notes.csv', profile='notes-v1')
+    assert {'author_role', 'hypothesis_links', 'contradiction_refs'} <= {field['name'] for field in notes['fields']}
+
+
+@pytest.mark.parametrize('raw', [b'id,id\na,b\n', b'id,  \na,b\n', b'id,name\na\n', b'id,name\na,b,c\n'])
+def test_csv_structural_errors_use_shared_inspection_and_preview_parser(raw):
+    from flooreplay.incident_import import inspect_incident_csv
+
+    with pytest.raises(ValueError):
+        inspect_incident_csv(raw, filename='shift.csv', profile='production-v1')
+    with pytest.raises(ValueError):
+        preview_incident_import(raw, **META)
+
+
+def test_explicit_mapping_defaults_and_identity_are_part_of_interpretation():
+    raw = b'Identity,Kind,Known at,From,To,Good Qty,Same Qty\nr1,final_good_delta,2026-09-28T09:15:00,2026-09-28T09:00:00,2026-09-28T09:15:00,12,12\n'
+    mapping = {'id': 'Identity', 'record_type': 'Kind', 'available_at': 'Known at', 'start': 'From', 'end': 'To', 'quantity': 'Good Qty'}
+    defaults = {'unit': 'good_units', 'factory': 'Synthetic A', 'line_id': 'S4', 'order_id': 'ORD-1', 'style_id': 'ST-42', 'stage': 'sewing', 'count_mode': 'delta'}
+    preview = preview_incident_import(raw, **META, column_mapping=mapping, field_defaults=defaults)
+    assert preview['status'] == 'READY'
+    assert preview['output_buckets'][0]['quantity'] == 12
+    assert preview['column_mapping'] == mapping and preview['field_defaults'] == defaults
+    alternate = preview_incident_import(raw, **META, column_mapping={**mapping, 'quantity': 'Same Qty'}, field_defaults=defaults)
+    assert alternate['output_buckets'] == preview['output_buckets']
+    assert alternate['raw_digest'] == preview['raw_digest'] and alternate['preview_digest'] != preview['preview_digest']
+    empty = preview_incident_import(_production(), **META, column_mapping={}, field_defaults={'count_mode': 'delta'})
+    assert empty['status'] == 'BLOCKED' and not empty['output_buckets']
+    legacy = preview_incident_import(_production(), **META)
+    assert legacy['interpretation_version'] == 'incident-import-v2' and 'column_mapping' not in legacy
+
+
+@pytest.mark.parametrize('mapping,defaults,message', [
+    ({'unknown': 'id'}, {'count_mode': 'delta'}, 'Unknown canonical'),
+    ({'id': 'id'}, {'id': 'constant-id', 'count_mode': 'delta'}, 'both a mapped'),
+    ({'id': 'id', 'source_id': 'id'}, {'count_mode': 'delta'}, 'more than one'),
+    ({'id': 'missing'}, {'count_mode': 'delta'}, 'missing'),
+    ({'id': 'id'}, {}, 'explicit count_mode'),
+])
+def test_mapping_rejects_ambiguous_or_unconfirmed_interpretation(mapping, defaults, message):
+    with pytest.raises(ValueError, match=message):
+        preview_incident_import(_production(), **META, column_mapping=mapping, field_defaults=defaults)
+
+
+def test_mapping_csv_only_and_blank_source_values_never_default():
+    with pytest.raises(ValueError, match='only to CSV'):
+        preview_incident_import(b'[]', **{**META, 'filename': 'output.json'}, column_mapping={})
+    raw = _production().replace(b',12,', b',,')
+    mapping = {field: field for field in HEADERS.strip().split(',')}
+    result = preview_incident_import(raw, **META, column_mapping=mapping, field_defaults={'count_mode': 'delta'})
+    assert result['status'] == 'BLOCKED' and 'quantity' in result['issues'][0]['message']
+
+
+@pytest.mark.parametrize('profile,kind,extra', [
+    ('operations-v1', 'line_block', {'line_blocking': 'true', 'start': '2026-09-28T09:00:00', 'end': '2026-09-28T09:15:00'}),
+    ('notes-v1', 'maintenance_note', {'author_role': 'Technician'}),
+])
+def test_mapped_operations_and_notes_preserve_typed_links(profile, kind, extra):
+    raw = b'Ticket,Observation,Known,Occurred\nN1,Recorded source observation,2026-09-28T09:20:00,2026-09-28T09:10:00\n'
+    result = preview_incident_import(raw, profile=profile, source_system='shift-log', timezone='Asia/Kolkata', filename='events.csv', column_mapping={'id': 'Ticket', 'summary': 'Observation', 'available_at': 'Known', 'occurred_at': 'Occurred'}, field_defaults={'record_type': kind, 'line_id': 'S4', 'hypothesis_links': '[{"category":"machine","relation":"SUPPORTS"}]', **extra})
+    assert result['status'] == 'READY'
+    event = result['events'][0]
+    assert event['hypothesis_links'] == [{'category': 'machine', 'relation': 'SUPPORTS', 'source_id': 'shift-log:N1'}]
+    assert (event.get('assertion') is True) == (profile == 'notes-v1')

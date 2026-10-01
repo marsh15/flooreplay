@@ -883,6 +883,46 @@
         }
       }
     },
+    "/api/v1/incidents/imports/inspect": {
+      "post": {
+        "summary": "Inspect Incident Columns",
+        "operationId": "inspect_incident_columns_api_v1_incidents_imports_inspect_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentCsvInspectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Inspect Incident Columns Api V1 Incidents Imports Inspect Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/incidents/imports/preview": {
       "post": {
         "summary": "Preview Incident Source",
@@ -2552,6 +2592,34 @@
             "minLength": 3,
             "title": "Title"
           },
+          "column_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Column Mapping"
+          },
+          "field_defaults": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Defaults"
+          },
           "scope": {
             "additionalProperties": {
               "type": "string"
@@ -2620,6 +2688,35 @@
           "idempotency_key"
         ],
         "title": "IncidentCreateRequest"
+      },
+      "IncidentCsvInspectRequest": {
+        "properties": {
+          "raw_text": {
+            "type": "string",
+            "maxLength": 2097152,
+            "minLength": 1,
+            "title": "Raw Text"
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Filename"
+          },
+          "profile": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Profile"
+          }
+        },
+        "type": "object",
+        "required": [
+          "raw_text",
+          "filename",
+          "profile"
+        ],
+        "title": "IncidentCsvInspectRequest"
       },
       "IncidentDraftRequest": {
         "properties": {
@@ -2739,6 +2836,34 @@
               }
             ],
             "title": "Unit"
+          },
+          "column_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Column Mapping"
+          },
+          "field_defaults": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Defaults"
           }
         },
         "type": "object",
@@ -2827,6 +2952,34 @@
               }
             ],
             "title": "Unit"
+          },
+          "column_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Column Mapping"
+          },
+          "field_defaults": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Defaults"
           },
           "preview_digest": {
             "type": "string",
