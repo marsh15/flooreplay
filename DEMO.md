@@ -6,6 +6,14 @@ Use the synthetic example to show how a supervisor investigates a sewing-line sh
 
 Run `docker compose up --build --wait` and open [the application](http://localhost:5174). Alternatively follow the native setup in [README.md](README.md). Create separate owner and reviewer accounts with the prompted CLI before demonstrating protected actions. No provider request is needed for the deterministic walkthrough.
 
+## Safe first visit
+
+Open the incident library and choose "Try the safe action demo". No account is needed. The guided simulation keeps its practice state in the current browser page and makes no shared-record writes or provider requests. Follow the evidence inspection, assignment and completion steps, then inspect the remaining uncertainty. Reset or reload to start again. Practice completion does not resolve an actual incident.
+
+Use "Start the example investigation" to inspect the real synthetic example and its pinned records. The cutoff means records available by the displayed time. Choose a next check after reading the evidence and missing sources.
+
+For an unfamiliar visitor, use the [first-visit protocol](docs/first-visit-validation.md) and record assistance, misunderstandings and incomplete attempts. No successful human session is claimed yet.
+
 ## Five-minute walkthrough
 
 1. Open "Delayed start on sewing line S4" in the incident library. State the job: determine what is known about a shortfall and choose the next evidence check.
