@@ -12,12 +12,12 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, StrictBool
+from pydantic import BaseModel, Field, StrictBool, StrictInt
 from sqlalchemy import select, text
 
 from .ai_evaluation import review_claim
@@ -49,6 +49,15 @@ from .incident_service import (
     publish_source,
     review_proposal,
     search_incidents,
+)
+from .incident_workflow import (
+    assignees,
+    complete_check,
+    create_check,
+    resolve_incident,
+    respond_check,
+    update_check,
+    workflow_view,
 )
 from .models import (
     ComparisonReport,
@@ -193,6 +202,51 @@ class IncidentCreateRequest(BaseModel):
     filename: str = Field(min_length=1, max_length=120)
     preview_digest: str
     idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class WorkflowRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class CheckCreateRequest(WorkflowRequest):
+    proposal_id: str = Field(min_length=1, max_length=64)
+    assignee_id: str = Field(min_length=1, max_length=64)
+    due_at: str = Field(min_length=10, max_length=64)
+
+
+class CheckUpdateRequest(WorkflowRequest):
+    expected_updated_at: str = Field(min_length=10, max_length=64)
+    status: Literal["IN_PROGRESS", "CANCELLED"] | None = None
+    comment: str = Field(min_length=3, max_length=2000)
+    assignee_id: str | None = Field(default=None, min_length=1, max_length=64)
+    due_at: str | None = Field(default=None, min_length=10, max_length=64)
+
+
+class CheckResponseRequest(WorkflowRequest):
+    base_revision: int = Field(ge=1)
+    summary: str = Field(min_length=3, max_length=2000)
+    occurred_at: str = Field(min_length=10, max_length=64)
+    source_ref: str = Field(min_length=3, max_length=500)
+    details: dict[str, str]
+    line_blocking: StrictBool = False
+    start: str | None = Field(default=None, min_length=10, max_length=64)
+    end: str | None = Field(default=None, min_length=10, max_length=64)
+
+
+class CheckCompleteRequest(WorkflowRequest):
+    action_taken: str = Field(min_length=3, max_length=2000)
+    actual_completed_at: str = Field(min_length=10, max_length=64)
+    observed_good_units: StrictInt | None = Field(default=None, ge=0)
+    observed_at: str | None = Field(default=None, min_length=10, max_length=64)
+    assessment: str = Field(min_length=3, max_length=2000)
+    remaining_uncertainty: str = Field(min_length=3, max_length=2000)
+
+
+class IncidentResolutionRequest(WorkflowRequest):
+    base_revision: int = Field(ge=1)
+    state: Literal["OPEN", "RESOLVED"]
+    rationale: str = Field(min_length=3, max_length=2000)
 
 
 class AIClaimReviewRequest(BaseModel):
@@ -365,7 +419,7 @@ def create_app(mode: str | None = None) -> FastAPI:
         try:
             with session_scope() as session:
                 revision = session.scalar(text("SELECT version_num FROM alembic_version"))
-                if revision != "20260930_claim_reviews":
+                if revision != "20260930_workflow":
                     raise ServiceError("MIGRATION_REQUIRED", "Database migration must finish before serving traffic", 503)
         except ServiceError:
             raise
@@ -407,6 +461,41 @@ def create_app(mode: str | None = None) -> FastAPI:
         if not isinstance(saved, dict):
             raise ServiceError("SAVED_DRAFT_INVALID", "Saved draft artifact is invalid", 503)
         return saved
+
+    @app.get("/api/v1/workflow/assignees")
+    def workflow_assignees(user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return assignees(session)
+
+    @app.get("/api/v1/incidents/{incident_id}/workflow")
+    def incident_workflow(incident_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return workflow_view(session, incident_id)
+
+    @app.post("/api/v1/analyses/{analysis_id}/checks")
+    def assign_incident_check(analysis_id: str, body: CheckCreateRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return create_check(session, analysis_id, user, body.model_dump())
+
+    @app.post("/api/v1/checks/{task_id}/update")
+    def update_incident_check(task_id: str, body: CheckUpdateRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return update_check(session, task_id, user, body.model_dump())
+
+    @app.post("/api/v1/checks/{task_id}/respond")
+    def respond_incident_check(task_id: str, body: CheckResponseRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return respond_check(session, task_id, user, body.model_dump())
+
+    @app.post("/api/v1/checks/{task_id}/complete")
+    def complete_incident_check(task_id: str, body: CheckCompleteRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return complete_check(session, task_id, user, body.model_dump())
+
+    @app.post("/api/v1/incidents/{incident_id}/resolution")
+    def resolve_incident_workflow(incident_id: str, body: IncidentResolutionRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return resolve_incident(session, incident_id, user, body.model_dump())
 
     @app.get("/api/v1/incidents/{incident_id}/revisions/{revision}")
     def get_incident(incident_id: str, revision: int) -> dict[str, Any]:

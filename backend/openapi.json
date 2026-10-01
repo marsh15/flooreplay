@@ -334,6 +334,322 @@
         }
       }
     },
+    "/api/v1/workflow/assignees": {
+      "get": {
+        "summary": "Workflow Assignees",
+        "operationId": "workflow_assignees_api_v1_workflow_assignees_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Workflow Assignees Api V1 Workflow Assignees Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/incidents/{incident_id}/workflow": {
+      "get": {
+        "summary": "Incident Workflow",
+        "operationId": "incident_workflow_api_v1_incidents__incident_id__workflow_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Incident Workflow Api V1 Incidents  Incident Id  Workflow Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyses/{analysis_id}/checks": {
+      "post": {
+        "summary": "Assign Incident Check",
+        "operationId": "assign_incident_check_api_v1_analyses__analysis_id__checks_post",
+        "parameters": [
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Assign Incident Check Api V1 Analyses  Analysis Id  Checks Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checks/{task_id}/update": {
+      "post": {
+        "summary": "Update Incident Check",
+        "operationId": "update_incident_check_api_v1_checks__task_id__update_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Update Incident Check Api V1 Checks  Task Id  Update Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checks/{task_id}/respond": {
+      "post": {
+        "summary": "Respond Incident Check",
+        "operationId": "respond_incident_check_api_v1_checks__task_id__respond_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckResponseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Respond Incident Check Api V1 Checks  Task Id  Respond Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checks/{task_id}/complete": {
+      "post": {
+        "summary": "Complete Incident Check",
+        "operationId": "complete_incident_check_api_v1_checks__task_id__complete_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckCompleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Complete Incident Check Api V1 Checks  Task Id  Complete Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/incidents/{incident_id}/resolution": {
+      "post": {
+        "summary": "Resolve Incident Workflow",
+        "operationId": "resolve_incident_workflow_api_v1_incidents__incident_id__resolution_post",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentResolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Resolve Incident Workflow Api V1 Incidents  Incident Id  Resolution Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/incidents/{incident_id}/revisions/{revision}": {
       "get": {
         "summary": "Get Incident",
@@ -1805,6 +2121,265 @@
         ],
         "title": "AIClaimReviewRequest"
       },
+      "CheckCompleteRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "action_taken": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Action Taken"
+          },
+          "actual_completed_at": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 10,
+            "title": "Actual Completed At"
+          },
+          "observed_good_units": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Good Units"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "assessment": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Assessment"
+          },
+          "remaining_uncertainty": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Remaining Uncertainty"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "action_taken",
+          "actual_completed_at",
+          "assessment",
+          "remaining_uncertainty"
+        ],
+        "title": "CheckCompleteRequest"
+      },
+      "CheckCreateRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "proposal_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Proposal Id"
+          },
+          "assignee_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Assignee Id"
+          },
+          "due_at": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 10,
+            "title": "Due At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "proposal_id",
+          "assignee_id",
+          "due_at"
+        ],
+        "title": "CheckCreateRequest"
+      },
+      "CheckResponseRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "base_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Base Revision"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Summary"
+          },
+          "occurred_at": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 10,
+            "title": "Occurred At"
+          },
+          "source_ref": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Source Ref"
+          },
+          "details": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Details"
+          },
+          "line_blocking": {
+            "type": "boolean",
+            "title": "Line Blocking",
+            "default": false
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "base_revision",
+          "summary",
+          "occurred_at",
+          "source_ref",
+          "details"
+        ],
+        "title": "CheckResponseRequest"
+      },
+      "CheckUpdateRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "expected_updated_at": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 10,
+            "title": "Expected Updated At"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "IN_PROGRESS",
+                  "CANCELLED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Comment"
+          },
+          "assignee_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Id"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "expected_updated_at",
+          "comment"
+        ],
+        "title": "CheckUpdateRequest"
+      },
       "ComparisonRequest": {
         "properties": {
           "suite_id": {
@@ -2278,6 +2853,44 @@
           "idempotency_key"
         ],
         "title": "IncidentPublishRequest"
+      },
+      "IncidentResolutionRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "base_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Base Revision"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "RESOLVED"
+            ],
+            "title": "State"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Rationale"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "base_revision",
+          "state",
+          "rationale"
+        ],
+        "title": "IncidentResolutionRequest"
       },
       "IncidentReviewRequest": {
         "properties": {

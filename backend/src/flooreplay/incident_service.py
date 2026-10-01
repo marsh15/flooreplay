@@ -173,10 +173,20 @@ def analysis_evidence(session: Session, analysis: IncidentAnalysis, evidence_id:
         record for section in ("events", "plan_buckets", "output_buckets")
         for record in row.payload.get(section, []) if record["id"] == evidence_id
     )
+    artifact_id = source.get("source_artifact_id")
+    artifact = session.get(IncidentSourceArtifact, artifact_id) if isinstance(artifact_id, str) else None
+    provenance = None
+    if artifact is not None and artifact.incident_id == analysis.incident_id and artifact.revision <= analysis.revision:
+        provenance = {
+            "id": artifact.id, "raw_digest": artifact.raw_digest,
+            "profile": artifact.profile, "source_system": artifact.source_system,
+            "filename": artifact.filename,
+        }
     return {
         "id": evidence_id,
         "source_id": source.get("source_id", f"synthetic-fixture:{analysis.incident_id}@{analysis.revision}/{evidence_id}"),
         "record": source, "incident_id": analysis.incident_id, "revision": analysis.revision,
+        **({"source_artifact": provenance} if provenance else {}),
     }
 
 

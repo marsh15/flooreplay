@@ -9,6 +9,7 @@ from flooreplay.config import settings
 from flooreplay.models import Base
 import flooreplay.ai_evaluation  # register claim review metadata
 import flooreplay.auth  # register account metadata
+import flooreplay.incident_workflow  # register assigned check metadata
 import flooreplay.paid_models  # register provider and retrieval metadata
 
 config = context.config
