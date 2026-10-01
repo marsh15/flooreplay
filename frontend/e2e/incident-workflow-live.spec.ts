@@ -85,7 +85,9 @@ test('isolated workflow publishes evidence while keeping the previous report unc
   await page.keyboard.press('Escape')
   await task.getByText('Record action and measured outcome', { exact: true }).click()
   await task.getByLabel('Action actually taken', { exact: true }).fill('Checked the recorded stop and restart with maintenance.')
-  await task.getByLabel('Actual completion at (India time)', { exact: true }).fill(indiaInput(Date.now() - 1000))
+  const firstCompletionSecond = Math.ceil(Date.parse(workflow.tasks[0].created_at) / 1000) * 1000
+  await expect.poll(() => Date.now(), { timeout: 2000 }).toBeGreaterThanOrEqual(firstCompletionSecond)
+  await task.getByLabel('Actual completion at (India time)', { exact: true }).fill(indiaInput(Date.now()))
   await task.getByLabel('Observed good units (optional)', { exact: true }).fill('22')
   await task.getByLabel('Output observed at (India time)', { exact: true }).fill(indiaInput(Date.now()))
   await task.getByLabel('Outcome assessment', { exact: true }).fill('Restart observed; this does not establish a causal improvement.')

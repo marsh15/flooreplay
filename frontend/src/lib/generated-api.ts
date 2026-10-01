@@ -515,6 +515,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ai-runs/review-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Review Queue */
+        get: operations["get_review_queue_api_v1_ai_runs_review_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-runs/{run_id}/review-packet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Review Packet */
+        get: operations["get_review_packet_api_v1_ai_runs__run_id__review_packet_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-runs/{run_id}/review-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Review Report */
+        get: operations["get_review_report_api_v1_ai_runs__run_id__review_report_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-runs/{run_id}/publish-review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish Ai Review */
+        post: operations["publish_ai_review_api_v1_ai_runs__run_id__publish_review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-runs/{run_id}/assessment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Assess Ai Run */
+        post: operations["assess_ai_run_api_v1_ai_runs__run_id__assessment_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ai-runs/{run_id}": {
         parameters: {
             query?: never;
@@ -902,9 +987,79 @@ export interface components {
             /** Claim Path */
             claim_path: string;
             /** Supported */
-            supported: boolean;
+            supported?: boolean | null;
+            /** Output Digest */
+            output_digest?: string | null;
+            /** Judgment */
+            judgment?: ("supported" | "unsupported" | "insufficient_evidence") | null;
+            /** Flags */
+            flags?: ("attribution_error" | "unsupported_conclusion" | "omitted_contradiction" | "appropriate_abstention" | "useful_next_check")[];
+            /**
+             * Reviewer Kind
+             * @default unspecified
+             * @enum {string}
+             */
+            reviewer_kind: "human" | "ai_assistant" | "unspecified";
+            /**
+             * Qualifications
+             * @default
+             */
+            qualifications: string;
+            /**
+             * Independent
+             * @default false
+             */
+            independent: boolean;
             /** Rationale */
             rationale: string;
+        };
+        /** AIReviewPublishRequest */
+        AIReviewPublishRequest: {
+            /** Output Digest */
+            output_digest: string;
+            /** Idempotency Key */
+            idempotency_key: string;
+        };
+        /** AIRunAssessmentRequest */
+        AIRunAssessmentRequest: {
+            /** Output Digest */
+            output_digest: string;
+            /** Idempotency Key */
+            idempotency_key: string;
+            /**
+             * Reviewer Kind
+             * @default unspecified
+             * @enum {string}
+             */
+            reviewer_kind: "human" | "ai_assistant" | "unspecified";
+            /**
+             * Qualifications
+             * @default
+             */
+            qualifications: string;
+            /**
+             * Independent
+             * @default false
+             */
+            independent: boolean;
+            /**
+             * Usefulness
+             * @enum {string}
+             */
+            usefulness: "useful" | "not_useful" | "uncertain";
+            /** Omitted Contradictions */
+            omitted_contradictions?: string[];
+            /** Attribution Errors */
+            attribution_errors?: string[];
+            /**
+             * Abstention
+             * @enum {string}
+             */
+            abstention: "appropriate" | "inappropriate" | "not_applicable";
+            /** Rationale */
+            rationale: string;
+            /** Limitations */
+            limitations: string;
         };
         /** CheckCompleteRequest */
         CheckCompleteRequest: {
@@ -2240,6 +2395,168 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_review_queue_api_v1_ai_runs_review_queue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_review_packet_api_v1_ai_runs__run_id__review_packet_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_review_report_api_v1_ai_runs__run_id__review_report_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_ai_review_api_v1_ai_runs__run_id__publish_review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AIReviewPublishRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assess_ai_run_api_v1_ai_runs__run_id__assessment_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AIRunAssessmentRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

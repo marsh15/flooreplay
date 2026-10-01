@@ -77,6 +77,8 @@ from .parsing import (
 )
 from .ratelimit import enforce, make_execution_limiter
 from .retrieval import hybrid_search
+from .semantic_review import assess_run, publish_review, review_packet, review_report
+from .semantic_review import queue as review_queue
 from .service import (
     ServiceError,
     confirm_event_and_fork,
@@ -167,7 +169,7 @@ class IncidentReviewRequest(BaseModel):
 class IncidentDraftRequest(BaseModel):
     corpus_id: str | None = None
     task: str = Field(default="question", pattern="^(question|investigation|summary|recovery|note)$")
-    retrieval_mode: str = Field(default="evidence_only", pattern="^(evidence_only|hybrid)$")
+    retrieval_mode: str = Field(default="evidence_only", pattern="^(evidence_only|lexical|hybrid)$")
     question: str = Field(default="Summarize the incident and next checks.", min_length=3, max_length=500)
     idempotency_key: str = Field(min_length=8, max_length=120)
 
@@ -262,8 +264,31 @@ class IncidentResolutionRequest(WorkflowRequest):
 class AIClaimReviewRequest(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=120)
     claim_path: str = Field(min_length=1, max_length=120)
-    supported: StrictBool
+    supported: StrictBool | None = None
+    output_digest: str | None = Field(default=None, min_length=64, max_length=80)
+    judgment: Literal["supported", "unsupported", "insufficient_evidence"] | None = None
+    flags: list[Literal["attribution_error", "unsupported_conclusion", "omitted_contradiction", "appropriate_abstention", "useful_next_check"]] = Field(default_factory=list, max_length=5)
+    reviewer_kind: Literal["human", "ai_assistant", "unspecified"] = "unspecified"
+    qualifications: str = Field(default="", max_length=2000)
+    independent: StrictBool = False
     rationale: str = Field(min_length=3, max_length=1000)
+
+
+class AIReviewPublishRequest(BaseModel):
+    output_digest: str = Field(min_length=64, max_length=80)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class AIRunAssessmentRequest(AIReviewPublishRequest):
+    reviewer_kind: Literal["human", "ai_assistant", "unspecified"] = "unspecified"
+    qualifications: str = Field(default="", max_length=2000)
+    independent: StrictBool = False
+    usefulness: Literal["useful", "not_useful", "uncertain"]
+    omitted_contradictions: list[str] = Field(default_factory=list, max_length=12)
+    attribution_errors: list[str] = Field(default_factory=list, max_length=12)
+    abstention: Literal["appropriate", "inappropriate", "not_applicable"]
+    rationale: str = Field(min_length=3, max_length=2000)
+    limitations: str = Field(min_length=3, max_length=2000)
 
 
 class LoginRequest(BaseModel):
@@ -429,7 +454,7 @@ def create_app(mode: str | None = None) -> FastAPI:
         try:
             with session_scope() as session:
                 revision = session.scalar(text("SELECT version_num FROM alembic_version"))
-                if revision != "20260930_workflow":
+                if revision != "20261001_semantic_review":
                     raise ServiceError("MIGRATION_REQUIRED", "Database migration must finish before serving traffic", 503)
         except ServiceError:
             raise
@@ -601,13 +626,33 @@ def create_app(mode: str | None = None) -> FastAPI:
     def get_ai_request(request_key: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         return lookup_request(request_key, user.id)
 
+    @app.get("/api/v1/ai-runs/review-queue")
+    def get_review_queue(user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return review_queue()
+
+    @app.get("/api/v1/ai-runs/{run_id}/review-packet")
+    def get_review_packet(run_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return review_packet(run_id, user.id, owner=user.role == "owner")
+
+    @app.get("/api/v1/ai-runs/{run_id}/review-report")
+    def get_review_report(run_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return review_report(run_id, user.id, owner=user.role == "owner")
+
+    @app.post("/api/v1/ai-runs/{run_id}/publish-review")
+    def publish_ai_review(run_id: str, body: AIReviewPublishRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return publish_review(run_id, user.id, body.idempotency_key, body.output_digest, owner=user.role == "owner")
+
+    @app.post("/api/v1/ai-runs/{run_id}/assessment")
+    def assess_ai_run(run_id: str, body: AIRunAssessmentRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return assess_run(run_id, user.id, body.idempotency_key, body.output_digest, body.model_dump(exclude={"output_digest", "idempotency_key"}), owner=user.role == "owner")
+
     @app.get("/api/v1/ai-runs/{run_id}")
     def get_ai_run(run_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         return lookup_run(run_id, user.id, owner=user.role == "owner")
 
     @app.post("/api/v1/ai-runs/{run_id}/claim-review")
     def annotate_ai_claim(run_id: str, body: AIClaimReviewRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
-        return review_claim(run_id, user.id, body.idempotency_key, body.claim_path, body.supported, body.rationale, owner=user.role == "owner")
+        return review_claim(run_id, user.id, body.idempotency_key, body.claim_path, body.supported, body.rationale, owner=user.role == "owner", **body.model_dump(exclude={"supported", "rationale", "claim_path", "idempotency_key"}))
 
     @app.get("/api/v1/usage")
     def get_usage(user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:

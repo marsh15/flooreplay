@@ -195,7 +195,10 @@ def test_generation_uses_official_sdk_structured_response_store_false(monkeypatc
     result = openai_provider.generate("mock", config, "question", "Pinned packet", 7)
     assert observed["store"] is False
     assert observed["instructions"] == openai_provider.SYSTEM
-    assert "Always return source_fields=[]" in observed["instructions"]
+    assert "Select source_fields only for exact structured identifiers or times" in observed["instructions"]
+    assert "Never use free-text fields such as summary" in observed["instructions"]
+    assert config["prompt_version"] == "incident-grounding-v7"
+    assert config["schema_version"] == "typed-tasks-v2"
     assert observed["sdk"]["max_retries"] == 0
     assert observed["sdk"]["timeout"] == 7
     assert observed["max_output_tokens"] == 1500

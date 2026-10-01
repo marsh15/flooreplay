@@ -1,0 +1,136 @@
+{
+  "cases": [
+    {
+      "appropriate_abstention": true,
+      "attribution_errors": [],
+      "claim_judgments": [],
+      "disagreements": null,
+      "incident_id": "REL-021",
+      "next_check_assessment": "No concrete next check was proposed; abstention matches the context-only observation, but a practitioner should assess whether a specific source-health follow-up is useful.",
+      "next_checks_assessed": 0,
+      "notes": "No contradictory in-window event was present in this bounded packet; this does not establish that external contradictions are absent.",
+      "omitted_contradiction_flags": [],
+      "output_digest": "sha256:e20bee941d391b71aeb35599843112db26329d5ce246a79683ea25f4fed7ac55",
+      "run_id": "34a65df8-248a-4905-a59c-bc7b44cb378e",
+      "structured_claims_assessed": 0,
+      "text_units_assessed": 3,
+      "unsupported_conclusion_flags": []
+    },
+    {
+      "appropriate_abstention": true,
+      "attribution_errors": [],
+      "claim_judgments": [
+        {
+          "assessment": "PRELIMINARY_AI_SUPPORTED_WITH_LIMITS",
+          "claim_path": "hypotheses.0.explanation",
+          "rationale": "Cited material observation reports an order concern; output explicitly withholds established line blockage and causation. Membership alone is not the basis of this AI assessment."
+        }
+      ],
+      "disagreements": null,
+      "incident_id": "REL-022",
+      "next_check_assessment": "Relevant evidence requests about unresolved block interval and competing factors; no factory execution is approved.",
+      "next_checks_assessed": 3,
+      "notes": "No contradictory in-window event was present in this bounded packet; this does not establish that external contradictions are absent.",
+      "omitted_contradiction_flags": [],
+      "output_digest": "sha256:0b536d849c521a876a72921029c296d8c9a632ed132ef66b1a1c019f60a388d0",
+      "run_id": "e7d69174-3a51-4009-8acf-5a7906510d14",
+      "structured_claims_assessed": 1,
+      "text_units_assessed": 9,
+      "unsupported_conclusion_flags": []
+    },
+    {
+      "appropriate_abstention": true,
+      "attribution_errors": [],
+      "claim_judgments": [
+        {
+          "assessment": "PRELIMINARY_AI_SUPPORTED_WITH_LIMITS",
+          "claim_path": "hypotheses.0.explanation",
+          "rationale": "Cited material observation reports an order concern; output explicitly withholds established line blockage and causation. Membership alone is not the basis of this AI assessment."
+        }
+      ],
+      "disagreements": null,
+      "incident_id": "REL-023",
+      "next_check_assessment": "Relevant evidence requests about unresolved block interval and competing factors; no factory execution is approved.",
+      "next_checks_assessed": 1,
+      "notes": "No contradictory in-window event was present in this bounded packet; this does not establish that external contradictions are absent.",
+      "omitted_contradiction_flags": [],
+      "output_digest": "sha256:996a9f39bce0183d2f0209345a43bc1f26184b40013373dc7e7b77e1e9fa22d0",
+      "run_id": "d310ab8b-2c4f-4c43-b51d-0a9becbe4ba2",
+      "structured_claims_assessed": 1,
+      "text_units_assessed": 6,
+      "unsupported_conclusion_flags": []
+    },
+    {
+      "appropriate_abstention": true,
+      "attribution_errors": [],
+      "claim_judgments": [
+        {
+          "assessment": "PRELIMINARY_AI_SUPPORTED_WITH_LIMITS",
+          "claim_path": "hypotheses.0.explanation",
+          "rationale": "Cited material observation reports an order concern; output explicitly withholds established line blockage and causation. Membership alone is not the basis of this AI assessment."
+        }
+      ],
+      "disagreements": null,
+      "incident_id": "REL-024",
+      "next_check_assessment": "Relevant evidence requests about unresolved block interval and competing factors; no factory execution is approved.",
+      "next_checks_assessed": 1,
+      "notes": "No contradictory in-window event was present in this bounded packet; this does not establish that external contradictions are absent.",
+      "omitted_contradiction_flags": [],
+      "output_digest": "sha256:afd09ba5fa9703057681a34beb906ece0b901c0e77e9d9cd7e9998d513efc76c",
+      "run_id": "aa79063f-8a3d-4352-8516-8e27e61a6d56",
+      "structured_claims_assessed": 1,
+      "text_units_assessed": 5,
+      "unsupported_conclusion_flags": []
+    },
+    {
+      "appropriate_abstention": true,
+      "attribution_errors": [],
+      "claim_judgments": [
+        {
+          "assessment": "PRELIMINARY_AI_SUPPORTED_WITH_LIMITS",
+          "claim_path": "hypotheses.0.explanation",
+          "rationale": "Cited material observation reports an order concern; output explicitly withholds established line blockage and causation. Membership alone is not the basis of this AI assessment."
+        }
+      ],
+      "disagreements": null,
+      "incident_id": "REL-025",
+      "next_check_assessment": "Relevant evidence requests about unresolved block interval and competing factors; no factory execution is approved.",
+      "next_checks_assessed": 1,
+      "notes": "Packet flags conflicting production; output acknowledges this rather than assigning a cause.",
+      "omitted_contradiction_flags": [],
+      "output_digest": "sha256:834f43f05b5ef9080904067bac149a753cb58f62bbacd2a2f4ca3b6a222df2df",
+      "run_id": "6700f5ca-f94f-492c-aacd-9acc198e5400",
+      "structured_claims_assessed": 1,
+      "text_units_assessed": 5,
+      "unsupported_conclusion_flags": []
+    }
+  ],
+  "configuration_digest": "79a37acc0d588be9660188ed45ba2346c1a5311d478f39fd6a5b8fc8d51dd6f6",
+  "denominators": {
+    "cases_assessed": 5,
+    "human_cases": 0,
+    "human_claims": 0,
+    "next_checks_assessed": 6,
+    "structured_claims_assessed": 4,
+    "text_units_assessed": 28
+  },
+  "evaluation_id": "b45c1d01-bfae-4c8e-a437-66eabf42448a",
+  "human_review_status": "PENDING",
+  "human_reviewed_cases": 0,
+  "human_reviewed_claims": 0,
+  "limitations": [
+    "Preliminary AI assessment only; no qualified human review or manufacturing validation.",
+    "Only five recorded smoke outputs from the older synthetic generator are assessed.",
+    "There is no second independent reviewer; disagreement is null, not zero.",
+    "These old outputs are not fresh-case comparisons and supply no fresh holdout result.",
+    "Absence of flagged unsupported claims in this narrow packet is not a safety or generalization claim."
+  ],
+  "manufacturing_qualifications": null,
+  "reviewed_at": "2026-10-01",
+  "reviewer_identity": "Independent Codex documentation/evaluation subagent",
+  "reviewer_kind": "ai_assistant",
+  "schema": "flooreplay.preliminary-ai-semantic-review.v1",
+  "semantic_support_rate": null,
+  "source_artifact": "backend/evaluation/openai-live-evidence-v4/openai-smoke.json",
+  "source_file_digest": "38e5f692c3333df2110191f61b03f897d15e152728306444ab0f8848fbe27bc7"
+}

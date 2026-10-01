@@ -50,12 +50,13 @@ def test_recorded_provider_metrics_and_append_only_claim_review(monkeypatch, own
         assert client.post(url, json={**body, 'claim_path':'claims.00'}).status_code == 422
         with session_scope() as session:
             after = provider_evaluation(session)
-            assert after['status'] == 'MEASURED_WITH_HUMAN_REVIEW'
+            assert after['status'] == 'MEASURED_WITH_ANNOTATIONS'
             assert after['reviewed_claims'] == 1 and after['supported_claims'] == 0
-            assert after['human_support_precision'] == 0
+            assert after['human_support_precision'] is None
+            assert after['declared_human_reviewed_claims'] == 0
             assert session.get(AIRun, run['id']).result['output'] == run['result']['output']
         assert client.get('/api/v1/evaluation-reports/incident-core-v1').json()['current_provider']['reviewed_claims'] == 1
-        assert client.get('/api/v1/capabilities').json()['ai']['evaluation_status'] == 'MEASURED_WITH_HUMAN_REVIEW'
+        assert client.get('/api/v1/capabilities').json()['ai']['evaluation_status'] == 'MEASURED_WITH_ANNOTATIONS'
     finally:
         with session_scope() as session:
             record = session.get(AIRun, run['id'])

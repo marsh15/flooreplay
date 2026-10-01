@@ -21,7 +21,7 @@ test('incident investigation keeps evidence and later revision separate', async 
   await page.keyboard.press('Escape')
   await expect(page.getByRole('heading', { name: 'Historical precedents' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Open precedent' }).first()).toBeVisible()
-  await expect(page.getByText(/action prerequisites need separate verification/).first()).toBeVisible()
+  await expect(page.getByText(/Proposal prerequisites require separate current-source verification/).first()).toBeVisible()
   await page.getByRole('combobox', { name: 'Evidence revision' }).selectOption('2')
   await expect(page.getByText('EV-MAINT-1').first()).toBeVisible()
   await expect(page.getByRole('button', { name: 'Export portable report' })).toBeDisabled()

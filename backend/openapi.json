@@ -1215,6 +1215,210 @@
         }
       }
     },
+    "/api/v1/ai-runs/review-queue": {
+      "get": {
+        "summary": "Get Review Queue",
+        "operationId": "get_review_queue_api_v1_ai_runs_review_queue_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Review Queue Api V1 Ai Runs Review Queue Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-runs/{run_id}/review-packet": {
+      "get": {
+        "summary": "Get Review Packet",
+        "operationId": "get_review_packet_api_v1_ai_runs__run_id__review_packet_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Review Packet Api V1 Ai Runs  Run Id  Review Packet Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-runs/{run_id}/review-report": {
+      "get": {
+        "summary": "Get Review Report",
+        "operationId": "get_review_report_api_v1_ai_runs__run_id__review_report_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Review Report Api V1 Ai Runs  Run Id  Review Report Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-runs/{run_id}/publish-review": {
+      "post": {
+        "summary": "Publish Ai Review",
+        "operationId": "publish_ai_review_api_v1_ai_runs__run_id__publish_review_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIReviewPublishRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Publish Ai Review Api V1 Ai Runs  Run Id  Publish Review Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-runs/{run_id}/assessment": {
+      "post": {
+        "summary": "Assess Ai Run",
+        "operationId": "assess_ai_run_api_v1_ai_runs__run_id__assessment_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIRunAssessmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Assess Ai Run Api V1 Ai Runs  Run Id  Assessment Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/ai-runs/{run_id}": {
       "get": {
         "summary": "Get Ai Run",
@@ -2142,8 +2346,80 @@
             "title": "Claim Path"
           },
           "supported": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Supported"
+          },
+          "output_digest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Digest"
+          },
+          "judgment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "supported",
+                  "unsupported",
+                  "insufficient_evidence"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judgment"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "attribution_error",
+                "unsupported_conclusion",
+                "omitted_contradiction",
+                "appropriate_abstention",
+                "useful_next_check"
+              ]
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Flags"
+          },
+          "reviewer_kind": {
+            "type": "string",
+            "enum": [
+              "human",
+              "ai_assistant",
+              "unspecified"
+            ],
+            "title": "Reviewer Kind",
+            "default": "unspecified"
+          },
+          "qualifications": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Qualifications",
+            "default": ""
+          },
+          "independent": {
+            "type": "boolean",
+            "title": "Independent",
+            "default": false
           },
           "rationale": {
             "type": "string",
@@ -2156,10 +2432,124 @@
         "required": [
           "idempotency_key",
           "claim_path",
-          "supported",
           "rationale"
         ],
         "title": "AIClaimReviewRequest"
+      },
+      "AIReviewPublishRequest": {
+        "properties": {
+          "output_digest": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 64,
+            "title": "Output Digest"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "output_digest",
+          "idempotency_key"
+        ],
+        "title": "AIReviewPublishRequest"
+      },
+      "AIRunAssessmentRequest": {
+        "properties": {
+          "output_digest": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 64,
+            "title": "Output Digest"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "reviewer_kind": {
+            "type": "string",
+            "enum": [
+              "human",
+              "ai_assistant",
+              "unspecified"
+            ],
+            "title": "Reviewer Kind",
+            "default": "unspecified"
+          },
+          "qualifications": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Qualifications",
+            "default": ""
+          },
+          "independent": {
+            "type": "boolean",
+            "title": "Independent",
+            "default": false
+          },
+          "usefulness": {
+            "type": "string",
+            "enum": [
+              "useful",
+              "not_useful",
+              "uncertain"
+            ],
+            "title": "Usefulness"
+          },
+          "omitted_contradictions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Omitted Contradictions"
+          },
+          "attribution_errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Attribution Errors"
+          },
+          "abstention": {
+            "type": "string",
+            "enum": [
+              "appropriate",
+              "inappropriate",
+              "not_applicable"
+            ],
+            "title": "Abstention"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Rationale"
+          },
+          "limitations": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "output_digest",
+          "idempotency_key",
+          "usefulness",
+          "abstention",
+          "rationale",
+          "limitations"
+        ],
+        "title": "AIRunAssessmentRequest"
       },
       "CheckCompleteRequest": {
         "properties": {
@@ -2739,7 +3129,7 @@
           },
           "retrieval_mode": {
             "type": "string",
-            "pattern": "^(evidence_only|hybrid)$",
+            "pattern": "^(evidence_only|lexical|hybrid)$",
             "title": "Retrieval Mode",
             "default": "evidence_only"
           },

@@ -32,6 +32,11 @@ export interface IncidentSearchResult {
   cutoff: string
   execution_kind: string
   excerpts?: HistoricalExcerpt[]
+  comparison_version?: string
+  comparison_facts?: string[]
+  missing_information?: string[]
+  historical_prerequisites?: string[]
+  current_prerequisites?: string[]
 }
 
 export interface IncidentRevision {
@@ -110,7 +115,7 @@ export interface RecoveryProposal {
   state: string
 }
 
-export interface Precedent {
+export interface Precedent extends Pick<IncidentSearchResult, 'comparison_version' | 'comparison_facts' | 'missing_information' | 'historical_prerequisites' | 'current_prerequisites'> {
   id?: string
   incident_id?: string
   title?: string
@@ -155,12 +160,17 @@ export interface EvidenceDetail {
 export type AiTask = 'question' | 'investigation' | 'summary' | 'recovery' | 'note'
 export interface AiMetric { id: string; value: number | null; unit: string; formula?: string; input_refs?: string[] }
 export interface HistoricalExcerpt { id: string; text?: string; excerpt?: string; incident_id?: string; source_id?: string }
-export interface AiClaim { text: string; evidence_ids: string[]; metric_ids: string[]; historical_refs: string[]; source_fields: string[]; rendered_metrics?: AiMetric[] }
+export interface AiClaim { text: string; evidence_ids: string[]; metric_ids: string[]; historical_refs: string[]; source_fields: string[]; rendered_metrics?: AiMetric[]; rendered_source_fields?: { ref: string; value: string }[] }
+export interface AiPacket {
+  incident_id?: string; revision?: number; cutoff?: string; analysis_digest?: string
+  evidence?: EvidenceDetail[]; metrics?: AiMetric[]; historical_evidence?: HistoricalExcerpt[]
+}
 export interface AiRun {
   id: string; status: string; analysis_id: string; task: AiTask; request_key: string;
   result: { status?: string; reason?: string; errors?: string[]; output?: { claims?: AiClaim[]; selected_claims?: AiClaim[]; limitations?: string[]; abstention_reasons?: string[]; hypotheses?: { explanation: AiClaim; counterevidence_ids: string[]; limitations: string[]; next_checks: string[] }[]; assertions?: { assertion: AiClaim; source_id: string; source_span: string; mentioned_entities: string[]; uncertainty: string }[]; proposals?: { catalog_action_id: string; prerequisites: string[]; evidence_ids: string[]; owner_role: string }[]; unresolved_issues?: string[] }; validation?: { errors?: string[] } } | null;
   claim_reviews?: AiClaimReview[];
-  packet?: { metrics?: AiMetric[]; historical_evidence?: HistoricalExcerpt[] };
+  packet?: AiPacket;
+  output_digest?: string;
   configuration?: { generation_model?: string; task?: AiTask };
 }
 
@@ -168,7 +178,7 @@ export interface ReleaseEvaluationReport {
   release: string; status: string; split_counts: { historical: number; development: number; locked: number }; authored_templates: number; arithmetic_and_structure_cases_checked: number; leakage_audit: string; problems: string[]; limitations: string[]; provider: string; provider_status: string; human_support_precision: number | null
 }
 
-export interface CurrentProviderEvaluation { provider?: string; status: string; attempted?: number; completed?: number; failed?: number; running?: number; unverified_completed?: number; reviewed?: number; review_policy?: string; supported_claims?: number; reviewed_claims?: number; limitations?: string[] }
+export interface CurrentProviderEvaluation { provider?: string; status: string; attempted?: number; completed?: number; failed?: number; running?: number; unverified_completed?: number; reviewed?: number; review_policy?: string; supported_claims?: number; reviewed_claims?: number; declared_human_reviewed_claims?: number; declared_independent_reviewed_claims?: number; reviewer_qualifications_verified?: boolean; human_support_precision?: number | null; limitations?: string[] }
 
 export interface IncidentEvaluationReport {
   current_provider?: CurrentProviderEvaluation
@@ -204,9 +214,23 @@ export interface IncidentCsvInspection {
   fields: { name: string; required: boolean; description: string }[]
 }
 export type IncidentCsvInspectRequest = Omit<components['schemas']['IncidentCsvInspectRequest'], 'profile'> & { profile: IncidentImportBody['profile'] }
+export type ReviewDeclaration = Pick<components['schemas']['AIClaimReviewRequest'], 'reviewer_kind' | 'qualifications' | 'independent'>
+export type ReviewJudgment = NonNullable<components['schemas']['AIClaimReviewRequest']['judgment']>
+export type ReviewFlag = NonNullable<components['schemas']['AIClaimReviewRequest']['flags']>[number]
 export type AiClaimReviewRequest = components['schemas']['AIClaimReviewRequest']
-export interface AiClaimReview { id: string; run_id: string; claim_path: string; supported: boolean; actor: string; rationale?: string; output_digest?: string; created_at?: string }
-export type AiRunRequest = Omit<components['schemas']['IncidentDraftRequest'], 'task' | 'retrieval_mode'> & { task: AiTask; retrieval_mode: 'evidence_only' | 'hybrid' }
+export interface AiClaimReview { id: string; run_id: string; claim_path: string; supported: boolean; actor: string; rationale?: string; output_digest?: string; created_at?: string; judgment?: ReviewJudgment; flags?: ReviewFlag[]; reviewer_kind?: ReviewDeclaration['reviewer_kind']; qualifications?: string; independent?: boolean }
+export type AiReviewPublicationRequest = components['schemas']['AIReviewPublishRequest']
+export type AiRunAssessmentRequest = components['schemas']['AIRunAssessmentRequest']
+export interface AiRunAssessment extends Omit<AiRunAssessmentRequest, 'idempotency_key' | 'omitted_contradictions' | 'attribution_errors'> { id: string; actor: string; run_id: string; created_at: string; omitted_contradictions: string[]; attribution_errors: string[] }
+export interface AiReviewQueueItem { id: string; analysis_id: string; task: AiTask; provider: string; model: string | null; output_digest: string; claim_count: number; created_at: string; reviewed_claims: number }
+export interface AiReviewPacket {
+  requested_by?: string
+  id: string; analysis_id: string; task: AiTask; provider: string; model: string | null; output_digest: string; output: NonNullable<NonNullable<AiRun['result']>['output']>; packet: AiPacket; published_by: string | null; created_at: string; claim_reviews: AiClaimReview[]; assessments: AiRunAssessment[]
+}
+export interface AiReviewReport {
+  run_id: string; output_digest: string; total_claims: number; reviewed_claims: number; supported_claims: number; unsupported_claims: number; insufficient_evidence_claims: number; unreviewed_claims: number; declared_independent_human_reviewers: number; independent_human_reviewed_claims: number; independent_human_assessments?: number; disagreements: { claim_path: string; judgments: ReviewJudgment[]; actors: string[] }[]; reviewers: ({ actor: string } & ReviewDeclaration)[]; claim_reviews: AiClaimReview[]; assessments: AiRunAssessment[]; status: string; limitations: string[]
+}
+export type AiRunRequest = Omit<components['schemas']['IncidentDraftRequest'], 'task' | 'retrieval_mode'> & { task: AiTask; retrieval_mode: 'evidence_only' | 'lexical' | 'hybrid' }
 export type HybridRequest = components['schemas']['HybridRequest']
 export type IncidentReviewRequest = components['schemas']['IncidentReviewRequest']
 
@@ -303,10 +327,15 @@ export const incidentApi = {
   createAiRun: (analysisId: string, body: AiRunRequest) => request<AiRun>(`/analyses/${pathId(analysisId)}/ai-runs`, { method: 'POST', body: JSON.stringify(body) }),
   aiRunByRequest: (key: string) => request<AiRun>(`/ai-runs/by-request/${pathId(key)}`),
   reviewAiClaim: (runId: string, body: AiClaimReviewRequest) => request<AiClaimReview>(`/ai-runs/${pathId(runId)}/claim-review`, { method: 'POST', body: JSON.stringify(body) }),
+  publishAiReview: (runId: string, body: AiReviewPublicationRequest) => request<{ run_id: string; output_digest: string; published_by: string; created_at: string }>(`/ai-runs/${pathId(runId)}/publish-review`, { method: 'POST', body: JSON.stringify(body) }),
+  aiReviewQueue: () => request<{ items: AiReviewQueueItem[] }>('/ai-runs/review-queue'),
+  aiReviewPacket: (runId: string) => request<AiReviewPacket>(`/ai-runs/${pathId(runId)}/review-packet`),
+  aiReviewReport: (runId: string) => request<AiReviewReport>(`/ai-runs/${pathId(runId)}/review-report`),
+  assessAiRun: (runId: string, body: AiRunAssessmentRequest) => request<AiRunAssessment>(`/ai-runs/${pathId(runId)}/assessment`, { method: 'POST', body: JSON.stringify(body) }),
   aiRun: (id: string) => request<AiRun>(`/ai-runs/${pathId(id)}`),
   usage: () => request<{ total_ceiling_inr: number; committed_inr: number; available_inr: number; active_operations: number; purpose_available_inr: Record<string, number>; entries: { id: string; status: string; charged_inr: number; reserved_inr: number; purpose: string; operation: string }[] }>('/usage'),
   corpora: () => request<{ items: { id: string; indexed?: boolean }[] }>('/corpora'),
-  hybridSearch: (body: HybridRequest) => request<{ results: IncidentSearchResult[]; manifest: { corpus_id: string; corpus_digest: string; cutoff: string } }>('/incidents/search/hybrid', { method: 'POST', body: JSON.stringify(body) }),
+  hybridSearch: (body: HybridRequest) => request<{ status?: 'CANDIDATES_FOUND' | 'NO_USEFUL_PRECEDENT'; results: IncidentSearchResult[]; manifest: { corpus_id: string; corpus_digest: string; cutoff: string } }>('/incidents/search/hybrid', { method: 'POST', body: JSON.stringify(body) }),
   releaseEvaluation: () => request<ReleaseEvaluationReport>('/evaluation-reports/incident-release-v1'),
   evaluationReport: async (id: string): Promise<IncidentEvaluationReport> => {
     try { return await request<IncidentEvaluationReport>(`/evaluation-reports/${pathId(id)}`) }

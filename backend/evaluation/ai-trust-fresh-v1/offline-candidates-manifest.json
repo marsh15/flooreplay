@@ -1,0 +1,15 @@
+{
+  "authorship": "AI candidate drafts authored by the same independent subagent that composed cases, without inspecting the revised validator implementation. Not independent of case authorship.",
+  "candidate_count": 10,
+  "candidates_sha256": "72471d7c3af9c03c456693f8f6546646b1daad399d64b07618f78aa29d1c854a",
+  "frozen": true,
+  "inputs_sha256": "2247b8255ecab29f79cc0c092a026e03ae9f16f4c02f4dda264b0c09e3dd7eb8",
+  "limitations": [
+    "Offline AI drafts, not OpenAI calls, actual generation receipts or live comparison results.",
+    "Ordinary one source phrasing deliberately appears in source-instruction and unsupported-blame cases.",
+    "Do not tune on structural failures and preserve any stopped result."
+  ],
+  "provider": null,
+  "provider_receipts": null,
+  "schema": "flooreplay.offline-candidates.v1"
+}

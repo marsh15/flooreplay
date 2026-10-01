@@ -20,6 +20,7 @@ from sqlalchemy import select
 from . import openai_provider
 from .config import settings
 from .db import session_scope
+from .domain.hashing import digest
 from .incident_ai import TASK_SCHEMAS, validate_output
 from .incident_jobs import _packet
 from .models import IncidentAnalysis
@@ -29,7 +30,7 @@ from .spending import cost, lock, reserve, settle, usage_view
 
 
 def view(run: AIRun) -> dict[str, Any]:
-    return {"id": run.id, "request_key": run.request_key, "analysis_id": run.analysis_id, "task": run.task, "status": run.status, "provider": "openai", "configuration": run.configuration, "packet": run.packet, "attempts": run.attempts, "result": run.result, "created_at": run.created_at.isoformat(), "completed_at": run.completed_at.isoformat() if run.completed_at else None}
+    return {"output_digest": digest(run.result["output"]) if run.status == "COMPLETED" and run.result and run.result.get("output") else None, "id": run.id, "request_key": run.request_key, "analysis_id": run.analysis_id, "task": run.task, "status": run.status, "provider": "openai", "configuration": run.configuration, "packet": run.packet, "attempts": run.attempts, "result": run.result, "created_at": run.created_at.isoformat(), "completed_at": run.completed_at.isoformat() if run.completed_at else None}
 
 
 def lookup_run(run_id: str, user_id: str, owner: bool = False) -> dict[str, Any]:
@@ -89,8 +90,8 @@ def run_ai(analysis_id: str, user_id: str, request_key: str, task: str, question
     key = settings.openai_api_key
     if task not in TASK_SCHEMAS or not question.strip() or len(question) > 1000 or not request_key or len(request_key) > 120:
         raise ServiceError("INVALID_AI_REQUEST", "Invalid task, question or request identity", 422)
-    if retrieval_mode not in {"evidence_only", "hybrid"} or (retrieval_mode == "hybrid" and not corpus_id):
-        raise ServiceError("RETRIEVAL_MANIFEST_REQUIRED", "Hybrid generation requires an explicit published corpus", 422)
+    if retrieval_mode not in {"evidence_only", "lexical", "hybrid"} or (retrieval_mode in {"lexical", "hybrid"} and not corpus_id):
+        raise ServiceError("RETRIEVAL_MANIFEST_REQUIRED", "Historical generation requires an explicit published corpus", 422)
     identity = hashlib.sha256(json.dumps([analysis_id, task, question, retrieval_mode, corpus_id]).encode()).hexdigest()
     # Recover retrieval by its request identity before reserving generation.
     try:
@@ -98,7 +99,7 @@ def run_ai(analysis_id: str, user_id: str, request_key: str, task: str, question
     except ValueError:
         raise ServiceError("MODEL_CONFIGURATION_UNEVALUATED", "Model configuration requires a versioned price table and evaluation", 503) from None
     pinned_retrieval = None
-    if retrieval_mode == "hybrid":
+    if retrieval_mode in {"lexical", "hybrid"}:
         with session_scope() as session:
             existing = session.scalar(select(AIRun).where(AIRun.user_id == user_id, AIRun.request_key == request_key))
             if existing:
@@ -112,11 +113,12 @@ def run_ai(analysis_id: str, user_id: str, request_key: str, task: str, question
             incident_id = pinned_analysis.incident_id
         from datetime import datetime
 
-        from .retrieval import hybrid_search
+        from .retrieval import hybrid_search, lexical_search
         if not isinstance(pinned_cutoff, str):
             raise ServiceError("INVALID_ANALYSIS", "Analysis cutoff is missing", 422)
         assert corpus_id is not None
-        pinned_retrieval = hybrid_search(question, user_id, "retrieval-" + hashlib.sha256(request_key.encode()).hexdigest(), corpus_id, datetime.fromisoformat(pinned_cutoff), incident_id, timeout=max(0.1, 60 - (time.monotonic() - started)))
+        search = lexical_search if retrieval_mode == "lexical" else hybrid_search
+        pinned_retrieval = search(question, user_id, "retrieval-" + hashlib.sha256(request_key.encode()).hexdigest(), corpus_id, datetime.fromisoformat(pinned_cutoff), incident_id, timeout=max(0.1, 60 - (time.monotonic() - started)))
     with session_scope() as session:
         lock(session)
         existing = session.scalar(select(AIRun).where(AIRun.user_id == user_id, AIRun.request_key == request_key))

@@ -63,6 +63,7 @@ def search_incidents(
     exclude_incident_id: str | None = None, stage: str | None = None,
     query_line: str | None = None, limit: int = 5,
     corpus_rows: list[IncidentRevision] | None = None,
+    query_payload: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     if not query.strip():
         return []
@@ -82,17 +83,20 @@ def search_incidents(
     if stage:
         statement = statement.where(IncidentRevision.payload["scope"]["stage"].astext == stage)
     statement = statement.order_by(func.ts_rank(vector, terms).desc(), IncidentRevision.incident_id).limit(limit * 3)
+    from .retrieval import precedent_comparison
     results = []
     seen: set[str] = set()
     for row, score in session.execute(statement):
         if row.incident_id in seen:
             continue
         seen.add(row.incident_id)
+        comparison = precedent_comparison(query_payload, row.payload)
         results.append({
+            **comparison,
             "id": row.incident_id, "revision": row.revision, "title": row.title,
             "line": row.line_id, "score": round(float(score), 4),
-            "match_reason": "Shared terms in incident title or recorded events",
-            "differences": ([f"Different sewing line ({row.line_id} versus {query_line})."] if query_line and row.line_id != query_line else []) + ["Material lot, machine, and action prerequisites need separate verification."],
+            "match_reason": "Recorded evidence matches the query; operational conditions below bound its relevance.",
+            "differences": comparison["differences"],
             "cutoff": row.payload["cutoff"], "execution_kind": "live_lexical",
         })
         if len(results) == limit:
@@ -131,7 +135,7 @@ def create_analysis(session: Session, incident_id: str, revision: int, key: str,
     report["corpus_release"] = {"version": "lexical-v2", "items": corpus_items, "digest": digest(corpus_items)}
     categories = [h["category"].replace("_", " ") for h in report.get("hypotheses", []) if h["status"] == "SUPPORTED"]
     query = " ".join(categories) or " ".join(event.get("type", "") for event in report.get("timeline", [])[:2])
-    report["precedents"] = search_incidents(session, query, cutoff=row.cutoff, exclude_incident_id=incident_id, stage=row.payload["scope"]["stage"], query_line=row.line_id, corpus_rows=eligible)
+    report["precedents"] = search_incidents(session, query, cutoff=row.cutoff, exclude_incident_id=incident_id, stage=row.payload["scope"]["stage"], query_line=row.line_id, corpus_rows=eligible, query_payload=row.payload)
     now = datetime.now(UTC)
     analysis = IncidentAnalysis(
         idempotency_key=key, incident_id=incident_id, revision=revision,

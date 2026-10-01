@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { ArrowLeft, FileText } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useParams, useSearchParams } from 'react-router'
@@ -7,7 +7,7 @@ import { api } from '@/lib/api'
 import { formatInstant } from '@/lib/status'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/Auth'
-import { OpenAiPanel, HybridPanel, ExportReport } from '@/components/IncidentAi'
+import { OpenAiPanel, HybridPanel, ExportReport, PrecedentConditions } from '@/components/IncidentAi'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import savedAi from '@/data/hero-ai.json'
@@ -104,7 +104,7 @@ export function IncidentWorkbenchPage() {
   const incident = useQuery({ queryKey: ['incident', id, revision], queryFn: () => incidentApi.revision(id, revision), enabled: !!id && (!!params.get('revision') || !!summary || library.isError) })
   const reportQuery = useQuery({ queryKey: ['incident-analysis', id, revision, analysisId], queryFn: () => analysisId ? incidentApi.analysis(analysisId) : incidentApi.analyze(id, revision), enabled: !!id && !!incident.data, retry: false })
   const report = reportQuery.data
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (report && !analysisId) {
       queryClient.setQueryData(['incident-analysis', id, revision, report.id], report)
       setParams({ revision: String(revision), analysis: report.id }, { replace: true })
@@ -151,7 +151,7 @@ export function IncidentWorkbenchPage() {
           {report.hypotheses.length ? <div className="grid gap-3 lg:grid-cols-2">{report.hypotheses.map((item, index) => <HypothesisCard key={`${item.category}-${index}`} item={item} onEvidence={setEvidenceId} />)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">Current evidence does not support a specific contributor.</p>}
         </Section>
         <HybridPanel report={report} enabled={capabilities.data?.ai?.index_ready === true && capabilities.data?.reviews_enabled === true} />
-        <Section title="Historical precedents" detail="Live lexical search. Similar cases can guide checks; differences limit what can be inferred.">{report.precedents?.length ? <div className="grid gap-3 lg:grid-cols-2">{report.precedents.map((item, index) => <article key={item.id ?? item.incident_id ?? index} className="rounded border bg-white p-4"><h3 className="text-sm font-semibold">{item.title ?? item.incident_id ?? 'Historical incident'}</h3>{item.match_reason || item.match_reasons?.length ? <p className="mt-2 text-xs text-zinc-700"><strong>Similar:</strong> {item.match_reason ?? item.match_reasons?.join('; ')}</p> : null}{item.differences?.length ? <p className="mt-2 text-xs text-zinc-700"><strong>Different:</strong> {item.differences.join('; ')}</p> : null}{(item.incident_id || item.id) && <Link className="mt-3 inline-block text-xs underline" to={`/incidents/${encodeURIComponent(item.incident_id ?? item.id!)}`}>Open precedent</Link>}</article>)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No eligible historical precedents were retrieved.</p>}</Section>
+        <Section title="Historical precedents" detail="Live lexical search. Similar cases can guide checks; differences limit what can be inferred.">{report.precedents?.length ? <div className="grid gap-3 lg:grid-cols-2">{report.precedents.map((item, index) => <article key={item.id ?? item.incident_id ?? index} className="rounded border bg-white p-4"><h3 className="text-sm font-semibold">{item.title ?? item.incident_id ?? 'Historical incident'}</h3>{item.match_reason || item.match_reasons?.length ? <p className="mt-2 text-xs text-zinc-700"><strong>Similar:</strong> {item.match_reason ?? item.match_reasons?.join('; ')}</p> : null}{item.differences?.length ? <p className="mt-2 text-xs text-zinc-700"><strong>Different:</strong> {item.differences.join('; ')}</p> : null}<div className="mt-2"><PrecedentConditions item={item} /></div>{(item.incident_id || item.id) && <Link className="mt-3 inline-block text-xs underline" to={`/incidents/${encodeURIComponent(item.incident_id ?? item.id!)}`}>Open precedent</Link>}</article>)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No useful precedent was found among eligible historical records. Verify current conditions before borrowing an action.</p>}</Section>
         <Section title="Recovery options" detail="Proposals are versioned requests for human review.">{report.proposals.length ? <div className="grid gap-3 lg:grid-cols-2">{report.proposals.map((item) => <ProposalCard key={`${report.id}-${item.id}-${item.state}`} item={item} report={report} currentRevision={summary?.revision ?? revision} canReview={capabilities.data?.reviews_enabled === true && report.execution_kind !== 'saved_deterministic'} onEvidence={setEvidenceId} onChanged={refresh} />)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No action proposal is supported by this evidence.</p>}</Section>
         <IncidentWorkflow key={`${id}:${user?.id ?? 'anonymous'}`} report={report} currentRevision={summary?.revision ?? revision} onRevisionPublished={changeRevision} />
         <Section title="Shift update" detail="Evidence-linked report summary"><blockquote className="rounded-lg border border-zinc-200 bg-white p-5 text-sm leading-7 text-zinc-700">{report.summary}</blockquote><ExportReport report={report} enabled={capabilities.data?.reviews_enabled === true} /></Section>
