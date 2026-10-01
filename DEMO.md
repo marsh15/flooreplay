@@ -36,3 +36,9 @@ Sign in and create a check from a current proposal. Select an active assignee an
 Record the action actually taken, completion time, assessment and remaining uncertainty. Optional observed output must include its observation time. Explain that subsequent output does not prove the action caused a change. Show the shift handover and its outstanding checks, owners and deadlines.
 
 Mark the incident resolved only as a separate decision with a rationale, after all checks are completed or cancelled and at least one has a completed outcome. Explain that new evidence makes the old revision-bound resolution stale. Review the full rules in [incident workflow](docs/incident-workflow.md).
+
+## CSV import walkthrough
+
+Sign in as owner and download the synthetic baseline example from incident imports. Create a new incident with its matching scope and observation window, preview the rows and publish only a READY preview. Import the output example and then its correction against the latest revision. Show the preserved original source, replacement relationship and changed metric.
+
+For an unfamiliar CSV, select explicit source columns or deliberate constant defaults. Inspect normalized dates and units, then preview again after any interpretation change. Explain why cumulative totals and unreviewed scope assumptions cannot become final-good deltas. Follow the [example sequence](frontend/public/import-examples/README.md) and [mapping guide](docs/csv-import-mapping.md).

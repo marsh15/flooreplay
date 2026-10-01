@@ -39,3 +39,7 @@ Task metadata and assignee lists require authentication. Published source respon
 ## Current investigation controls
 
 Revision comparisons derive earlier metrics, newly available and corrected sources, hypothesis changes and proposal-review reminders from pinned reports. State-aware next checks refine questions when evidence already establishes a block. The frontend separates engineering fixtures from curated incidents and provides filters and pagination. Claim annotations support all four claim-bearing output structures and preserve the output digest, rationale, authenticated actor and durable receipt. The printable deterministic report includes revision and report identity and excludes the AI panel. Saved report bundles use engine incident-v4.
+
+## CSV interpretation
+
+The CSV mapping layer describes source headers and sample rows, validates explicit canonical-to-source column mappings and constant field defaults, and normalizes those selected values through the existing production, operation and note profiles. Mappings cannot reuse a source column, name unknown fields or combine a mapped field with a default. Original source bytes and interpretation remain bound to the preview digest and publication artifact. Canonical JSON/JSONL imports retain their existing path. The third pass is verified locally on October 1, 2026; it does not convert cumulative totals or accept XLSX.

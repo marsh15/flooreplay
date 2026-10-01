@@ -34,3 +34,5 @@ A first-time walkthrough should let a user answer these questions without the au
 Avoid confidence percentages without a defensible measurement, unsupported causal claims, decorative gauges and claims of factory readiness based only on synthetic software tests.
 
 The [incident workflow](docs/incident-workflow.md) defines task states, assignment permissions, immutable evidence responses and outcome limitations. Task metadata requires authentication, but source responses become evidence in public synthetic demo reports. Authenticated task access does not establish private workspace confidentiality.
+
+The third pass adds synthetic downloadable CSV examples and explicit source-column mappings and defaults, verified locally on October 1, 2026. Users preview dates, units and scope before publication. Cumulative totals, XLSX and saved mapping presets remain follow-up work.
