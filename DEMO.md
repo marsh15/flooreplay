@@ -42,3 +42,9 @@ Mark the incident resolved only as a separate decision with a rationale, after a
 Sign in as owner and download the synthetic baseline example from incident imports. Create a new incident with its matching scope and observation window, preview the rows and publish only a READY preview. Import the output example and then its correction against the latest revision. Show the preserved original source, replacement relationship and changed metric.
 
 For an unfamiliar CSV, select explicit source columns or deliberate constant defaults. Inspect normalized dates and units, then preview again after any interpretation change. Explain why cumulative totals and unreviewed scope assumptions cannot become final-good deltas. Follow the [example sequence](frontend/public/import-examples/README.md) and [mapping guide](docs/csv-import-mapping.md).
+
+## AI support review
+
+Generate or recover a completed draft, inspect its model/output identity and deliberately publish it for review. Sign in with another reviewer account and open the evaluation page’s claim-support inbox. Read a claim beside current and historical citations; record support, insufficient evidence or unsupported wording with a rationale. Declare reviewer kind, qualifications and independence explicitly. Record omissions, abstention, usefulness and limitations in the whole-draft assessment, then download the report. Explain that self-review and AI annotations cannot establish independent human validation.
+
+Show observed precedent conditions and missing intervention/outcome evidence. In the fresh evaluation report, distinguish the ten measured deterministic slots from thirty pending AI slots. Preserve the frozen offline candidate result, including its three structural failures. Do not narrate this as completed fresh-provider acceptance or proven supervisor benefit.

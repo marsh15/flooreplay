@@ -43,3 +43,11 @@ Revision comparisons derive earlier metrics, newly available and corrected sourc
 ## CSV interpretation
 
 The CSV mapping layer describes source headers and sample rows, validates explicit canonical-to-source column mappings and constant field defaults, and normalizes those selected values through the existing production, operation and note profiles. Mappings cannot reuse a source column, name unknown fields or combine a mapped field with a default. Original source bytes and interpretation remain bound to the preview digest and publication artifact. Canonical JSON/JSONL imports retain their existing path. The third pass is verified locally on October 1, 2026; it does not convert cumulative totals or accept XLSX.
+
+## Semantic review and trust comparison
+
+Completed AI drafts remain private until their requester or an owner deliberately publishes an exact output digest for review. `semantic_review.py` returns a sanitized packet, preserves append-only claim judgments and whole-draft assessments, and reports each actor’s latest judgments plus disagreement history. Qualifications and independence remain self-declared. Legacy annotations migrate as unspecified reviewers; they do not become verified human reviews. Private run lookup continues to require requester/owner access.
+
+Grounding prompt v7/schema v2 allow narrow ordinary phrases while application references carry quantities and source values. Exact token checks, free-prose checks and explicit untrusted-source instructions enforce a bounded structural contract, not semantic truth. Lexical retrieval uses a pinned eligible corpus without query embedding. Precedent comparisons expose recorded operational conditions and explicitly missing mechanism/intervention/outcome evidence.
+
+`trust_evaluation.py` verifies frozen release hashes and records same-case deterministic and imported AI receipts. `trust_live.py` dispatches only under an explicit persisted budget envelope, existing owner/corpus and configured shared allowance. It refuses test databases, never auto-indexes or tops up, and does not repeat uncertain operations. Held-out observations retain their frozen bytes while stored execution metadata excludes them from public browsing and future corpora. See [AI trust evaluation](docs/ai-trust-evaluation.md).
