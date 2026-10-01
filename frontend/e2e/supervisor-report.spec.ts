@@ -1,0 +1,32 @@
+import { expect, test } from '@playwright/test'
+
+test('public supervisor report is portable and distinguishes unknown workflow', async ({ page }) => {
+  await page.route('**/api/v1/**', (route) => route.abort())
+  await page.goto('/incidents/INC-001?revision=2')
+  await page.getByRole('button', { name: 'Preview supervisor report' }).click()
+  const report = page.getByRole('article', { name: 'Printable supervisor report' })
+  await expect(report.getByRole('heading', { name: 'Findings from the recorded data' })).toBeVisible()
+  await expect(report.getByText(/Current assignments, named owners and incident resolution are unavailable/)).toBeVisible()
+  await expect(report.getByText(/Pinned report:/)).toBeVisible()
+  await expect(report.getByText(/Contradicting records:/).first()).toBeVisible()
+  await expect(report.getByRole('heading', { name: 'Evidence record' })).toBeVisible()
+  await page.emulateMedia({ media: 'print' })
+  await expect(report).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Historical local-model result' })).toBeHidden()
+  await expect(page.getByRole('heading', { name: 'Observed situation' })).toBeHidden()
+  await expect(report.getByText(/Records that arrived later are excluded/)).toBeVisible()
+})
+
+test('supervisor report stays readable at mobile width and after preview closes', async ({ page }) => {
+  await page.route('**/api/v1/**', (route) => route.abort())
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/incidents/INC-001?revision=2')
+  await page.getByRole('button', { name: 'Preview supervisor report' }).click()
+  const report = page.getByRole('article', { name: 'Printable supervisor report' })
+  const size = await report.evaluate((element) => ({ width: element.clientWidth, scroll: element.scrollWidth }))
+  expect(size.scroll).toBeLessThanOrEqual(size.width)
+  await page.getByRole('button', { name: 'Hide report preview' }).click()
+  await expect(report).toBeHidden()
+  await page.emulateMedia({ media: 'print' })
+  await expect(report).toBeVisible()
+})

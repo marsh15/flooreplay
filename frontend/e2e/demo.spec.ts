@@ -1,0 +1,43 @@
+import { expect, test } from '@playwright/test'
+
+test('visitor completes an isolated demonstration and resets without server writes', async ({ page }) => {
+  const writes: string[] = []
+  page.on('request', (request) => {
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method())) writes.push(request.url())
+  })
+  await page.route('**/api/**', (route) => route.abort())
+  await page.goto('/demo')
+  await expect(page.getByRole('heading', { name: 'Start the example investigation' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /sign in/i })).toHaveCount(0)
+  await expect(page.getByText('Complete for the recorded output interval')).toBeVisible()
+  await page.getByRole('button', { name: 'Choose this next check' }).click()
+  await expect(page.getByRole('button', { name: 'Assign simulated check' })).toBeDisabled()
+  await page.getByLabel('Check owner').fill('Maintenance lead')
+  await page.getByRole('button', { name: 'Assign simulated check' }).click()
+  await page.getByLabel('A maintenance log corroborates').check()
+  await page.getByLabel('Result rationale').fill('Stop corroborated; material timing still needs checking.')
+  await page.getByRole('button', { name: 'Record simulated result' }).click()
+  await expect(page.getByRole('heading', { name: 'Example investigation completed' })).toBeVisible()
+  await expect(page.getByText('Cause remains unconfirmed; incident remains open.', { exact: true })).toBeVisible()
+  await expect(page.getByText('Stop corroborated; material timing still needs checking.', { exact: false })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Open the full example investigation' })).toHaveAttribute('href', '/incidents/INC-001')
+  await page.getByRole('button', { name: 'Reset simulation' }).click()
+  await page.getByRole('button', { name: 'Choose this next check' }).click()
+  await expect(page.getByLabel('Check owner')).toHaveValue('')
+  await page.reload()
+  await expect(page.getByRole('heading', { name: '1. Inspect the evidence' })).toBeVisible()
+  expect(writes).toEqual([])
+})
+
+test('simulation works on a phone with an inconclusive result', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.route('**/api/**', (route) => route.abort())
+  await page.goto('/demo')
+  await page.getByRole('button', { name: 'Choose this next check' }).click()
+  await page.getByLabel('Check owner').fill('Shift supervisor')
+  await page.getByRole('button', { name: 'Assign simulated check' }).click()
+  await page.getByLabel('Result rationale').fill('Maintenance log unavailable.')
+  await page.getByRole('button', { name: 'Record simulated result' }).click()
+  await expect(page.getByText('The simulated check could not establish the stop interval.')).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+})

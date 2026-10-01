@@ -23,12 +23,18 @@ def _revision(session: Session, incident_id: str, revision: int) -> IncidentRevi
     return row
 
 
-def incident_list(session: Session) -> list[dict[str, Any]]:
+def incident_list(session: Session, *, include_workflow: bool = False) -> list[dict[str, Any]]:
     rows = session.execute(select(IncidentRevision).order_by(IncidentRevision.incident_id, IncidentRevision.revision)).scalars().all()
     latest: dict[str, IncidentRevision] = {}
     for row in rows:
         latest[row.incident_id] = row
     imported_ids = set(session.scalars(select(IncidentSourceArtifact.incident_id).distinct()).all())
+    from .auth import Account
+    from .incident_workflow import TERMINAL, IncidentCheck, IncidentResolution
+
+    checks = session.scalars(select(IncidentCheck)).all() if include_workflow else []
+    resolutions = {row.incident_id: row for row in session.scalars(select(IncidentResolution)).all()} if include_workflow else {}
+    assignees = {row.id: row.display_name for row in session.scalars(select(Account)).all()} if include_workflow else {}
     items = []
     for row in latest.values():
         report = analyze_incident(row.payload)
@@ -40,6 +46,15 @@ def incident_list(session: Session) -> list[dict[str, Any]]:
         ).scalar_one()
         available = sum(bool(value) for value in row.payload.get("coverage", {}).values())
         total = len(row.payload.get("coverage", {}))
+        incident_checks = [check for check in checks if check.incident_id == row.incident_id]
+        open_checks = [check for check in incident_checks if check.status not in TERMINAL]
+        resolution = resolutions.get(row.incident_id)
+        workflow = {
+            "investigation_state": "RESOLVED" if resolution and resolution.state == "RESOLVED" and resolution.resolved_revision == row.revision else "OPEN",
+            "open_action_count": len(open_checks),
+            "action_state": "OPEN_ACTIONS" if open_checks else "NO_OPEN_ACTIONS" if incident_checks else "NO_RECORDED_ACTIONS",
+            "assignees": [{"id": account_id, "name": assignees.get(account_id, "Unavailable account")} for account_id in sorted({check.assignee_id for check in open_checks})],
+        } if include_workflow else None
         items.append({
             "id": row.incident_id, "revision": row.revision, "title": row.title,
             "line": row.line_id, "window_start": row.payload["window"]["start"],
@@ -47,6 +62,8 @@ def incident_list(session: Session) -> list[dict[str, Any]]:
             "status": metric["status"], "shortfall": metric["shortfall"],
             "evidence_completeness": f"{available}/{total} available sources; timeline {report['capabilities']['timeline']['status'].lower()}" if total else "Unknown coverage",
             "last_reviewed_revision": reviewed,
+            "evidence_state": "UNKNOWN" if not total else "ALL_REPORTED_SOURCES_AVAILABLE" if available == total else "PARTIAL" if available else "UNAVAILABLE",
+            "workflow": workflow,
             "library_group": "engineering_fixture" if row.payload.get("dataset_split") else "operational" if row.incident_id in imported_ids else "curated_demo",
         })
     return items
@@ -64,6 +81,7 @@ def search_incidents(
     query_line: str | None = None, limit: int = 5,
     corpus_rows: list[IncidentRevision] | None = None,
     query_payload: dict[str, Any] | None = None,
+    library_view: str | None = None,
 ) -> list[dict[str, Any]]:
     if not query.strip():
         return []
@@ -72,6 +90,10 @@ def search_incidents(
     statement = select(IncidentRevision, func.ts_rank(vector, terms).label("score")).where(vector.op("@@")(terms))
     split = IncidentRevision.payload["dataset_split"].astext
     statement = statement.where(or_(split.is_(None), split.not_in(["development", "dev", "locked"])))
+    if library_view == "cases":
+        statement = statement.where(split.is_(None))
+    elif library_view == "engineering":
+        statement = statement.where(split.is_not(None))
     if corpus_rows is not None:
         if not corpus_rows:
             return []

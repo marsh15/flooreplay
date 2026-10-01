@@ -1694,6 +1694,7 @@ export interface operations {
         parameters: {
             query?: {
                 q?: string;
+                library_view?: ("cases" | "engineering") | null;
             };
             header?: never;
             path?: never;

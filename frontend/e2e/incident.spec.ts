@@ -23,7 +23,7 @@ test('incident investigation keeps evidence and later revision separate', async 
   await expect(page.getByRole('link', { name: 'Open precedent' }).first()).toBeVisible()
   await expect(page.getByText(/Proposal prerequisites require separate current-source verification/).first()).toBeVisible()
   await page.getByRole('combobox', { name: 'Evidence revision' }).selectOption('2')
-  await expect(page.getByText('EV-MAINT-1').first()).toBeVisible()
+  await expect(page.getByRole('button', { name: 'EV-MAINT-1', exact: true }).first()).toBeVisible()
   await expect(page.getByRole('button', { name: 'Export portable report' })).toBeDisabled()
 })
 

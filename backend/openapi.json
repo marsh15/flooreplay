@@ -265,6 +265,26 @@
               "default": "",
               "title": "Q"
             }
+          },
+          {
+            "name": "library_view",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "cases",
+                    "engineering"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Library View"
+            }
           }
         ],
         "responses": {

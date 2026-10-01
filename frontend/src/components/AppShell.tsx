@@ -14,7 +14,8 @@ const NAV = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
-  const capabilities = useQuery({ queryKey: ['capabilities'], queryFn: api.capabilities, staleTime: 60_000 })
+  const isDemo = pathname === '/demo'
+  const capabilities = useQuery({ queryKey: ['capabilities'], queryFn: api.capabilities, staleTime: 60_000, enabled: !isDemo })
   return (
     <div className="app-shell flex min-h-[100dvh] flex-col">
       <a href="#main-content" className="skip-link">Skip to content</a>
@@ -25,8 +26,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span><span className="block text-base font-semibold tracking-tight">FloorReplay</span><span className="block text-[11px] text-zinc-600">Synthetic manufacturing data</span></span>
           </Link>
           <div className="ml-auto flex items-center gap-3 sm:order-3">
-            <SignInControl />
-            {capabilities.isError && <span className="hidden max-w-28 text-xs text-red-700 lg:block" title={capabilities.error.message}>Capabilities unavailable</span>}
+            {isDemo ? <span className="text-xs font-medium text-zinc-600">Isolated simulation</span> : <SignInControl />}
+            {!isDemo && capabilities.isError && <span className="hidden max-w-28 text-xs text-red-700 lg:block" title={capabilities.error.message}>Capabilities unavailable</span>}
           </div>
           <nav className="flex w-full gap-1 border-t border-zinc-100 pt-3 sm:order-2 sm:ml-auto sm:w-auto sm:border-0 sm:pt-0" aria-label="Primary">
             {NAV.map(({ to, label, icon: Icon }) => {
@@ -36,7 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
-      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-4 py-7 sm:px-6 sm:py-10 lg:px-8"><UsagePanel />{children}</main>
+      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-4 py-7 sm:px-6 sm:py-10 lg:px-8">{!isDemo && <UsagePanel />}{children}</main>
       <footer className="mx-auto w-full max-w-6xl px-4 pb-6 pt-8 sm:px-6 lg:px-8">
         <p className="max-w-3xl border-t border-zinc-200 pt-4 text-xs leading-5 text-zinc-600">FloorReplay is an unofficial engineering exploration using synthetic data. It is not affiliated with Genorai and has not been validated in a real factory.</p>
       </footer>

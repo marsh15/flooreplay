@@ -17,6 +17,8 @@ export interface IncidentSummary {
   cutoff: string
   shortfall: number | null
   status: string
+  evidence_state?: 'UNKNOWN' | 'ALL_REPORTED_SOURCES_AVAILABLE' | 'PARTIAL' | 'UNAVAILABLE'
+  workflow?: { investigation_state: 'OPEN' | 'RESOLVED'; action_state: 'OPEN_ACTIONS' | 'NO_OPEN_ACTIONS' | 'NO_RECORDED_ACTIONS'; open_action_count: number; assignees: { id: string; name: string }[] } | null
   evidence_completeness?: string
   last_reviewed_revision?: number | null
 }
@@ -84,7 +86,7 @@ export interface IncidentMetric {
 export interface TimelineEvent {
   id: string
   type: string
-  lane: string
+  lane?: string
   summary: string
   occurred_at?: string
   start?: string
@@ -310,7 +312,7 @@ export const incidentApi = {
       return { id: evidenceId, source_id: record.source_id ?? `synthetic-fixture:${savedIncident.id}@${savedIncident.revision}/${evidenceId}`, record, incident_id: savedIncident.id, revision: savedIncident.revision }
     }
   },
-  search: (query: string) => request<{ items: IncidentSearchResult[]; execution_kind: string }>(`/incidents/search?q=${encodeURIComponent(query)}`),
+  search: (query: string, libraryView?: 'cases' | 'engineering') => request<{ items: IncidentSearchResult[]; execution_kind: string }>(`/incidents/search?q=${encodeURIComponent(query)}${libraryView ? `&library_view=${libraryView}` : ''}`),
   submitProposal: (analysisId: string, proposalId: string) =>
     request<{ id: string; state: string }>(`/analyses/${pathId(analysisId)}/proposals/${pathId(proposalId)}/submit`, {
       method: 'POST', body: JSON.stringify({ idempotency_key: crypto.randomUUID(), rationale: 'Submitted for review against the cited evidence.', decision: 'PENDING_REVIEW' } satisfies IncidentReviewRequest),

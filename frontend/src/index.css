@@ -176,3 +176,13 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; }
   h2, h3 { break-after: avoid; }
   .evidence-link { border: none; padding: 0; min-height: 0; color: black; }
 }
+
+@media print {
+  .investigation-workbench > :not(.supervisor-export) { display: none !important; }
+  .supervisor-export { border: 0; padding: 0; }
+  .supervisor-report { display: block !important; margin-top: 0; }
+  .supervisor-report > section { display: block; margin-top: 5mm; }
+  .supervisor-report section > div, .supervisor-report dl { break-inside: avoid; }
+  .supervisor-report article, .supervisor-report { break-inside: auto; }
+  .supervisor-report p, .supervisor-report dl { orphans: 3; widows: 3; }
+}

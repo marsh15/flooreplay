@@ -463,9 +463,9 @@ def create_app(mode: str | None = None) -> FastAPI:
         return {"status": "ready"}
 
     @app.get("/api/v1/incidents")
-    def list_incidents() -> dict[str, Any]:
+    def list_incidents(user: Annotated[Account | None, Depends(current_user)]) -> dict[str, Any]:
         with session_scope() as session:
-            return {"items": incident_list(session)}
+            return {"items": incident_list(session, include_workflow=user is not None)}
 
     @app.get("/api/v1/evaluation-reports/incident-release-v1")
     def release_eval_report() -> dict[str, Any]:
@@ -481,9 +481,9 @@ def create_app(mode: str | None = None) -> FastAPI:
             return evaluation_report(session)
 
     @app.get("/api/v1/incidents/search")
-    def incident_search(q: str = "") -> dict[str, Any]:
+    def incident_search(q: str = "", library_view: Literal["cases", "engineering"] | None = None) -> dict[str, Any]:
         with session_scope() as session:
-            return {"items": search_incidents(session, q), "execution_kind": "live_lexical"}
+            return {"items": search_incidents(session, q, library_view=library_view), "execution_kind": "live_lexical"}
 
     @app.get("/api/v1/incidents/{incident_id}/saved-draft")
     def saved_incident_draft(incident_id: str) -> dict[str, Any]:
