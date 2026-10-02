@@ -494,7 +494,7 @@ def create_app(mode: str | None = None) -> FastAPI:
             raise
         except Exception as exc:  # pragma: no cover - infra failure path
             raise ServiceError("DATABASE_UNAVAILABLE", "Database is unavailable or migrations have not run", 503) from exc
-        return {"status": "ready"}
+        return {"status": "ready", "build_id": settings.build_id, "schema_revision": revision}
 
     @app.get("/api/v1/incidents")
     def list_incidents(user: Annotated[Account | None, Depends(current_user)]) -> dict[str, Any]:
