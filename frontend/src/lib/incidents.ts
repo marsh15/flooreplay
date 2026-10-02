@@ -290,7 +290,7 @@ const pathId = (id: string) => encodeURIComponent(id)
 export const incidentApi = {
   list: async (): Promise<{ items: IncidentSummary[]; execution_kind?: string }> => {
     try { return await request<{ items: IncidentSummary[] }>('/incidents') }
-    catch (error) { if (!unavailable(error)) throw error; return { items: savedLibrary.items.map((item) => ({ ...item, library_group: item.library_group === 'curated_demo' || item.library_group === 'engineering_fixture' || item.library_group === 'operational' ? item.library_group : undefined })), execution_kind: 'saved_deterministic' } }
+    catch (error) { if (!unavailable(error)) throw error; return { items: savedLibrary.items.map((item) => ({ ...item, evidence_state: item.evidence_state === 'UNKNOWN' || item.evidence_state === 'ALL_REPORTED_SOURCES_AVAILABLE' || item.evidence_state === 'PARTIAL' || item.evidence_state === 'UNAVAILABLE' ? item.evidence_state : undefined, library_group: item.library_group === 'curated_demo' || item.library_group === 'engineering_fixture' || item.library_group === 'operational' ? item.library_group : undefined })), execution_kind: 'saved_deterministic' } }
   },
   revision: async (id: string, revision: number): Promise<IncidentRevision> => {
     try { return await request<IncidentRevision>(`/incidents/${pathId(id)}/revisions/${revision}`) }
