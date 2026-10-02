@@ -84,10 +84,13 @@ test('library filters evidence and authenticated open actions without exposing a
   await expect(page.getByRole('combobox', { name: 'Assignee (open actions)' })).toBeDisabled()
   await expect(page.getByRole('option', { name: 'Private assignee' })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Case IMPORTED' })).toBeVisible()
-  unavailable = true
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await page.getByLabel('Username').fill('reviewer')
   await page.getByLabel('Password').fill('local-password')
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Assignee (open actions)' }).selectOption('person')
+  unavailable = true
+  await page.evaluate(() => window.dispatchEvent(new Event('visibilitychange')))
   await expect(page.getByText(/Showing bundled saved demo cases/)).toBeVisible()
   await expect(page.getByRole('combobox', { name: 'Assignee (open actions)' })).toHaveValue('')
   await expect(page.getByRole('combobox', { name: 'Assignee (open actions)' })).toBeDisabled()
