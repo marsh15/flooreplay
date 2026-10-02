@@ -46,6 +46,7 @@ class CatalogRevision(Base):
 
 class SourceSnapshot(Base):
     __tablename__ = "source_snapshots"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     kind: Mapped[str] = mapped_column(String(32), index=True)
@@ -69,6 +70,7 @@ class ExecutionConfiguration(Base):
 
 class ScenarioRevision(Base):
     __tablename__ = "scenario_revisions"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     scenario_id: Mapped[str] = mapped_column(String(64), primary_key=True)
     revision: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -86,6 +88,7 @@ class ScenarioRevision(Base):
 
 class ExpectationRevision(Base):
     __tablename__ = "expectation_revisions"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     __table_args__ = (UniqueConstraint("scenario_id", "revision", "configuration_id", name="uq_expectation"),)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
@@ -97,6 +100,7 @@ class ExpectationRevision(Base):
 
 class ReplayAttempt(Base):
     __tablename__ = "replay_attempts"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
     idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
@@ -124,6 +128,7 @@ class ImportAudit(Base):
     by preview digest."""
 
     __tablename__ = "import_audits"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     preview_digest: Mapped[str] = mapped_column(String(80), primary_key=True)
     profile_id: Mapped[str] = mapped_column(String(32))
@@ -146,6 +151,7 @@ class SuiteRevision(Base):
     expectation revisions, content-addressed as one unit."""
 
     __tablename__ = "suite_revisions"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     revision: Mapped[int] = mapped_column(Integer)
@@ -158,6 +164,7 @@ class ComparisonReport(Base):
     """One suite execution under two configurations and its classifications."""
 
     __tablename__ = "comparison_reports"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
     idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
@@ -181,6 +188,7 @@ class ParserCall(Base):
     prompt digest, schema version, and token usage."""
 
     __tablename__ = "parser_calls"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
     note_text: Mapped[str] = mapped_column(Text)
@@ -202,6 +210,7 @@ class ReviewCheck(Base):
     original replay; records which paths of the decision context changed."""
 
     __tablename__ = "review_checks"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
     original_replay_id: Mapped[str] = mapped_column(String(64), index=True)
@@ -219,6 +228,7 @@ class ReviewCheck(Base):
 
 class IncidentRevision(Base):
     __tablename__ = "incident_revisions"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     incident_id: Mapped[str] = mapped_column(String(64), primary_key=True)
     revision: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -234,6 +244,7 @@ class IncidentRevision(Base):
 
 class IncidentAnalysis(Base):
     __tablename__ = "incident_analyses"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
     idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
@@ -248,6 +259,7 @@ class IncidentAnalysis(Base):
 
 class IncidentReview(Base):
     __tablename__ = "incident_reviews"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
     idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
@@ -263,6 +275,7 @@ class IncidentReview(Base):
 
 class IncidentModelJob(Base):
     __tablename__ = "incident_model_jobs"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
     idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
@@ -280,6 +293,7 @@ class IncidentModelJob(Base):
 
 class IncidentSourceArtifact(Base):
     __tablename__ = "incident_source_artifacts"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
     idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)

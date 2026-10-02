@@ -30,13 +30,13 @@ def embedding_identity(text: str, model: str = "text-embedding-3-small") -> tupl
     return digest, normalized
 
 
-def publish_corpus(session: Session, corpus_id: str, cutoff: datetime) -> dict[str, Any]:
+def publish_corpus(session: Session, corpus_id: str, cutoff: datetime, *, workspace_id: str = "public-demo") -> dict[str, Any]:
     existing = session.get(CorpusRelease, corpus_id)
     if existing:
-        if existing.cutoff != cutoff:
+        if existing.cutoff != cutoff or existing.workspace_id != workspace_id:
             raise ServiceError("CORPUS_IMMUTABLE", "Corpus release already exists at another cutoff", 409)
         return {"id": existing.id, "digest": existing.digest, "cards": len(existing.cards)}
-    revisions = session.scalars(select(IncidentRevision).where(IncidentRevision.cutoff <= cutoff).order_by(IncidentRevision.incident_id, IncidentRevision.revision.desc())).all()
+    revisions = session.scalars(select(IncidentRevision).where(IncidentRevision.cutoff <= cutoff, IncidentRevision.workspace_id == workspace_id).order_by(IncidentRevision.incident_id, IncidentRevision.revision.desc())).all()
     cards: list[dict[str, Any]] = []
     seen: set[str] = set()
     for item in revisions:
@@ -49,7 +49,7 @@ def publish_corpus(session: Session, corpus_id: str, cutoff: datetime) -> dict[s
         # Card is already constructed from cutoff-visible observations by incident_service.
         cards.append({"id": item.incident_id, "revision": item.revision, "lineage_id": lineage, "title": item.title, "cutoff": item.cutoff.isoformat(), "content": item.evidence_card, "content_digest": hashlib.sha256(item.evidence_card.encode()).hexdigest(), "source_digest": item.content_digest, "card_schema_version": PREPROCESSING, "embedding_identity": embedding_identity(item.evidence_card, settings.openai_embedding_model)[0], "embedding_model": settings.openai_embedding_model, "embedding_dimensions": 512})
     digest = hashlib.sha256(json.dumps(cards, sort_keys=True).encode()).hexdigest()
-    session.add(CorpusRelease(id=corpus_id, cutoff=cutoff, digest=digest, cards=cards))
+    session.add(CorpusRelease(id=corpus_id, workspace_id=workspace_id, cutoff=cutoff, digest=digest, cards=cards))
     return {"id": corpus_id, "digest": digest, "cards": len(cards)}
 
 
@@ -167,7 +167,10 @@ def hybrid_search(query: str, user_id: str, request_key: str, corpus_id: str, cu
                 assert existing.result is not None
                 return existing.result
             raise ServiceError("RETRIEVAL_PENDING", "Search is pending or interrupted; no automatic paid retry", 409)
-        run = RetrievalRun(user_id=user_id, request_key=request_key, identity=identity, status="RUNNING")
+        corpus = session.get(CorpusRelease, corpus_id)
+        if corpus is None:
+            raise ServiceError("NOT_FOUND", "Corpus release not found", 404)
+        run = RetrievalRun(workspace_id=corpus.workspace_id, user_id=user_id, request_key=request_key, identity=identity, status="RUNNING")
         session.add(run)
         session.flush()
         run_id = run.id
@@ -238,7 +241,9 @@ def _eligible_cards(session: Session, corpus: CorpusRelease, cutoff: datetime, e
         if datetime.fromisoformat(card["cutoff"]) > cutoff or card["id"] == exclude_id or card["lineage_id"] in excluded_lineages:
             continue
         source = session.get(IncidentRevision, (card["id"], card["revision"]))
-        if source is not None and source.payload.get("dataset_split", "historical") != "historical":
+        if source is None or source.workspace_id != corpus.workspace_id or source.content_digest != card.get("source_digest"):
+            continue
+        if source.payload.get("dataset_split", "historical") != "historical":
             continue
         if source is not None and current is not None and source.payload["scope"].get("stage") != current.payload["scope"].get("stage"):
             continue
@@ -280,6 +285,6 @@ def lexical_search(query: str, user_id: str, request_key: str, corpus_id: str, c
         matched = [(score, card) for score, card in sorted(ranked, key=lambda item: (-item[0], item[1]["id"])) if score > 0][:5]
         results = [{**_candidate_view(session, card, current, corpus_id), "score": score, "match_reason": "Lexical candidate from pinned cutoff-visible observations", "lexical_rank": rank + 1, "vector_rank": None} for rank, (score, card) in enumerate(matched)]
         result = {"request_key": request_key, "results": results, "status": "CANDIDATES_FOUND" if results else "NO_USEFUL_PRECEDENT", "manifest": {"mode": "lexical", "corpus_id": corpus_id, "corpus_digest": corpus.digest, "cutoff": cutoff.isoformat(), "card_schema_version": PREPROCESSING, "query_embedding_id": None, "excluded_incident": exclude_id, "created_at": now().isoformat()}}
-        session.add(RetrievalRun(user_id=user_id, request_key=request_key, identity=identity, status="COMPLETED", result=result))
+        session.add(RetrievalRun(workspace_id=corpus.workspace_id, user_id=user_id, request_key=request_key, identity=identity, status="COMPLETED", result=result))
         session.flush()
         return result

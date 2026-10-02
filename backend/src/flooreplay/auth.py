@@ -99,6 +99,7 @@ def current_user(request: Request) -> Account | None:
         user = session.get(Account, auth.account_id)
         if user is None or user.disabled:
             raise ServiceError("ACCOUNT_DISABLED", "Account access is disabled", 401)
+        request.state.actor_id = user.id
         return user
 
 

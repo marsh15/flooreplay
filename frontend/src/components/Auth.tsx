@@ -18,13 +18,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const response = await fetch(`${API_BASE}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password } satisfies components['schemas']['LoginRequest']) })
     const body = await response.json()
     if (!response.ok) throw new ApiError(body.code ?? 'LOGIN_FAILED', body.message ?? body.detail ?? 'Sign-in failed.', response.status)
+    client.clear()
     session.set(body.token)
     setUser(body.user)
     await client.invalidateQueries()
   }
   async function signOut() {
     try { await fetch(`${API_BASE}/auth/logout`, { method: 'POST', headers: session.headers() }) }
-    finally { session.set(null); setUser(null); await client.invalidateQueries() }
+    finally { session.set(null); client.clear(); setUser(null); await client.invalidateQueries() }
   }
   return <AuthContext value={{ user, signIn, signOut }}>{children}</AuthContext>
 }

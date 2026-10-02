@@ -8,6 +8,8 @@ from sqlalchemy import engine_from_config, pool
 from flooreplay.config import settings
 from flooreplay.models import Base
 import flooreplay.ai_evaluation  # register claim review metadata
+import flooreplay.operations  # register safe operational receipt metadata
+import flooreplay.workspaces  # register factory boundaries
 import flooreplay.auth  # register account metadata
 import flooreplay.incident_workflow  # register assigned check metadata
 import flooreplay.semantic_review  # register shared review and assessment metadata

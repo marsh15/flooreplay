@@ -27,14 +27,14 @@ test.beforeAll(ensureBackend)
 test('unfamiliar CSV creates baseline, mapped output and explicit correction while preserving the earlier report', async ({ page }) => {
   test.setTimeout(120_000)
   const suffix = Date.now()
-  const incidentId = `CSV-MAP-${suffix}`
+  const externalId = `CSV-MAP-${suffix}`
   const planId = `csv-plan-${suffix}`
   const outputId = `csv-output-${suffix}`
   const correctionId = `csv-correction-${suffix}`
   await page.goto('/incidents/imports')
   await signInOwner(page)
   await page.getByLabel('Import into').selectOption('new')
-  await page.getByLabel('New incident ID').fill(incidentId)
+  await page.getByLabel('New incident ID').fill(externalId)
   await page.getByLabel('Incident title').fill('Mapped spreadsheet investigation')
   await page.getByLabel('Factory', { exact: true }).fill('Synthetic mapping factory')
   await page.getByLabel('Sewing line', { exact: true }).fill(`S-${suffix}`)
@@ -44,10 +44,14 @@ test('unfamiliar CSV creates baseline, mapped output and explicit correction whi
   await page.getByLabel('Window end', { exact: true }).fill(stamp(15))
   await page.getByLabel('Knowledge cutoff', { exact: true }).fill(stamp(15))
   await inspectAndMap(page, exportCsv(planId, 'baseline_plan', '2026-09-28T08:45:00+05:30', 20), 'warehouse-plan.csv')
+  let authorization = ''
+  page.on('request', (request) => { authorization = request.headers().authorization ?? authorization })
   await page.getByRole('region', { name: 'Import preview' }).getByRole('button', { name: 'Create incident', exact: true }).click()
   await expect(page.getByText('Revision 1 published.', { exact: false })).toBeVisible()
   await page.getByRole('link', { name: 'Open the new investigation' }).click()
   await expect(page.getByRole('heading', { name: 'Mapped spreadsheet investigation', exact: true })).toBeVisible()
+  const incidentId = decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1) ?? '')
+  expect(incidentId).not.toBe(externalId)
 
   await page.getByRole('link', { name: 'Incident library', exact: true }).click()
   await page.getByRole('link', { name: 'Import incident evidence', exact: true }).click()
@@ -72,7 +76,7 @@ test('unfamiliar CSV creates baseline, mapped output and explicit correction whi
   await expect(page).toHaveURL(/analysis=/)
   const priorId = new URL(page.url()).searchParams.get('analysis')
   if (!priorId) throw new Error('Investigation did not pin an analysis identity.')
-  const beforeResponse = await page.request.get(`${apiBase}/api/v1/analyses/${encodeURIComponent(priorId)}`)
+  const beforeResponse = await page.request.get(`${apiBase}/api/v1/analyses/${encodeURIComponent(priorId)}`, { headers: { Authorization: authorization } })
   expect(beforeResponse.ok()).toBe(true)
   const before: Record<string, unknown> = await beforeResponse.json()
   expect(before.stale).toBe(false)
@@ -89,7 +93,7 @@ test('unfamiliar CSV creates baseline, mapped output and explicit correction whi
   await page.getByRole('link', { name: 'Open the new investigation' }).click()
   await expect(page.getByRole('combobox', { name: 'Evidence revision' })).toHaveValue('3')
   await expect(page.getByText('2', { exact: true }).first()).toBeVisible()
-  const afterResponse = await page.request.get(`${apiBase}/api/v1/analyses/${encodeURIComponent(priorId)}`)
+  const afterResponse = await page.request.get(`${apiBase}/api/v1/analyses/${encodeURIComponent(priorId)}`, { headers: { Authorization: authorization } })
   expect(afterResponse.ok()).toBe(true)
   const after: Record<string, unknown> = await afterResponse.json()
   expect(after.stale).toBe(true)

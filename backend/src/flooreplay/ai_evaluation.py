@@ -16,6 +16,7 @@ from .paid_models import AIRun, SpendEntry
 
 class AIClaimReview(Base):
     __tablename__ = 'ai_claim_reviews'
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     __table_args__ = (UniqueConstraint('user_id', 'request_key'),)
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: str(uuid4()))
     user_id: Mapped[str] = mapped_column(ForeignKey('accounts.id'))

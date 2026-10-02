@@ -22,6 +22,7 @@ FLAGS = {'attribution_error', 'unsupported_conclusion', 'omitted_contradiction',
 
 class AIReviewPublication(Base):
     __tablename__ = 'ai_review_publications'
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     __table_args__ = (UniqueConstraint('user_id', 'request_key'),)
     run_id: Mapped[str] = mapped_column(ForeignKey('ai_runs.id'), primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey('accounts.id'))
@@ -32,6 +33,7 @@ class AIReviewPublication(Base):
 
 class AIRunAssessment(Base):
     __tablename__ = 'ai_run_assessments'
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     __table_args__ = (UniqueConstraint('user_id', 'request_key'),)
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: str(uuid4()))
     user_id: Mapped[str] = mapped_column(ForeignKey('accounts.id'))

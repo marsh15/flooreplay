@@ -21,6 +21,7 @@ from .service import ServiceError
 
 class IncidentCheck(Base):
     __tablename__ = "incident_checks"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: str(uuid4()))
     incident_id: Mapped[str] = mapped_column(String(64), index=True)
     analysis_id: Mapped[str] = mapped_column(ForeignKey("incident_analyses.id"))
@@ -41,6 +42,7 @@ class IncidentCheck(Base):
 
 class WorkflowActivity(Base):
     __tablename__ = "incident_workflow_activities"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: str(uuid4()))
     incident_id: Mapped[str] = mapped_column(String(64), index=True)
     task_id: Mapped[str | None] = mapped_column(ForeignKey("incident_checks.id"), nullable=True)
@@ -52,6 +54,7 @@ class WorkflowActivity(Base):
 
 class IncidentResolution(Base):
     __tablename__ = "incident_resolutions"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     incident_id: Mapped[str] = mapped_column(String(64), primary_key=True)
     state: Mapped[str] = mapped_column(String(16))
     rationale: Mapped[str] = mapped_column(Text)
@@ -60,6 +63,7 @@ class IncidentResolution(Base):
 
 class WorkflowReceipt(Base):
     __tablename__ = "incident_workflow_receipts"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     __table_args__ = (UniqueConstraint("actor", "request_key"),)
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: str(uuid4()))
     actor: Mapped[str] = mapped_column(ForeignKey("accounts.id"))
@@ -158,6 +162,7 @@ def _receipt(
 ) -> dict[str, Any]:
     session.add(
         WorkflowReceipt(
+            workspace_id=_latest(session, result["incident_id"]).workspace_id,
             actor=user.id,
             request_key=body["idempotency_key"],
             operation=operation,
@@ -232,8 +237,9 @@ def task_view(session: Session, task: IncidentCheck) -> dict[str, Any]:
 
 
 def assignees(session: Session) -> dict[str, Any]:
+    from .workspaces import restrict_accounts
     accounts = session.scalars(
-        select(Account)
+        restrict_accounts(select(Account))
         .where(Account.disabled.is_(False))
         .order_by(Account.display_name, Account.id)
     ).all()
@@ -325,6 +331,8 @@ def create_check(
         raise ServiceError(
             "CHECK_ALREADY_ASSIGNED", "An active check already exists for this proposal", 409
         )
+    from .workspaces import require_assignee_workspace
+    require_assignee_workspace(session, body["assignee_id"], analysis.workspace_id)
     assignee = _account(session, body["assignee_id"])
     due = _time(body["due_at"])
     now = datetime.now(UTC)
@@ -409,6 +417,8 @@ def update_check(
                 403,
             )
         if body.get("assignee_id") is not None:
+            from .workspaces import require_assignee_workspace
+            require_assignee_workspace(session, body["assignee_id"], task.workspace_id)
             task.assignee_id = _account(session, body["assignee_id"]).id
         if body.get("due_at") is not None:
             due = _time(body["due_at"])
@@ -440,6 +450,9 @@ def respond_check(
             "CHECK_STATE", "Only an open or in-progress check can receive a response", 409
         )
     base = _latest(session, task.incident_id)
+    from .workspaces import allowed_workspaces
+    if allowed_workspaces.get() is not None and base.workspace_id == "public-demo":
+        raise ServiceError("PRIVATE_RESPONSE_REQUIRED", "Record factory responses in a private workspace; the synthetic public example cannot receive source observations", 422)
     if body["base_revision"] != base.revision:
         raise ServiceError(
             "STALE_REVISION",

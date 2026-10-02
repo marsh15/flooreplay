@@ -30,12 +30,13 @@ async function createIsolatedInvestigation(request: APIRequestContext) {
   expect(parsedPreview.status).toBe('READY')
   const created = await request.post(`${apiBase}/incidents`, { headers, data: { ...production, title: 'Synthetic assigned maintenance check', window: { start: intervals[0].start, end: intervals[1].end }, preview_digest: parsedPreview.preview_digest, idempotency_key: crypto.randomUUID() } })
   expect(created.ok()).toBeTruthy()
-  const operations = { ...production, base_revision: 1, cutoff: '2026-09-20T09:45:00+05:30', profile: 'operations-v1', filename: 'operations.json', raw_text: JSON.stringify([{ ...scope, id: 'machine-stop', record_type: 'machine_interruption', summary: 'Machine WF12 stopped; line impact needs confirmation.', start: '2026-09-20T09:10:00+05:30', end: '2026-09-20T09:20:00+05:30', available_at: '2026-09-20T09:35:00+05:30' }]) }
+  const internalId = (await created.json()).id
+  const operations = { ...production, incident_id: internalId, base_revision: 1, cutoff: '2026-09-20T09:45:00+05:30', profile: 'operations-v1', filename: 'operations.json', raw_text: JSON.stringify([{ ...scope, id: 'machine-stop', record_type: 'machine_interruption', summary: 'Machine WF12 stopped; line impact needs confirmation.', start: '2026-09-20T09:10:00+05:30', end: '2026-09-20T09:20:00+05:30', available_at: '2026-09-20T09:35:00+05:30' }]) }
   const operationsPreview = await request.post(`${apiBase}/incidents/imports/preview`, { headers, data: operations })
   expect(operationsPreview.ok()).toBeTruthy()
   const published = await request.post(`${apiBase}/incidents/imports/publish`, { headers, data: { ...operations, preview_digest: (await operationsPreview.json()).preview_digest, idempotency_key: crypto.randomUUID() } })
   expect(published.ok()).toBeTruthy()
-  return { incidentId, headers, user }
+  return { incidentId: internalId, headers, user }
 }
 
 test('isolated workflow publishes evidence while keeping the previous report unchanged', async ({ page, request }) => {
@@ -47,7 +48,7 @@ test('isolated workflow publishes evidence while keeping the previous report unc
   await expect(page).toHaveURL(/analysis=/)
   const originalAnalysis = new URL(page.url()).searchParams.get('analysis')
   if (!originalAnalysis) throw new Error('The investigation must have a pinned report identity.')
-  const originalReport = await request.get(`${apiBase}/analyses/${originalAnalysis}`)
+  const originalReport = await request.get(`${apiBase}/analyses/${originalAnalysis}`, { headers: prepared.headers })
   const original = await originalReport.json()
   const indiaInput = (instant: number) => new Date(instant + 330 * 60_000).toISOString().slice(0, 19).replace(/:00$/, '')
   await page.getByRole('combobox', { name: 'Named assignee', exact: true }).selectOption(prepared.user.id)
@@ -105,7 +106,7 @@ test('isolated workflow publishes evidence while keeping the previous report unc
   const supervisor = page.getByRole('article', { name: 'Printable supervisor report' })
   await expect(supervisor.getByRole('heading', { name: 'Current action and resolution record' })).toBeVisible()
   await expect(supervisor.getByText(/Recorded output: 22 good units/)).toBeVisible()
-  const unchanged = await request.get(`${apiBase}/analyses/${originalAnalysis}`)
+  const unchanged = await request.get(`${apiBase}/analyses/${originalAnalysis}`, { headers: prepared.headers })
   const after = await unchanged.json()
   expect(after.revision).toBe(2)
   expect(after.metrics).toEqual(original.metrics)

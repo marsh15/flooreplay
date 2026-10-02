@@ -109,6 +109,9 @@ def run_ai(analysis_id: str, user_id: str, request_key: str, task: str, question
             pinned_analysis = session.get(IncidentAnalysis, analysis_id)
             if pinned_analysis is None:
                 raise ServiceError("NOT_FOUND", "Analysis not found", 404)
+            corpus = session.get(CorpusRelease, corpus_id)
+            if corpus is None or corpus.workspace_id not in {"public-demo", pinned_analysis.workspace_id}:
+                raise ServiceError("NOT_FOUND", "Corpus not found for this evidence workspace", 404)
             pinned_cutoff = pinned_analysis.report.get("cutoff")
             incident_id = pinned_analysis.incident_id
         from datetime import datetime
@@ -137,6 +140,8 @@ def run_ai(analysis_id: str, user_id: str, request_key: str, task: str, question
             packet["historical_evidence"] = [excerpt for item in pinned_retrieval["results"] for excerpt in item["excerpts"]]
         text = openai_provider.prompt(packet, question)
         reservation = reserve(session, user_id, purpose, "generation", cost(16000, 3000))
+        from .operations import request_identity
+        config = {**config, "request_id": request_identity.get()}
         run = AIRun(user_id=user_id, request_key=request_key, analysis_id=analysis_id, identity=identity, task=task, question=question, status="RUNNING", packet=packet, configuration=config, reservation_id=reservation.id)
         session.add(run)
         session.flush()

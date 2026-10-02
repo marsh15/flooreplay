@@ -9,7 +9,7 @@ test('library lists the hero scenarios and the synthetic-data disclaimer', async
   await expect(page.getByRole('link', { name: /FloorReplay/ }).first()).toBeVisible()
   await expect(page.getByText('SCEN-HERO@1').first()).toBeVisible()
   await expect(
-    page.getByText(/unofficial engineering exploration using synthetic data/i),
+    page.getByText(/unofficial engineering exploration.*Public examples use synthetic data/i),
   ).toBeVisible()
 })
 

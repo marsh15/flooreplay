@@ -114,11 +114,12 @@ def test_recorded_model_packets_remain_historical() -> None:
 
 def test_import_preview_and_immutable_publication(owner_headers) -> None:
     incident_id = f"INC-TEST-{uuid.uuid4().hex[:12]}"
+    workspace_id = TestClient(app, headers=owner_headers).get("/api/v1/workspaces").json()["items"][0]["id"]
     fixture = deepcopy(next(item for item in incident_fixtures() if item["id"] == "INC-110"))
     fixture["id"] = incident_id
     with session_scope() as session:
         session.add(IncidentRevision(
-            incident_id=incident_id, revision=1, title=fixture["title"],
+            workspace_id=workspace_id, incident_id=incident_id, revision=1, title=fixture["title"],
             line_id=fixture["scope"]["line_id"], cutoff=datetime.fromisoformat(fixture["cutoff"]),
             window_start=datetime.fromisoformat(fixture["window"]["start"]),
             window_end=datetime.fromisoformat(fixture["window"]["end"]),
@@ -175,6 +176,7 @@ def test_new_incident_from_previewed_production_source(owner_headers) -> None:
     try:
         created = client.post("/api/v1/incidents", json=create_body)
         assert created.status_code == 200
+        incident_id = created.json()["id"]
         assert client.post("/api/v1/incidents", json=create_body).json()["revision"] == 1
         analysis = client.post(f"/api/v1/incidents/{incident_id}/analyses", json={"revision": 1, "idempotency_key": f"analysis-{uuid.uuid4().hex}"})
         assert analysis.status_code == 200 and analysis.json()["metrics"]["shortfall"] == 10

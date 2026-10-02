@@ -38,6 +38,7 @@ def key():
 @pytest.fixture
 def case(owner_headers, reviewer_headers):
     incident_id = f"WF-{uuid4().hex}"
+    workspace_id = TestClient(app, headers=owner_headers).get("/api/v1/workspaces").json()["items"][0]["id"]
     fixture = deepcopy(
         next(
             item
@@ -49,6 +50,7 @@ def case(owner_headers, reviewer_headers):
     with session_scope() as session:
         session.add(
             IncidentRevision(
+                workspace_id=workspace_id,
                 incident_id=incident_id,
                 revision=1,
                 title=fixture["title"],
@@ -66,6 +68,8 @@ def case(owner_headers, reviewer_headers):
     assigned = create_account(
         "assigned-" + key(), "test-password-long-enough", "reviewer", "Named maintenance reviewer"
     )
+    owner.post(f"/api/v1/workspaces/{workspace_id}/members", json={"account_id": reviewer.get("/api/v1/auth/me").json()["id"]})
+    owner.post(f"/api/v1/workspaces/{workspace_id}/members", json={"account_id": assigned["id"]})
     assigned_headers = {
         "Authorization": "Bearer "
         + sign_in(assigned["username"], "test-password-long-enough", assigned["username"])["token"]
@@ -210,7 +214,7 @@ def test_complete_lifecycle_pins_evidence_replay_and_resolution(case):
         == 404
     )
     evidence = (
-        TestClient(app).get(f"/api/v1/analyses/{new_analysis['id']}/evidence/{evidence_id}").json()
+        owner.get(f"/api/v1/analyses/{new_analysis['id']}/evidence/{evidence_id}").json()
     )
     assert evidence["record"]["assertion"] is True and evidence["record"]["line_blocking"] is False
     assert evidence["record"]["details"] == response["details"]

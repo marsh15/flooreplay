@@ -1,3 +1,4 @@
+import { useAuth } from '@/components/Auth'
 /**
  * Floor notes (local owner): enter a note, extract a draft, inspect
  * uncertainty and mention resolution, confirm a structured event, and fork
@@ -34,8 +35,9 @@ function StatusChip({ status }: { status: string }) {
 }
 
 export function NotesPage() {
+  const { user } = useAuth()
   const queryClient = useQueryClient()
-  const capabilities = useQuery({ queryKey: ['capabilities'], queryFn: api.capabilities })
+  const capabilities = useQuery({ queryKey: ['capabilities', user?.id ?? 'public'], queryFn: api.capabilities })
   const canAuthor = capabilities.data?.mode === 'local' && capabilities.data.imports_enabled
   const [noteText, setNoteText] = useState(EXAMPLE_NOTE)
   const [parse, setParse] = useState<NoteParseResult | null>(null)

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { ArrowUpRight, Search } from 'lucide-react'
+import { workspaceApi } from '@/lib/workspaces'
 import { api } from '@/lib/api'
 import { useAuth } from '@/components/Auth'
 import { incidentApi } from '@/lib/incidents'
@@ -24,6 +25,8 @@ const actionLabel = (item: IncidentSummary, authenticated: boolean) => authentic
 
 export function IncidentLibraryPage() {
   const { user } = useAuth()
+  const workspaces = useQuery({ queryKey: ['workspaces', user?.id], queryFn: workspaceApi.list, enabled: !!user, retry: false })
+  const [workspace, setWorkspace] = useState('')
   const [query, setQuery] = useState('')
   const [view, setView] = useState<'cases' | 'engineering'>('cases')
   const [line, setLine] = useState('')
@@ -34,14 +37,14 @@ export function IncidentLibraryPage() {
   const [actions, setActions] = useState('')
   const [page, setPage] = useState(1)
   const incidents = useQuery({ queryKey: ['incidents', user?.id ?? 'public'], queryFn: incidentApi.list })
-  const capabilities = useQuery({ queryKey: ['capabilities'], queryFn: api.capabilities, staleTime: 60_000 })
+  const capabilities = useQuery({ queryKey: ['capabilities', user?.id ?? 'public'], queryFn: api.capabilities, staleTime: 60_000 })
   const saved = incidents.data?.execution_kind === 'saved_deterministic'
   const search = useQuery({ queryKey: ['incident-search', query, view], queryFn: () => incidentApi.search(query.trim(), view), enabled: !!query.trim() && !saved && !!incidents.data, retry: false })
   const items = incidents.data?.items ?? []
   const hero = items.find((item) => item.id === 'INC-001')
   const fixtures = items.filter((item) => item.library_group === 'engineering_fixture')
   const cases = items.filter((item) => item.library_group !== 'engineering_fixture')
-  const selected = view === 'engineering' ? fixtures : cases
+  const selected = (view === 'engineering' ? fixtures : cases).filter((item) => !user || !workspace || (item.workspace_id ?? 'public-demo') === workspace)
   const filtered = selected.filter((item) => (!line || item.line === line) && (!calculation || item.status === calculation) && (!date || item.window_start.slice(0, 10) === date) && (!evidence || (item.evidence_state ?? 'UNKNOWN') === evidence) && (saved || !user || ((!assignee || item.workflow?.assignees.some((person) => person.id === assignee)) && (!actions || (actions === 'open' ? (item.workflow?.open_action_count ?? 0) > 0 : item.workflow?.open_action_count === 0)))))
   const eligibleIds = new Set(filtered.map((item) => item.id))
   const searchItems = search.data?.items.filter((item) => eligibleIds.has(item.id)) ?? []
@@ -109,12 +112,13 @@ export function IncidentLibraryPage() {
           <label className="text-xs font-medium text-zinc-700">Assignee (open actions)<select disabled={!user || saved} className={`${selectClass} mt-1 disabled:bg-zinc-100`} value={user && !saved ? assignee : ''} onChange={(event) => { setAssignee(event.target.value); setPage(1) }}><option value="">{user ? 'All assignees' : 'Sign in to filter assignees'}</option>{user && !saved && [...new Map(selected.flatMap((item) => item.workflow?.assignees ?? []).map((person) => [person.id, person])).values()].map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
           <label className="text-xs font-medium text-zinc-700">Actions<select disabled={!user || saved} className={`${selectClass} mt-1 disabled:bg-zinc-100`} value={user && !saved ? actions : ''} onChange={(event) => { setActions(event.target.value); setPage(1) }}><option value="">{user ? 'All action states' : 'Sign in to filter actions'}</option><option value="open">Has open actions</option><option value="none">No open actions</option></select></label>
         </div>
+        {user && <label className="block text-xs font-medium text-zinc-700">Workspace<select className={`${selectClass} mt-1`} value={workspace} onChange={(event) => { setWorkspace(event.target.value); setPage(1) }}><option value="">All accessible workspaces</option><option value="public-demo">Public synthetic examples</option>{workspaces.data?.items.map((item) => <option key={item.id} value={item.id}>{item.name} · private</option>)}</select></label>}
         <p className="text-xs leading-5 text-zinc-600">Calculation coverage describes comparable production buckets. Evidence coverage describes available sources. Human review and action completion require separate confirmation in the investigation.</p>
         {filtered.length === 0 ? <div className="rounded border border-dashed border-zinc-300 bg-white p-8 text-center text-sm text-zinc-600">{selected.length === 0 ? 'No cases are available in this view.' : 'No cases match these filters.'}</div> : <>
           <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
             <div className="divide-y divide-zinc-200 md:hidden">{visible.map((item) => <article key={item.id} className="p-4">
               <Link className="text-base font-semibold leading-6 text-zinc-900 underline decoration-zinc-300 underline-offset-4 focus-visible:outline-2" to={incidentLink(item)}>{item.title}</Link>
-              <p className="mt-1 text-xs text-zinc-600">{item.line} · revision {item.revision}</p>
+              <p className="mt-1 text-xs text-zinc-600">{item.line} · revision {item.revision} · {item.workspace_id && item.workspace_id !== 'public-demo' ? 'Private workspace' : 'Public synthetic example'}</p>
               <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
                 <div className="col-span-2"><dt className="text-zinc-500">Investigation window</dt><dd className="mt-1">{formatInstant(item.window_start)} to {formatInstant(item.window_end)}</dd></div>
                 <div><dt className="text-zinc-500">Observed shortfall</dt><dd className="mt-1 font-medium tabular-nums">{item.shortfall == null ? 'Unavailable' : `${item.shortfall} good units`}</dd></div>
@@ -128,7 +132,7 @@ export function IncidentLibraryPage() {
               <caption className="sr-only">Recorded incidents with separate calculation, evidence, human review, and action states</caption>
               <thead className="border-b border-zinc-200 bg-zinc-50 text-xs text-zinc-500"><tr>{['Incident / line', 'Investigation window', 'Observed shortfall', 'Calculation coverage', 'Evidence coverage', 'Human review / actions'].map((label) => <th key={label} scope="col" className="px-4 py-3 font-medium">{label}</th>)}</tr></thead>
               <tbody className="divide-y divide-zinc-100">{visible.map((item) => <tr key={item.id} className="align-top hover:bg-zinc-50">
-                <td className="px-4 py-4"><Link className="font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-4 hover:decoration-zinc-900 focus-visible:outline-2" to={incidentLink(item)}>{item.title}</Link><span className="mt-1 block text-xs text-zinc-500">{item.line} · revision {item.revision}</span></td>
+                <td className="px-4 py-4"><Link className="font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-4 hover:decoration-zinc-900 focus-visible:outline-2" to={incidentLink(item)}>{item.title}</Link><span className="mt-1 block text-xs text-zinc-500">{item.line} · revision {item.revision} · {item.workspace_id && item.workspace_id !== 'public-demo' ? 'Private workspace' : 'Public synthetic example'}</span></td>
                 <td className="px-4 py-4 text-zinc-700">{formatInstant(item.window_start)}<span className="block text-xs text-zinc-500">to {formatInstant(item.window_end)}</span></td>
                 <td className="px-4 py-4 font-medium tabular-nums">{item.shortfall == null ? 'Unavailable' : `${item.shortfall} good units`}</td>
                 <td className="px-4 py-4 text-xs text-zinc-700">{calculationLabel(item.status)}</td>

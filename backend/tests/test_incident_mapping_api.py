@@ -36,6 +36,8 @@ def test_owner_mapping_create_correction_and_replay(owner_headers, reviewer_head
         assert client.post('/api/v1/incidents', json={**create, 'column_mapping': changed_map}).json()['code'] == 'PREVIEW_MISMATCH'
         created = client.post('/api/v1/incidents', json=create)
         assert created.status_code == 200, created.text
+        incident_id = created.json()["id"]
+        request["incident_id"] = incident_id
         assert client.post('/api/v1/incidents', json=create).json() == created.json()
         assert client.post('/api/v1/incidents', json={**create, 'column_mapping': changed_map}).json()['code'] == 'IDEMPOTENCY_CONFLICT'
         with session_scope() as session:

@@ -15,6 +15,7 @@ export interface IncidentSummary {
   window_start: string
   window_end: string
   cutoff: string
+  workspace_id?: string
   shortfall: number | null
   status: string
   evidence_state?: 'UNKNOWN' | 'ALL_REPORTED_SOURCES_AVAILABLE' | 'PARTIAL' | 'UNAVAILABLE'
@@ -42,6 +43,7 @@ export interface IncidentSearchResult {
 }
 
 export interface IncidentRevision {
+  workspace_id?: string
   id: string
   revision: number
   title: string
@@ -128,6 +130,7 @@ export interface Precedent extends Pick<IncidentSearchResult, 'comparison_versio
 }
 
 export interface AnalysisReport {
+  workspace_id?: string
   id: string
   incident_id: string
   revision: number

@@ -17,8 +17,9 @@ async function setup(page: Page) {
     const path = new URL(route.request().url()).pathname.replace('/api/v1', '')
     if (path === '/auth/login') return route.fulfill({ json: { token: 'local-only', user: { id: 'owner', display_name: 'Owner', username: 'owner', role: 'owner' } } })
     if (path === '/auth/logout') return route.fulfill({ json: { ok: true } })
+    if (path === '/workspaces') return route.fulfill({ json: { items: [{ id: 'private-csv', name: 'CSV workspace', visibility: 'private', role: 'owner' }] } })
     if (path === '/capabilities') return route.fulfill({ json: { imports_enabled: true } })
-    if (path === '/incidents') return route.fulfill({ json: { items: [{ id: 'CSV-TEST', title: 'CSV mapping example', revision: 1, cutoff: '2026-09-28T09:15:00+05:30' }] } })
+    if (path === '/incidents') return route.fulfill({ json: { items: [{ id: 'CSV-TEST', workspace_id: 'private-csv', title: 'CSV mapping example', revision: 1, cutoff: '2026-09-28T09:15:00+05:30' }] } })
     if (path === '/incidents/CSV-TEST/revisions/1') return route.fulfill({ json: { id: 'CSV-TEST', scope: { factory: 'Factory', line_id: 'S2', order_id: 'ORD', style_id: 'STYLE', stage: 'sewing', unit: 'good_units' } } })
     if (path.startsWith('/incidents/imports/')) {
       const body: Record<string, unknown> = route.request().postDataJSON()

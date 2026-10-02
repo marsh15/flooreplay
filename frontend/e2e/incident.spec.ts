@@ -42,15 +42,24 @@ test('incident import preview blocks an invalid source row', async ({ page }) =>
   await page.goto('/incidents/imports')
   await signInOwner(page)
   await expect(page.getByRole('heading', { name: 'Import incident evidence' })).toBeVisible()
-  await page.getByLabel('Incident', { exact: true }).selectOption('INC-001')
+  await page.getByLabel('Import into').selectOption('new')
+  await page.getByLabel('New incident ID').fill(`INVALID-${Date.now()}`)
+  await page.getByLabel('Incident title').fill('Invalid private import preview')
+  await page.getByLabel('Factory', { exact: true }).fill('Synthetic test factory')
+  await page.getByLabel('Sewing line', { exact: true }).fill('S4')
+  await page.getByLabel('Order ID', { exact: true }).fill('ORD-TEST')
+  await page.getByLabel('Style ID', { exact: true }).fill('STYLE-TEST')
+  await page.getByLabel('Window start', { exact: true }).fill('2026-09-28T09:00:00+05:30')
+  await page.getByLabel('Window end', { exact: true }).fill('2026-09-28T12:00:00+05:30')
+  await page.getByLabel('Knowledge cutoff', { exact: true }).fill('2026-09-28T12:00:00+05:30')
   await page.getByLabel('Local file').setInputFiles({
     name: 'invalid.json', mimeType: 'application/json',
-    buffer: Buffer.from(JSON.stringify([{ id: 'test-event', record_type: 'line_block', available_at: '2026-09-28T11:40:00+05:30', line_id: 'S4' }])),
+    buffer: Buffer.from(JSON.stringify([{ id: 'test-plan', record_type: 'baseline_plan', available_at: '2026-09-28T11:40:00+05:30', line_id: 'S4' }])),
   })
   await page.getByRole('button', { name: 'Preview source' }).click()
   await expect(page.getByRole('heading', { name: 'Preview: BLOCKED' })).toBeVisible()
-  await expect(page.getByText(/summary or text must contain/)).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Publish new revision' })).toBeDisabled()
+  await expect(page.getByText('Production records require factory, order_id, style_id, and stage', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Create incident', exact: true })).toBeDisabled()
 })
 
 test('bundled investigation remains readable while the API is unavailable', async ({ page }) => {

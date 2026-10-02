@@ -70,6 +70,7 @@ from .models import (
     SourceSnapshot,
     SuiteRevision,
 )
+from .operations import install_operational_monitoring, operational_report
 from .parsing import (
     ParserUnavailable,
     get_parser,
@@ -93,6 +94,7 @@ from .service import (
     run_comparison,
 )
 from .spending import usage_view
+from .workspaces import add_member, create_workspace, destination, list_workspaces, request_scope
 
 logger = logging.getLogger("flooreplay.api")
 
@@ -175,6 +177,7 @@ class IncidentDraftRequest(BaseModel):
 
 
 class IncidentImportRequest(BaseModel):
+    workspace_id: str | None = Field(default=None, min_length=1, max_length=64)
     scope: dict[str, str] | None = None
     incident_id: str = Field(min_length=1, max_length=64)
     base_revision: int = Field(ge=0)
@@ -201,6 +204,7 @@ class IncidentPublishRequest(IncidentImportRequest):
 
 
 class IncidentCreateRequest(BaseModel):
+    workspace_id: str | None = Field(default=None, min_length=1, max_length=64)
     incident_id: str = Field(min_length=1, max_length=64)
     title: str = Field(min_length=3, max_length=200)
     column_mapping: dict[str, str] | None = None
@@ -291,6 +295,14 @@ class AIRunAssessmentRequest(AIReviewPublishRequest):
     limitations: str = Field(min_length=3, max_length=2000)
 
 
+class WorkspaceRequest(BaseModel):
+    name: str = Field(min_length=3, max_length=100)
+
+
+class WorkspaceMemberRequest(BaseModel):
+    account_id: str = Field(min_length=1, max_length=64)
+
+
 class LoginRequest(BaseModel):
     username: str = Field(min_length=3, max_length=120)
     password: str = Field(min_length=1, max_length=256)
@@ -343,7 +355,8 @@ def create_app(mode: str | None = None) -> FastAPI:
             )
         yield
 
-    app = FastAPI(title="FloorReplay API", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="FloorReplay API", version="0.1.0", lifespan=lifespan, dependencies=[Depends(request_scope)])
+    install_operational_monitoring(app)
 
     @app.middleware("http")
     async def prevent_shared_cache(request: Request, call_next: Any) -> Any:
@@ -358,6 +371,7 @@ def create_app(mode: str | None = None) -> FastAPI:
             allow_origins=list(settings.cors_origins),
             allow_methods=["*"],
             allow_headers=["*"],
+            expose_headers=["X-Request-ID"],
         )
 
     def limit_public_execution(request: Request) -> None:
@@ -371,7 +385,7 @@ def create_app(mode: str | None = None) -> FastAPI:
             content=ErrorEnvelope(
                 code="PARSER_UNAVAILABLE",
                 message=f"{exc} Manual structured entry remains available.",
-                trace_id=str(uuid.uuid4()),
+                trace_id=getattr(request.state, "request_id", str(uuid.uuid4())),
             ).model_dump(),
         )
 
@@ -380,17 +394,18 @@ def create_app(mode: str | None = None) -> FastAPI:
         return JSONResponse(
             status_code=422,
             content=ErrorEnvelope(
-                code=exc.code, message=exc.message, details=exc.details, trace_id=str(uuid.uuid4())
+                code=exc.code, message=exc.message, details=exc.details, trace_id=getattr(request.state, "request_id", str(uuid.uuid4()))
             ).model_dump(),
         )
 
     @app.exception_handler(ServiceError)
     async def service_error_handler(request: Request, exc: ServiceError) -> JSONResponse:
+        request.state.failure_category = exc.code
         headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after else None
         return JSONResponse(
             status_code=exc.http_status,
             content=ErrorEnvelope(
-                code=exc.code, message=exc.message, trace_id=str(uuid.uuid4())
+                code=exc.code, message=exc.message, trace_id=getattr(request.state, "request_id", str(uuid.uuid4()))
             ).model_dump(),
             headers=headers,
         )
@@ -403,7 +418,7 @@ def create_app(mode: str | None = None) -> FastAPI:
                 code="UNAVAILABLE",
                 message="The request could not be completed.",
                 details={"error": type(exc).__name__},
-                trace_id=str(uuid.uuid4()),
+                trace_id=getattr(request.state, "request_id", str(uuid.uuid4())),
             ).model_dump(),
         )
 
@@ -419,6 +434,25 @@ def create_app(mode: str | None = None) -> FastAPI:
     def logout(request: Request, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, bool]:
         sign_out(request)
         return {"logged_out": True}
+
+    @app.get("/api/v1/operations")
+    def my_operations(user: Annotated[Account, Depends(require_owner)], q: str = "", limit: int = 50) -> dict[str, Any]:
+        return operational_report(user.id, q, limit)
+
+    @app.get("/api/v1/workspaces")
+    def my_workspaces(user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return list_workspaces(session, user)
+
+    @app.post("/api/v1/workspaces")
+    def new_workspace(body: WorkspaceRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return create_workspace(session, user, body.name)
+
+    @app.post("/api/v1/workspaces/{workspace_id}/members")
+    def invite_workspace_member(workspace_id: str, body: WorkspaceMemberRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, str]:
+        with session_scope() as session:
+            return add_member(session, user, workspace_id, body.account_id)
 
     @app.get("/api/v1/capabilities")
     def capabilities(user: Annotated[Account | None, Depends(current_user)]) -> dict[str, Any]:
@@ -454,7 +488,7 @@ def create_app(mode: str | None = None) -> FastAPI:
         try:
             with session_scope() as session:
                 revision = session.scalar(text("SELECT version_num FROM alembic_version"))
-                if revision != "20261001_semantic_review":
+                if revision != "20261001_operations":
                     raise ServiceError("MIGRATION_REQUIRED", "Database migration must finish before serving traffic", 503)
         except ServiceError:
             raise
@@ -570,7 +604,7 @@ def create_app(mode: str | None = None) -> FastAPI:
     @app.post("/api/v1/incidents")
     def create_incident(body: IncidentCreateRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
         with session_scope() as session:
-            return create_incident_from_source(session, **body.model_dump())
+            return create_incident_from_source(session, workspace_id=destination(session, user, body.workspace_id), **body.model_dump(exclude={"workspace_id"}))
 
     @app.post("/api/v1/incidents/imports/inspect")
     def inspect_incident_columns(body: IncidentCsvInspectRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
@@ -595,7 +629,7 @@ def create_app(mode: str | None = None) -> FastAPI:
     @app.post("/api/v1/incidents/imports/publish")
     def publish_incident_source(body: IncidentPublishRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
         with session_scope() as session:
-            return publish_source(session, **body.model_dump(exclude={"scope"}))
+            return publish_source(session, workspace_id=destination(session, user, body.workspace_id), **body.model_dump(exclude={"scope", "workspace_id"}))
 
     @app.post("/api/v1/analyses/{analysis_id}/proposals/{proposal_id}/submit")
     def submit_incident_proposal(analysis_id: str, proposal_id: str, body: IncidentReviewRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:

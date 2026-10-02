@@ -96,22 +96,22 @@ export function IncidentWorkbenchPage() {
   const { id = '' } = useParams()
   const [params, setParams] = useSearchParams()
   const queryClient = useQueryClient()
-  const capabilities = useQuery({ queryKey: ['capabilities'], queryFn: api.capabilities, staleTime: 60_000 })
-  const library = useQuery({ queryKey: ['incidents'], queryFn: incidentApi.list })
+  const capabilities = useQuery({ queryKey: ['capabilities', user?.id ?? 'public'], queryFn: api.capabilities, staleTime: 60_000 })
+  const library = useQuery({ queryKey: ['incidents', user?.id ?? 'public'], queryFn: incidentApi.list })
   const summary = library.data?.items.find((item) => item.id === id)
   const revision = Number(params.get('revision') || summary?.revision || 1)
   const analysisId = params.get('analysis')
   const [evidenceId, setEvidenceId] = useState<string | null>(null)
-  const incident = useQuery({ queryKey: ['incident', id, revision], queryFn: () => incidentApi.revision(id, revision), enabled: !!id && (!!params.get('revision') || !!summary || library.isError) })
-  const reportQuery = useQuery({ queryKey: ['incident-analysis', id, revision, analysisId], queryFn: () => analysisId ? incidentApi.analysis(analysisId) : incidentApi.analyze(id, revision), enabled: !!id && !!incident.data, retry: false })
+  const incident = useQuery({ queryKey: ['incident', id, revision, user?.id ?? 'public'], queryFn: () => incidentApi.revision(id, revision), enabled: !!id && (!!params.get('revision') || !!summary || library.isError) })
+  const reportQuery = useQuery({ queryKey: ['incident-analysis', id, revision, analysisId, user?.id ?? 'public'], queryFn: () => analysisId ? incidentApi.analysis(analysisId) : incidentApi.analyze(id, revision), enabled: !!id && !!incident.data, retry: false })
   const report = reportQuery.data
   useLayoutEffect(() => {
     const currentParams = new URLSearchParams(window.location.search)
-    if (report && !analysisId && window.location.pathname === `/incidents/${encodeURIComponent(id)}` && currentParams.get('revision') === params.get('revision') && currentParams.get('analysis') === analysisId) {
-      queryClient.setQueryData(['incident-analysis', id, revision, report.id], report)
+    if (report && !analysisId && decodeURIComponent(window.location.pathname) === `/incidents/${id}` && currentParams.get('revision') === params.get('revision') && currentParams.get('analysis') === analysisId) {
+      queryClient.setQueryData(['incident-analysis', id, revision, report.id, user?.id ?? 'public'], report)
       setParams({ revision: String(revision), analysis: report.id }, { replace: true })
     }
-  }, [report, analysisId, id, revision, params, queryClient, setParams])
+  }, [report, analysisId, id, revision, params, user?.id, queryClient, setParams])
   const evidence = useQuery({ queryKey: ['incident-evidence', report?.id, evidenceId], queryFn: () => incidentApi.evidence(report!.id, evidenceId!), enabled: !!report && !!evidenceId })
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['incident-analysis', id, revision] })
   const changeRevision = (value: number) => { setEvidenceId(null); setParams({ revision: String(value) }) }
@@ -121,10 +121,10 @@ export function IncidentWorkbenchPage() {
     {incident.isPending ? <div aria-busy="true" aria-label="Loading incident"><Skeleton className="h-12 w-2/3" /><Skeleton className="mt-4 h-32" /></div> : incident.isError ? <div role="alert" className="rounded border border-red-200 bg-red-50 p-5 text-sm text-red-800">Could not load incident: {incident.error.message} <Button variant="outline" size="sm" onClick={() => incident.refetch()}>Retry</Button></div> : <>
       <header className="border-b border-zinc-200 pb-5">
         <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{incident.data.title}</h1><p className="mt-1 text-sm text-zinc-600">{incident.data.scope.line_id} · {formatInstant(incident.data.window.start)} to {formatInstant(incident.data.window.end)}</p></div><div className="flex items-end gap-2"><div><label htmlFor="revision" className="mb-1 block text-xs font-medium text-zinc-600">Evidence revision</label><select id="revision" value={revision} onChange={(event) => changeRevision(Number(event.target.value))} className="h-9 rounded border border-zinc-300 bg-white px-3 text-sm focus-visible:outline-2">{(report?.execution_kind === 'saved_deterministic' ? [revision] : incident.data.available_revisions).map((value) => <option key={value} value={value}>Revision {value}</option>)}</select></div></div></div>
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-500"><span>Evidence available by: {formatInstant(incident.data.cutoff)}</span><span>Report: {reportQuery.isPending ? 'Building analysis' : reportQuery.isError ? 'Analysis unavailable' : report?.execution_kind === 'saved_deterministic' ? 'Saved deterministic result' : 'Live deterministic analysis'}</span><span>Factory data: synthetic</span></div>
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-500"><span>Evidence available by: {formatInstant(incident.data.cutoff)}</span><span>Report: {reportQuery.isPending ? 'Building analysis' : reportQuery.isError ? 'Analysis unavailable' : report?.execution_kind === 'saved_deterministic' ? 'Saved deterministic result' : 'Live deterministic analysis'}</span><span>{incident.data.workspace_id && incident.data.workspace_id !== 'public-demo' ? 'Private workspace records' : 'Factory data: synthetic'}</span></div>
       </header>
       {reportQuery.isPending ? <div aria-busy="true" aria-label="Building analysis" className="space-y-3"><Skeleton className="h-28" /><Skeleton className="h-48" /><Skeleton className="h-48" /></div> : reportQuery.isError ? <div role="alert" className="rounded border border-red-200 bg-red-50 p-5"><h2 className="text-sm font-semibold text-red-900">Analysis unavailable</h2><p className="mt-1 text-sm text-red-800">{reportQuery.error.message}</p><Button className="mt-3" size="sm" variant="outline" onClick={() => reportQuery.refetch()}>Retry analysis</Button></div> : report && <>
-        <p className="hidden text-xs print:block">FloorReplay · Evidence revision {report.revision} · Report {report.id} · Evidence available by {formatInstant(report.cutoff)} · Synthetic data</p>
+        <p className="hidden text-xs print:block">FloorReplay · Evidence revision {report.revision} · Report {report.id} · Evidence available by {formatInstant(report.cutoff)} · {incident.data.workspace_id && incident.data.workspace_id !== 'public-demo' ? 'Private workspace records' : 'Synthetic data'}</p>
         <RevisionComparison key={`${id}:${revision}`} incident={incident.data} report={report} />
         <SupervisorReport key={`${report.id}:${user?.id ?? 'anonymous'}`} report={report} incident={incident.data} currentRevision={summary?.revision ?? revision} />
         <aside className="rounded-lg border border-zinc-200 bg-white p-4 print:hidden" aria-label="Investigation guide"><h2 className="text-sm font-semibold">Follow the investigation</h2><ol className="mt-2 grid gap-3 text-sm sm:grid-cols-3"><li><a className="underline" href="#observed-situation">1. Measure the difference</a><p className="mt-1 text-xs text-zinc-600">Compare planned and recorded output, then check missing intervals.</p></li><li><a className="underline" href="#explanations-and-open-questions">2. Check the explanation</a><p className="mt-1 text-xs text-zinc-600">Read supporting and contradicting records before choosing a cause.</p></li><li><a className="underline" href="#recovery-options">3. Choose the next check</a><p className="mt-1 text-xs text-zinc-600">Read the prerequisites and responsible role. Share the supervisor report or assign a check with reviewer access.</p></li></ol><p className="mt-3 text-xs text-zinc-600">“Knowledge cutoff” means the time by which evidence had reached the system. A late-arriving record may describe an earlier event, but appears only in a later evidence revision.</p></aside>
