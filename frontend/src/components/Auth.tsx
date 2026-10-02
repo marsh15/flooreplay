@@ -1,5 +1,5 @@
 import type { components } from '@/lib/generated-api'
-import { createContext, useContext, useRef, useState } from 'react'
+import { Fragment, createContext, useContext, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { API_BASE, ApiError } from '@/lib/api'
 import { session } from '@/lib/session'
@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try { await fetch(`${API_BASE}/auth/logout`, { method: 'POST', headers: session.headers() }) }
     finally { session.set(null); client.clear(); setUser(null); await client.invalidateQueries() }
   }
-  return <AuthContext value={{ user, signIn, signOut }}>{children}</AuthContext>
+  return <AuthContext value={{ user, signIn, signOut }}><Fragment key={user?.id ?? 'public'}>{children}</Fragment></AuthContext>
 }
 export function useAuth() {
   const context = useContext(AuthContext)
