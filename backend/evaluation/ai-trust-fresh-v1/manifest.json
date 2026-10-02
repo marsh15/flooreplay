@@ -1,0 +1,30 @@
+{
+  "authored_at": "2026-10-01",
+  "authorship": "Independent Codex subagent manually composed cases without reading existing generator templates or exposed dev/locked cases. No manufacturing practitioner or human independent author participated.",
+  "case_count": 10,
+  "case_digests": {
+    "FRESH-01": "5dc9ea6287ffd593c10715c2c7668de55ef8fbeedd1f93003f2b177c697a5042",
+    "FRESH-02": "423175d1234a9c85dafe32f303b23e38ca4103f47bc0bd45c59862c2ca5c6e72",
+    "FRESH-03": "677841f5d0ef1f89c0facfcd131aecafafa196fc0192acd47b283904f58784f3",
+    "FRESH-04": "66e704a43e7e5f3f3bb30ebd4b2f091f537de2ce8132d4cabd7fb67c3c13134f",
+    "FRESH-05": "10744bf92e455e56d4650854132479beb61dfe4ee9beedc3a98f713954f7195d",
+    "FRESH-06": "750311cf3bb96a818910329540eecf915a0499f320c66e342472b018158ba2f5",
+    "FRESH-07": "4fcc85c99d1a5f892f80563e7bfad976744eb9b4fa9070d989623e8bfe364391",
+    "FRESH-08": "5e4eaa675a8a25485da8967c6a33e2ea60b54bb5f44a2d35102f5063164ac323",
+    "FRESH-09": "3d5321804e51a14be7e0bfb4c14eb2cd83f4818cb771567450b6c7e08fb16c89",
+    "FRESH-10": "342cca19d949cf6322cca400b41cfc274aba48364b934085108eaaa13cacad30"
+  },
+  "files": {
+    "blind-review-rubric.json": "d405e5d5b61ea411e398eb8e1ee9aeb27665fc7118341904dd7d9039fc087a03",
+    "inputs.json": "2247b8255ecab29f79cc0c092a026e03ae9f16f4c02f4dda264b0c09e3dd7eb8"
+  },
+  "frozen": true,
+  "limitations": [
+    "Synthetic AI-authored challenge set; no generalization estimate.",
+    "Rubric is not a human semantic-support annotation.",
+    "No real private data or proof of workspace isolation.",
+    "Exposure prohibits treating subsequent tuning on these cases as independent holdout acceptance."
+  ],
+  "release": "ai-trust-fresh-v1",
+  "schema": "flooreplay.fresh-trust.v1"
+}

@@ -5,7 +5,7 @@ test('saved calculation inputs open their source records offline', async ({ page
   await page.goto('/')
   await page.getByRole('link', { name: 'Delayed start on sewing line S4' }).click()
   await expect(page.getByRole('heading', { name: 'Calculation inputs' })).toBeVisible()
-  await expect(page.getByText('variance = observed - planned; shortfall = max(0, planned - observed)')).toBeVisible()
+  await expect(page.locator('#observed-situation').getByText('variance = observed - planned; shortfall = max(0, planned - observed)')).toBeVisible()
   const table = page.getByRole('table', { name: 'Comparable completed 15-minute production buckets used in the reported calculation' })
   await expect(table.getByRole('row')).toHaveCount(11)
   await table.getByRole('button', { name: 'plan-0' }).click()

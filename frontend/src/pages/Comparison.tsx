@@ -1,3 +1,4 @@
+import { useAuth } from '@/components/Auth'
 /**
  * Comparison report: which behavior changed between two configurations,
  * and whether expectations regressed. Totals are actual counts; a row
@@ -110,10 +111,11 @@ function SortHead({
 }
 
 export function ComparisonPage() {
+  const { user } = useAuth()
   const suitesQuery = useQuery({ queryKey: ['suites'], queryFn: api.suites })
   const configsQuery = useQuery({ queryKey: ['configurations'], queryFn: api.configurations })
   const historyQuery = useQuery({ queryKey: ['comparisons'], queryFn: api.comparisons })
-  const capsQuery = useQuery({ queryKey: ['capabilities'], queryFn: api.capabilities })
+  const capsQuery = useQuery({ queryKey: ['capabilities', user?.id ?? 'public'], queryFn: api.capabilities })
 
   const suite = suitesQuery.data?.items[0]
   const configurations = configsQuery.data?.items ?? []

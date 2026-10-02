@@ -118,6 +118,14 @@ def _expectation_from(assertions: dict[str, Any]) -> evaluation.Expectation:
     )
 
 
+def _workspace_request_key(workspace_id: str, key: str, operation: str) -> str:
+    if workspace_id == "public-demo":
+        from .workspaces import allowed_workspaces
+        if allowed_workspaces.get() is None:
+            return key
+    return operation + "-" + digest({"workspace": workspace_id, "key": key, "operation": operation})
+
+
 def execute_replay(
     session: Session,
     scenario_id: str,
@@ -132,6 +140,7 @@ def execute_replay(
     if configuration is None:
         raise ServiceError("CONFIGURATION_UNKNOWN", "Unknown execution configuration", 404)
 
+    idempotency_key = _workspace_request_key(scenario.workspace_id, idempotency_key, "replay")
     request_payload = {
         "scenario_id": scenario_id,
         "scenario_revision": scenario_revision,
@@ -150,7 +159,7 @@ def execute_replay(
         return existing
 
     attempt = ReplayAttempt(
-        idempotency_key=idempotency_key,
+        workspace_id=scenario.workspace_id, idempotency_key=idempotency_key,
         scenario_id=scenario_id,
         scenario_revision=scenario_revision,
         configuration_id=configuration_id,
@@ -289,8 +298,13 @@ def publish_import(session: Session, preview: ImportPreview, raw_text: str) -> d
     existing snapshot without creating anything.
     """
     snapshot = build_snapshot(preview)  # raises on blocking issues: all-or-nothing
+    from .workspaces import write_workspace
+    workspace_id = write_workspace.get() or "public-demo"
+    audit_id = _workspace_request_key(workspace_id, preview.preview_digest, "import")
+    if workspace_id != "public-demo":
+        snapshot = snapshot.model_copy(update={"id": "snapshot-" + digest({"workspace": workspace_id, "digest": preview.preview_digest})[-55:]})
 
-    existing_audit = session.get(ImportAudit, preview.preview_digest)
+    existing_audit = session.get(ImportAudit, audit_id)
     if existing_audit is not None:
         existing_snapshot = session.get(SourceSnapshot, existing_audit.snapshot_id)
         if existing_snapshot is None:
@@ -309,7 +323,7 @@ def publish_import(session: Session, preview: ImportPreview, raw_text: str) -> d
     if existing_snapshot is not None and existing_snapshot.content_digest == snapshot.content_digest:
         session.add(
             ImportAudit(
-                preview_digest=preview.preview_digest,
+                workspace_id=workspace_id, preview_digest=audit_id,
                 profile_id=preview.profile_id,
                 snapshot_id=snapshot.id,
                 raw_digest=preview.raw_digest,
@@ -332,7 +346,7 @@ def publish_import(session: Session, preview: ImportPreview, raw_text: str) -> d
     payload = snapshot.model_dump(mode="json")
     session.add(
         SourceSnapshot(
-            id=snapshot.id,
+            workspace_id=workspace_id, id=snapshot.id,
             kind=snapshot.kind.value,
             source_system=snapshot.source_system,
             scope=snapshot.scope,
@@ -345,7 +359,7 @@ def publish_import(session: Session, preview: ImportPreview, raw_text: str) -> d
     session.flush()  # the audit's foreign key needs the snapshot row first
     session.add(
         ImportAudit(
-            preview_digest=preview.preview_digest,
+            workspace_id=workspace_id, preview_digest=audit_id,
             profile_id=preview.profile_id,
             snapshot_id=snapshot.id,
             raw_digest=preview.raw_digest,
@@ -399,20 +413,27 @@ def fork_scenario(
         for sid in source.pinned_snapshot_ids
     ]
 
+    from .workspaces import write_workspace
+    workspace_id = write_workspace.get() or source.workspace_id
+    fork_id = scenario_id
+    if workspace_id != "public-demo" and source.workspace_id != workspace_id:
+        fork_id = "scenario-" + digest({"workspace": workspace_id, "origin": scenario_id})[-55:]
     latest = (
         session.execute(
-            select(ScenarioRevision.revision).where(ScenarioRevision.scenario_id == scenario_id)
+            select(ScenarioRevision.revision).where(ScenarioRevision.scenario_id == fork_id)
         )
         .scalars()
         .all()
     )
-    new_revision = max(latest) + 1
+    new_revision = max(latest or [revision]) + 1
 
     tags = list(source.tags)
+    if fork_id != scenario_id:
+        tags.append(f"origin:{scenario_id}@{revision}")
     if "imported-evidence" not in tags:
         tags.append("imported-evidence")
     fork = ScenarioRevision(
-        scenario_id=scenario_id,
+        workspace_id=workspace_id, scenario_id=fork_id,
         revision=new_revision,
         title=source.title,
         tags=tags,
@@ -436,7 +457,7 @@ def fork_scenario(
     for exp in expectations:
         session.add(
             ExpectationRevision(
-                scenario_id=scenario_id,
+                workspace_id=workspace_id, scenario_id=fork_id,
                 revision=new_revision,
                 configuration_id=exp.configuration_id,
                 assertions=dict(exp.assertions),
@@ -510,6 +531,7 @@ def run_comparison(
     if baseline_cfg is None or candidate_cfg is None:
         raise ServiceError("CONFIGURATION_UNKNOWN", "Unknown execution configuration", 404)
 
+    idempotency_key = _workspace_request_key(suite.workspace_id, idempotency_key, "comparison")
     request_payload = {
         "suite_id": suite_id,
         "baseline_config_id": baseline_config_id,
@@ -586,7 +608,7 @@ def run_comparison(
         }
     )
     report = ComparisonReport(
-        idempotency_key=idempotency_key,
+        workspace_id=suite.workspace_id, idempotency_key=idempotency_key,
         suite_id=suite.id,
         suite_revision=suite.revision,
         baseline_config_id=baseline_config_id,
@@ -807,22 +829,29 @@ def confirm_event_and_fork(
         "source_ref": source_ref,
     }
 
+    from .workspaces import write_workspace
+    workspace_id = write_workspace.get() or source.workspace_id
+    fork_id = scenario_id
+    if workspace_id != "public-demo" and source.workspace_id != workspace_id:
+        fork_id = "scenario-" + digest({"workspace": workspace_id, "origin": scenario_id})[-55:]
     latest = (
         session.execute(
-            select(ScenarioRevision.revision).where(ScenarioRevision.scenario_id == scenario_id)
+            select(ScenarioRevision.revision).where(ScenarioRevision.scenario_id == fork_id)
         )
         .scalars()
         .all()
     )
-    new_revision = max(latest) + 1
+    new_revision = max(latest or [revision]) + 1
     tags = list(source.tags)
+    if fork_id != scenario_id:
+        tags.append(f"origin:{scenario_id}@{revision}")
     if source_kind == "note" and "confirmed-note" not in tags:
         tags.append("confirmed-note")
     elif source_kind == "manual" and "manual-entry" not in tags:
         tags.append("manual-entry")
 
     fork = ScenarioRevision(
-        scenario_id=scenario_id,
+        workspace_id=workspace_id, scenario_id=fork_id,
         revision=new_revision,
         title=source.title,
         tags=tags,
@@ -846,7 +875,7 @@ def confirm_event_and_fork(
     for exp in expectations:
         session.add(
             ExpectationRevision(
-                scenario_id=scenario_id,
+                workspace_id=workspace_id, scenario_id=fork_id,
                 revision=new_revision,
                 configuration_id=exp.configuration_id,
                 assertions=dict(exp.assertions),

@@ -35,6 +35,7 @@ class SpendEntry(Base):
 
 class AIRun(Base):
     __tablename__ = "ai_runs"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     __table_args__ = (UniqueConstraint("user_id", "request_key"),)
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: str(uuid4()))
     user_id: Mapped[str] = mapped_column(String(64))
@@ -55,6 +56,7 @@ class AIRun(Base):
 
 class CorpusRelease(Base):
     __tablename__ = "corpus_releases"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     digest: Mapped[str] = mapped_column(String(80))
     cutoff: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -82,6 +84,7 @@ class SpendingAllocation(Base):
 
 class RetrievalRun(Base):
     __tablename__ = "retrieval_runs"
+    workspace_id: Mapped[str] = mapped_column(String(64), default="public-demo", server_default="public-demo", index=True)
     __table_args__ = (UniqueConstraint("user_id", "request_key"),)
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: str(uuid4()))
     user_id: Mapped[str] = mapped_column(String(64))

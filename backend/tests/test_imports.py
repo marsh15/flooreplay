@@ -8,6 +8,8 @@ leave historical revisions untouched.
 
 from __future__ import annotations
 
+import uuid
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -244,14 +246,16 @@ def test_publish_is_idempotent_and_forks_cleanly(client: TestClient):
     )
     assert fork.status_code == 200
     new_revision = fork.json()["revision"]
-    assert new_revision > 2
+    assert new_revision > 1
+    assert fork.json()["scenario_id"] != "SCEN-HERO"
+    assert "origin:SCEN-HERO@1" in fork.json()["tags"]
     assert snapshot_id in fork.json()["pinned_snapshot_ids"]
     assert "imported-evidence" in fork.json()["tags"]
 
     replay = client.post(
         "/api/v1/replays",
         json={
-            "scenario_id": "SCEN-HERO",
+            "scenario_id": fork.json()["scenario_id"],
             "scenario_revision": new_revision,
             "configuration_id": "CFG-IMPROVED-V1",
             "idempotency_key": f"fork-test-{new_revision}",
@@ -268,7 +272,7 @@ def test_publish_is_idempotent_and_forks_cleanly(client: TestClient):
             "scenario_id": "SCEN-HERO",
             "scenario_revision": 1,
             "configuration_id": "CFG-IMPROVED-V1",
-            "idempotency_key": "fork-test-historical-1",
+            "idempotency_key": f"fork-test-historical-{uuid.uuid4().hex}",
         },
     )
     assert historical.json()["domain_outcome"] == "NEEDS_CONTEXT"

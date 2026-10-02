@@ -27,3 +27,11 @@ def test_hosted_browser_preflight_and_cache_headers(monkeypatch):
         response = client.get(path)
         assert response.headers["cache-control"] == "private, no-store"
         assert response.headers["x-content-type-options"] == "nosniff"
+
+
+def test_readiness_identifies_application_and_compatible_schema(monkeypatch):
+    monkeypatch.setattr(settings, 'build_id', 'readiness-identity-test')
+    response = TestClient(create_app()).get('/api/v1/health/ready')
+    assert response.status_code == 200
+    assert response.json() == {'status': 'ready', 'build_id': 'readiness-identity-test', 'schema_revision': '20261001_operations'}
+    assert response.headers['X-Request-ID']

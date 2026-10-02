@@ -1,0 +1,2 @@
+id,record_type,available_at,occurred_at,summary,author_role,hypothesis_links,factory,line_id,order_id,style_id,stage
+csv-note-1,maintenance_note,2026-09-28T09:30:00+05:30,2026-09-28T09:08:00+05:30,Synthetic technician inspected a feeder; line-wide impact remains unknown.,Technician,[],Synthetic CSV factory,S-CSV,ORD-CSV,STYLE-CSV,sewing

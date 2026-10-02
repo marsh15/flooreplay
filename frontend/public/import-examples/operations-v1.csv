@@ -1,0 +1,2 @@
+id,record_type,available_at,occurred_at,start,end,summary,line_blocking,linked_categories,factory,line_id,order_id,style_id,stage
+csv-block-1,line_block,2026-09-28T09:20:00+05:30,2026-09-28T09:00:00+05:30,2026-09-28T09:00:00+05:30,2026-09-28T09:10:00+05:30,Synthetic supervisor record confirms the sewing line waited for fabric.,true,"[""material""]",Synthetic CSV factory,S-CSV,ORD-CSV,STYLE-CSV,sewing

@@ -1,0 +1,112 @@
+{
+  "candidates_sha256": "72471d7c3af9c03c456693f8f6546646b1daad399d64b07618f78aa29d1c854a",
+  "cases": 10,
+  "human_reviewed_claims": 0,
+  "limitations": [
+    "AI-authored candidate drafts; no OpenAI/provider execution and no human semantic validation.",
+    "Candidates share the case author; independence is only from revised validator implementation.",
+    "This is the first structural check after freezing; do not tune on failures or call these candidates an untouched future holdout."
+  ],
+  "provider_calls": 0,
+  "results": [
+    {
+      "case_digest": "5dc9ea6287ffd593c10715c2c7668de55ef8fbeedd1f93003f2b177c697a5042",
+      "case_id": "FRESH-01",
+      "errors": [],
+      "output_digest": "sha256:8f994f6f337b463369a4fbc612cd792e0ea60f4b9e25380155d7823bc99ff218",
+      "packet_digest": "sha256:b6d10f2b56e026812a0c0e1808f0023e469812267dea91ac4efb60d281864a08",
+      "semantic_support": "UNREVIEWED",
+      "valid": true
+    },
+    {
+      "case_digest": "423175d1234a9c85dafe32f303b23e38ca4103f47bc0bd45c59862c2ca5c6e72",
+      "case_id": "FRESH-02",
+      "errors": [],
+      "output_digest": "sha256:88d1b1cef43545dbcea223ceaa2bf78ced41d89af7334fec16a481280ca7614a",
+      "packet_digest": "sha256:f2a1320b1e77acfcfd3c46f2cce16d5e5b32fd98d3720e5e22f45dc3b0883bc2",
+      "semantic_support": "UNREVIEWED",
+      "valid": true
+    },
+    {
+      "case_digest": "677841f5d0ef1f89c0facfcd131aecafafa196fc0192acd47b283904f58784f3",
+      "case_id": "FRESH-03",
+      "errors": [],
+      "output_digest": "sha256:34ba798cfe0c9e4db3b85ef0b2469531730af3ef60112f776da1c554940c928a",
+      "packet_digest": "sha256:1040601b6b1ccddbfc6046b09e4d4a5666cce59410d1978397bbcf1c35b6ceea",
+      "semantic_support": "UNREVIEWED",
+      "valid": true
+    },
+    {
+      "case_digest": "66e704a43e7e5f3f3bb30ebd4b2f091f537de2ce8132d4cabd7fb67c3c13134f",
+      "case_id": "FRESH-04",
+      "errors": [
+        "Numeric prose must use an application-rendered metric reference"
+      ],
+      "output_digest": "sha256:56b42b961ef2f33d527fe94b6640cd7f9276701810e94eb44575c0f3fe7ac0bd",
+      "packet_digest": "sha256:be58dd30da0021524b29b2e0270d2661624ede215c5bc5ad9de485fae6705ee4",
+      "semantic_support": "UNREVIEWED",
+      "valid": false
+    },
+    {
+      "case_digest": "10744bf92e455e56d4650854132479beb61dfe4ee9beedc3a98f713954f7195d",
+      "case_id": "FRESH-05",
+      "errors": [],
+      "output_digest": "sha256:d542b17310100861d28d97a1b5fc5d140e36ff22cedd6875c4b17f4adb81554e",
+      "packet_digest": "sha256:72e353c77fe699b821ac0f6853002ffa2aabfe977ca182b3dd106fee4f1b11c7",
+      "semantic_support": "UNREVIEWED",
+      "valid": true
+    },
+    {
+      "case_digest": "750311cf3bb96a818910329540eecf915a0499f320c66e342472b018158ba2f5",
+      "case_id": "FRESH-06",
+      "errors": [
+        "Uncited claim"
+      ],
+      "output_digest": "sha256:955a3161672159f5c8af5070ddd0575843ee22bfcdde980da192dab1a8dc0faa",
+      "packet_digest": "sha256:fe8c325a44c6fcb44edd81dbcf29a60e67b10353934d682d12b7b334cb5ed967",
+      "semantic_support": "UNREVIEWED",
+      "valid": false
+    },
+    {
+      "case_digest": "4fcc85c99d1a5f892f80563e7bfad976744eb9b4fa9070d989623e8bfe364391",
+      "case_id": "FRESH-07",
+      "errors": [],
+      "output_digest": "sha256:93c01f5116bd8c3f4afaf56a984a663b9d90bf34210923308d43b13862d0cae2",
+      "packet_digest": "sha256:9cbb5ace56f3c955e179ffe668506bbb33c2cbc3b1d1f08e3aca9862a1eb256c",
+      "semantic_support": "UNREVIEWED",
+      "valid": true
+    },
+    {
+      "case_digest": "5e4eaa675a8a25485da8967c6a33e2ea60b54bb5f44a2d35102f5063164ac323",
+      "case_id": "FRESH-08",
+      "errors": [],
+      "output_digest": "sha256:d8301a8e67bb6d179fb70a141c50d1544d7049d0a31a43663fd0c482270b4d53",
+      "packet_digest": "sha256:a6db875fec63caac06c2d4fbe73c2dc5c8dfe7952ffe8adabd77b18ab9733a00",
+      "semantic_support": "UNREVIEWED",
+      "valid": true
+    },
+    {
+      "case_digest": "3d5321804e51a14be7e0bfb4c14eb2cd83f4818cb771567450b6c7e08fb16c89",
+      "case_id": "FRESH-09",
+      "errors": [
+        "Uncited claim"
+      ],
+      "output_digest": "sha256:11d045e7ae8e42c4eba188592fc845440be357a4ddf0590f92ee160e7cefc760",
+      "packet_digest": "sha256:abd0bbce199c7f56720530b3e1a37af8a0c9fa1a2c3a383dba38c6cb801fef49",
+      "semantic_support": "UNREVIEWED",
+      "valid": false
+    },
+    {
+      "case_digest": "342cca19d949cf6322cca400b41cfc274aba48364b934085108eaaa13cacad30",
+      "case_id": "FRESH-10",
+      "errors": [],
+      "output_digest": "sha256:b5830c3930799c6ff3d380aab516b1435d6e8378be57201e98e693ed06796721",
+      "packet_digest": "sha256:12f8bf75467228a4f57bfe1e26aadb027bd0bc12f1438370098bed18fd6b2a2a",
+      "semantic_support": "UNREVIEWED",
+      "valid": true
+    }
+  ],
+  "schema": "flooreplay.offline-contract-check.v1",
+  "valid": 7,
+  "validator_sha256": "169bb7750d1ead474c9516409a2e25488d8b0244cfc739c4733b75ccfecd9eb6"
+}

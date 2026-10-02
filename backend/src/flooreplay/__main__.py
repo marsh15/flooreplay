@@ -37,6 +37,7 @@ def main() -> int:
     publish.add_argument("corpus_id")
     publish.add_argument("--cutoff", required=True)
     publish.add_argument("--owner", required=True)
+    publish.add_argument("--workspace", default="public-demo", help="Explicit evidence boundary; defaults to synthetic public demo only")
     index = commands.add_parser("corpus-index")
     index.add_argument("corpus_id")
     index.add_argument("--owner", required=True)
@@ -76,7 +77,7 @@ def main() -> int:
         if cutoff.tzinfo is None:
             raise ValueError("Cutoff requires timezone")
         with session_scope() as session:
-            result = publish_corpus(session, args.corpus_id, cutoff)
+            result = publish_corpus(session, args.corpus_id, cutoff, workspace_id=args.workspace)
     elif args.command == "corpus-index":
         from .retrieval import index_corpus
         result = index_corpus(args.corpus_id, _owner(args.owner))

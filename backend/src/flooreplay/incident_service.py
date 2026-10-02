@@ -23,11 +23,18 @@ def _revision(session: Session, incident_id: str, revision: int) -> IncidentRevi
     return row
 
 
-def incident_list(session: Session) -> list[dict[str, Any]]:
+def incident_list(session: Session, *, include_workflow: bool = False) -> list[dict[str, Any]]:
     rows = session.execute(select(IncidentRevision).order_by(IncidentRevision.incident_id, IncidentRevision.revision)).scalars().all()
     latest: dict[str, IncidentRevision] = {}
     for row in rows:
         latest[row.incident_id] = row
+    imported_ids = set(session.scalars(select(IncidentSourceArtifact.incident_id).distinct()).all())
+    from .auth import Account
+    from .incident_workflow import TERMINAL, IncidentCheck, IncidentResolution
+
+    checks = session.scalars(select(IncidentCheck)).all() if include_workflow else []
+    resolutions = {row.incident_id: row for row in session.scalars(select(IncidentResolution)).all()} if include_workflow else {}
+    assignees = {row.id: row.display_name for row in session.scalars(select(Account)).all()} if include_workflow else {}
     items = []
     for row in latest.values():
         report = analyze_incident(row.payload)
@@ -39,13 +46,25 @@ def incident_list(session: Session) -> list[dict[str, Any]]:
         ).scalar_one()
         available = sum(bool(value) for value in row.payload.get("coverage", {}).values())
         total = len(row.payload.get("coverage", {}))
+        incident_checks = [check for check in checks if check.incident_id == row.incident_id]
+        open_checks = [check for check in incident_checks if check.status not in TERMINAL]
+        resolution = resolutions.get(row.incident_id)
+        workflow = {
+            "investigation_state": "RESOLVED" if resolution and resolution.state == "RESOLVED" and resolution.resolved_revision == row.revision else "OPEN",
+            "open_action_count": len(open_checks),
+            "action_state": "OPEN_ACTIONS" if open_checks else "NO_OPEN_ACTIONS" if incident_checks else "NO_RECORDED_ACTIONS",
+            "assignees": [{"id": account_id, "name": assignees.get(account_id, "Unavailable account")} for account_id in sorted({check.assignee_id for check in open_checks})],
+        } if include_workflow else None
         items.append({
-            "id": row.incident_id, "revision": row.revision, "title": row.title,
+            "id": row.incident_id, "revision": row.revision, "title": row.title, "workspace_id": row.workspace_id,
             "line": row.line_id, "window_start": row.payload["window"]["start"],
             "window_end": row.payload["window"]["end"], "cutoff": row.payload["cutoff"],
             "status": metric["status"], "shortfall": metric["shortfall"],
             "evidence_completeness": f"{available}/{total} available sources; timeline {report['capabilities']['timeline']['status'].lower()}" if total else "Unknown coverage",
             "last_reviewed_revision": reviewed,
+            "evidence_state": "UNKNOWN" if not total else "ALL_REPORTED_SOURCES_AVAILABLE" if available == total else "PARTIAL" if available else "UNAVAILABLE",
+            "workflow": workflow,
+            "library_group": "engineering_fixture" if row.payload.get("dataset_split") else "operational" if row.incident_id in imported_ids else "curated_demo",
         })
     return items
 
@@ -53,7 +72,7 @@ def incident_list(session: Session) -> list[dict[str, Any]]:
 def incident_detail(session: Session, incident_id: str, revision: int) -> dict[str, Any]:
     row = _revision(session, incident_id, revision)
     revisions = session.execute(select(IncidentRevision.revision).where(IncidentRevision.incident_id == incident_id).order_by(IncidentRevision.revision)).scalars().all()
-    return {**row.payload, "available_revisions": revisions, "content_digest": row.content_digest}
+    return {**row.payload, "workspace_id": row.workspace_id, "available_revisions": revisions, "content_digest": row.content_digest}
 
 
 def search_incidents(
@@ -61,6 +80,8 @@ def search_incidents(
     exclude_incident_id: str | None = None, stage: str | None = None,
     query_line: str | None = None, limit: int = 5,
     corpus_rows: list[IncidentRevision] | None = None,
+    query_payload: dict[str, Any] | None = None,
+    library_view: str | None = None,
 ) -> list[dict[str, Any]]:
     if not query.strip():
         return []
@@ -69,6 +90,10 @@ def search_incidents(
     statement = select(IncidentRevision, func.ts_rank(vector, terms).label("score")).where(vector.op("@@")(terms))
     split = IncidentRevision.payload["dataset_split"].astext
     statement = statement.where(or_(split.is_(None), split.not_in(["development", "dev", "locked"])))
+    if library_view == "cases":
+        statement = statement.where(split.is_(None))
+    elif library_view == "engineering":
+        statement = statement.where(split.is_not(None))
     if corpus_rows is not None:
         if not corpus_rows:
             return []
@@ -80,17 +105,20 @@ def search_incidents(
     if stage:
         statement = statement.where(IncidentRevision.payload["scope"]["stage"].astext == stage)
     statement = statement.order_by(func.ts_rank(vector, terms).desc(), IncidentRevision.incident_id).limit(limit * 3)
+    from .retrieval import precedent_comparison
     results = []
     seen: set[str] = set()
     for row, score in session.execute(statement):
         if row.incident_id in seen:
             continue
         seen.add(row.incident_id)
+        comparison = precedent_comparison(query_payload, row.payload)
         results.append({
-            "id": row.incident_id, "revision": row.revision, "title": row.title,
+            **comparison,
+            "id": row.incident_id, "revision": row.revision, "title": row.title, "workspace_id": row.workspace_id,
             "line": row.line_id, "score": round(float(score), 4),
-            "match_reason": "Shared terms in incident title or recorded events",
-            "differences": ([f"Different sewing line ({row.line_id} versus {query_line})."] if query_line and row.line_id != query_line else []) + ["Material lot, machine, and action prerequisites need separate verification."],
+            "match_reason": "Recorded evidence matches the query; operational conditions below bound its relevance.",
+            "differences": comparison["differences"],
             "cutoff": row.payload["cutoff"], "execution_kind": "live_lexical",
         })
         if len(results) == limit:
@@ -100,6 +128,7 @@ def search_incidents(
 
 def create_analysis(session: Session, incident_id: str, revision: int, key: str, *, corpus_incident_ids: set[str] | None = None) -> IncidentAnalysis:
     row = _revision(session, incident_id, revision)
+    key = _private_identity(row.workspace_id, key, "analysis")
     session.execute(select(func.pg_advisory_xact_lock(func.hashtext(key))))
     existing = session.execute(select(IncidentAnalysis).where(IncidentAnalysis.idempotency_key == key)).scalar_one_or_none()
     if existing is not None:
@@ -107,10 +136,11 @@ def create_analysis(session: Session, incident_id: str, revision: int, key: str,
             raise ServiceError("IDEMPOTENCY_CONFLICT", "Key already used for another analysis", 409)
         return existing
     report = analyze_incident(row.payload)
-    report["engine_version"] = "incident-v3"
+    report["engine_version"] = "incident-v4"
     eligible = session.execute(
         select(IncidentRevision).where(
             IncidentRevision.cutoff < row.cutoff,
+            IncidentRevision.workspace_id == row.workspace_id,
             IncidentRevision.incident_id != incident_id,
             IncidentRevision.payload["scope"]["stage"].astext == row.payload["scope"]["stage"],
         ).order_by(IncidentRevision.incident_id, IncidentRevision.revision)
@@ -129,11 +159,11 @@ def create_analysis(session: Session, incident_id: str, revision: int, key: str,
     report["corpus_release"] = {"version": "lexical-v2", "items": corpus_items, "digest": digest(corpus_items)}
     categories = [h["category"].replace("_", " ") for h in report.get("hypotheses", []) if h["status"] == "SUPPORTED"]
     query = " ".join(categories) or " ".join(event.get("type", "") for event in report.get("timeline", [])[:2])
-    report["precedents"] = search_incidents(session, query, cutoff=row.cutoff, exclude_incident_id=incident_id, stage=row.payload["scope"]["stage"], query_line=row.line_id, corpus_rows=eligible)
+    report["precedents"] = search_incidents(session, query, cutoff=row.cutoff, exclude_incident_id=incident_id, stage=row.payload["scope"]["stage"], query_line=row.line_id, corpus_rows=eligible, query_payload=row.payload)
     now = datetime.now(UTC)
     analysis = IncidentAnalysis(
-        idempotency_key=key, incident_id=incident_id, revision=revision,
-        manifest_digest=digest({"incident_digest": incident_digest(row.payload), "corpus_digest": report["corpus_release"]["digest"], "engine": "incident-v3"}),
+        workspace_id=row.workspace_id, idempotency_key=key, incident_id=incident_id, revision=revision,
+        manifest_digest=digest({"incident_digest": incident_digest(row.payload), "corpus_digest": report["corpus_release"]["digest"], "engine": "incident-v4"}),
         report=report, execution_kind="live_deterministic", created_at=now, completed_at=now,
     )
     session.add(analysis)
@@ -145,7 +175,7 @@ def analysis_view(session: Session, analysis: IncidentAnalysis) -> dict[str, Any
     reviews = session.execute(select(IncidentReview).where(IncidentReview.analysis_id == analysis.id).order_by(IncidentReview.created_at)).scalars().all()
     latest = session.execute(select(func.max(IncidentRevision.revision)).where(IncidentRevision.incident_id == analysis.incident_id)).scalar_one()
     return {
-        "id": analysis.id, "incident_id": analysis.incident_id, "revision": analysis.revision,
+        "id": analysis.id, "workspace_id": analysis.workspace_id, "incident_id": analysis.incident_id, "revision": analysis.revision,
         "cutoff": _revision(session, analysis.incident_id, analysis.revision).cutoff.isoformat(),
         "manifest_digest": analysis.manifest_digest, "execution_kind": analysis.execution_kind,
         "created_at": analysis.created_at.isoformat(), "completed_at": analysis.completed_at.isoformat(),
@@ -171,10 +201,20 @@ def analysis_evidence(session: Session, analysis: IncidentAnalysis, evidence_id:
         record for section in ("events", "plan_buckets", "output_buckets")
         for record in row.payload.get(section, []) if record["id"] == evidence_id
     )
+    artifact_id = source.get("source_artifact_id")
+    artifact = session.get(IncidentSourceArtifact, artifact_id) if isinstance(artifact_id, str) else None
+    provenance = None
+    if artifact is not None and artifact.incident_id == analysis.incident_id and artifact.revision <= analysis.revision:
+        provenance = {
+            "id": artifact.id, "raw_digest": artifact.raw_digest,
+            "profile": artifact.profile, "source_system": artifact.source_system,
+            "filename": artifact.filename,
+        }
     return {
         "id": evidence_id,
         "source_id": source.get("source_id", f"synthetic-fixture:{analysis.incident_id}@{analysis.revision}/{evidence_id}"),
         "record": source, "incident_id": analysis.incident_id, "revision": analysis.revision,
+        **({"source_artifact": provenance} if provenance else {}),
     }
 
 
@@ -182,6 +222,7 @@ def review_proposal(
     session: Session, analysis: IncidentAnalysis, proposal_id: str, state: str,
     actor: str, rationale: str, key: str,
 ) -> IncidentReview:
+    key = _private_identity(analysis.workspace_id, key, "review")
     session.execute(select(func.pg_advisory_xact_lock(func.hashtext(key))))
     existing = session.execute(select(IncidentReview).where(IncidentReview.idempotency_key == key)).scalar_one_or_none()
     if existing is not None:
@@ -207,7 +248,7 @@ def review_proposal(
     if state in ("APPROVED", "REJECTED") and (not prior or prior[-1].state != "PENDING_REVIEW"):
         raise ServiceError("REVIEW_STATE", "Submit the proposal for review first", 409)
     decision = IncidentReview(
-        idempotency_key=key, analysis_id=analysis.id, proposal_id=proposal_id,
+        workspace_id=analysis.workspace_id, idempotency_key=key, analysis_id=analysis.id, proposal_id=proposal_id,
         state=state, actor=actor, rationale=rationale,
         proposal_digest=digest(proposal), analysis_digest=analysis.manifest_digest,
     )
@@ -216,11 +257,27 @@ def review_proposal(
     return decision
 
 
+def _private_identity(workspace_id: str | None, value: str, kind: str) -> str:
+    """Keep external identifiers from colliding or revealing other workspaces."""
+    if workspace_id is None:
+        return value
+    if workspace_id == "public-demo":
+        from .workspaces import allowed_workspaces
+        if kind == "incident" or allowed_workspaces.get() is None:
+            return value
+    prefix = f"{kind}-"
+    identity = digest({"workspace": workspace_id, "value": value, "kind": kind})
+    return prefix + identity[:64 - len(prefix)]
+
+
 def publish_source(
     session: Session, *, incident_id: str, base_revision: int, cutoff: str,
     raw_text: str, profile: str, source_system: str, timezone: str,
     filename: str, unit: str | None, idempotency_key: str, preview_digest: str,
+    column_mapping: dict[str, str] | None = None, field_defaults: dict[str, str] | None = None,
+    workspace_id: str | None = None,
 ) -> dict[str, Any]:
+    idempotency_key = _private_identity(workspace_id, idempotency_key, "import")
     try:
         new_cutoff = datetime.fromisoformat(cutoff.replace("Z", "+00:00"))
     except ValueError as exc:
@@ -236,13 +293,17 @@ def publish_source(
             or existing.profile != profile or existing.source_system != source_system
             or existing.filename != filename or existing.preview.get("timezone") != timezone
             or existing.preview.get("requested_unit") != unit
+            or existing.preview.get("column_mapping") != column_mapping
+            or existing.preview.get("field_defaults") != field_defaults
             or prior.cutoff != new_cutoff
         ):
             raise ServiceError("IDEMPOTENCY_CONFLICT", "Key already used for another import", 409)
         return incident_detail(session, incident_id, existing.revision)
     base = _revision(session, incident_id, base_revision)
+    if workspace_id is not None and (base.workspace_id == "public-demo" or base.workspace_id != workspace_id):
+        raise ServiceError("PRIVATE_IMPORT_REQUIRED", "Import into an existing private workspace incident; public synthetic examples cannot receive factory records", 422)
     try:
-        preview = preview_incident_import(raw_text.encode("utf-8"), scope=base.payload["scope"], profile=profile, source_system=source_system, timezone=timezone, filename=filename, unit=unit)
+        preview = preview_incident_import(raw_text.encode("utf-8"), scope=base.payload["scope"], profile=profile, source_system=source_system, timezone=timezone, filename=filename, unit=unit, column_mapping=column_mapping, field_defaults=field_defaults)
     except ValueError as exc:
         raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
     if preview["preview_digest"] != preview_digest:
@@ -279,13 +340,13 @@ def publish_source(
     except (ValueError, KeyError) as exc:
         raise ServiceError("INVALID_REVISION", str(exc), 422) from exc
     row = IncidentRevision(
-        incident_id=incident_id, revision=base_revision + 1, title=base.title,
+        workspace_id=base.workspace_id, incident_id=incident_id, revision=base_revision + 1, title=base.title,
         line_id=base.line_id, cutoff=new_cutoff, window_start=base.window_start,
         window_end=base.window_end, payload=payload, content_digest=incident_digest(payload),
         evidence_card=incident_evidence_card(payload),
     )
     artifact = IncidentSourceArtifact(
-        idempotency_key=idempotency_key, incident_id=incident_id, revision=row.revision,
+        workspace_id=base.workspace_id, idempotency_key=idempotency_key, incident_id=incident_id, revision=row.revision,
         profile=profile, source_system=source_system, filename=filename,
         raw_digest=preview["raw_digest"], raw_bytes=raw_text.encode("utf-8"),
         preview={**preview, "requested_unit": unit},
@@ -303,7 +364,12 @@ def create_incident_from_source(
     session: Session, *, incident_id: str, title: str, scope: dict[str, str],
     window: dict[str, str], cutoff: str, raw_text: str, source_system: str,
     timezone: str, filename: str, preview_digest: str, idempotency_key: str,
+    column_mapping: dict[str, str] | None = None, field_defaults: dict[str, str] | None = None,
+    workspace_id: str | None = None,
 ) -> dict[str, Any]:
+    external_id = incident_id
+    incident_id = _private_identity(workspace_id, incident_id, "incident")
+    idempotency_key = _private_identity(workspace_id, idempotency_key, "import")
     session.execute(select(func.pg_advisory_xact_lock(func.hashtext(idempotency_key))))
     session.execute(select(func.pg_advisory_xact_lock(func.hashtext(incident_id))))
     existing = session.execute(select(IncidentSourceArtifact).where(IncidentSourceArtifact.idempotency_key == idempotency_key)).scalar_one_or_none()
@@ -313,6 +379,8 @@ def create_incident_from_source(
             existing.incident_id != incident_id or existing.raw_digest != sha256(raw_text.encode()).hexdigest()
             or existing.preview.get("preview_digest") != preview_digest or existing.source_system != source_system
             or existing.filename != filename or existing.preview.get("timezone") != timezone
+            or existing.preview.get("column_mapping") != column_mapping
+            or existing.preview.get("field_defaults") != field_defaults
             or row.title != title or row.payload["scope"] != scope
             or row.payload["window"] != window or row.payload["cutoff"] != cutoff
         ):
@@ -333,7 +401,7 @@ def create_incident_from_source(
     if any(value.tzinfo is None for value in (start, end, cutoff_at)) or not start < end or cutoff_at < start:
         raise ServiceError("INVALID_WINDOW", "Window and cutoff are invalid", 422)
     try:
-        preview = preview_incident_import(raw_text.encode("utf-8"), profile="production-v1", source_system=source_system, timezone=timezone, filename=filename, unit="good_units", scope=scope)
+        preview = preview_incident_import(raw_text.encode("utf-8"), profile="production-v1", source_system=source_system, timezone=timezone, filename=filename, unit="good_units", scope=scope, column_mapping=column_mapping, field_defaults=field_defaults)
     except ValueError as exc:
         raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
     if preview["preview_digest"] != preview_digest:
@@ -348,13 +416,15 @@ def create_incident_from_source(
     if any(datetime.fromisoformat(record["start"]) < start or datetime.fromisoformat(record["end"]) > end for record in additions["plan_buckets"]):
         raise ServiceError("BUCKET_OUTSIDE_WINDOW", "Plan bucket lies outside the investigation window", 422)
     payload = {"id": incident_id, "revision": 1, "title": title, "scope": scope, "window": window, "cutoff": cutoff, **additions, "coverage": {"production": True}}
+    if workspace_id is not None and workspace_id != "public-demo":
+        payload["external_id"] = external_id
     _unique_evidence_ids(payload)
     try:
         analyze_incident(payload)
     except (ValueError, KeyError) as exc:
         raise ServiceError("INVALID_REVISION", str(exc), 422) from exc
-    row = IncidentRevision(incident_id=incident_id, revision=1, title=title, line_id=scope["line_id"], cutoff=cutoff_at, window_start=start, window_end=end, payload=payload, content_digest=incident_digest(payload), evidence_card=incident_evidence_card(payload))
-    artifact = IncidentSourceArtifact(idempotency_key=idempotency_key, incident_id=incident_id, revision=1, profile="production-v1", source_system=source_system, filename=filename, raw_digest=preview["raw_digest"], raw_bytes=raw_text.encode(), preview=preview)
+    row = IncidentRevision(workspace_id=workspace_id or "public-demo", incident_id=incident_id, revision=1, title=title, line_id=scope["line_id"], cutoff=cutoff_at, window_start=start, window_end=end, payload=payload, content_digest=incident_digest(payload), evidence_card=incident_evidence_card(payload))
+    artifact = IncidentSourceArtifact(workspace_id=workspace_id or "public-demo", idempotency_key=idempotency_key, incident_id=incident_id, revision=1, profile="production-v1", source_system=source_system, filename=filename, raw_digest=preview["raw_digest"], raw_bytes=raw_text.encode(), preview=preview)
     session.add_all([row, artifact])
     session.flush()
     return incident_detail(session, incident_id, 1)

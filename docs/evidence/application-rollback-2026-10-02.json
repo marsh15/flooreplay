@@ -1,0 +1,50 @@
+{
+  "recorded_at": "2026-10-02T14:42:35.756623+00:00",
+  "database": "flooreplay_recovery_restore_20261002133310_test",
+  "rollback_ref": "ba91a26f276814bc74240f5509535084cf80fd08",
+  "current_ref": "61f64efa25e604a3acf826d785314f085eb02402",
+  "schema_downgrade": false,
+  "provider_calls": 0,
+  "synthetic_accounts_created": 2,
+  "checks": [
+    {
+      "check": "initial current release ready before rollback",
+      "passed": true
+    },
+    {
+      "check": "two HTTP logins",
+      "passed": true
+    },
+    {
+      "check": "old application private analysis review export",
+      "passed": true
+    },
+    {
+      "check": "old application foreign list search direct evidence export denied",
+      "passed": true
+    },
+    {
+      "check": "current restart preserves authenticated review and private boundary",
+      "passed": true
+    }
+  ],
+  "preserved_tables": [
+    "incident_revisions",
+    "embedding_artifacts",
+    "spend_entries",
+    "ai_claim_reviews"
+  ],
+  "initial_current_ready_seconds": 3.324,
+  "rollback_ready_seconds": 1.656,
+  "current_ready_seconds": 3.216,
+  "current_restart_and_verification_seconds": 3.566,
+  "total_seconds": 19.173,
+  "passed": true,
+  "scope": "Isolated local API-component rollback and return to current code; not hosted or frontend asset rollback",
+  "components_switched": [
+    "API"
+  ],
+  "frontend_rollback_exercised": false,
+  "frontend_policy": "Retain the authentication-boundary cache fix in the current frontend; ba91a26 and 61f64ef frontend assets are not approved rollback targets",
+  "unsafe_prior_public_release": "04e0466 rejected: lacks private workspace boundary"
+}

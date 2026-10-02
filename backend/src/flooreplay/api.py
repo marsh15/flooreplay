@@ -12,12 +12,12 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, StrictBool
+from pydantic import BaseModel, Field, StrictBool, StrictInt
 from sqlalchemy import select, text
 
 from .ai_evaluation import review_claim
@@ -38,7 +38,7 @@ from .db import session_scope
 from .fixtures import CATALOG, CONFIGURATIONS
 from .importing import ImportStructuralError, preview_import
 from .incident_evaluation import evaluation_report
-from .incident_import import preview_incident_import
+from .incident_import import inspect_incident_csv, preview_incident_import
 from .incident_service import (
     analysis_evidence,
     analysis_view,
@@ -49,6 +49,15 @@ from .incident_service import (
     publish_source,
     review_proposal,
     search_incidents,
+)
+from .incident_workflow import (
+    assignees,
+    complete_check,
+    create_check,
+    resolve_incident,
+    respond_check,
+    update_check,
+    workflow_view,
 )
 from .models import (
     ComparisonReport,
@@ -61,6 +70,7 @@ from .models import (
     SourceSnapshot,
     SuiteRevision,
 )
+from .operations import install_operational_monitoring, operational_report
 from .parsing import (
     ParserUnavailable,
     get_parser,
@@ -68,6 +78,8 @@ from .parsing import (
 )
 from .ratelimit import enforce, make_execution_limiter
 from .retrieval import hybrid_search
+from .semantic_review import assess_run, publish_review, review_packet, review_report
+from .semantic_review import queue as review_queue
 from .service import (
     ServiceError,
     confirm_event_and_fork,
@@ -82,6 +94,7 @@ from .service import (
     run_comparison,
 )
 from .spending import usage_view
+from .workspaces import add_member, create_workspace, destination, list_workspaces, request_scope
 
 logger = logging.getLogger("flooreplay.api")
 
@@ -158,12 +171,13 @@ class IncidentReviewRequest(BaseModel):
 class IncidentDraftRequest(BaseModel):
     corpus_id: str | None = None
     task: str = Field(default="question", pattern="^(question|investigation|summary|recovery|note)$")
-    retrieval_mode: str = Field(default="evidence_only", pattern="^(evidence_only|hybrid)$")
+    retrieval_mode: str = Field(default="evidence_only", pattern="^(evidence_only|lexical|hybrid)$")
     question: str = Field(default="Summarize the incident and next checks.", min_length=3, max_length=500)
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
 class IncidentImportRequest(BaseModel):
+    workspace_id: str | None = Field(default=None, min_length=1, max_length=64)
     scope: dict[str, str] | None = None
     incident_id: str = Field(min_length=1, max_length=64)
     base_revision: int = Field(ge=0)
@@ -174,6 +188,14 @@ class IncidentImportRequest(BaseModel):
     timezone: str = Field(min_length=1, max_length=64)
     filename: str = Field(min_length=1, max_length=120)
     unit: str | None = None
+    column_mapping: dict[str, str] | None = None
+    field_defaults: dict[str, str] | None = None
+
+
+class IncidentCsvInspectRequest(BaseModel):
+    raw_text: str = Field(min_length=1, max_length=2 * 1024 * 1024)
+    filename: str = Field(min_length=1, max_length=120)
+    profile: str = Field(min_length=1, max_length=32)
 
 
 class IncidentPublishRequest(IncidentImportRequest):
@@ -182,8 +204,11 @@ class IncidentPublishRequest(IncidentImportRequest):
 
 
 class IncidentCreateRequest(BaseModel):
+    workspace_id: str | None = Field(default=None, min_length=1, max_length=64)
     incident_id: str = Field(min_length=1, max_length=64)
     title: str = Field(min_length=3, max_length=200)
+    column_mapping: dict[str, str] | None = None
+    field_defaults: dict[str, str] | None = None
     scope: dict[str, str]
     window: dict[str, str]
     cutoff: str
@@ -195,11 +220,87 @@ class IncidentCreateRequest(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
+class WorkflowRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class CheckCreateRequest(WorkflowRequest):
+    proposal_id: str = Field(min_length=1, max_length=64)
+    assignee_id: str = Field(min_length=1, max_length=64)
+    due_at: str = Field(min_length=10, max_length=64)
+
+
+class CheckUpdateRequest(WorkflowRequest):
+    expected_updated_at: str = Field(min_length=10, max_length=64)
+    status: Literal["IN_PROGRESS", "CANCELLED"] | None = None
+    comment: str = Field(min_length=3, max_length=2000)
+    assignee_id: str | None = Field(default=None, min_length=1, max_length=64)
+    due_at: str | None = Field(default=None, min_length=10, max_length=64)
+
+
+class CheckResponseRequest(WorkflowRequest):
+    base_revision: int = Field(ge=1)
+    summary: str = Field(min_length=3, max_length=2000)
+    occurred_at: str = Field(min_length=10, max_length=64)
+    source_ref: str = Field(min_length=3, max_length=500)
+    details: dict[str, str]
+    line_blocking: StrictBool = False
+    start: str | None = Field(default=None, min_length=10, max_length=64)
+    end: str | None = Field(default=None, min_length=10, max_length=64)
+
+
+class CheckCompleteRequest(WorkflowRequest):
+    action_taken: str = Field(min_length=3, max_length=2000)
+    actual_completed_at: str = Field(min_length=10, max_length=64)
+    observed_good_units: StrictInt | None = Field(default=None, ge=0)
+    observed_at: str | None = Field(default=None, min_length=10, max_length=64)
+    assessment: str = Field(min_length=3, max_length=2000)
+    remaining_uncertainty: str = Field(min_length=3, max_length=2000)
+
+
+class IncidentResolutionRequest(WorkflowRequest):
+    base_revision: int = Field(ge=1)
+    state: Literal["OPEN", "RESOLVED"]
+    rationale: str = Field(min_length=3, max_length=2000)
+
+
 class AIClaimReviewRequest(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=120)
     claim_path: str = Field(min_length=1, max_length=120)
-    supported: StrictBool
+    supported: StrictBool | None = None
+    output_digest: str | None = Field(default=None, min_length=64, max_length=80)
+    judgment: Literal["supported", "unsupported", "insufficient_evidence"] | None = None
+    flags: list[Literal["attribution_error", "unsupported_conclusion", "omitted_contradiction", "appropriate_abstention", "useful_next_check"]] = Field(default_factory=list, max_length=5)
+    reviewer_kind: Literal["human", "ai_assistant", "unspecified"] = "unspecified"
+    qualifications: str = Field(default="", max_length=2000)
+    independent: StrictBool = False
     rationale: str = Field(min_length=3, max_length=1000)
+
+
+class AIReviewPublishRequest(BaseModel):
+    output_digest: str = Field(min_length=64, max_length=80)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class AIRunAssessmentRequest(AIReviewPublishRequest):
+    reviewer_kind: Literal["human", "ai_assistant", "unspecified"] = "unspecified"
+    qualifications: str = Field(default="", max_length=2000)
+    independent: StrictBool = False
+    usefulness: Literal["useful", "not_useful", "uncertain"]
+    omitted_contradictions: list[str] = Field(default_factory=list, max_length=12)
+    attribution_errors: list[str] = Field(default_factory=list, max_length=12)
+    abstention: Literal["appropriate", "inappropriate", "not_applicable"]
+    rationale: str = Field(min_length=3, max_length=2000)
+    limitations: str = Field(min_length=3, max_length=2000)
+
+
+class WorkspaceRequest(BaseModel):
+    name: str = Field(min_length=3, max_length=100)
+
+
+class WorkspaceMemberRequest(BaseModel):
+    account_id: str = Field(min_length=1, max_length=64)
 
 
 class LoginRequest(BaseModel):
@@ -254,7 +355,8 @@ def create_app(mode: str | None = None) -> FastAPI:
             )
         yield
 
-    app = FastAPI(title="FloorReplay API", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="FloorReplay API", version="0.1.0", lifespan=lifespan, dependencies=[Depends(request_scope)])
+    install_operational_monitoring(app)
 
     @app.middleware("http")
     async def prevent_shared_cache(request: Request, call_next: Any) -> Any:
@@ -269,6 +371,7 @@ def create_app(mode: str | None = None) -> FastAPI:
             allow_origins=list(settings.cors_origins),
             allow_methods=["*"],
             allow_headers=["*"],
+            expose_headers=["X-Request-ID"],
         )
 
     def limit_public_execution(request: Request) -> None:
@@ -282,7 +385,7 @@ def create_app(mode: str | None = None) -> FastAPI:
             content=ErrorEnvelope(
                 code="PARSER_UNAVAILABLE",
                 message=f"{exc} Manual structured entry remains available.",
-                trace_id=str(uuid.uuid4()),
+                trace_id=getattr(request.state, "request_id", str(uuid.uuid4())),
             ).model_dump(),
         )
 
@@ -291,17 +394,18 @@ def create_app(mode: str | None = None) -> FastAPI:
         return JSONResponse(
             status_code=422,
             content=ErrorEnvelope(
-                code=exc.code, message=exc.message, details=exc.details, trace_id=str(uuid.uuid4())
+                code=exc.code, message=exc.message, details=exc.details, trace_id=getattr(request.state, "request_id", str(uuid.uuid4()))
             ).model_dump(),
         )
 
     @app.exception_handler(ServiceError)
     async def service_error_handler(request: Request, exc: ServiceError) -> JSONResponse:
+        request.state.failure_category = exc.code
         headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after else None
         return JSONResponse(
             status_code=exc.http_status,
             content=ErrorEnvelope(
-                code=exc.code, message=exc.message, trace_id=str(uuid.uuid4())
+                code=exc.code, message=exc.message, trace_id=getattr(request.state, "request_id", str(uuid.uuid4()))
             ).model_dump(),
             headers=headers,
         )
@@ -314,7 +418,7 @@ def create_app(mode: str | None = None) -> FastAPI:
                 code="UNAVAILABLE",
                 message="The request could not be completed.",
                 details={"error": type(exc).__name__},
-                trace_id=str(uuid.uuid4()),
+                trace_id=getattr(request.state, "request_id", str(uuid.uuid4())),
             ).model_dump(),
         )
 
@@ -330,6 +434,25 @@ def create_app(mode: str | None = None) -> FastAPI:
     def logout(request: Request, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, bool]:
         sign_out(request)
         return {"logged_out": True}
+
+    @app.get("/api/v1/operations")
+    def my_operations(user: Annotated[Account, Depends(require_owner)], q: str = "", limit: int = 50) -> dict[str, Any]:
+        return operational_report(user.id, q, limit)
+
+    @app.get("/api/v1/workspaces")
+    def my_workspaces(user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return list_workspaces(session, user)
+
+    @app.post("/api/v1/workspaces")
+    def new_workspace(body: WorkspaceRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return create_workspace(session, user, body.name)
+
+    @app.post("/api/v1/workspaces/{workspace_id}/members")
+    def invite_workspace_member(workspace_id: str, body: WorkspaceMemberRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, str]:
+        with session_scope() as session:
+            return add_member(session, user, workspace_id, body.account_id)
 
     @app.get("/api/v1/capabilities")
     def capabilities(user: Annotated[Account | None, Depends(current_user)]) -> dict[str, Any]:
@@ -365,18 +488,18 @@ def create_app(mode: str | None = None) -> FastAPI:
         try:
             with session_scope() as session:
                 revision = session.scalar(text("SELECT version_num FROM alembic_version"))
-                if revision != "20260930_claim_reviews":
+                if revision != "20261001_operations":
                     raise ServiceError("MIGRATION_REQUIRED", "Database migration must finish before serving traffic", 503)
         except ServiceError:
             raise
         except Exception as exc:  # pragma: no cover - infra failure path
             raise ServiceError("DATABASE_UNAVAILABLE", "Database is unavailable or migrations have not run", 503) from exc
-        return {"status": "ready"}
+        return {"status": "ready", "build_id": settings.build_id, "schema_revision": revision}
 
     @app.get("/api/v1/incidents")
-    def list_incidents() -> dict[str, Any]:
+    def list_incidents(user: Annotated[Account | None, Depends(current_user)]) -> dict[str, Any]:
         with session_scope() as session:
-            return {"items": incident_list(session)}
+            return {"items": incident_list(session, include_workflow=user is not None)}
 
     @app.get("/api/v1/evaluation-reports/incident-release-v1")
     def release_eval_report() -> dict[str, Any]:
@@ -392,9 +515,9 @@ def create_app(mode: str | None = None) -> FastAPI:
             return evaluation_report(session)
 
     @app.get("/api/v1/incidents/search")
-    def incident_search(q: str = "") -> dict[str, Any]:
+    def incident_search(q: str = "", library_view: Literal["cases", "engineering"] | None = None) -> dict[str, Any]:
         with session_scope() as session:
-            return {"items": search_incidents(session, q), "execution_kind": "live_lexical"}
+            return {"items": search_incidents(session, q, library_view=library_view), "execution_kind": "live_lexical"}
 
     @app.get("/api/v1/incidents/{incident_id}/saved-draft")
     def saved_incident_draft(incident_id: str) -> dict[str, Any]:
@@ -407,6 +530,41 @@ def create_app(mode: str | None = None) -> FastAPI:
         if not isinstance(saved, dict):
             raise ServiceError("SAVED_DRAFT_INVALID", "Saved draft artifact is invalid", 503)
         return saved
+
+    @app.get("/api/v1/workflow/assignees")
+    def workflow_assignees(user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return assignees(session)
+
+    @app.get("/api/v1/incidents/{incident_id}/workflow")
+    def incident_workflow(incident_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return workflow_view(session, incident_id)
+
+    @app.post("/api/v1/analyses/{analysis_id}/checks")
+    def assign_incident_check(analysis_id: str, body: CheckCreateRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return create_check(session, analysis_id, user, body.model_dump())
+
+    @app.post("/api/v1/checks/{task_id}/update")
+    def update_incident_check(task_id: str, body: CheckUpdateRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return update_check(session, task_id, user, body.model_dump())
+
+    @app.post("/api/v1/checks/{task_id}/respond")
+    def respond_incident_check(task_id: str, body: CheckResponseRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return respond_check(session, task_id, user, body.model_dump())
+
+    @app.post("/api/v1/checks/{task_id}/complete")
+    def complete_incident_check(task_id: str, body: CheckCompleteRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return complete_check(session, task_id, user, body.model_dump())
+
+    @app.post("/api/v1/incidents/{incident_id}/resolution")
+    def resolve_incident_workflow(incident_id: str, body: IncidentResolutionRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        with session_scope() as session:
+            return resolve_incident(session, incident_id, user, body.model_dump())
 
     @app.get("/api/v1/incidents/{incident_id}/revisions/{revision}")
     def get_incident(incident_id: str, revision: int) -> dict[str, Any]:
@@ -446,19 +604,32 @@ def create_app(mode: str | None = None) -> FastAPI:
     @app.post("/api/v1/incidents")
     def create_incident(body: IncidentCreateRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
         with session_scope() as session:
-            return create_incident_from_source(session, **body.model_dump())
+            return create_incident_from_source(session, workspace_id=destination(session, user, body.workspace_id), **body.model_dump(exclude={"workspace_id"}))
+
+    @app.post("/api/v1/incidents/imports/inspect")
+    def inspect_incident_columns(body: IncidentCsvInspectRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
+        try:
+            return inspect_incident_csv(body.raw_text.encode("utf-8"), filename=body.filename, profile=body.profile)
+        except ValueError as exc:
+            raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
 
     @app.post("/api/v1/incidents/imports/preview")
     def preview_incident_source(body: IncidentImportRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
+        scope = body.scope
+        if body.base_revision > 0:
+            with session_scope() as session:
+                scope = incident_detail(session, body.incident_id, body.base_revision)["scope"]
+            if body.scope is not None and body.scope != scope:
+                raise ServiceError("SCOPE_MISMATCH", "Use the scope pinned to this incident revision", 422)
         try:
-            return preview_incident_import(body.raw_text.encode("utf-8"), profile=body.profile, source_system=body.source_system, timezone=body.timezone, filename=body.filename, unit=body.unit, scope=body.scope)
+            return preview_incident_import(body.raw_text.encode("utf-8"), profile=body.profile, source_system=body.source_system, timezone=body.timezone, filename=body.filename, unit=body.unit, scope=scope, column_mapping=body.column_mapping, field_defaults=body.field_defaults)
         except ValueError as exc:
             raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
 
     @app.post("/api/v1/incidents/imports/publish")
     def publish_incident_source(body: IncidentPublishRequest, user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
         with session_scope() as session:
-            return publish_source(session, **body.model_dump(exclude={"scope"}))
+            return publish_source(session, workspace_id=destination(session, user, body.workspace_id), **body.model_dump(exclude={"scope", "workspace_id"}))
 
     @app.post("/api/v1/analyses/{analysis_id}/proposals/{proposal_id}/submit")
     def submit_incident_proposal(analysis_id: str, proposal_id: str, body: IncidentReviewRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
@@ -489,13 +660,33 @@ def create_app(mode: str | None = None) -> FastAPI:
     def get_ai_request(request_key: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         return lookup_request(request_key, user.id)
 
+    @app.get("/api/v1/ai-runs/review-queue")
+    def get_review_queue(user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return review_queue()
+
+    @app.get("/api/v1/ai-runs/{run_id}/review-packet")
+    def get_review_packet(run_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return review_packet(run_id, user.id, owner=user.role == "owner")
+
+    @app.get("/api/v1/ai-runs/{run_id}/review-report")
+    def get_review_report(run_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return review_report(run_id, user.id, owner=user.role == "owner")
+
+    @app.post("/api/v1/ai-runs/{run_id}/publish-review")
+    def publish_ai_review(run_id: str, body: AIReviewPublishRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return publish_review(run_id, user.id, body.idempotency_key, body.output_digest, owner=user.role == "owner")
+
+    @app.post("/api/v1/ai-runs/{run_id}/assessment")
+    def assess_ai_run(run_id: str, body: AIRunAssessmentRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
+        return assess_run(run_id, user.id, body.idempotency_key, body.output_digest, body.model_dump(exclude={"output_digest", "idempotency_key"}), owner=user.role == "owner")
+
     @app.get("/api/v1/ai-runs/{run_id}")
     def get_ai_run(run_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         return lookup_run(run_id, user.id, owner=user.role == "owner")
 
     @app.post("/api/v1/ai-runs/{run_id}/claim-review")
     def annotate_ai_claim(run_id: str, body: AIClaimReviewRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
-        return review_claim(run_id, user.id, body.idempotency_key, body.claim_path, body.supported, body.rationale, owner=user.role == "owner")
+        return review_claim(run_id, user.id, body.idempotency_key, body.claim_path, body.supported, body.rationale, owner=user.role == "owner", **body.model_dump(exclude={"supported", "rationale", "claim_path", "idempotency_key"}))
 
     @app.get("/api/v1/usage")
     def get_usage(user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:

@@ -1,0 +1,193 @@
+{
+  "recorded_at": "2026-10-02T13:33:43.992668+00:00",
+  "commit": "61f64efa25e604a3acf826d785314f085eb02402",
+  "scope": "Local isolated recovery drill; not a production backup or hosted restart proof",
+  "source_database": "flooreplay_recovery_source_20261002133310_test",
+  "restored_database": "flooreplay_recovery_restore_20261002133310_test",
+  "source_origin": "flooreplay_trust_test",
+  "source_origin_modified": false,
+  "source_origin_table_hashes_equal": true,
+  "synthetic_fixtures": [
+    "recovery-synthetic-spend",
+    "recovery-synthetic-run",
+    "recovery-synthetic-review",
+    "recovery-synthetic-vector"
+  ],
+  "provider_calls": 0,
+  "archive_bytes": 1097649,
+  "archive_sha256": "566cc9aeae9782ef66569c25c72966e41306b7c2cc0cfcf71ca5d97ebdeff54b",
+  "dump_seconds": 0.561,
+  "restore_seconds": 0.98,
+  "verification_seconds": 11.544,
+  "total_drill_seconds": 34.037,
+  "tables": {
+    "access_limits": {
+      "rows": 107,
+      "sha256": "3b8821111fd2836e69dc8873e6c9d3c3030710d877f7625f533b7b13e544915f"
+    },
+    "accounts": {
+      "rows": 97,
+      "sha256": "9344fa085f27f14b5a932d6fc4a7167a8665f19d946767e4cbe1cb650e94f5ec"
+    },
+    "ai_claim_reviews": {
+      "rows": 1,
+      "sha256": "6acba08cabf1ff6f5ddbc4017580b306501d7d6060dff43b9ced044906cb6c1e"
+    },
+    "ai_review_publications": {
+      "rows": 1,
+      "sha256": "59f2e2b9da026ba1a881f72b8f85d2c7d82473166cc0ea3729b4d338ee516162"
+    },
+    "ai_run_assessments": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "ai_runs": {
+      "rows": 2,
+      "sha256": "a4698d1494e16ec5aa9183683a18693c51043c3a71a25ba1a3d62cc1cfdc573a"
+    },
+    "alembic_version": {
+      "rows": 1,
+      "sha256": "db52426d8f54b4e6e064a2bb5eaacf8cb2fa1c44b56e75f87669bae2d28f114d"
+    },
+    "auth_sessions": {
+      "rows": 102,
+      "sha256": "447ca2b26a179113513fa256e6c82147b02974e83352866c426a0be15424441d"
+    },
+    "catalog_revisions": {
+      "rows": 1,
+      "sha256": "68ab1f8f2dc2f222d9df0c708bf282a2fee9d743f376fcf8d75f1704f85501a9"
+    },
+    "comparison_reports": {
+      "rows": 30,
+      "sha256": "0e977a452e7651e9d5588bb7d4e8167c988eb53c6c8429bafc3d5f4440d09e24"
+    },
+    "corpus_releases": {
+      "rows": 12,
+      "sha256": "8ba1f32dcb9a744ed17e7a17e5ef23a240440cfb178eea952287b510fffa4e0c"
+    },
+    "embedding_artifacts": {
+      "rows": 1,
+      "sha256": "5527d09ad8b2e3a486be51100425f6b9107ae83c4b78dc285c0f9a55938a5017"
+    },
+    "execution_configurations": {
+      "rows": 3,
+      "sha256": "70bdc994ae17e6b32750ccb54bd8160e9126663b042e69754877a24e0da9aaa2"
+    },
+    "expectation_revisions": {
+      "rows": 240,
+      "sha256": "38890715f60779b5322df5edb9fe760ccff5b2afdde8137c88888821c4f726a5"
+    },
+    "import_audits": {
+      "rows": 25,
+      "sha256": "69b838364b2b21b064d1ab5ddc57bca95a8a3c30a25f76b7c5211b031943f08d"
+    },
+    "incident_analyses": {
+      "rows": 87,
+      "sha256": "9ac6026599df7bfca84d47c9601d38ffd06d19abf14866e7e4cdc505e090fada"
+    },
+    "incident_checks": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "incident_model_jobs": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "incident_resolutions": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "incident_reviews": {
+      "rows": 20,
+      "sha256": "a9c220a603fea7f37e9c9e84b10696daf65ea9aa766d98fb25a30494cb6c78cf"
+    },
+    "incident_revisions": {
+      "rows": 209,
+      "sha256": "89b55e47d02d3dfd4a09118330c743eb29d6c443ca4f49ebfa207f160486abee"
+    },
+    "incident_source_artifacts": {
+      "rows": 2,
+      "sha256": "a8474d851279da907cce65819662f004049cde32edaefef08e4392fc802a2149"
+    },
+    "incident_workflow_activities": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "incident_workflow_receipts": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "operational_events": {
+      "rows": 1888,
+      "sha256": "e840650aab879349a5be48d32a0923d5859376907ec2262da7e82ed678431800"
+    },
+    "parser_calls": {
+      "rows": 10,
+      "sha256": "1388486231d2d3e6fc4f5828d994e44aa8a59bc7397135810a4ff95b32c2b53a"
+    },
+    "replay_attempts": {
+      "rows": 152,
+      "sha256": "d1848931bae72ce2f9e9c60063ba8ffd7a5abdca7863cf24dcea1680e7b19ec4"
+    },
+    "retrieval_runs": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "review_checks": {
+      "rows": 50,
+      "sha256": "3f39f89f31213f45e6b3b6fd5745e1da2563c605fd4f21e1edfffd94eec09aa6"
+    },
+    "scenario_revisions": {
+      "rows": 80,
+      "sha256": "9eaf78236a2848ef30232ea85545f5fc6ab4358c43a7fd11740f59450652eb7f"
+    },
+    "source_snapshots": {
+      "rows": 156,
+      "sha256": "e37bc4d1a2fafeea66a39434030d36bd86478572efd15989d88e0bfabbf859a5"
+    },
+    "spend_entries": {
+      "rows": 1,
+      "sha256": "02fd800bd9a2921857e71d4d3e2dab2c9a5e6b26980a4068fb473de2a80e8955"
+    },
+    "spending_allocations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "suite_revisions": {
+      "rows": 1,
+      "sha256": "af277130d8a7611fad9968779bf5d9c9db99ff3ddfd84be7cce8c129526fa19f"
+    },
+    "workspace_members": {
+      "rows": 82,
+      "sha256": "2f38c948cf48bf70abc5b343b7f7b323d733e0d999653c7f47fd4841190f0431"
+    },
+    "workspaces": {
+      "rows": 58,
+      "sha256": "315672c7206db062f7255fcc934c17d9d07139dbb47a49f18db6f5bb12941fbc"
+    }
+  },
+  "all_table_contents_equal": true,
+  "required_nonempty_tables": [
+    "incident_revisions",
+    "accounts",
+    "incident_reviews",
+    "ai_claim_reviews",
+    "embedding_artifacts",
+    "spend_entries"
+  ],
+  "passed": true,
+  "rollback": {
+    "status": "passed_api_component",
+    "artifact": "application-rollback-2026-10-02.json",
+    "rollback_ref": "ba91a26f276814bc74240f5509535084cf80fd08",
+    "current_ref": "61f64efa25e604a3acf826d785314f085eb02402",
+    "frontend_rollback_exercised": false
+  },
+  "limitations": [
+    "One local PostgreSQL instance",
+    "No point-in-time recovery",
+    "No production volume or load",
+    "Synthetic paid receipts and vector; no real provider billing validation",
+    "Backup encryption and remote retention are not tested"
+  ]
+}

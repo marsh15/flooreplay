@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { ArrowLeft, FileText } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useParams, useSearchParams } from 'react-router'
@@ -7,10 +7,13 @@ import { api } from '@/lib/api'
 import { formatInstant } from '@/lib/status'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/Auth'
-import { OpenAiPanel, HybridPanel, ExportReport } from '@/components/IncidentAi'
+import { OpenAiPanel, HybridPanel, ExportReport, PrecedentConditions } from '@/components/IncidentAi'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import savedAi from '@/data/hero-ai.json'
+import { RevisionComparison } from '@/components/RevisionComparison'
+import { IncidentWorkflow } from '@/components/IncidentWorkflow'
+import { SupervisorReport } from '@/components/SupervisorReport'
 
 function EvidenceLink({ id, onOpen }: { id: string; onOpen: (id: string) => void }) {
   return <button type="button" onClick={() => onOpen(id)} className="evidence-link inline-flex items-center rounded border border-zinc-300 bg-white px-2 py-1 font-mono text-xs text-zinc-700 underline-offset-2 hover:underline focus-visible:outline-2">{id}</button>
@@ -54,7 +57,7 @@ function ProposalCard({ item, report, currentRevision, canReview, onEvidence, on
       {item.missing_information.length > 0 && <p><strong>Still needed:</strong> {item.missing_information.join('; ')}</p>}
       <div><span className="mb-1 block font-medium">Evidence</span><EvidenceList ids={item.supporting_evidence} onOpen={onEvidence} /></div>
     </div>
-    <div className="mt-4 border-t border-zinc-100 pt-3">
+    <div className="mt-4 border-t border-zinc-100 pt-3 print:hidden">
       {stale && <p className="mb-2 text-xs font-medium text-amber-800">This proposal belongs to revision {report.revision}. Open the current revision before review.</p>}
       {!canReview && <p className="text-xs text-zinc-600">Sign in as an invited reviewer to record decisions.</p>}
       {canReview && reviewState === 'DRAFT' && <Button size="sm" variant="outline" disabled={stale || submit.isPending} onClick={() => submit.mutate()}>{submit.isPending ? 'Submitting…' : 'Submit for review'}</Button>}
@@ -71,7 +74,7 @@ function ProposalCard({ item, report, currentRevision, canReview, onEvidence, on
 }
 
 function SavedAiPanel({ onEvidence }: { onEvidence: (id: string) => void }) {
-  return <Section title="Historical local-model result" detail="Qwen archive · OpenAI not evaluated · Experimental · author-reviewed synthetic case · recorded output from an earlier local run">
+  return <Section title="Historical local-model result" detail="Qwen archive · historical provider evidence · Experimental · author-reviewed synthetic case · recorded output from an earlier local run">
     <div className="rounded border border-zinc-200 bg-white p-4">
       <p className="text-xs text-zinc-600">{savedAi.model} · {savedAi.elapsed_seconds} seconds · {savedAi.execution_kind}</p>
       <p className="mt-2 text-sm text-amber-900">{savedAi.quality_notice}</p>
@@ -93,35 +96,41 @@ export function IncidentWorkbenchPage() {
   const { id = '' } = useParams()
   const [params, setParams] = useSearchParams()
   const queryClient = useQueryClient()
-  const capabilities = useQuery({ queryKey: ['capabilities'], queryFn: api.capabilities, staleTime: 60_000 })
-  const library = useQuery({ queryKey: ['incidents'], queryFn: incidentApi.list })
+  const capabilities = useQuery({ queryKey: ['capabilities', user?.id ?? 'public'], queryFn: api.capabilities, staleTime: 60_000 })
+  const library = useQuery({ queryKey: ['incidents', user?.id ?? 'public'], queryFn: incidentApi.list })
   const summary = library.data?.items.find((item) => item.id === id)
   const revision = Number(params.get('revision') || summary?.revision || 1)
   const analysisId = params.get('analysis')
   const [evidenceId, setEvidenceId] = useState<string | null>(null)
-  const incident = useQuery({ queryKey: ['incident', id, revision], queryFn: () => incidentApi.revision(id, revision), enabled: !!id && (!!params.get('revision') || !!summary || library.isError) })
-  const reportQuery = useQuery({ queryKey: ['incident-analysis', id, revision, analysisId], queryFn: () => analysisId ? incidentApi.analysis(analysisId) : incidentApi.analyze(id, revision), enabled: !!id && !!incident.data, retry: false })
+  const incident = useQuery({ queryKey: ['incident', id, revision, user?.id ?? 'public'], queryFn: () => incidentApi.revision(id, revision), enabled: !!id && (!!params.get('revision') || !!summary || library.isError) })
+  const reportQuery = useQuery({ queryKey: ['incident-analysis', id, revision, analysisId, user?.id ?? 'public'], queryFn: () => analysisId ? incidentApi.analysis(analysisId) : incidentApi.analyze(id, revision), enabled: !!id && !!incident.data, retry: false })
   const report = reportQuery.data
-  useEffect(() => {
-    if (report && !analysisId) {
-      queryClient.setQueryData(['incident-analysis', id, revision, report.id], report)
+  useLayoutEffect(() => {
+    const currentParams = new URLSearchParams(window.location.search)
+    if (report && !analysisId && decodeURIComponent(window.location.pathname) === `/incidents/${id}` && currentParams.get('revision') === params.get('revision') && currentParams.get('analysis') === analysisId) {
+      queryClient.setQueryData(['incident-analysis', id, revision, report.id, user?.id ?? 'public'], report)
       setParams({ revision: String(revision), analysis: report.id }, { replace: true })
     }
-  }, [report, analysisId, id, revision, queryClient, setParams])
+  }, [report, analysisId, id, revision, params, user?.id, queryClient, setParams])
   const evidence = useQuery({ queryKey: ['incident-evidence', report?.id, evidenceId], queryFn: () => incidentApi.evidence(report!.id, evidenceId!), enabled: !!report && !!evidenceId })
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['incident-analysis', id, revision] })
   const changeRevision = (value: number) => { setEvidenceId(null); setParams({ revision: String(value) }) }
 
-  return <div className="space-y-8">
+  return <div className="investigation-workbench space-y-8">
     <Link to="/" className="inline-flex min-h-8 items-center gap-2 rounded-sm text-xs text-zinc-600 hover:text-zinc-900"><ArrowLeft aria-hidden="true" size={14} />Incident library</Link>
     {incident.isPending ? <div aria-busy="true" aria-label="Loading incident"><Skeleton className="h-12 w-2/3" /><Skeleton className="mt-4 h-32" /></div> : incident.isError ? <div role="alert" className="rounded border border-red-200 bg-red-50 p-5 text-sm text-red-800">Could not load incident: {incident.error.message} <Button variant="outline" size="sm" onClick={() => incident.refetch()}>Retry</Button></div> : <>
       <header className="border-b border-zinc-200 pb-5">
         <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{incident.data.title}</h1><p className="mt-1 text-sm text-zinc-600">{incident.data.scope.line_id} · {formatInstant(incident.data.window.start)} to {formatInstant(incident.data.window.end)}</p></div><div className="flex items-end gap-2"><div><label htmlFor="revision" className="mb-1 block text-xs font-medium text-zinc-600">Evidence revision</label><select id="revision" value={revision} onChange={(event) => changeRevision(Number(event.target.value))} className="h-9 rounded border border-zinc-300 bg-white px-3 text-sm focus-visible:outline-2">{(report?.execution_kind === 'saved_deterministic' ? [revision] : incident.data.available_revisions).map((value) => <option key={value} value={value}>Revision {value}</option>)}</select></div></div></div>
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-500"><span>Knowledge cutoff: {formatInstant(incident.data.cutoff)}</span><span>Report: {reportQuery.isPending ? 'Building analysis' : reportQuery.isError ? 'Analysis unavailable' : report?.execution_kind === 'saved_deterministic' ? 'Saved deterministic result' : 'Live deterministic analysis'}</span><span>Factory data: synthetic</span></div>
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-500"><span>Evidence available by: {formatInstant(incident.data.cutoff)}</span><span>Report: {reportQuery.isPending ? 'Building analysis' : reportQuery.isError ? 'Analysis unavailable' : report?.execution_kind === 'saved_deterministic' ? 'Saved deterministic result' : 'Live deterministic analysis'}</span><span>{incident.data.workspace_id && incident.data.workspace_id !== 'public-demo' ? 'Private workspace records' : 'Factory data: synthetic'}</span></div>
       </header>
       {reportQuery.isPending ? <div aria-busy="true" aria-label="Building analysis" className="space-y-3"><Skeleton className="h-28" /><Skeleton className="h-48" /><Skeleton className="h-48" /></div> : reportQuery.isError ? <div role="alert" className="rounded border border-red-200 bg-red-50 p-5"><h2 className="text-sm font-semibold text-red-900">Analysis unavailable</h2><p className="mt-1 text-sm text-red-800">{reportQuery.error.message}</p><Button className="mt-3" size="sm" variant="outline" onClick={() => reportQuery.refetch()}>Retry analysis</Button></div> : report && <>
+        <p className="hidden text-xs print:block">FloorReplay · Evidence revision {report.revision} · Report {report.id} · Evidence available by {formatInstant(report.cutoff)} · {incident.data.workspace_id && incident.data.workspace_id !== 'public-demo' ? 'Private workspace records' : 'Synthetic data'}</p>
+        <RevisionComparison key={`${id}:${revision}`} incident={incident.data} report={report} />
+        <SupervisorReport key={`${report.id}:${user?.id ?? 'anonymous'}`} report={report} incident={incident.data} currentRevision={summary?.revision ?? revision} />
+        <aside className="rounded-lg border border-zinc-200 bg-white p-4 print:hidden" aria-label="Investigation guide"><h2 className="text-sm font-semibold">Follow the investigation</h2><ol className="mt-2 grid gap-3 text-sm sm:grid-cols-3"><li><a className="underline" href="#observed-situation">1. Measure the difference</a><p className="mt-1 text-xs text-zinc-600">Compare planned and recorded output, then check missing intervals.</p></li><li><a className="underline" href="#explanations-and-open-questions">2. Check the explanation</a><p className="mt-1 text-xs text-zinc-600">Read supporting and contradicting records before choosing a cause.</p></li><li><a className="underline" href="#recovery-options">3. Choose the next check</a><p className="mt-1 text-xs text-zinc-600">Read the prerequisites and responsible role. Share the supervisor report or assign a check with reviewer access.</p></li></ol><p className="mt-3 text-xs text-zinc-600">“Knowledge cutoff” means the time by which evidence had reached the system. A late-arriving record may describe an earlier event, but appears only in a later evidence revision.</p></aside>
+        <p className="text-xs text-zinc-600">Calculation coverage: {report.metrics.status.toLowerCase()}. Proposal approval, check completion, and incident resolution are separate decisions.</p>
         <nav aria-label="Investigation sections" className="flex flex-wrap gap-x-5 gap-y-2 border-b border-zinc-200 pb-4 text-xs font-medium text-zinc-600">
-          {['Observed situation', 'Evidence timeline', 'Explanations and open questions', 'Recovery options', 'Shift update'].map((title) => <a key={title} href={`#${title.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-')}`} className="inline-flex min-h-8 items-center rounded-sm hover:text-zinc-900 hover:underline">{title}</a>)}
+          {['Observed situation', 'Evidence timeline', 'Explanations and open questions', 'Recovery options', 'Assigned checks', 'Shift handover', 'Shift update'].map((title) => <a key={title} href={`#${title.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-')}`} className="inline-flex min-h-8 items-center rounded-sm hover:text-zinc-900 hover:underline">{title}</a>)}
         </nav>
         <Section title="Observed situation" detail="Calculated from comparable complete 15-minute buckets; missing data is not counted as zero.">
           <dl className="grid divide-y divide-zinc-200 overflow-hidden rounded-lg border border-zinc-200 bg-white sm:grid-cols-3 sm:divide-x sm:divide-y-0">
@@ -139,17 +148,18 @@ export function IncidentWorkbenchPage() {
           {report.metrics.target_pressure?.remaining_target != null && <div className="rounded border border-zinc-200 bg-white p-4 text-sm"><h3 className="font-medium">Remaining shift target</h3>{report.metrics.target_pressure.as_of && <p className="mt-1 text-xs text-zinc-600">As of recorded output: {formatInstant(report.metrics.target_pressure.as_of)}</p>}<p className="mt-1 text-zinc-700">{report.metrics.target_pressure.remaining_target} {report.metrics.unit.replaceAll('_', ' ')} across {report.metrics.target_pressure.remaining_elapsed_minutes ?? report.metrics.target_pressure.remaining_working_minutes} elapsed minutes under the report assumptions.</p><p className="mt-1 text-xs text-zinc-600">Required average: {report.metrics.target_pressure.required_units_per_hour ?? 'Unavailable'} units/hour · Baseline: {report.metrics.target_pressure.baseline_units_per_hour ?? 'Unavailable'} units/hour</p><p className="mt-1 text-xs text-zinc-500">{report.metrics.target_pressure.assumptions.join(' ')}</p></div>}
         </Section>
         <Section title="Evidence timeline" detail="Events are ordered by occurrence. Availability at the cutoff determines which records are included.">
-          {report.timeline.length ? <div className="overflow-x-auto rounded border border-zinc-200 bg-white"><table className="w-full min-w-[650px] text-left text-sm"><thead className="border-b bg-zinc-50 text-xs uppercase text-zinc-500"><tr><th scope="col" className="px-4 py-2">When</th><th scope="col" className="px-4 py-2">Lane</th><th scope="col" className="px-4 py-2">Observation</th><th scope="col" className="px-4 py-2">Source</th></tr></thead><tbody className="divide-y divide-zinc-100">{report.timeline.map((event) => <tr key={event.id}><td className="whitespace-nowrap px-4 py-3 text-xs tabular-nums text-zinc-600">{formatInstant(event.occurred_at ?? event.start ?? '')}{event.end ? ` – ${formatInstant(event.end)}` : ''}</td><td className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-zinc-500">{event.lane}</td><td className="px-4 py-3">{event.summary}{event.assertion && <span className="ml-2 text-xs text-amber-800">Source assertion</span>}</td><td className="px-4 py-3"><EvidenceLink id={event.id} onOpen={setEvidenceId} /></td></tr>)}</tbody></table></div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No timeline events are available at this cutoff.</p>}
+          {report.timeline.length ? <div className="overflow-x-auto rounded border border-zinc-200 bg-white"><table className="w-full min-w-[650px] text-left text-sm"><thead className="border-b bg-zinc-50 text-xs uppercase text-zinc-500"><tr><th scope="col" className="px-4 py-2">When</th><th scope="col" className="px-4 py-2">Lane</th><th scope="col" className="px-4 py-2">Observation</th><th scope="col" className="px-4 py-2">Source</th></tr></thead><tbody className="divide-y divide-zinc-100">{report.timeline.map((event) => <tr key={event.id}><td className="whitespace-nowrap px-4 py-3 text-xs tabular-nums text-zinc-600">{formatInstant(event.occurred_at ?? event.start ?? '')}{event.end ? ` – ${formatInstant(event.end)}` : ''}</td><td className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-zinc-500">{event.lane ?? event.type.replaceAll('_', ' ')}</td><td className="px-4 py-3">{event.summary}{event.assertion && <span className="ml-2 text-xs text-amber-800">Source assertion</span>}</td><td className="px-4 py-3"><EvidenceLink id={event.id} onOpen={setEvidenceId} /></td></tr>)}</tbody></table></div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No timeline events are available at this cutoff.</p>}
         </Section>
         <Section title="Explanations and open questions" detail="A sequence of events alone does not establish causation.">
           {report.hypotheses.length ? <div className="grid gap-3 lg:grid-cols-2">{report.hypotheses.map((item, index) => <HypothesisCard key={`${item.category}-${index}`} item={item} onEvidence={setEvidenceId} />)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">Current evidence does not support a specific contributor.</p>}
         </Section>
         <HybridPanel report={report} enabled={capabilities.data?.ai?.index_ready === true && capabilities.data?.reviews_enabled === true} />
-        <Section title="Historical precedents" detail="Live lexical search. Similar cases can guide checks; differences limit what can be inferred.">{report.precedents?.length ? <div className="grid gap-3 lg:grid-cols-2">{report.precedents.map((item, index) => <article key={item.id ?? item.incident_id ?? index} className="rounded border bg-white p-4"><h3 className="text-sm font-semibold">{item.title ?? item.incident_id ?? 'Historical incident'}</h3>{item.match_reason || item.match_reasons?.length ? <p className="mt-2 text-xs text-zinc-700"><strong>Similar:</strong> {item.match_reason ?? item.match_reasons?.join('; ')}</p> : null}{item.differences?.length ? <p className="mt-2 text-xs text-zinc-700"><strong>Different:</strong> {item.differences.join('; ')}</p> : null}{(item.incident_id || item.id) && <Link className="mt-3 inline-block text-xs underline" to={`/incidents/${encodeURIComponent(item.incident_id ?? item.id!)}`}>Open precedent</Link>}</article>)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No eligible historical precedents were retrieved.</p>}</Section>
+        <Section title="Historical precedents" detail="Live lexical search. Similar cases can guide checks; differences limit what can be inferred.">{report.precedents?.length ? <div className="grid gap-3 lg:grid-cols-2">{report.precedents.map((item, index) => <article key={item.id ?? item.incident_id ?? index} className="rounded border bg-white p-4"><h3 className="text-sm font-semibold">{item.title ?? item.incident_id ?? 'Historical incident'}</h3>{item.match_reason || item.match_reasons?.length ? <p className="mt-2 text-xs text-zinc-700"><strong>Similar:</strong> {item.match_reason ?? item.match_reasons?.join('; ')}</p> : null}{item.differences?.length ? <p className="mt-2 text-xs text-zinc-700"><strong>Different:</strong> {item.differences.join('; ')}</p> : null}<div className="mt-2"><PrecedentConditions item={item} /></div>{(item.incident_id || item.id) && <Link className="mt-3 inline-block text-xs underline" to={`/incidents/${encodeURIComponent(item.incident_id ?? item.id!)}`}>Open precedent</Link>}</article>)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No useful precedent was found among eligible historical records. Verify current conditions before borrowing an action.</p>}</Section>
         <Section title="Recovery options" detail="Proposals are versioned requests for human review.">{report.proposals.length ? <div className="grid gap-3 lg:grid-cols-2">{report.proposals.map((item) => <ProposalCard key={`${report.id}-${item.id}-${item.state}`} item={item} report={report} currentRevision={summary?.revision ?? revision} canReview={capabilities.data?.reviews_enabled === true && report.execution_kind !== 'saved_deterministic'} onEvidence={setEvidenceId} onChanged={refresh} />)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No action proposal is supported by this evidence.</p>}</Section>
+        <IncidentWorkflow key={`${id}:${user?.id ?? 'anonymous'}`} report={report} currentRevision={summary?.revision ?? revision} onRevisionPublished={changeRevision} />
         <Section title="Shift update" detail="Evidence-linked report summary"><blockquote className="rounded-lg border border-zinc-200 bg-white p-5 text-sm leading-7 text-zinc-700">{report.summary}</blockquote><ExportReport report={report} enabled={capabilities.data?.reviews_enabled === true} /></Section>
         {report.incident_id === savedAi.incident_id && report.revision === savedAi.revision && <SavedAiPanel onEvidence={setEvidenceId} />}
-        <OpenAiPanel key={`${report.id}:${user?.id ?? 'anonymous'}`} report={report} enabled={capabilities.data?.ai?.generation_available === true && report.execution_kind !== 'saved_deterministic'} reasons={capabilities.data?.ai?.reason ? [capabilities.data.ai.reason.replaceAll('_', ' ').toLowerCase()] : ['OpenAI drafts are available to authenticated reviewers.']} onEvidence={setEvidenceId} />
+        <div className="print:hidden"><OpenAiPanel key={`${report.id}:${user?.id ?? 'anonymous'}`} report={report} enabled={capabilities.data?.ai?.generation_available === true && report.execution_kind !== 'saved_deterministic'} reasons={capabilities.data?.ai?.reason ? [capabilities.data.ai.reason.replaceAll('_', ' ').toLowerCase()] : ['OpenAI drafts are available to authenticated reviewers.']} onEvidence={setEvidenceId} /></div>
       </>}
     </>}
     <Sheet open={evidenceId !== null} onOpenChange={(open) => { if (!open) setEvidenceId(null) }}><SheetContent className="overflow-y-auto"><SheetHeader><SheetTitle className="flex items-center gap-2"><FileText aria-hidden="true" size={18} />Source evidence</SheetTitle><SheetDescription className="break-all font-mono text-xs">{evidenceId}</SheetDescription></SheetHeader><div className="px-4 pb-6">{evidence.isPending ? <Skeleton className="h-32" /> : evidence.isError ? <p role="alert" className="text-sm text-red-700">{evidence.error.message}</p> : evidence.data ? <dl className="space-y-3 text-sm">{Object.entries(evidence.data).map(([key, value]) => <div key={key} className="border-b border-zinc-100 pb-2"><dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">{key.replace(/_/g, ' ')}</dt><dd className="mt-1 whitespace-pre-wrap break-words font-mono text-xs leading-5 text-zinc-800">{typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value ?? '—')}</dd></div>)}</dl> : null}</div></SheetContent></Sheet>

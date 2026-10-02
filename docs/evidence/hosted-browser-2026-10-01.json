@@ -1,0 +1,37 @@
+{
+  "observed_at_utc": "2026-10-01T10:09:25.469Z",
+  "frontend_url": "https://frontend-tau-khaki-26.vercel.app",
+  "api_url": "https://flooreplay-api.onrender.com/api/v1",
+  "deployed_commit": "f5bab391dbfe5a892266fe158e81162d3af3b685",
+  "observations": [
+    {
+      "path": "/",
+      "rendered": true,
+      "heading": "Incident library",
+      "elapsed_ms": 1347
+    },
+    {
+      "path": "/incidents/INC-001?revision=2",
+      "rendered": true,
+      "heading": "Delayed start on sewing line S4",
+      "elapsed_ms": 3814
+    },
+    {
+      "path": "/evaluation",
+      "rendered": true,
+      "heading": "Incident evaluation lab",
+      "elapsed_ms": 917
+    },
+    {
+      "check": "simulated_browser_api_outage",
+      "rendered_saved_investigation": true,
+      "visible_saved_label": true,
+      "provider_requests": 0,
+      "limitation": "Browser intercepted requests; hosted API remained running."
+    }
+  ],
+  "authenticated_checks": "PENDING",
+  "restart": "PENDING",
+  "paid_calls": 0,
+  "local_sixth_priority_release": "NOT_DEPLOYED"
+}

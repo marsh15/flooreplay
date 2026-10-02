@@ -130,7 +130,7 @@ def test_parse_then_confirm_creates_revision(client: TestClient):
     replay = client.post(
         "/api/v1/replays",
         json={
-            "scenario_id": "SCEN-HERO",
+            "scenario_id": body["scenario_id"],
             "scenario_revision": body["revision"],
             "configuration_id": "CFG-IMPROVED-V1",
             "idempotency_key": f"note-confirm-{uuid.uuid4().hex}",

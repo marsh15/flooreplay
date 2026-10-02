@@ -2,7 +2,7 @@
 
 FloorReplay reconstructs a sewing-line incident from the operational evidence available at a selected cutoff. Production metrics, hypotheses, precedents and recovery proposals keep their input references. New evidence creates a new revision; earlier reports retain their original meaning. All factory data is synthetic.
 
-The current release adds authenticated owner/reviewer accounts, OpenAI generation, pgvector hybrid search, a persistent ₹500 allowance, durable request recovery and deployment packaging. Live OpenAI smoke and pilot checks pass; the locked evaluation stopped at a validation failure. Hosted verification and human claim review remain pending.
+The current release adds authenticated owner/reviewer accounts, OpenAI generation, pgvector hybrid search, a persistent ₹500 allowance, durable request recovery and deployment packaging. Live OpenAI smoke and pilot checks pass; the locked evaluation stopped at a validation failure. The supplied review reports that the public site loaded incidents and ran deterministic analysis. This repository does not yet contain dated acceptance evidence for authenticated hosted flows. Independent human claim review remains pending.
 
 ## Run the application
 
@@ -92,3 +92,25 @@ Run the same progression with `--retrieval-mode hybrid --corpus release-v1` and 
 `make export-demo` generates the saved frontend bundles from backend reports through one command. `make generate-api` regenerates frontend request types from OpenAPI. The legacy coverage workflow is preserved in [COVERAGE_ARCHIVE.md](COVERAGE_ARCHIVE.md).
 
 Human support annotations use `POST /api/v1/ai-runs/{run_id}/claim-review` with an authenticated session, a canonical claim path such as `claims.0`, `supported`, `rationale` and an idempotency key. Each annotation records the actor and exact output digest separately from the immutable draft. Current-provider metrics read durable evaluation runs and their annotations; independent dataset semantic review remains a separate pending gate.
+
+## Improvement work
+
+The product focuses on a supervisor investigating a sewing-line shortfall and coordinating the next checks. The September 30 improvement adds guided entry, a curated incident library with filters and pagination, separate status labels, revision comparisons, state-aware next checks, authenticated claim annotations and printable deterministic reports. The second pass adds assigned checks, source responses that publish immutable revisions, completion outcomes, separate incident resolution and shift handover, verified locally on October 1, 2026. The third pass adds downloadable synthetic CSV examples and explicit column mapping/defaults, verified locally on October 1, 2026. Cumulative conversion, XLSX and saved presets remain follow-up work. [PRODUCT.md](PRODUCT.md) states the workflow, [DEMO.md](DEMO.md) gives the current walkthrough, and [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) turns the supplied 36 ideas into deliverables and evidence gates. [Practitioner interviews](docs/practitioner-interview.md) and the [comparative pilot template](docs/comparative-pilot.md) are ready to use. They contain no interview findings or measured customer benefit.
+
+The improvement pass passes 178 backend tests, Ruff, mypy, frontend lint and build. Browser evidence covers 33 scenarios across a full run with 31 passing and focused reruns after two obsolete test assumptions were corrected. The final focused six-scenario run passes. OpenAI browser checks use simulated transport; these checks made no paid calls and do not establish semantic support or hosted acceptance. See [RELEASE_STATUS.md](RELEASE_STATUS.md) for the exact verification scope.
+
+See [assigned incident workflow](docs/incident-workflow.md) for account assignment, deadlines, manual escalation, response evidence, completion and resolution rules. Task metadata, assignee lists and outcomes require authentication. Submitted source responses become incident evidence visible in public synthetic demo reports. Confidential customer workspace separation remains a separate requirement before a real-data pilot.
+
+The October 1 assigned-workflow pass passes 183 backend tests, Ruff, mypy across 43 source files, frontend lint/build and the complete 41-scenario browser suite. The migration upgrade/downgrade/upgrade roundtrip passes. These are local acceptance results with no paid calls; hosted acceptance remains pending. The [release record](RELEASE_STATUS.md) preserves both improvement passes.
+
+See [CSV import mapping](docs/csv-import-mapping.md) and the [example sequence](frontend/public/import-examples/README.md) for baseline, output correction, operation and note imports.
+
+The [fresh trust challenge release](backend/evaluation/ai-trust-fresh-v1/README.md) freezes ten manually composed cases from an independent AI subagent. Its offline comparison ledger contains actual deterministic executions and pending evidence-only, lexical and hybrid generation slots. This is AI-authored synthetic evidence, not a human holdout or manufacturing validation. The [human claim-review protocol](docs/ai-claim-review-protocol.md) defines the remaining semantic review gate.
+
+The [actual smoke review packet](backend/evaluation/openai-smoke-review-packet-v1/README.md) exports five saved provider runs, four structured claims and 28 text units beside their source evidence and exact output identities. A preliminary AI review is separate from the pending qualified human review. It supplies no fresh-case results or human support score.
+
+The fourth pass adds an explicitly shared semantic-review inbox, exact-output judgments and assessments, a revised numeric grounding contract, observed precedent comparisons and a frozen four-mode evaluation harness. [AI trust evaluation](docs/ai-trust-evaluation.md) records the boundaries: qualified independent human review and fresh live AI comparisons remain pending. The separately labeled preliminary AI audit cannot establish human validation or practical AI benefit.
+
+## Engineering evidence
+
+Read the [technical case study](docs/technical-case-study.md) for architecture decisions, failures, verification results, actual hosted observations and measured local recovery. [Release evidence](RELEASE_STATUS.md) separates local private-workspace verification from pending authenticated hosted acceptance and unmeasured factory benefit.

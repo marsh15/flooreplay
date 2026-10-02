@@ -198,7 +198,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       // non-JSON error body; keep defaults
     }
-    throw new ApiError(code, message, response.status)
+    throw new ApiError(code, message, response.status, response.headers.get('X-Request-ID') ?? undefined)
   }
   return response.json() as Promise<T>
 }
@@ -207,8 +207,11 @@ export class ApiError extends Error {
   code: string
   status: number
 
-  constructor(code: string, message: string, status: number) {
-    super(message)
+  requestId?: string
+
+  constructor(code: string, message: string, status: number, requestId?: string) {
+    super(requestId ? `${message} Request ${requestId}.` : message)
+    this.requestId = requestId
     this.code = code
     this.status = status
   }

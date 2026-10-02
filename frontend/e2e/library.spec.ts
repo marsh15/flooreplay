@@ -9,11 +9,14 @@ test('library lists the hero scenarios and the synthetic-data disclaimer', async
   await expect(page.getByRole('link', { name: /FloorReplay/ }).first()).toBeVisible()
   await expect(page.getByText('SCEN-HERO@1').first()).toBeVisible()
   await expect(
-    page.getByText(/unofficial engineering exploration using synthetic data/i),
+    page.getByText(/unofficial engineering exploration.*Public examples use synthetic data/i),
   ).toBeVisible()
 })
 
 test('library surfaces persisted latest-attempt summaries', async ({ page }) => {
+  await page.goto('/coverage/workbench?scenario=SCEN-HERO&revision=2&config=CFG-IMPROVED-V1')
+  await page.getByRole('button', { name: 'Run replay' }).click()
+  await expect(page.getByText('Ready for review')).toBeVisible()
   await page.goto('/coverage')
   await expect(page.getByRole('row', { name: /SCEN-HERO@2(?!\d)/ })).toContainText('Ready for review')
 })

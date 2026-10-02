@@ -17,6 +17,10 @@ MAX_RESPONSE_BYTES = 256_000
 NUMBER = re.compile(r"(?<![\w.])-?\d+(?:\.\d+)?(?![\w.])")
 UNREFERENCED_DIGIT = re.compile(r"\d")
 NUMBER_WORD = re.compile(r"\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|percent)\b", re.I)
+HARMLESS_STRUCTURAL_ONE = re.compile(r"\bone(?=\s+(?:source\b|of\b))|(?<=at least )one(?=\s+record\b)", re.I)
+JOINED_QUANTITY_WORD = re.compile(r"\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million)(?=(?:units|minutes|hours|days|percent)\b)", re.I)
+QUANTITY_CONTEXT = re.compile(r"\b(?:half|quarter|third|dozen|single|double|triple|couple|few|several|multiple)(?:\s+(?:a|an|of|the)){0,2}[\s-]+(?:(?:remaining|measured|recorded|planned|good)\s+)?(?:units?|seconds?|minutes?|hours?|days?|weeks?|shifts?|percent(?:age)?|output|production|rates?|targets?|shipments?|buckets?|lots?|workers?|operators?|machines?)\b", re.I)
+UNREFERENCED_TIME_WORD = re.compile(r"\b(?:noon|midnight)\b", re.I)
 SOURCE_TIME = re.compile(r"\b\d{1,2}:\d{2}\b")
 SOURCE_CODE = re.compile(r"\b[A-Za-z][A-Za-z0-9-]*\d+\b")
 
@@ -44,7 +48,7 @@ SCHEMA = {
 def _packet_bytes(packet: dict[str, Any]) -> bytes:
     if not isinstance(packet, dict):
         raise ValueError("Evidence packet must be an object")
-    for name, limit in (("evidence", 30), ("metrics", 15), ("precedents", 3)):
+    for name, limit in (("evidence", 30), ("metrics", 15), ("precedents", 3), ("historical_evidence", 5), ("action_catalog", 12)):
         entries = packet.get(name, [])
         if not isinstance(entries, list) or len(entries) > limit:
             raise ValueError(f"{name} exceeds the bounded packet contract")
@@ -139,6 +143,28 @@ def evaluate_drafts(cases: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 
+def _numeric_prose(value: str) -> bool:
+    # These idioms describe evidence structure. Quantity-bearing uses remain blocked.
+    prose = HARMLESS_STRUCTURAL_ONE.sub("", value)
+    return bool(UNREFERENCED_DIGIT.search(prose) or NUMBER_WORD.search(prose) or JOINED_QUANTITY_WORD.search(prose) or QUANTITY_CONTEXT.search(prose) or UNREFERENCED_TIME_WORD.search(prose))
+
+
+def _remove_source_token(prose: str, source_value: str) -> str:
+    # Bare numerical IDs must remain app-rendered; otherwise an ID could launder a quantity.
+    if not source_value or NUMBER.fullmatch(source_value) or NUMBER_WORD.fullmatch(source_value):
+        return prose
+    if NUMBER_WORD.search(source_value) or JOINED_QUANTITY_WORD.search(source_value) or QUANTITY_CONTEXT.search(source_value) or UNREFERENCED_TIME_WORD.search(source_value):
+        return prose
+    if UNREFERENCED_DIGIT.search(source_value) and not (
+        re.fullmatch(r"[A-Za-z][A-Za-z0-9:_-]*", source_value)
+        or re.fullmatch(r"\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?", source_value)
+        or re.fullmatch(r"\d{4}-\d{2}-\d{2}T[\d:.+\-Z]+", source_value)
+    ):
+        return prose
+    pattern = re.compile(r"(?<![\w:./+\-])" + re.escape(source_value) + r"(?![\w:/+\-]|\.[\w])")
+    return pattern.sub("", prose)
+
+
 class GroundedClaim(BaseModel):
     model_config = ConfigDict(extra="forbid")
     text: str = Field(max_length=600)
@@ -209,6 +235,8 @@ TASK_SCHEMAS: dict[str, type[BaseModel]] = {"investigation": InvestigationDraft,
 def validate_output(task: str, raw: dict[str, Any], packet: dict[str, Any]) -> dict[str, Any]:
     """References select app-rendered quantities; prose never supplies calculated numerals."""
     errors: list[str] = []
+    if len(json.dumps(raw, ensure_ascii=False).encode()) > MAX_RESPONSE_BYTES:
+        return {"valid": False, "errors": ["Output exceeds bounded response contract"], "output": None}
     evidence = {str(e["id"]): e for e in packet.get("evidence", [])}
     historical = {str(e["id"]): e for e in packet.get("historical_evidence", [])}
     metrics = {str(e["id"]): e for e in packet.get("metrics", [])}
@@ -231,14 +259,19 @@ def validate_output(task: str, raw: dict[str, Any], packet: dict[str, Any]) -> d
                     errors.append("Reference outside pinned packet")
                 # Only exact cited source fields can carry source times or identifiers.
                 prose = value["text"]
+                if not prose.strip():
+                    errors.append("Empty claim text")
+                rendered_source_fields = []
                 for field in value["source_fields"]:
-                    source_id, separator, key = field.partition(".")
+                    source_id, separator, key = field.rpartition(".")
                     source = evidence.get(source_id)
-                    if not separator or source_id not in value["evidence_ids"] or source is None or key not in {"occurred_at", "start", "end", "source_id", "id", "lot_id", "order_id", "line_id", "style_id"} or key not in source:
+                    if not separator or source_id not in value["evidence_ids"] or source is None or key not in {"occurred_at", "start", "end", "source_id", "id", "lot_id", "order_id", "line_id", "style_id"} or key not in source or not isinstance(source[key], str):
                         errors.append("Invalid source field reference")
                     else:
-                        prose = prose.replace(str(source[key]), "")
-                if UNREFERENCED_DIGIT.search(prose) or NUMBER_WORD.search(prose):
+                        prose = _remove_source_token(prose, source[key])
+                        rendered_source_fields.append({"ref": field, "value": source[key]})
+                value["rendered_source_fields"] = rendered_source_fields
+                if _numeric_prose(prose):
                     errors.append("Numeric prose must use an application-rendered metric reference")
                 value["rendered_metrics"] = [metrics[m] for m in value["metric_ids"] if m in metrics]
                 value["support_status"] = "UNREVIEWED"
@@ -256,15 +289,15 @@ def validate_output(task: str, raw: dict[str, Any], packet: dict[str, Any]) -> d
                 if source is None or not value["source_span"] or not any(isinstance(source.get(field), str) and value["source_span"] in source[field] for field in ("summary", "text", "note_text")):
                     errors.append("Note span not present in source")
             for key, item in list(value.items()):
-                if key in {"limitations", "next_checks", "unresolved_issues", "abstention_reasons", "prerequisites", "uncertainty"}:
+                if key in {"limitations", "next_checks", "unresolved_issues", "abstention_reasons", "prerequisites", "uncertainty", "owner_role", "mentioned_entities"}:
                     prose_items = item if isinstance(item, list) else [item]
-                    if any(isinstance(prose_item, str) and (UNREFERENCED_DIGIT.search(prose_item) or NUMBER_WORD.search(prose_item)) for prose_item in prose_items):
+                    if any(isinstance(prose_item, str) and _numeric_prose(prose_item) for prose_item in prose_items):
                         errors.append("Unsupported numerical claim in prose")
-                if key not in {"rendered_metrics", "text", "source_span"}:
+                if key not in {"rendered_metrics", "rendered_source_fields", "text", "source_span"}:
                     inspect(item)
         elif isinstance(value, str):
             pass
     inspect(parsed)
     if task == "note" and not parsed["requires_human_confirmation"]:
         errors.append("Extracted notes require human confirmation")
-    return {"valid": not errors, "errors": errors, "output": parsed if not errors else None}
+    return {"valid": not errors, "errors": errors, "output": parsed if not errors else None, "validation_scope": "structure_references_numeric_prose", "semantic_support": "UNREVIEWED"}

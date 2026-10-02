@@ -114,11 +114,12 @@ def test_recorded_model_packets_remain_historical() -> None:
 
 def test_import_preview_and_immutable_publication(owner_headers) -> None:
     incident_id = f"INC-TEST-{uuid.uuid4().hex[:12]}"
+    workspace_id = TestClient(app, headers=owner_headers).get("/api/v1/workspaces").json()["items"][0]["id"]
     fixture = deepcopy(next(item for item in incident_fixtures() if item["id"] == "INC-110"))
     fixture["id"] = incident_id
     with session_scope() as session:
         session.add(IncidentRevision(
-            incident_id=incident_id, revision=1, title=fixture["title"],
+            workspace_id=workspace_id, incident_id=incident_id, revision=1, title=fixture["title"],
             line_id=fixture["scope"]["line_id"], cutoff=datetime.fromisoformat(fixture["cutoff"]),
             window_start=datetime.fromisoformat(fixture["window"]["start"]),
             window_end=datetime.fromisoformat(fixture["window"]["end"]),
@@ -168,13 +169,14 @@ def test_new_incident_from_previewed_production_source(owner_headers) -> None:
     ]
     client = TestClient(app, headers=owner_headers)
     raw = json.dumps(rows)
-    preview_body = {"incident_id": incident_id, "base_revision": 1, "cutoff": "2026-09-20T09:15:00+05:30", "raw_text": raw, "profile": "production-v1", "source_system": "test-ledger", "timezone": "Asia/Kolkata", "filename": "new.json", "unit": "good_units", "scope": scope}
+    preview_body = {"incident_id": incident_id, "base_revision": 0, "cutoff": "2026-09-20T09:15:00+05:30", "raw_text": raw, "profile": "production-v1", "source_system": "test-ledger", "timezone": "Asia/Kolkata", "filename": "new.json", "unit": "good_units", "scope": scope}
     preview = client.post("/api/v1/incidents/imports/preview", json=preview_body)
     assert preview.status_code == 200 and preview.json()["status"] == "READY"
     create_body = {"incident_id": incident_id, "title": "Test line start", "scope": scope, "window": {"start": "2026-09-20T09:00:00+05:30", "end": "2026-09-20T09:15:00+05:30"}, "cutoff": preview_body["cutoff"], "raw_text": raw, "source_system": "test-ledger", "timezone": "Asia/Kolkata", "filename": "new.json", "preview_digest": preview.json()["preview_digest"], "idempotency_key": f"new-{uuid.uuid4().hex}"}
     try:
         created = client.post("/api/v1/incidents", json=create_body)
         assert created.status_code == 200
+        incident_id = created.json()["id"]
         assert client.post("/api/v1/incidents", json=create_body).json()["revision"] == 1
         analysis = client.post(f"/api/v1/incidents/{incident_id}/analyses", json={"revision": 1, "idempotency_key": f"analysis-{uuid.uuid4().hex}"})
         assert analysis.status_code == 200 and analysis.json()["metrics"]["shortfall"] == 10
@@ -186,3 +188,81 @@ def test_new_incident_from_previewed_production_source(owner_headers) -> None:
             session.execute(delete(IncidentAnalysis).where(IncidentAnalysis.incident_id == incident_id))
             session.execute(delete(IncidentSourceArtifact).where(IncidentSourceArtifact.incident_id == incident_id))
             session.execute(delete(IncidentRevision).where(IncidentRevision.incident_id == incident_id))
+
+
+def test_library_groups_use_provenance_not_title():
+    run_seed()
+    items = TestClient(app).get('/api/v1/incidents').json()['items']
+    hero = next(item for item in items if item['id'] == 'INC-001')
+    assert hero['library_group'] == 'curated_demo'
+    fixture = next(item for item in items if item['title'].startswith('Synthetic '))
+    assert fixture['library_group'] == 'engineering_fixture'
+
+
+def test_library_separates_public_coverage_from_private_workflow(owner_headers) -> None:
+    run_seed()
+    public = TestClient(app).get("/api/v1/incidents").json()["items"]
+    hero = next(item for item in public if item["id"] == "INC-001")
+    assert hero["status"] == "COMPLETE"
+    assert hero["evidence_state"] == "PARTIAL"
+    assert hero["workflow"] is None
+    authenticated = TestClient(app, headers=owner_headers).get("/api/v1/incidents").json()["items"]
+    current = next(item for item in authenticated if item["id"] == "INC-001")
+    assert current["workflow"]["investigation_state"] in {"OPEN", "RESOLVED"}
+    assert current["workflow"]["open_action_count"] >= 0
+    assert current["evidence_state"] == hero["evidence_state"]
+
+
+def test_library_resolution_is_revision_bound_and_counts_only_open_checks(owner_headers) -> None:
+    from datetime import UTC
+
+    from sqlalchemy import select
+
+    from flooreplay.auth import Account
+    from flooreplay.incident_service import incident_list
+    from flooreplay.incident_workflow import IncidentCheck, IncidentResolution
+    from flooreplay.models import IncidentAnalysis
+
+    with session_scope() as session:
+        account = session.scalar(select(Account).where(Account.role == "owner"))
+        assert account is not None
+        source = session.get(IncidentRevision, ("INC-001", 2))
+        assert source is not None
+        identity = "LIB-" + uuid.uuid4().hex[:12]
+        payload = {**deepcopy(source.payload), "id": identity}
+        session.add(IncidentRevision(incident_id=identity, revision=2, title="Private workflow test", line_id=source.line_id, cutoff=source.cutoff, window_start=source.window_start, window_end=source.window_end, payload=payload, content_digest=digest(payload), evidence_card=""))
+        analysis = IncidentAnalysis(id=uuid.uuid4().hex, incident_id=identity, revision=2, report={}, created_at=datetime.now(UTC), completed_at=datetime.now(UTC), idempotency_key=uuid.uuid4().hex, manifest_digest=digest(payload))
+        session.add(analysis)
+        session.flush()
+        session.add(IncidentResolution(incident_id=identity, state="RESOLVED", rationale="Old resolution", resolved_revision=1))
+        for status in ["OPEN", "COMPLETED", "CANCELLED"]:
+            session.add(IncidentCheck(incident_id=identity, analysis_id=analysis.id, revision=2, proposal_id="check", category="material", question="Check records", requested_fields=[], assignee_id=account.id, due_at=datetime.now(UTC), status=status, created_by=account.id, created_at=datetime.now(UTC), updated_at=datetime.now(UTC)))
+        session.flush()
+        item = next(item for item in incident_list(session, include_workflow=True) if item["id"] == identity)
+        assert item["workflow"]["investigation_state"] == "OPEN"
+        assert item["workflow"]["open_action_count"] == 1
+        assert item["workflow"]["assignees"] == [{"id": account.id, "name": account.display_name}]
+        session.rollback()
+
+
+def test_library_search_filters_fixture_group_before_ranking() -> None:
+    from flooreplay.incident_service import search_incidents
+
+    run_seed()
+    response = TestClient(app).get("/api/v1/incidents/search", params={"q": "fabric", "library_view": "cases"})
+    assert response.status_code == 200 and response.json()["items"]
+    with session_scope() as session:
+        source = session.get(IncidentRevision, ("INC-001", 2))
+        assert source is not None
+        identity = "LIB-SEARCH-" + uuid.uuid4().hex[:12]
+        payload = {**deepcopy(source.payload), "id": identity, "dataset_split": "historical"}
+        session.add(IncidentRevision(incident_id=identity, revision=2, title="Search fixture", line_id=source.line_id, cutoff=source.cutoff, window_start=source.window_start, window_end=source.window_end, payload=payload, content_digest=digest(payload), evidence_card="fabric " * 100))
+        session.flush()
+        operational = search_incidents(session, "fabric", library_view="cases", limit=1)
+        assert operational and operational[0]["id"] != identity
+        for item in operational:
+            row = session.get(IncidentRevision, (item["id"], item["revision"]))
+            assert row is not None and not row.payload.get("dataset_split")
+        fixtures = search_incidents(session, "fabric", library_view="engineering", limit=1)
+        assert fixtures and fixtures[0]["id"] == identity
+        session.rollback()

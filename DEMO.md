@@ -1,139 +1,58 @@
-# The FloorReplay demonstration script
+# FloorReplay demonstration
 
-A narrated walkthrough for presenting FloorReplay live. Everything runs on
-synthetic data with no API key. The full version takes ~15 minutes; a 5-minute
-version is marked at the end. Every step names the principle it demonstrates —
-that is the product being demonstrated.
+Use the synthetic example to show how a supervisor investigates a sewing-line shortfall. This is a product walkthrough, not proof of factory effectiveness. See [INCIDENT_DEMO.md](INCIDENT_DEMO.md) for the evidence details and [RELEASE_STATUS.md](RELEASE_STATUS.md) for measured checks.
 
-Setup: `make backend-dev`, `make frontend-dev`, open http://localhost:5173.
+## Start locally
 
----
+Run `docker compose up --build --wait` and open [the application](http://localhost:5174). Alternatively follow the native setup in [README.md](README.md). Create separate owner and reviewer accounts with the prompted CLI before demonstrating protected actions. No provider request is needed for the deterministic walkthrough.
 
-## Act 1 — A recommendation you can't trust yet (Workbench)
+## Safe first visit
 
-**SCEN-HERO@1, Improved policy → Run replay.**
+Open the incident library and choose "Try the safe action demo". No account is needed. The guided simulation keeps its practice state in the current browser page and makes no shared-record writes or provider requests. Follow the evidence inspection, assignment and completion steps, then inspect the remaining uncertainty. Reset or reload to start again. Practice completion does not resolve an actual incident.
 
-> "7:58 AM in a sewing unit. Operator O117 can't run sleeve attach today. The
-> system is asked: can someone qualified cover that slot on that machine?
-> Before answering, it checks whether the *evidence itself* is good enough to
-> act on. Here the skill snapshot was assessed 45 days ago — outside the
-> freshness budget. So the answer is **Needs context**, and no policy ever
-> runs. The system would rather refuse than guess."
+Use "Start the example investigation" to inspect the real synthetic example and its pinned records. The cutoff means records available by the displayed time. Choose a next check after reading the evidence and missing sources.
 
-**Point at:** the outcome badge, the issue list, and that no proposal appears.
+For an unfamiliar visitor, use the [first-visit protocol](docs/first-visit-validation.md) and record assistance, misunderstandings and incomplete attempts. No successful human session is claimed yet.
 
-**Principle: missing evidence is never read as absence, and stale evidence
-never quietly becomes truth.**
+## Five-minute walkthrough
 
-## Act 2 — Correction, not rewriting (Library + Workbench)
+1. Open "Delayed start on sewing line S4" in the incident library. State the job: determine what is known about a shortfall and choose the next evidence check.
+2. Select revision 1. At its 11:00 cutoff, the plan totals 160 final good units and recorded output totals 87. Inspect the records behind the 73-unit shortfall. Explain that missing intervals are unknown, not zero.
+3. Open the material record and line-block assertion. The explicit block intervals total 30 minutes. Do not claim that this explains every missing unit. Read the machine and QC uncertainties.
+4. Switch to revision 2 and open its comparison with the earlier revision. Inspect changed metrics, newly available and corrected records, hypotheses and review reminders. Explain why the maintenance note first becomes available here: it entered the source system at 11:20. The earlier report remains pinned to its original evidence.
+5. Sign in and submit/review a current proposal with a rationale. Explain exactly what that records. Approval does not execute factory work or prove resolution.
+6. Print the deterministic report and inspect its revision, report identity, evidence and assumptions. The AI panel is excluded from this print view. The portable JSON export remains available to authenticated users.
 
-Select **SCEN-HERO@2** (the corrected revision) → **Run replay** (Improved).
+The second pass adds the assigned-check walkthrough below, with local acceptance recorded on October 1, 2026. Do not present proposal approval as completed operational work.
 
-> "The skills were re-assessed four days before the decision. The correction
-> is pinned as a *new revision* — revision 1 is still exactly what it was,
-> and replaying it still gives the historical result. With fresh evidence the
-> gate opens: **Ready for review**, proposing **O219** — idle, skilled to the
-> required level, on the same line. Every one of the twelve independent
-> checks passes, each linked to the row of evidence that proves it."
+## Optional engineering walkthrough
 
-**Point at:** the C01–C12 table; click one evidence chip to open the drawer
-with the highlighted source row.
+Open the evaluation lab. Explain arithmetic and citation-membership results with their denominators. OpenAI smoke and pilot have recorded structural results. Independent claim-support review and manufacturing validation remain pending. The authenticated claim-review interface accepts judgments and rationales against the exact output digest and retains durable receipts. This control does not supply independent reviewer findings. Only make a paid draft request when the account and allowance permit it; inspect the output's citations, limitations and receipt afterward.
 
-**Principle: corrections create history; the validator never trusts the
-policy — it re-derives everything from pinned evidence.**
+A citation check proves that a reference belongs to the permitted evidence packet. It does not prove that the referenced record supports the claim. A retrieved precedent is a comparison case, not proof of the current cause.
 
-## Act 3 — The documented blind spot (Workbench)
+## Explain the implementation without a script
 
-**SCEN-HERO@2, Baseline policy → Run replay.**
+Trace one CSV through preview validation, immutable revision publication and cutoff filtering. Explain a shortfall calculation using its complete intervals. Explain why late evidence cannot enter an earlier report. Show how the request identity recovers a saved AI result after an interruption, and why an uncertain paid request cannot silently repeat.
 
-> "This is the *baseline* policy: it ranks qualified candidates but
-> deliberately does not check who is already busy. It proposes O204 — who is
-> occupied on Line 3 — and independent validation rejects it with **C07**,
-> showing the overlapping assignment row. The baseline's limitation is
-> printed on its label everywhere it appears."
+The older qualified-operator coverage workflow is archived in [COVERAGE_ARCHIVE.md](COVERAGE_ARCHIVE.md) and the `coverage-v1` Git tag.
 
-**Principle: systems ship with known limitations; honesty means carrying the
-limitation on the artifact itself, not in a README nobody reads.**
+## Assigned-check walkthrough
 
-## Act 4 — The regression the suite catches (Comparison)
+Sign in and create a check from a current proposal. Select an active assignee and a due time. Start the check, then submit a source-linked response with all requested fields. Inspect the resulting evidence revision and confirm that the original report remains unchanged.
 
-Open **Comparison** → Baseline vs Improved → **Run comparison**.
+Record the action actually taken, completion time, assessment and remaining uncertainty. Optional observed output must include its observation time. Explain that subsequent output does not prove the action caused a change. Show the shift handover and its outstanding checks, owners and deadlines.
 
-> "32 named cases pin exactly how this system should behave, each with the
-> defect it would catch. Under baseline vs improved: 32 unchanged pass — the
-> baseline meets its own documented demands. Now watch a real regression:"
+Mark the incident resolved only as a separate decision with a rationale, after all checks are completed or cancelled and at least one has a completed outcome. Explain that new evidence makes the old revision-bound resolution stale. Review the full rules in [incident workflow](docs/incident-workflow.md).
 
-Re-run with **candidate = the demonstration defect** (CFG-DEFECT-SKILLFRESH,
-a deliberately wrong 400-day freshness budget).
+## CSV import walkthrough
 
-> "Three cases flip to REGRESSION — exactly the three stale-evidence cases.
-> Note the defect configuration still *runs* and produces outcomes; what
-> fails is its **expectation**. Actual results are never relabeled to hide a
-> surprise."
+Sign in as owner and download the synthetic baseline example from incident imports. Create a new incident with its matching scope and observation window, preview the rows and publish only a READY preview. Import the output example and then its correction against the latest revision. Show the preserved original source, replacement relationship and changed metric.
 
-**Principle: expectations are demands, not observations — an interrupted or
-surprising run keeps its actual outcome and fails the demand visibly.**
+For an unfamiliar CSV, select explicit source columns or deliberate constant defaults. Inspect normalized dates and units, then preview again after any interpretation change. Explain why cumulative totals and unreviewed scope assumptions cannot become final-good deltas. Follow the [example sequence](frontend/public/import-examples/README.md) and [mapping guide](docs/csv-import-mapping.md).
 
-## Act 5 — The model drafts, a human confirms (Floor notes)
+## AI support review
 
-Open **Floor notes** → paste:
+Generate or recover a completed draft, inspect its model/output identity and deliberately publish it for review. Sign in with another reviewer account and open the evaluation page’s claim-support inbox. Read a claim beside current and historical citations; record support, insufficient evidence or unsupported wording with a rationale. Declare reviewer kind, qualifications and independence explicitly. Record omissions, abstention, usefulness and limitations in the whole-draft assessment, then download the report. Explain that self-review and AI annotations cannot establish independent human validation.
 
-> "O117 called in sick at 07:52, he cannot run sleeve attach today."
-
-→ **Extract draft.**
-
-> "The parser produced a *draft* — category, subject, uncertainty. It
-> resolved the mention to O117 by exact id. If the note had said just
-> 'Balamurugan', resolution would refuse to guess. And with no API key
-> configured, the UI says so — the offline rule baseline ran, and the UI
-> won't pretend otherwise. Nothing is stored until I confirm — and
-> confirming forks a new revision. The parser never writes history; a human
-> does."
-
-**Point at:** the parser-kind label, the resolution chip, then **Confirm
-event and fork revision** → the new SCEN-HERO@NN.
-
-**Principle: AI output is a draft with an audit trail; ambiguity stays
-ambiguous; the human is the authority.**
-
-## Act 6 — The money moment: does yesterday's answer still hold? (Workbench)
-
-**SCEN-REVIEW-LATER@1** → **Run replay** (Improved) → in *Later-context
-review* choose **SCEN-REVIEW-LATER@2** → **Run review check**.
-
-> "8:10 AM. The recommendation from 7:58 is already executed on paper. New
-> exports arrived. Does the recommendation still hold? **Stale
-> recommendation** — the decision time changed, the event changed, the
-> evidence changed — here are the 51 exact paths that differ. The original
-> replay was never touched."
-
-Also show **SCEN-REVIEW-LATER@3** (blocked context: every snapshot stale) and
-**SCEN-HERO@2** (identical digest → *still supported*).
-
-**Principle: review is explicit, evidence-based, and never rewrites the
-past — exactly what a recommendation system owes the people who act on it.**
-
-## Act 7 — Prove it to yourself
-
-- Every replay has a **portable JSON report** (export link) with both
-  digests.
-- `uv run python -m flooreplay.eval_notes` scores the parser on held-out
-  notes; the offline baseline honestly scores ~50% — which is why the note
-  workflow never trusts it without confirmation.
-- All 100+ unit tests, the 32-case suite, and 10 end-to-end browser tests
-  are in the repo (`make verify`, `make e2e`).
-
-**Closing line:**
-
-> "FloorReplay doesn't promise better recommendations. It promises that when
-> a recommendation is shown, you can see exactly which evidence, which
-> rules, and which software produced it — and whether it still holds when
-> any of those change."
-
----
-
-## The 5-minute version
-
-Act 1 (stale blocks) → Act 2 (correction replays ready) → Act 6 (review:
-stale / still supported) → closing line. If there is time for one more:
-Act 4 (the caught regression).
+Show observed precedent conditions and missing intervention/outcome evidence. In the fresh evaluation report, distinguish the ten measured deterministic slots from thirty pending AI slots. Preserve the frozen offline candidate result, including its three structural failures. Do not narrate this as completed fresh-provider acceptance or proven supervisor benefit.

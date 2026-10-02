@@ -275,6 +275,19 @@ def analyze_incident(revision: dict[str, Any]) -> dict[str, Any]:
         established = any(event.get("line_blocking") and event.get("start") and _time(event["start"]) < effective_end and _time(event.get("end", effective_end.isoformat())) > start for event in related)
         conflicted_ids = {record_id for conflict in correction_conflicts for record_id in conflict["replacement_ids"]}
         evidence_conflict = bool(conflicted_ids.intersection(support))
+        if evidence_conflict or contradict:
+            next_check = "Resolve the conflicting observations with the source owners before treating this event as a confirmed line block."
+        elif established:
+            next_check = {
+                "material": "Confirm affected operations, restart conditions, and any outstanding material requirements for the established block.",
+                "machine": "Confirm repair status, affected operations, and restart conditions for the established machine block.",
+                "quality": "Record QC disposition, affected operations, and release conditions for the established hold.",
+                "staffing": "Confirm coverage restored at the affected operations and any remaining staffing gaps.",
+                "changeover": "Confirm setup completion, restart conditions, and any remaining changeover requirements.",
+                "planning_reporting": "Confirm the approved plan and reconcile reporting corrections before choosing a recovery target.",
+            }[category]
+        else:
+            next_check = f"Confirm whether the {category.replace('_', ' ')} event blocked this line and for how long."
         hypotheses.append(
             {
                 "category": category,
@@ -286,7 +299,7 @@ def analyze_incident(revision: dict[str, Any]) -> dict[str, Any]:
                 ),
                 "supporting_evidence": support,
                 "contradicting_evidence": contradict,
-                "next_check": f"Confirm whether the {category.replace('_', ' ')} event blocked this line and for how long.",
+                "next_check": next_check,
             }
         )
         proposals.append(

@@ -24,6 +24,7 @@ from flooreplay.paid_models import (
     now,
 )
 from flooreplay.retrieval import embedding_identity, hybrid_search, index_corpus, publish_corpus
+from flooreplay.semantic_review import AIReviewPublication, AIRunAssessment
 from flooreplay.service import ServiceError
 from flooreplay.spending import cost, move_allowance, reserve, usage_view
 
@@ -40,7 +41,7 @@ class AsyncClient:
 @pytest.fixture(autouse=True)
 def clean_paid_tables():
     with session_scope() as session:
-        for model in (AIClaimReview, AIRun, RetrievalRun, EmbeddingArtifact, SpendEntry, SpendingAllocation):
+        for model in (AIClaimReview, AIRunAssessment, AIReviewPublication, AIRun, RetrievalRun, EmbeddingArtifact, SpendEntry, SpendingAllocation):
             session.execute(delete(model))
     yield
 
@@ -195,7 +196,10 @@ def test_generation_uses_official_sdk_structured_response_store_false(monkeypatc
     result = openai_provider.generate("mock", config, "question", "Pinned packet", 7)
     assert observed["store"] is False
     assert observed["instructions"] == openai_provider.SYSTEM
-    assert "Always return source_fields=[]" in observed["instructions"]
+    assert "Select source_fields only for exact structured identifiers or times" in observed["instructions"]
+    assert "Never use free-text fields such as summary" in observed["instructions"]
+    assert config["prompt_version"] == "incident-grounding-v7"
+    assert config["schema_version"] == "typed-tasks-v2"
     assert observed["sdk"]["max_retries"] == 0
     assert observed["sdk"]["timeout"] == 7
     assert observed["max_output_tokens"] == 1500
@@ -213,6 +217,10 @@ def test_embedding_response_duplicate_indices_fail_closed(monkeypatch):
 
 def test_hybrid_deadline_and_generation_configuration_are_pinned(monkeypatch):
     from flooreplay import retrieval
+    from flooreplay.paid_models import CorpusRelease
+    with session_scope() as session:
+        if session.get(CorpusRelease, "pinned") is None:
+            session.add(CorpusRelease(id="pinned", digest="digest", cutoff=now(), cards=[], workspace_id="public-demo"))
     monkeypatch.setattr(settings, "openai_api_key", "key-before-retrieval")
     clock = [100.0]
     monkeypatch.setattr(ai_runs.time, "monotonic", lambda: clock[0])

@@ -89,6 +89,169 @@
         }
       }
     },
+    "/api/v1/operations": {
+      "get": {
+        "summary": "My Operations",
+        "operationId": "my_operations_api_v1_operations_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response My Operations Api V1 Operations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces": {
+      "get": {
+        "summary": "My Workspaces",
+        "operationId": "my_workspaces_api_v1_workspaces_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response My Workspaces Api V1 Workspaces Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "New Workspace",
+        "operationId": "new_workspace_api_v1_workspaces_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response New Workspace Api V1 Workspaces Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/members": {
+      "post": {
+        "summary": "Invite Workspace Member",
+        "operationId": "invite_workspace_member_api_v1_workspaces__workspace_id__members_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceMemberRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Invite Workspace Member Api V1 Workspaces  Workspace Id  Members Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/capabilities": {
       "get": {
         "summary": "Capabilities",
@@ -265,6 +428,26 @@
               "default": "",
               "title": "Q"
             }
+          },
+          {
+            "name": "library_view",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "cases",
+                    "engineering"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Library View"
+            }
           }
         ],
         "responses": {
@@ -317,6 +500,322 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Saved Incident Draft Api V1 Incidents  Incident Id  Saved Draft Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workflow/assignees": {
+      "get": {
+        "summary": "Workflow Assignees",
+        "operationId": "workflow_assignees_api_v1_workflow_assignees_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Workflow Assignees Api V1 Workflow Assignees Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/incidents/{incident_id}/workflow": {
+      "get": {
+        "summary": "Incident Workflow",
+        "operationId": "incident_workflow_api_v1_incidents__incident_id__workflow_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Incident Workflow Api V1 Incidents  Incident Id  Workflow Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyses/{analysis_id}/checks": {
+      "post": {
+        "summary": "Assign Incident Check",
+        "operationId": "assign_incident_check_api_v1_analyses__analysis_id__checks_post",
+        "parameters": [
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Assign Incident Check Api V1 Analyses  Analysis Id  Checks Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checks/{task_id}/update": {
+      "post": {
+        "summary": "Update Incident Check",
+        "operationId": "update_incident_check_api_v1_checks__task_id__update_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Update Incident Check Api V1 Checks  Task Id  Update Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checks/{task_id}/respond": {
+      "post": {
+        "summary": "Respond Incident Check",
+        "operationId": "respond_incident_check_api_v1_checks__task_id__respond_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckResponseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Respond Incident Check Api V1 Checks  Task Id  Respond Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checks/{task_id}/complete": {
+      "post": {
+        "summary": "Complete Incident Check",
+        "operationId": "complete_incident_check_api_v1_checks__task_id__complete_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckCompleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Complete Incident Check Api V1 Checks  Task Id  Complete Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/incidents/{incident_id}/resolution": {
+      "post": {
+        "summary": "Resolve Incident Workflow",
+        "operationId": "resolve_incident_workflow_api_v1_incidents__incident_id__resolution_post",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentResolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Resolve Incident Workflow Api V1 Incidents  Incident Id  Resolution Post"
                 }
               }
             }
@@ -550,6 +1049,46 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Export Incident Analysis Api V1 Analyses  Analysis Id  Export Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/incidents/imports/inspect": {
+      "post": {
+        "summary": "Inspect Incident Columns",
+        "operationId": "inspect_incident_columns_api_v1_incidents_imports_inspect_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentCsvInspectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Inspect Incident Columns Api V1 Incidents Imports Inspect Post"
                 }
               }
             }
@@ -842,6 +1381,210 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Get Ai Request Api V1 Ai Runs By Request  Request Key  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-runs/review-queue": {
+      "get": {
+        "summary": "Get Review Queue",
+        "operationId": "get_review_queue_api_v1_ai_runs_review_queue_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Review Queue Api V1 Ai Runs Review Queue Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-runs/{run_id}/review-packet": {
+      "get": {
+        "summary": "Get Review Packet",
+        "operationId": "get_review_packet_api_v1_ai_runs__run_id__review_packet_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Review Packet Api V1 Ai Runs  Run Id  Review Packet Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-runs/{run_id}/review-report": {
+      "get": {
+        "summary": "Get Review Report",
+        "operationId": "get_review_report_api_v1_ai_runs__run_id__review_report_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Review Report Api V1 Ai Runs  Run Id  Review Report Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-runs/{run_id}/publish-review": {
+      "post": {
+        "summary": "Publish Ai Review",
+        "operationId": "publish_ai_review_api_v1_ai_runs__run_id__publish_review_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIReviewPublishRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Publish Ai Review Api V1 Ai Runs  Run Id  Publish Review Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-runs/{run_id}/assessment": {
+      "post": {
+        "summary": "Assess Ai Run",
+        "operationId": "assess_ai_run_api_v1_ai_runs__run_id__assessment_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIRunAssessmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Assess Ai Run Api V1 Ai Runs  Run Id  Assessment Post"
                 }
               }
             }
@@ -1786,8 +2529,80 @@
             "title": "Claim Path"
           },
           "supported": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Supported"
+          },
+          "output_digest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Digest"
+          },
+          "judgment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "supported",
+                  "unsupported",
+                  "insufficient_evidence"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judgment"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "attribution_error",
+                "unsupported_conclusion",
+                "omitted_contradiction",
+                "appropriate_abstention",
+                "useful_next_check"
+              ]
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Flags"
+          },
+          "reviewer_kind": {
+            "type": "string",
+            "enum": [
+              "human",
+              "ai_assistant",
+              "unspecified"
+            ],
+            "title": "Reviewer Kind",
+            "default": "unspecified"
+          },
+          "qualifications": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Qualifications",
+            "default": ""
+          },
+          "independent": {
+            "type": "boolean",
+            "title": "Independent",
+            "default": false
           },
           "rationale": {
             "type": "string",
@@ -1800,10 +2615,383 @@
         "required": [
           "idempotency_key",
           "claim_path",
-          "supported",
           "rationale"
         ],
         "title": "AIClaimReviewRequest"
+      },
+      "AIReviewPublishRequest": {
+        "properties": {
+          "output_digest": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 64,
+            "title": "Output Digest"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "output_digest",
+          "idempotency_key"
+        ],
+        "title": "AIReviewPublishRequest"
+      },
+      "AIRunAssessmentRequest": {
+        "properties": {
+          "output_digest": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 64,
+            "title": "Output Digest"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "reviewer_kind": {
+            "type": "string",
+            "enum": [
+              "human",
+              "ai_assistant",
+              "unspecified"
+            ],
+            "title": "Reviewer Kind",
+            "default": "unspecified"
+          },
+          "qualifications": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Qualifications",
+            "default": ""
+          },
+          "independent": {
+            "type": "boolean",
+            "title": "Independent",
+            "default": false
+          },
+          "usefulness": {
+            "type": "string",
+            "enum": [
+              "useful",
+              "not_useful",
+              "uncertain"
+            ],
+            "title": "Usefulness"
+          },
+          "omitted_contradictions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Omitted Contradictions"
+          },
+          "attribution_errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Attribution Errors"
+          },
+          "abstention": {
+            "type": "string",
+            "enum": [
+              "appropriate",
+              "inappropriate",
+              "not_applicable"
+            ],
+            "title": "Abstention"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Rationale"
+          },
+          "limitations": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "output_digest",
+          "idempotency_key",
+          "usefulness",
+          "abstention",
+          "rationale",
+          "limitations"
+        ],
+        "title": "AIRunAssessmentRequest"
+      },
+      "CheckCompleteRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "action_taken": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Action Taken"
+          },
+          "actual_completed_at": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 10,
+            "title": "Actual Completed At"
+          },
+          "observed_good_units": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Good Units"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "assessment": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Assessment"
+          },
+          "remaining_uncertainty": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Remaining Uncertainty"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "action_taken",
+          "actual_completed_at",
+          "assessment",
+          "remaining_uncertainty"
+        ],
+        "title": "CheckCompleteRequest"
+      },
+      "CheckCreateRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "proposal_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Proposal Id"
+          },
+          "assignee_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Assignee Id"
+          },
+          "due_at": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 10,
+            "title": "Due At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "proposal_id",
+          "assignee_id",
+          "due_at"
+        ],
+        "title": "CheckCreateRequest"
+      },
+      "CheckResponseRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "base_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Base Revision"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Summary"
+          },
+          "occurred_at": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 10,
+            "title": "Occurred At"
+          },
+          "source_ref": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Source Ref"
+          },
+          "details": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Details"
+          },
+          "line_blocking": {
+            "type": "boolean",
+            "title": "Line Blocking",
+            "default": false
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "base_revision",
+          "summary",
+          "occurred_at",
+          "source_ref",
+          "details"
+        ],
+        "title": "CheckResponseRequest"
+      },
+      "CheckUpdateRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "expected_updated_at": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 10,
+            "title": "Expected Updated At"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "IN_PROGRESS",
+                  "CANCELLED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Comment"
+          },
+          "assignee_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Id"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "expected_updated_at",
+          "comment"
+        ],
+        "title": "CheckUpdateRequest"
       },
       "ComparisonRequest": {
         "properties": {
@@ -1965,6 +3153,19 @@
       },
       "IncidentCreateRequest": {
         "properties": {
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
+          },
           "incident_id": {
             "type": "string",
             "maxLength": 64,
@@ -1976,6 +3177,34 @@
             "maxLength": 200,
             "minLength": 3,
             "title": "Title"
+          },
+          "column_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Column Mapping"
+          },
+          "field_defaults": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Defaults"
           },
           "scope": {
             "additionalProperties": {
@@ -2046,6 +3275,35 @@
         ],
         "title": "IncidentCreateRequest"
       },
+      "IncidentCsvInspectRequest": {
+        "properties": {
+          "raw_text": {
+            "type": "string",
+            "maxLength": 2097152,
+            "minLength": 1,
+            "title": "Raw Text"
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Filename"
+          },
+          "profile": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Profile"
+          }
+        },
+        "type": "object",
+        "required": [
+          "raw_text",
+          "filename",
+          "profile"
+        ],
+        "title": "IncidentCsvInspectRequest"
+      },
       "IncidentDraftRequest": {
         "properties": {
           "corpus_id": {
@@ -2067,7 +3325,7 @@
           },
           "retrieval_mode": {
             "type": "string",
-            "pattern": "^(evidence_only|hybrid)$",
+            "pattern": "^(evidence_only|lexical|hybrid)$",
             "title": "Retrieval Mode",
             "default": "evidence_only"
           },
@@ -2093,6 +3351,19 @@
       },
       "IncidentImportRequest": {
         "properties": {
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
+          },
           "scope": {
             "anyOf": [
               {
@@ -2164,6 +3435,34 @@
               }
             ],
             "title": "Unit"
+          },
+          "column_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Column Mapping"
+          },
+          "field_defaults": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Defaults"
           }
         },
         "type": "object",
@@ -2181,6 +3480,19 @@
       },
       "IncidentPublishRequest": {
         "properties": {
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
+          },
           "scope": {
             "anyOf": [
               {
@@ -2252,6 +3564,34 @@
               }
             ],
             "title": "Unit"
+          },
+          "column_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Column Mapping"
+          },
+          "field_defaults": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Defaults"
           },
           "preview_digest": {
             "type": "string",
@@ -2278,6 +3618,44 @@
           "idempotency_key"
         ],
         "title": "IncidentPublishRequest"
+      },
+      "IncidentResolutionRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          },
+          "base_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Base Revision"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "RESOLVED"
+            ],
+            "title": "State"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Rationale"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "base_revision",
+          "state",
+          "rationale"
+        ],
+        "title": "IncidentResolutionRequest"
       },
       "IncidentReviewRequest": {
         "properties": {
@@ -2542,6 +3920,36 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WorkspaceMemberRequest": {
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Account Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account_id"
+        ],
+        "title": "WorkspaceMemberRequest"
+      },
+      "WorkspaceRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 3,
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "WorkspaceRequest"
       }
     }
   }
