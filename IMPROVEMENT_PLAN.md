@@ -2,7 +2,7 @@
 
 Prepared September 30, 2026 from the supplied 36-item review. The intended workflow is a production supervisor importing imperfect records, investigating a sewing-line shortfall, assigning evidence checks, recording responses and measuring whether the investigation helped.
 
-This is an ordered backlog, not a claim that all items are implemented. Synthetic tests establish bounded software behavior. Practitioner usefulness, confidential-data readiness and independent AI support need separate evidence. No interviews or pilot results are recorded yet.
+This backlog records the delivery order. Release evidence records which items are implemented. Synthetic tests establish bounded software behavior. Practitioner usefulness, confidential-data readiness and independent AI support need separate evidence. No interviews or pilot results are recorded yet.
 
 ## Delivery order
 
@@ -58,7 +58,7 @@ The number maps to the original review. "Now" means a bounded deliverable in the
 
 ## Evidence rules
 
-Keep deployment availability, authenticated acceptance, deterministic correctness, structural AI validity, semantic support and customer benefit separate. The supplied review reports a public deployment observation; it does not document a complete hosted acceptance run. Existing provider receipts are evidence of actual calls, not independent claim correctness.
+Keep deployment availability, authenticated acceptance, deterministic correctness, structural AI validity, semantic support and customer benefit separate. The supplied review records a public deployment observation. A complete hosted acceptance run still requires separate evidence. Existing provider receipts are evidence of actual calls, not independent claim correctness.
 
 The exposed locked evaluation cannot become a fresh holdout after prompt or validator tuning. Preserve the stopped result and obtain independently authored acceptance cases. Do not make paid calls just to fill this ledger.
 

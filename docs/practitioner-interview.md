@@ -1,12 +1,12 @@
 # Practitioner interview protocol
 
-Status: ready to use; no interviews conducted or findings recorded here.
+This protocol is ready to use. No interviews or findings are recorded here.
 
 Recruit production supervisors first, then maintenance staff, planners or industrial engineers who participate in shortfall investigations. Record role, experience, production setting and recruitment method. Do not imply that a convenience sample represents manufacturing generally.
 
 ## Before the session
 
-Explain that FloorReplay is a synthetic prototype. Obtain permission to take notes and separately to retain anonymized examples. Avoid collecting names, customer identifiers or confidential production records unless permitted storage and access are established. Ask the participant to describe a recent disruption they handled, not a hypothetical preference.
+Explain that FloorReplay is a synthetic prototype. Obtain permission to take notes and separately to retain anonymized examples. Avoid collecting names, customer identifiers or confidential production records unless permitted storage and access are established. Ask the participant to describe a recent disruption they handled. Base the discussion on that experience.
 
 ## Reconstruct the current process
 
@@ -25,7 +25,7 @@ Ask for an actual example when an answer is general. Record the participant's se
 
 Give the participant the synthetic S4 incident and this instruction: "Investigate the shortfall, identify a useful next check and explain what remains uncertain." Do not narrate the answer. Record starting time, pauses, mistaken interpretations and assistance. Ask them to interpret the cutoff, calculation coverage, cited material block and late maintenance note.
 
-If the verified build supports assigned checks, ask the participant to assign one, record a response and describe the outcome. Record absent controls as gaps. Do not silently substitute author actions for participant success.
+If the verified build supports assigned checks, ask the participant to assign one, record a response and describe the outcome. Record absent controls as gaps. If the author completes an action, record that assistance separately from participant success.
 
 ## Anonymized findings record
 
@@ -42,4 +42,4 @@ If the verified build supports assigned checks, ask the participant to assign on
 | Product decision changed, and why | |
 | Open question or disagreement | |
 
-Keep quotes separate from interpretation. For each decision, link the source session and describe contrary feedback. Publish only consented, anonymized findings. A useful outcome may be that the proposed job is wrong or that a spreadsheet already handles it adequately.
+Keep quotes separate from interpretation. For each decision, link the source session and describe contrary feedback. Publish only consented, anonymized findings. The interview may show that FloorReplay addresses the wrong job or that a spreadsheet already handles it adequately.

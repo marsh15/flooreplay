@@ -10,7 +10,7 @@ Run `docker compose up --build --wait` and open [the application](http://localho
 
 Open the incident library and choose "Try the safe action demo". No account is needed. The guided simulation keeps its practice state in the current browser page and makes no shared-record writes or provider requests. Follow the evidence inspection, assignment and completion steps, then inspect the remaining uncertainty. Reset or reload to start again. Practice completion does not resolve an actual incident.
 
-Use "Start the example investigation" to inspect the real synthetic example and its pinned records. The cutoff means records available by the displayed time. Choose a next check after reading the evidence and missing sources.
+Use "Start the example investigation" to inspect the seeded synthetic example and its pinned records. The cutoff limits the report to records available by the displayed time. Choose a next check after reading the evidence and missing sources.
 
 For an unfamiliar visitor, use the [first-visit protocol](docs/first-visit-validation.md) and record assistance, misunderstandings and incomplete attempts. No successful human session is claimed yet.
 
@@ -23,7 +23,7 @@ For an unfamiliar visitor, use the [first-visit protocol](docs/first-visit-valid
 5. Sign in and submit/review a current proposal with a rationale. Explain exactly what that records. Approval does not execute factory work or prove resolution.
 6. Print the deterministic report and inspect its revision, report identity, evidence and assumptions. The AI panel is excluded from this print view. The portable JSON export remains available to authenticated users.
 
-The second pass adds the assigned-check walkthrough below, with local acceptance recorded on October 1, 2026. Do not present proposal approval as completed operational work.
+The assigned-check workflow below has local acceptance recorded on October 1, 2026. Do not present proposal approval as completed operational work.
 
 ## Optional engineering walkthrough
 
@@ -41,7 +41,7 @@ The older qualified-operator coverage workflow is archived in [COVERAGE_ARCHIVE.
 
 Sign in and create a check from a current proposal. Select an active assignee and a due time. Start the check, then submit a source-linked response with all requested fields. Inspect the resulting evidence revision and confirm that the original report remains unchanged.
 
-Record the action actually taken, completion time, assessment and remaining uncertainty. Optional observed output must include its observation time. Explain that subsequent output does not prove the action caused a change. Show the shift handover and its outstanding checks, owners and deadlines.
+Record the action taken, completion time, assessment and remaining uncertainty. Optional observed output must include its observation time. Explain that subsequent output does not prove the action caused a change. Show the shift handover and its outstanding checks, owners and deadlines.
 
 Mark the incident resolved only as a separate decision with a rationale, after all checks are completed or cancelled and at least one has a completed outcome. Explain that new evidence makes the old revision-bound resolution stale. Review the full rules in [incident workflow](docs/incident-workflow.md).
 
@@ -53,6 +53,6 @@ For an unfamiliar CSV, select explicit source columns or deliberate constant def
 
 ## AI support review
 
-Generate or recover a completed draft, inspect its model/output identity and deliberately publish it for review. Sign in with another reviewer account and open the evaluation page’s claim-support inbox. Read a claim beside current and historical citations; record support, insufficient evidence or unsupported wording with a rationale. Declare reviewer kind, qualifications and independence explicitly. Record omissions, abstention, usefulness and limitations in the whole-draft assessment, then download the report. Explain that self-review and AI annotations cannot establish independent human validation.
+Generate or recover a completed draft, inspect its model/output identity and deliberately publish it for review. Sign in with another reviewer account and open the evaluation page's claim-support inbox. Read a claim beside current and historical citations; record support, insufficient evidence or unsupported wording with a rationale. Declare reviewer kind, qualifications and independence explicitly. Record omissions, abstention, usefulness and limitations in the whole-draft assessment, then download the report. Explain that self-review and AI annotations cannot establish independent human validation.
 
 Show observed precedent conditions and missing intervention/outcome evidence. In the fresh evaluation report, distinguish the ten measured deterministic slots from thirty pending AI slots. Preserve the frozen offline candidate result, including its three structural failures. Do not narrate this as completed fresh-provider acceptance or proven supervisor benefit.

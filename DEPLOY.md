@@ -1,8 +1,8 @@
 # Deployment and operations
 
-The recommended deployment is the Vercel frontend, a Render API, and Neon PostgreSQL with pgvector. Start with [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md). No hosted deployment has been performed. The server OpenAI key and hosting URLs must be configured before actual hosted verification. Local Docker image builds and Compose configuration were verified before the final review fixes. Complete container startup remains blocked by a local Docker containerd metadata input/output error. The native application workflow is verified separately.
+The recommended deployment is the Vercel frontend, a Render API, and Neon PostgreSQL with pgvector. Start with [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md). Historical public-hosted checks are recorded in the release evidence; acceptance of the current release remains pending. Configure the server OpenAI key and hosting URLs before verifying its hosted behavior. Local Docker image builds and Compose configuration were verified before the final review fixes. Complete container startup remains blocked by a local Docker containerd metadata input/output error. The native application workflow is verified separately.
 
-## Local complete stack
+## Run the local stack
 
 From the repository root:
 
@@ -10,7 +10,7 @@ From the repository root:
 docker compose up --build --wait
 ```
 
-Open `http://localhost:5174`. The API is at `http://localhost:8001/api/v1`, and PostgreSQL is exposed only on loopback port 5434. These ports avoid the existing development servers. `FLOORREPLAY_DB_PORT`, `FLOORREPLAY_API_PORT`, and `FLOORREPLAY_FRONTEND_PORT` override them. Compose migrates and seeds before serving traffic. Migration, seed, and startup never generate or embed anything.
+Open `http://localhost:5174`. The API is at `http://localhost:8001/api/v1`, and PostgreSQL is exposed only on loopback port 5434. These ports avoid the existing development servers. `FLOORREPLAY_DB_PORT`, `FLOORREPLAY_API_PORT`, and `FLOORREPLAY_FRONTEND_PORT` override them. Compose migrates and seeds before serving traffic. Migration, seeding and startup make no generation or embedding requests.
 
 Create individual accounts with the prompted password:
 
@@ -62,7 +62,7 @@ The GitHub Actions workflow repeats lint/type/build checks, fresh migration, see
 6. From a trusted terminal with the production backend database environment, run `uv run python -m flooreplay account-create owner --role owner`, then create invited reviewers. The free service need not provide an interactive shell: the CLI can connect directly to Neon from a trusted workstation.
 7. Publish the corpus explicitly: `uv run python -m flooreplay corpus-publish release-v1 --cutoff 2026-09-30T00:00:00+00:00 --owner owner`. Indexing is a separate paid command: `uv run python -m flooreplay corpus-index release-v1 --owner owner`. Confirm allowance with `uv run python -m flooreplay usage` first.
 
-Render’s free web service can sleep after inactivity and has ephemeral local storage. Database reports, accounts, sessions, AI runs, embeddings, and allowance are therefore stored in PostgreSQL. Describe the first request after sleeping as a cold start; do not claim warm latency for it. See [Render free service behavior](https://render.com/docs/free). The frontend’s `vercel.json` rewrites browser routes to `/index.html` for refresh and deep links.
+Render's free web service can sleep after inactivity and has ephemeral local storage. Database reports, accounts, sessions, AI runs, embeddings, and allowance are therefore stored in PostgreSQL. Describe the first request after sleeping as a cold start; do not claim warm latency for it. See [Render free service behavior](https://render.com/docs/free). The frontend's `vercel.json` rewrites browser routes to `/index.html` for refresh and deep links.
 
 ## Hosted acceptance evidence
 
@@ -76,7 +76,7 @@ These checks prove database readiness, anonymous reads, anonymous denial of paid
 
 ## Backup, restore, and rollback
 
-Use Neon’s direct connection for `pg_dump`. Set `FLOORREPLAY_BACKUP_DATABASE_URL` to its libpq `postgresql://` URL rather than the application’s `postgresql+psycopg://` URL. Credentials should come from protected environment configuration or a local password file.
+Use Neon's direct connection for `pg_dump`. Set `FLOORREPLAY_BACKUP_DATABASE_URL` to its libpq `postgresql://` URL rather than the application's `postgresql+psycopg://` URL. Credentials should come from protected environment configuration or a local password file.
 
 ```sh
 umask 077

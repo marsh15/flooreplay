@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="850" viewBox="0 0 1360 850" role="img" aria-labelledby="title description">
+<title id="title">FloorReplay architecture</title>
+<desc id="description">The React browser calls FastAPI. Authentication and workspace scope guard backend investigation modules, which persist evidence and workflow in PostgreSQL. Optional OpenAI calls use server-side keys and a reserved allowance. The modules run inside the API process.</desc>
+<rect width="1360" height="850" fill="#fcfaf5"/>
+<defs><marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse"><path d="M 2 2 L 10 6 L 2 10" fill="none" stroke="#343b45" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text x="60" y="80.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="38">FloorReplay architecture</text>
+<text x="60" y="119.0" fill="#5d6470" font-family="Chalkboard, Comic Sans MS, cursive" font-size="21">Evidence stays versioned. Reports keep their original cutoff and inputs.</text>
+<rect x="460" y="160" width="390" height="520" rx="15" fill="#f1f4f3" stroke="#8a9691" stroke-width="2" stroke-dasharray="9 9"/>
+<text x="480" y="189.0" fill="#52635c" font-family="Chalkboard, Comic Sans MS, cursive" font-size="19">Backend: one API application</text>
+<rect x="60" y="240" width="320" height="215" rx="15" fill="#eaf0fa" stroke="#343b45" stroke-width="2"/>
+<path d="M 75 242 Q 220.0 239 365 241 Q 382 241 381 256 L 379 439 Q 380 457 364 454 Q 220.0 457 76 456 Q 59 455 61 440 L 59 256 Q 59 241 75 242" fill="none" stroke="#343b45" stroke-width=".7" opacity=".45"/>
+<text x="84" y="285.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="28">Browser</text>
+<text x="84" y="327.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="19">React + TypeScript + Vite</text>
+<text x="84" y="352.65" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="19">TanStack Query</text>
+<text x="84" y="378.3" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="19">Session token in memory</text>
+<text x="84" y="403.95" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="19">Practice demo runs locally</text>
+<rect x="495" y="215" width="320" height="175" rx="15" fill="#e6f0e9" stroke="#343b45" stroke-width="2"/>
+<path d="M 510 217 Q 655.0 214 800 216 Q 817 216 816 231 L 814 374 Q 815 392 799 389 Q 655.0 392 511 391 Q 494 390 496 375 L 494 231 Q 494 216 510 217" fill="none" stroke="#343b45" stroke-width=".7" opacity=".45"/>
+<text x="518" y="260.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="28">FastAPI</text>
+<text x="518" y="300.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="19">Pydantic request validation</text>
+<text x="518" y="325.65" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="19">Account + workspace scope</text>
+<text x="518" y="351.3" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="19">Owner / reviewer checks</text>
+<rect x="495" y="455" width="320" height="175" rx="15" fill="#f8edcf" stroke="#343b45" stroke-width="2"/>
+<path d="M 510 457 Q 655.0 454 800 456 Q 817 456 816 471 L 814 614 Q 815 632 799 629 Q 655.0 632 511 631 Q 494 630 496 615 L 494 471 Q 494 456 510 457" fill="none" stroke="#343b45" stroke-width=".7" opacity=".45"/>
+<text x="518" y="496.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="25">Investigation modules</text>
+<text x="518" y="534.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Imports + immutable revisions</text>
+<text x="518" y="558.3" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Deterministic incident analysis</text>
+<text x="518" y="582.6" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Checks, outcomes + reviews</text>
+<text x="518" y="606.9" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Retrieval + paid execution</text>
+<rect x="940" y="215" width="360" height="235" rx="15" fill="#eee9f8" stroke="#343b45" stroke-width="2"/>
+<path d="M 955 217 Q 1120.0 214 1285 216 Q 1302 216 1301 231 L 1299 434 Q 1300 452 1284 449 Q 1120.0 452 956 451 Q 939 450 941 435 L 939 231 Q 939 216 955 217" fill="none" stroke="#343b45" stroke-width=".7" opacity=".45"/>
+<text x="962" y="259.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="26">PostgreSQL + pgvector</text>
+<text x="962" y="302.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Original evidence + reports</text>
+<text x="962" y="326.3" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Workflow + append-only reviews</text>
+<text x="962" y="350.6" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Accounts + sessions</text>
+<text x="962" y="374.9" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Request receipts + reservations</text>
+<text x="962" y="399.2" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Pinned corpora + embeddings</text>
+<rect x="940" y="525" width="360" height="150" rx="15" fill="#fae8df" stroke="#343b45" stroke-width="2"/>
+<path d="M 955 527 Q 1120.0 524 1285 526 Q 1302 526 1301 541 L 1299 659 Q 1300 677 1284 674 Q 1120.0 677 956 676 Q 939 675 941 660 L 939 541 Q 939 526 955 527" fill="none" stroke="#343b45" stroke-width=".7" opacity=".45"/>
+<text x="963" y="568.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="26">OpenAI (optional)</text>
+<text x="963" y="605.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Draft generation + embeddings</text>
+<text x="963" y="629.3" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Server-side keys</text>
+<text x="963" y="653.6" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="18">Reserve allowance before calling</text>
+<polyline points="385,300 489,300" fill="none" stroke="#343b45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="412" y="287.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="17">REST</text>
+<polyline points="820,290 934,290" fill="none" stroke="#343b45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="854" y="277.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="17">SQL</text>
+<polyline points="654,397 654,449" fill="none" stroke="#343b45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="674" y="423.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="16">Dispatch</text>
+<polyline points="820,554 892,554 892,407 934,407" fill="none" stroke="#343b45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="910" y="490.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="16">Persist</text>
+<polyline points="820,610 934,610" fill="none" stroke="#343b45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" stroke-dasharray="8 7"/>
+<text x="823" y="595.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="14">Optional calls</text>
+<text x="60" y="750.0" fill="#343b45" font-family="Chalkboard, Comic Sans MS, cursive" font-size="20">Local: nginx + Docker Compose     |     Hosted configuration: Vercel + Render + Neon</text>
+<text x="60" y="797.0" fill="#5d6470" font-family="Chalkboard, Comic Sans MS, cursive" font-size="19">Saved evidence and workflow live in PostgreSQL. AI drafts require human review.</text>
+</svg>

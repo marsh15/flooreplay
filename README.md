@@ -1,18 +1,53 @@
 # FloorReplay
 
-FloorReplay reconstructs a sewing-line incident from the operational evidence available at a selected cutoff. Production metrics, hypotheses, precedents and recovery proposals keep their input references. New evidence creates a new revision; earlier reports retain their original meaning. All factory data is synthetic.
+FloorReplay is a workbench for investigating manufacturing incidents. Reconstruct what was known at a decision cutoff, inspect the source behind each calculation, compare revisions, and assign follow-up checks. Corrections create new evidence revisions while earlier reports keep their original inputs.
 
-The current release adds authenticated owner/reviewer accounts, OpenAI generation, pgvector hybrid search, a persistent ₹500 allowance, durable request recovery and deployment packaging. Live OpenAI smoke and pilot checks pass; the locked evaluation stopped at a validation failure. The supplied review reports that the public site loaded incidents and ran deterministic analysis. This repository does not yet contain dated acceptance evidence for authenticated hosted flows. Independent human claim review remains pending.
+Public examples use synthetic records. Private investigations require workspace membership. AI drafts are optional and require human review. FloorReplay has no factory pilot or measured operational benefit.
 
-## Run the application
+## Try the workflow
 
-With Docker Desktop or Docker Engine running:
+1. Open the incident library and choose "Delayed start on sewing line S4". Inspect the observed shortfall and follow an evidence reference to its source record.
+2. Compare revisions to see how a late maintenance note changes the available evidence. Earlier reports retain their original inputs and cutoff.
+3. Use "Practice investigation" to walk through assignment, source response, outcome and resolution in the browser. It requires no account and makes no paid requests.
+4. Sign in as an owner or reviewer to work in your authorized workspaces, record proposal decisions, assign checks and export the supervisor report.
+
+See [the demo guide](DEMO.md) and [the technical case study](docs/technical-case-study.md) for a portfolio walkthrough and the engineering decisions behind it.
+
+## What is implemented
+
+| Capability | Behavior |
+| --- | --- |
+| Evidence and revisions | Original source bytes, explicit CSV mappings, immutable revisions, knowledge cutoffs and saved report identities |
+| Deterministic investigation | Source-linked production metrics, conflicting observations, missing-data handling and explicit uncertainty |
+| Follow-up workflow | Assigned checks, deadlines, source responses, recorded outcomes, separate resolution and shift handover |
+| Private workspaces | Server-side membership scope, owner-controlled import destinations, revocable accounts and memory-only browser sessions |
+| Optional AI and retrieval | Structured drafts, citation and numeric checks, pinned historical corpora and exact-output human review |
+| Operational controls | Saved request identities and receipts, a shared provider allowance, retained reservations for uncertain calls and recovery guidance |
+| Browser recovery | Saved synthetic fallback, request deadlines, account-state cleanup, missing-page and error screens, and keyboard navigation |
+
+Calculating a shortfall does not prove a cause. A retrieved historical incident does not establish that its intervention is appropriate now. Recorded proposal approval is a review decision, not factory-system execution.
+
+## Architecture
+
+![FloorReplay architecture: the React browser calls a workspace-scoped FastAPI backend; backend modules store evidence and workflow in PostgreSQL and optionally call OpenAI.](docs/diagrams/architecture.svg)
+
+[Edit the diagram in Excalidraw](docs/diagrams/architecture.excalidraw) or [view the SVG](docs/diagrams/architecture.svg). The dashed arrow marks optional provider calls.
+
+The browser uses React, TypeScript, Vite and TanStack Query. FastAPI validates requests with Pydantic and accesses PostgreSQL through SQLAlchemy. PostgreSQL stores evidence, workflow and request receipts; pgvector supports hybrid retrieval. AI keys stay on the server.
+
+The API establishes workspace scope before accessing resources. Derived records retain their source workspace. Provider operations reserve a shared allowance before dispatch and retain that reservation when the charge is uncertain. The public replay limiter is bounded and process-local, so a replicated deployment needs a shared execution limiter.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md), [the workflow contract](docs/incident-workflow.md), [CSV import mapping](docs/csv-import-mapping.md), and [the AI review protocol](docs/ai-claim-review-protocol.md).
+
+## Run locally
+
+With Docker Desktop or Docker Engine:
 
 ```sh
 docker compose up --build --wait
 ```
 
-Open [the local app](http://localhost:5174). Compose uses PostgreSQL with pgvector on loopback port 5434 and the API on port 8001. Startup migrates and seeds idempotently and makes no paid calls.
+Open [the application](http://localhost:5174). The API and database bind to loopback ports 8001 and 5434. Startup runs migrations and seeds the database. Repeated startup does not duplicate seed data or make paid calls.
 
 Create individual accounts with prompted passwords:
 
@@ -21,96 +56,49 @@ docker compose exec api python -m flooreplay account-create owner --role owner
 docker compose exec api python -m flooreplay account-create reviewer --role reviewer
 ```
 
-Anonymous visitors can inspect incidents, use lexical search and run bounded deterministic analysis. Reviewers can request AI, use hybrid retrieval, export reports and submit/review proposals. Owners can also import records, publish/index a corpus and manage accounts. Sign-in tokens live only in browser memory and expire after eight hours. Reloading requires signing in again. Account disabling revokes access immediately.
-
-For an existing local PostgreSQL installation, use Python 3.12+, uv, Node 22 and pnpm 10.30:
+For local development use Python 3.12+, uv 0.12.19, Node 22.12+ and pnpm 10.30.0. PostgreSQL must provide pgvector.
 
 ```sh
 cd backend
 cp .env.example .env
-uv sync --frozen
+uv sync --frozen --no-install-project --no-build
+uv sync --frozen --no-build
 uv run alembic upgrade head
 uv run python -m flooreplay seed
 uv run python -m flooreplay account-create owner --role owner
 uv run uvicorn flooreplay.api:app --port 8000
 ```
 
-In another shell, run `cd frontend && pnpm install --frozen-lockfile && pnpm dev`. PostgreSQL must provide the vector extension. For online hosting, follow [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md): Vercel frontend, Render API and Neon database. See [DEPLOY.md](DEPLOY.md) for local verification, backup and rollback.
+In a second shell, run `cd frontend && pnpm install --frozen-lockfile --ignore-scripts && pnpm dev`. These commands disable dependency lifecycle scripts. Python dependencies must install from wheels; the repository's own reviewed Hatch build is permitted.
 
-## Investigate the featured incident
+Sessions expire after eight hours. Browser reloads require signing in again. Disabling an account revokes its access immediately.
 
-Open **Delayed start on sewing line S4**. Revision 1 records 160 planned versus 87 good units at the 11:00 cutoff. The maintenance note entered at 11:20 is unavailable. Revision 2 adds that note and a corrected machine observation. Evidence chips open the exact source record. Metrics include their unit, formula, interval and source references.
+## Verification and release evidence
 
-Target pressure uses the observation watermark and explicitly labeled elapsed-time assumptions. Missing production buckets are unknown rather than zero. A chronological sequence and a retrieved historical cause cannot establish the current cause. Competing corrections and contradictory observations remain visible.
-
-Sign in to submit a proposal and review it with a rationale. The server records your account identity and rejects a stale revision. Approval is a FloorReplay review record; there is no factory-system execution.
-
-## OpenAI configuration and spending
-
-Set `FLOORREPLAY_OPENAI_API_KEY` in the backend environment. The generation default is `gpt-4.1-mini-2025-04-14`; embeddings use `text-embedding-3-small` with 512 dimensions. Responses use structured contracts and `store=false`. The SDK makes no automatic retries. Every generation, repair, embedding and live evaluation reserves allowance before contacting the provider.
-
-The PostgreSQL ledger has a fixed ₹500 ceiling, initially allocated as ₹100 development, ₹200 indexing/evaluation, ₹100 reviewer use and ₹100 buffer. At most two provider operations run concurrently. Timed-out or interrupted calls retain uncertain reservations. Repeating a request identity returns its recorded result instead of initiating another paid call.
-
-Pricing is versioned using the official rates checked on September 30, 2026: $0.40/$1.60 per million generation input/output tokens and $0.02 per million embedding tokens. The default INR accounting conversion is a configurable fixed 90 INR/USD assumption. Reconcile provider charges and applicable fees separately; the ledger is an application allowance. Source pages: [generation model](https://developers.openai.com/api/docs/models/gpt-4.1-mini), [embedding model](https://developers.openai.com/api/docs/models/text-embedding-3-small).
-
-Publish a cutoff-bound corpus without spending, then explicitly index it:
-
-```sh
-cd backend
-uv run python -m flooreplay corpus-publish release-v1 --cutoff 2026-09-30T00:00:00+00:00 --owner owner
-uv run python -m flooreplay usage
-uv run python -m flooreplay corpus-index release-v1 --owner owner
-```
-
-Hybrid search uses exact cosine ranking and PostgreSQL lexical ranking, with up to 20 candidates each, reciprocal rank fusion constant 60 and five distinct incidents. The exact corpus manifest excludes the current lineage, unavailable revisions and evaluation-only cases. Seeding and migrations never index a corpus.
-
-Generation has task-specific contracts for investigations, answers, summaries, recovery and note assertions. The application renders selected metric values; generated prose cannot invent quantities. Citation validation proves source membership, while semantic support still requires human review. Historical Qwen artifacts remain labeled with their original provider and review records. They do not measure OpenAI quality. Active Qwen/Ollama clients, weights and the separate worker requirement have been removed.
-
-## Dataset and verification
-
-The release contains 180 additional episodes, with 120 historical, 30 development and 30 locked investigations across 24 evidence structures. Hidden synthetic truth and labels are separate from runtime observations. All 60 investigation cases pass frozen arithmetic and evidence-structure checks. Template/lineage leakage checks pass; independent semantic support and paraphrase review are pending. This is generator-author-reviewed synthetic material, with no manufacturing-expert validation.
-
-Tests use a separate database whose name ends in `_test`. Never point destructive test setup at the working database. CI supplies no provider key. It runs backend lint/types/tests, frontend lint/build, dependency audit, OpenAPI generation, saved-artifact consistency, browser tests and deployment configuration validation.
+CI checks backend lint, types, database behavior and dependencies. It also checks frontend lint, the build, dependencies and browser behavior, along with migrations, seed data, generated contracts and deployment configuration. Tests must use an isolated, disposable database whose name ends in `_test`.
 
 ```sh
 make verify
 make dataset-verify
 make e2e
+cd backend && uv audit --frozen
+cd frontend && pnpm audit --audit-level high
 ```
 
-See [RELEASE_STATUS.md](RELEASE_STATUS.md) for measured evidence and remaining release gates. The budgeted live evaluation command runs smoke, pilot and locked stages in order, stops on a blocking defect and preserves measured denominators:
+[Release status](RELEASE_STATUS.md) preserves historical results. [The final review](docs/final-review.md) records the current changes and separates static and advisory checks from pending runtime acceptance. Earlier public hosted checks do not verify the current working tree or authenticated production flows.
 
-```sh
-cd backend
-uv run python -m flooreplay eval-openai --owner owner --stage smoke
-uv run python -m flooreplay eval-openai --owner owner --stage pilot
-uv run python -m flooreplay eval-openai --owner owner --stage locked
-```
+The synthetic dataset, frozen challenge cases and saved provider receipts let reviewers inspect the software. Qualified independent human review of AI claims, factory validation and measurements of usefulness remain pending. A valid output schema or passing software test does not establish operational accuracy.
 
-Run the same progression with `--retrieval-mode hybrid --corpus release-v1` and output paths such as `evaluation/hybrid/openai-smoke.json`, `evaluation/hybrid/openai-pilot.json` and `evaluation/hybrid/openai-locked.json`. Each stage checkpoints its request identities before spending. Repeating the same command resumes the checkpoint and cannot silently repeat a billed request. A completed five-case smoke is required before the pilot, and a completed ten-case pilot before locked evaluation. Human claim-support labels must attach to the actual new responses. A valid schema does not establish semantic accuracy.
+## Optional provider configuration
 
-`make export-demo` generates the saved frontend bundles from backend reports through one command. `make generate-api` regenerates frontend request types from OpenAPI. The legacy coverage workflow is preserved in [COVERAGE_ARCHIVE.md](COVERAGE_ARCHIVE.md).
+Set `FLOORREPLAY_OPENAI_API_KEY` only in the backend environment. Generation uses the configured pinned model; embeddings use the configured embedding model with 512 dimensions. The browser bundle contains no provider key. The application enforces a fixed ₹500 allowance divided by purpose. It does not reconcile that allowance with provider billing.
 
-Human support annotations use `POST /api/v1/ai-runs/{run_id}/claim-review` with an authenticated session, a canonical claim path such as `claims.0`, `supported`, `rationale` and an idempotency key. Each annotation records the actor and exact output digest separately from the immutable draft. Current-provider metrics read durable evaluation runs and their annotations; independent dataset semantic review remains a separate pending gate.
+See [AI trust evaluation](docs/ai-trust-evaluation.md) for existing measurements and remaining gates. Seeding, migrations and the practice demo never initiate paid calls.
 
-## Improvement work
+## Deployment
 
-The product focuses on a supervisor investigating a sewing-line shortfall and coordinating the next checks. The September 30 improvement adds guided entry, a curated incident library with filters and pagination, separate status labels, revision comparisons, state-aware next checks, authenticated claim annotations and printable deterministic reports. The second pass adds assigned checks, source responses that publish immutable revisions, completion outcomes, separate incident resolution and shift handover, verified locally on October 1, 2026. The third pass adds downloadable synthetic CSV examples and explicit column mapping/defaults, verified locally on October 1, 2026. Cumulative conversion, XLSX and saved presets remain follow-up work. [PRODUCT.md](PRODUCT.md) states the workflow, [DEMO.md](DEMO.md) gives the current walkthrough, and [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) turns the supplied 36 ideas into deliverables and evidence gates. [Practitioner interviews](docs/practitioner-interview.md) and the [comparative pilot template](docs/comparative-pilot.md) are ready to use. They contain no interview findings or measured customer benefit.
-
-The improvement pass passes 178 backend tests, Ruff, mypy, frontend lint and build. Browser evidence covers 33 scenarios across a full run with 31 passing and focused reruns after two obsolete test assumptions were corrected. The final focused six-scenario run passes. OpenAI browser checks use simulated transport; these checks made no paid calls and do not establish semantic support or hosted acceptance. See [RELEASE_STATUS.md](RELEASE_STATUS.md) for the exact verification scope.
-
-See [assigned incident workflow](docs/incident-workflow.md) for account assignment, deadlines, manual escalation, response evidence, completion and resolution rules. Task metadata, assignee lists and outcomes require authentication. Submitted source responses become incident evidence visible in public synthetic demo reports. Confidential customer workspace separation remains a separate requirement before a real-data pilot.
-
-The October 1 assigned-workflow pass passes 183 backend tests, Ruff, mypy across 43 source files, frontend lint/build and the complete 41-scenario browser suite. The migration upgrade/downgrade/upgrade roundtrip passes. These are local acceptance results with no paid calls; hosted acceptance remains pending. The [release record](RELEASE_STATUS.md) preserves both improvement passes.
-
-See [CSV import mapping](docs/csv-import-mapping.md) and the [example sequence](frontend/public/import-examples/README.md) for baseline, output correction, operation and note imports.
-
-The [fresh trust challenge release](backend/evaluation/ai-trust-fresh-v1/README.md) freezes ten manually composed cases from an independent AI subagent. Its offline comparison ledger contains actual deterministic executions and pending evidence-only, lexical and hybrid generation slots. This is AI-authored synthetic evidence, not a human holdout or manufacturing validation. The [human claim-review protocol](docs/ai-claim-review-protocol.md) defines the remaining semantic review gate.
-
-The [actual smoke review packet](backend/evaluation/openai-smoke-review-packet-v1/README.md) exports five saved provider runs, four structured claims and 28 text units beside their source evidence and exact output identities. A preliminary AI review is separate from the pending qualified human review. It supplies no fresh-case results or human support score.
-
-The fourth pass adds an explicitly shared semantic-review inbox, exact-output judgments and assessments, a revised numeric grounding contract, observed precedent comparisons and a frozen four-mode evaluation harness. [AI trust evaluation](docs/ai-trust-evaluation.md) records the boundaries: qualified independent human review and fresh live AI comparisons remain pending. The separately labeled preliminary AI audit cannot establish human validation or practical AI benefit.
+Follow [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md) for Vercel, Render and Neon, or [DEPLOY.md](DEPLOY.md) for container verification, backups and recovery. Before deploying with real data, complete authenticated acceptance checks, confirm TLS and proxy settings, define backup ownership and retention, and assign an operational owner. This synthetic demonstration has not been validated for factory decisions.
 
 ## Engineering evidence
 
-Read the [technical case study](docs/technical-case-study.md) for architecture decisions, failures, verification results, actual hosted observations and measured local recovery. [Release evidence](RELEASE_STATUS.md) separates local private-workspace verification from pending authenticated hosted acceptance and unmeasured factory benefit.
+Read the [technical case study](docs/technical-case-study.md) for architecture decisions, failures, verification results, hosted observations and measured local recovery. [Release evidence](RELEASE_STATUS.md) records local private-workspace verification separately from pending authenticated hosted acceptance and factory benefit that has yet to be measured.

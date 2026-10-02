@@ -1,6 +1,6 @@
 # First-visit validation
 
-The guided entry and safe action demo are software features. Browser tests can prove that the controls work; they cannot prove an unfamiliar person understands the investigation. No visitor or supervisor study is recorded yet.
+No visitor or supervisor study is recorded yet. Browser tests can verify the guided entry and safe action demo controls, but understanding the investigation requires a study with people who have not used FloorReplay.
 
 ## Session
 
@@ -10,7 +10,7 @@ Give this prompt without explaining the interface:
 
 > Find what FloorReplay helps you do. Investigate the example delay, explain one supported finding and one unresolved question, then complete the safe action demonstration. Prepare a report for the next supervisor.
 
-Let the visitor work without narration. If assistance is needed, record its exact wording and where they became stuck. Do not turn assisted completion into independent completion.
+Let the visitor work without narration. If they need assistance, record exactly what you said and where they became stuck. Record completion with assistance separately from independent completion.
 
 ## Record
 
@@ -29,7 +29,7 @@ Let the visitor work without narration. If assistance is needed, record its exac
 | Report uncertainty and ownership understood | Pending |
 | Time, failed attempts and assistance | Pending |
 
-A successful session requires the participant to reach a cited finding, explain an uncertainty, complete the practice action and recognize that neither complete arithmetic nor a completed check proves a cause or incident resolution. Keep the participant's actual words and disagreements. Report failures and denominators, including incomplete sessions.
+A successful session requires the participant to reach a cited finding, explain an uncertainty and complete the practice action. They must also recognize that completing the arithmetic or a check does not prove a cause or resolve the incident. Keep the participant's actual words and disagreements. Report failures and denominators, including incomplete sessions.
 
 ## Supervisor report and language needs
 

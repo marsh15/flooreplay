@@ -1,10 +1,10 @@
 # Assigned evidence checks and incident outcomes
 
-This workflow extends proposal review with assigned work, source-linked responses, completion outcomes and a shift handover. The October 1, 2026 local acceptance checks pass. Hosted acceptance and practitioner validation remain separate gates. All factory examples remain synthetic.
+Use assigned checks to collect evidence for a proposal, record what happened after an action and prepare a shift handover. Local acceptance checks passed on October 1, 2026. Hosted acceptance and practitioner validation remain pending separately. All factory examples are synthetic.
 
 ## Assign a check
 
-Sign in as an owner or reviewer and open the latest analysis. Create a check from a proposal, select an active account as its assignee and set a future due time. The server derives the question and required response fields from the proposal. It rejects another open check for the same proposal in that incident.
+Sign in as an owner or reviewer and open the latest analysis. Create a check from a proposal, select an active account as its assignee and set a future due time. For a private incident, the assignee must belong to its workspace. The server derives the question and required response fields from the proposal. It rejects another open check for the same proposal in that incident.
 
 The check records the analysis and revision that motivated it. A check is separate from proposal approval. Approval records a judgment; a check records who must supply the missing evidence and what happens afterward.
 
@@ -18,9 +18,9 @@ The check records the analysis and revision that motivated it. A check is separa
 | COMPLETED | The action, actual completion time and assessment are recorded. | Include the outcome in handover and consider incident resolution separately. |
 | CANCELLED | The creator or owner cancelled the check with an explanation. | The audit history remains available. |
 
-An overdue label identifies a nonterminal check whose due time has passed. It does not change the check's status. Escalation is manual: the creator or owner reassigns the check or changes its deadline with a reason. The application does not send an automatic escalation message.
+An overdue label identifies a check that has passed its due time and has not been completed or cancelled. It does not change the check's status. Escalation is manual: the creator or owner reassigns the check or changes its deadline with a reason. The application does not send an automatic escalation message.
 
-The assignee or owner can start, respond to and complete a check. The creator or owner can cancel or reassign it. An authenticated reviewer can add comments, including after completion or cancellation. Terminal checks cannot change status, assignee or deadline. The server checks each permission and preserves the authenticated actor in append-only activity history.
+The assignee or owner can start, respond to and complete a check. The creator or owner can cancel or reassign it. An authenticated reviewer can add comments, including after completion or cancellation. Completed or cancelled checks cannot change status, assignee or deadline. The server checks each permission and preserves the authenticated actor in append-only activity history.
 
 ## Respond with evidence
 
@@ -46,12 +46,14 @@ New evidence makes a resolution against an older revision stale. The current wor
 
 ## Shift handover
 
-The handover combines the current situation and evidence cutoff with remaining uncertainties and outstanding checks. Each check has an owner, due time, status, overdue indication and activity history. Use it to identify what the next supervisor needs to do, then inspect the linked report and response records for detail.
+The handover shows the current situation, evidence cutoff, remaining uncertainties and outstanding checks. Each check has an owner, due time, status, overdue indication and activity history. Use it to identify what the next supervisor needs to do, then inspect the linked report and response records for detail.
 
 Do not describe the handover as complete if an unresolved question has no assigned check. The workflow records tasks inside FloorReplay; it does not demonstrate factory-system execution or external notifications.
 
 ## Access and interrupted requests
 
-Workflow reads, assignee lists and writes require an authenticated owner or reviewer. Anonymous visitors can still read synthetic incident reports. A submitted source response becomes incident evidence and appears in these public demo reports. Private task metadata does not make the incident or its response evidence private. This boundary protects task records and assignee lists; it is not a claim that private customer workspaces or confidential factory data are supported. Separate workspace confidentiality remains a prerequisite for a real-data pilot.
+Workflow reads, assignee lists and writes require an authenticated owner or reviewer. Anonymous visitors can read synthetic incident reports in the public demo workspace. Private incident records are restricted to workspace members, and linked checks, responses and activity inherit the incident's workspace.
 
-Keep an interrupted mutation's request identity and exact submitted fields when retrying. An identical retry returns the recorded result without repeating the work. A deliberate changed submission uses a new identity. Inspect the saved state before creating replacement work after an uncertain response.
+Record factory source responses in a private workspace. The HTTP API rejects responses to public demo incidents with PRIVATE_RESPONSE_REQUIRED, so a submitted observation cannot become public demo evidence through this workflow. These access controls still require authenticated hosted acceptance before a real-data pilot.
+
+Keep an interrupted mutation's request identity and exact submitted fields when retrying. An identical retry returns the recorded result without repeating the work. Use a new identity when deliberately changing a submission. Inspect the saved state before creating replacement work after an uncertain response.

@@ -1,1 +1,20 @@
-Generic single-database configuration.
+FloorReplay database migrations
+
+This directory contains the Alembic environment and revision scripts for the
+FloorReplay PostgreSQL schema. backend/alembic.ini points to this directory;
+env.py reads the database URL from the application settings and uses
+flooreplay.models.Base.metadata, including the registered account, workspace,
+review, operational receipt and paid-model tables.
+
+Configure FLOORREPLAY_DATABASE_URL for the target database. The local default
+is postgresql+psycopg://localhost:5433/flooreplay. From the repository root, run:
+
+    make migrate
+
+The equivalent command from backend is:
+
+    uv run alembic upgrade head
+
+Migrations update the schema. Load application fixtures separately with
+make seed from the repository root. See ../../README.md for local setup and
+../../DEVELOPMENT.md for the original coverage engine's development history.

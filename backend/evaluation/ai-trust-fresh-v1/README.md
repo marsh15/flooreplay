@@ -1,10 +1,10 @@
 # Fresh synthetic trust comparison
 
-The manifest freezes ten hand-composed challenge cases and a separate blind review rubric. An independent Codex subagent authored them without reading the existing generator templates or exposed development/locked cases. The author is an AI agent, not a manufacturing expert or independent human reviewer. This release is a synthetic challenge set, not a generalization estimate or customer validation.
+The manifest freezes ten hand-composed challenge cases and a separate blind review rubric. An independent Codex subagent wrote them without reading the existing generator templates or exposed development/locked cases. The author is an AI agent with no manufacturing expertise or independent human review role. This synthetic challenge set does not estimate generalization or validate the product with customers.
 
-Inputs froze before deterministic execution or validator exposure. Frozen file hashes appear in manifest.json. Do not edit the cases or rubric after exposure. Use a new release for changes, and report when these cases informed prompt/validator tuning. Keep blind-review-rubric.json out of generation packets.
+The inputs were frozen before deterministic execution or exposure to the validator. manifest.json records the frozen file hashes. Do not edit the cases or rubric after exposure. Put changes in a new release, and disclose any prompt/validator tuning informed by these cases. Keep blind-review-rubric.json out of generation packets.
 
-Run from backend:
+Run these commands from backend:
 
 ```sh
 uv run python -m flooreplay.trust_evaluation verify
@@ -12,7 +12,7 @@ uv run python -m flooreplay.trust_evaluation deterministic
 uv run python -m flooreplay.trust_evaluation report
 ```
 
-The checked-in results.jsonl contains ten actual local deterministic executions. The remaining thirty AI case/mode comparisons are PENDING until real stored generation receipts are imported. There are no paid calls or fabricated model results. Semantic review remains null.
+The checked-in results.jsonl records ten actual local deterministic executions. The remaining thirty AI case/mode comparisons stay PENDING until real stored generation receipts are imported. This release includes no paid calls or fabricated model results. Semantic review remains null.
 
 ## Import actual generation receipts
 
@@ -47,6 +47,6 @@ Use `uv run python -m flooreplay.trust_evaluation review-packet` to prepare exac
 
 ## First offline contract check and live execution
 
-The separately frozen offline candidates were authored by the same AI case author without inspecting the revised validator implementation. The first check accepts seven of ten and preserves three original failures: one numeric-prose failure and two uncited claims. This is not a live-provider or independent-human result. The validator digest in offline-contract-check.json remains unchanged after exposure; do not tune on this result and call it an untouched future holdout.
+The separately frozen offline candidates were authored by the same AI case author without inspecting the revised validator implementation. The first check accepts seven of ten candidates and preserves three original failures: one numeric-prose failure and two uncited claims. These results do not come from a live provider or independent human review. The validator digest in offline-contract-check.json remains unchanged after exposure; do not tune on this result and call it an untouched future holdout.
 
 The optional flooreplay.trust_live command requires an explicit experiment limit, existing owner/corpus and configured shared allowance. It refuses test databases, creates no allowance or index, preserves a fixed checkpoint envelope and does not repeat uncertain provider calls. Generation and hybrid query-embedding charges are recorded. Stored execution metadata marks cases locked and records an effective-payload digest separately, preserving frozen observations while preventing their reuse in public browsing or historical retrieval. See docs/ai-trust-evaluation.md for invocation and remaining human/live acceptance gates.
