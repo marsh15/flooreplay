@@ -110,3 +110,7 @@ The [fresh trust challenge release](backend/evaluation/ai-trust-fresh-v1/README.
 The [actual smoke review packet](backend/evaluation/openai-smoke-review-packet-v1/README.md) exports five saved provider runs, four structured claims and 28 text units beside their source evidence and exact output identities. A preliminary AI review is separate from the pending qualified human review. It supplies no fresh-case results or human support score.
 
 The fourth pass adds an explicitly shared semantic-review inbox, exact-output judgments and assessments, a revised numeric grounding contract, observed precedent comparisons and a frozen four-mode evaluation harness. [AI trust evaluation](docs/ai-trust-evaluation.md) records the boundaries: qualified independent human review and fresh live AI comparisons remain pending. The separately labeled preliminary AI audit cannot establish human validation or practical AI benefit.
+
+## Engineering evidence
+
+Read the [technical case study](docs/technical-case-study.md) for architecture decisions, failures, verification results, actual hosted observations and measured local recovery. [Release evidence](RELEASE_STATUS.md) separates local private-workspace verification from pending authenticated hosted acceptance and unmeasured factory benefit.

@@ -1,0 +1,113 @@
+{
+  "observed_at_utc": "2026-10-01T10:05:28.184532+00:00",
+  "api_url": "https://flooreplay-api.onrender.com/api/v1",
+  "frontend_url": "https://frontend-tau-khaki-26.vercel.app",
+  "expected_commit": "f5bab391dbfe5a892266fe158e81162d3af3b685",
+  "observed_api_build": "f5bab391dbfe5a892266fe158e81162d3af3b685",
+  "synthetic_analysis_id": "60fa6af3-18d7-407c-a3b1-0b87084f147f",
+  "status": "PUBLIC_CHECKS_PASSED_FULL_ACCEPTANCE_PENDING",
+  "checks": [
+    {
+      "check": "liveness",
+      "status": 200,
+      "passed": true,
+      "elapsed_ms": 397.61
+    },
+    {
+      "check": "database_readiness",
+      "status": 200,
+      "passed": true,
+      "elapsed_ms": 796.42
+    },
+    {
+      "check": "public_capabilities",
+      "status": 200,
+      "passed": true,
+      "elapsed_ms": 378.97
+    },
+    {
+      "check": "deployed_build_identity",
+      "passed": true,
+      "observed_build": "f5bab391dbfe5a892266fe158e81162d3af3b685",
+      "expected_build": "f5bab391dbfe5a892266fe158e81162d3af3b685"
+    },
+    {
+      "check": "public_synthetic_library",
+      "status": 200,
+      "passed": true,
+      "elapsed_ms": 1902.79
+    },
+    {
+      "check": "spa_delivery:/",
+      "status": 200,
+      "passed": true,
+      "elapsed_ms": 457.41
+    },
+    {
+      "check": "spa_delivery:/incidents/INC-001?revision=2",
+      "status": 200,
+      "passed": true,
+      "elapsed_ms": 438.15
+    },
+    {
+      "check": "spa_delivery:/evaluation",
+      "status": 200,
+      "passed": true,
+      "elapsed_ms": 121.76
+    },
+    {
+      "check": "anonymous_denial:/analyses/no-access/ai-runs",
+      "status": 401,
+      "passed": true,
+      "elapsed_ms": 305.45,
+      "failure_category": "SIGN_IN_REQUIRED"
+    },
+    {
+      "check": "anonymous_denial:/incidents/search/hybrid",
+      "status": 401,
+      "passed": true,
+      "elapsed_ms": 326.65,
+      "failure_category": "SIGN_IN_REQUIRED"
+    },
+    {
+      "check": "anonymous_denial:/incidents/imports/preview",
+      "status": 401,
+      "passed": true,
+      "elapsed_ms": 375.19,
+      "failure_category": "SIGN_IN_REQUIRED"
+    },
+    {
+      "check": "deterministic_synthetic_investigation",
+      "status": 200,
+      "passed": true,
+      "elapsed_ms": 642.39
+    },
+    {
+      "check": "saved_report_read",
+      "status": 200,
+      "passed": true,
+      "elapsed_ms": 930.35
+    },
+    {
+      "check": "cited_record_read",
+      "status": 200,
+      "passed": true,
+      "elapsed_ms": 347.29
+    }
+  ],
+  "paid_calls": 0,
+  "pending": [
+    "authenticated owner/reviewer login",
+    "workspace permissions on deployed sixth-priority build",
+    "private synthetic imports/reviews/exports",
+    "hosted restart persistence",
+    "browser fallback/deep-link rendering",
+    "hosted sixth-priority release acceptance"
+  ],
+  "limitations": [
+    "SPA HTTP delivery does not establish rendered browser behavior.",
+    "This creates one deterministic synthetic report; no import or paid generation is dispatched.",
+    "Build identity is server-declared and checked against supplied Git deployment commit.",
+    "This is an observation of the deployed commit, not acceptance of undeployed local changes."
+  ]
+}

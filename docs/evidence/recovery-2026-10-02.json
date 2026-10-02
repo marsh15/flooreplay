@@ -1,0 +1,191 @@
+{
+  "recorded_at": "2026-10-02T08:34:24.566518+00:00",
+  "scope": "Local isolated recovery drill; not a production backup or hosted restart proof",
+  "source_database": "flooreplay_recovery_source_20261002083404_test",
+  "restored_database": "flooreplay_recovery_restore_20261002083404_test",
+  "source_origin": "flooreplay_trust_test",
+  "source_origin_modified": false,
+  "synthetic_fixtures": [
+    "recovery-synthetic-spend",
+    "recovery-synthetic-run",
+    "recovery-synthetic-review",
+    "recovery-synthetic-vector"
+  ],
+  "provider_calls": 0,
+  "archive_bytes": 299734,
+  "archive_sha256": "8db38e23b49dc992b0404374732eadade2470ae599098bd34dece82fcff821b5",
+  "dump_seconds": 0.373,
+  "restore_seconds": 0.609,
+  "verification_seconds": 3.197,
+  "total_drill_seconds": 19.976,
+  "tables": {
+    "access_limits": {
+      "rows": 16,
+      "sha256": "a49c1e81489a62b5e23c9452cbb770187ca18fc48c3428f8a4823bbbc2d307d7"
+    },
+    "accounts": {
+      "rows": 14,
+      "sha256": "323a71aada7d09d622b78df9b50daccefa642d1b892c2ffa35b6ae9ab82c2f36"
+    },
+    "ai_claim_reviews": {
+      "rows": 1,
+      "sha256": "b42643eb0b81c4388cf17ef090d2850cf220a093c3dde1612dd0ff085fcd4642"
+    },
+    "ai_review_publications": {
+      "rows": 1,
+      "sha256": "d50003cd303c2d38831f114188e496d6da620c3d8d7ba6a9ba81abb3a97aa1b5"
+    },
+    "ai_run_assessments": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "ai_runs": {
+      "rows": 2,
+      "sha256": "6d0a4d2557e4a990d86ea26022f4ead2f89a7f7d9691c7b8f89e52a1bcbab254"
+    },
+    "alembic_version": {
+      "rows": 1,
+      "sha256": "db52426d8f54b4e6e064a2bb5eaacf8cb2fa1c44b56e75f87669bae2d28f114d"
+    },
+    "auth_sessions": {
+      "rows": 15,
+      "sha256": "0c174032f007dc3eb63eb5a042b80900e0ad5be5cb93e4a3bd7c513b497d022e"
+    },
+    "catalog_revisions": {
+      "rows": 1,
+      "sha256": "68ab1f8f2dc2f222d9df0c708bf282a2fee9d743f376fcf8d75f1704f85501a9"
+    },
+    "comparison_reports": {
+      "rows": 5,
+      "sha256": "f37c45e60d5a17f3f44923953ec871d9f28d8bd31b186c89152c669c8d68da52"
+    },
+    "corpus_releases": {
+      "rows": 2,
+      "sha256": "2bd409c1f9960bb61d1571dfc32fe2f0ecb4eaee21f0f131f928e4b1eb8afd90"
+    },
+    "embedding_artifacts": {
+      "rows": 1,
+      "sha256": "c662bfebf0283fe603e55f54206c887ac0c21a9403385323ab571f9e0b75992c"
+    },
+    "execution_configurations": {
+      "rows": 3,
+      "sha256": "70bdc994ae17e6b32750ccb54bd8160e9126663b042e69754877a24e0da9aaa2"
+    },
+    "expectation_revisions": {
+      "rows": 120,
+      "sha256": "e1f151a391322d67a40e884b51fb8d54306ee6c81d67677b85e59f1af370f79a"
+    },
+    "import_audits": {
+      "rows": 1,
+      "sha256": "a05bf750ca51f66bb85576767d94f13c54fb8540470bad90888c84c0ebaeca16"
+    },
+    "incident_analyses": {
+      "rows": 12,
+      "sha256": "147e637c0099c4ee527691d8d13507b036e83946b001fd7dda22b9ea28d948be"
+    },
+    "incident_checks": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "incident_model_jobs": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "incident_resolutions": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "incident_reviews": {
+      "rows": 2,
+      "sha256": "f041283605d06bbdd4dd29528f56a57b45716362be00a067072881c38c8320a3"
+    },
+    "incident_revisions": {
+      "rows": 195,
+      "sha256": "03fc34b77cdd89910d9310cc6f0c4f0719b8417f90b06c590e86bc3e74202981"
+    },
+    "incident_source_artifacts": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "incident_workflow_activities": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "incident_workflow_receipts": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "operational_events": {
+      "rows": 276,
+      "sha256": "2bf0eb7ca39fd68091a2695d79a93b830117630d537ad16b4ed1ec6185cc8b22"
+    },
+    "parser_calls": {
+      "rows": 1,
+      "sha256": "ca152e123a334f11e09f73b907f9f566ba031de6a5fe12d07fb0c9dfa924654a"
+    },
+    "replay_attempts": {
+      "rows": 22,
+      "sha256": "5bb304f7810dfb890444ed573c1f8f84714fc0536ac8454878c380b5ccf00ad0"
+    },
+    "retrieval_runs": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "review_checks": {
+      "rows": 5,
+      "sha256": "0292d1098ce23175f5e142f3cf1977b5965a982c2cbf116918fd0d0dd1ed68d7"
+    },
+    "scenario_revisions": {
+      "rows": 40,
+      "sha256": "a6eb4e77fcde36e34c83926c79f49a7a0762bd40cf6fcf92e7e56aa5c487970f"
+    },
+    "source_snapshots": {
+      "rows": 132,
+      "sha256": "ba4fc6fc71dfbd92d55aa5a81567614b72951e62fc0790c29ef301a5db5d20bf"
+    },
+    "spend_entries": {
+      "rows": 1,
+      "sha256": "639b708927f0641d9b972940df3f50a093bed0a2212db78314e3c9a2883a2be7"
+    },
+    "spending_allocations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "suite_revisions": {
+      "rows": 1,
+      "sha256": "af277130d8a7611fad9968779bf5d9c9db99ff3ddfd84be7cce8c129526fa19f"
+    },
+    "workspace_members": {
+      "rows": 12,
+      "sha256": "5f6f2d075bc2da7d8c37abb740edfbdcac90a56cf683f68888dd6c5d77595a22"
+    },
+    "workspaces": {
+      "rows": 8,
+      "sha256": "ea07034acaab887ec52db22da19e7b956672a5ab16ea6ee092bdaec5c548f333"
+    }
+  },
+  "all_table_contents_equal": true,
+  "required_nonempty_tables": [
+    "incident_revisions",
+    "accounts",
+    "incident_reviews",
+    "ai_claim_reviews",
+    "embedding_artifacts",
+    "spend_entries"
+  ],
+  "passed": true,
+  "rollback": {
+    "status": "pending",
+    "reason": "Run the compatible prior application against this restored database; schema downgrade is not a rollback drill"
+  },
+  "limitations": [
+    "One local PostgreSQL instance",
+    "No point-in-time recovery",
+    "No production volume or load",
+    "Synthetic paid receipts and vector; no real provider billing validation",
+    "Backup encryption and remote retention are not tested",
+    "This preliminary drill predates the final reviewed code commit and compatible application rollback."
+  ],
+  "base_commit": "04e04665275ca13110df3d5cb73d846e476c49a9",
+  "code_state": "Uncommitted sixth-priority working tree; base commit is not the schema implementation commit"
+}

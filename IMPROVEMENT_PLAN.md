@@ -49,12 +49,12 @@ The number maps to the original review. "Now" means a bounded deliverable in the
 | 28. Hide evaluation fixtures | Implemented | Curated library, engineering view, pagination and line/date/evidence/assignee/open-action filters | Workflow filters require sign-in and do not expose private ownership in public browsing |
 | 29. Safe interactive demo | Implemented; visitor validation pending | Explicit browser-only guided simulation with evidence inspection, assignment, outcome and reset | No account, shared mutation or provider request; unfamiliar human completion still needs observation |
 | 30. Supervisor exports | Implemented; supervisor validation pending | Readable printable findings, evidence, uncertainty and authorized action ownership; pinned report and latest workflow separately identified | Print/mobile checks establish rendering; outside-app usefulness and Tamil terminology needs require supervisors |
-| 31. Hosted acceptance | External | Dated commit/URL report for login, roles, import, review, export and recovery | Actual authenticated hosted observations, not configuration tests |
-| 32. Monitoring | Next | Searchable operation IDs, failures, latency, import health and allowance | Injected failure can be traced; actionable alert destination configured |
-| 33. Long-running operations | Next | Inspect current durable requests under interruption/concurrency | Add worker only if evidence warrants it; no duplicate possibly billed request |
-| 34. Recovery drill | External | Restore isolated database and compatible rollback | Revisions, accounts, annotations, embeddings and ledger verified; elapsed recovery recorded |
-| 35. Private factory data | Next, before pilot | Demo/private workspace separation with read/export/search enforcement | Cross-workspace denial tests pass before confidential data ingestion |
-| 36. Technical case study | External | Problem, decisions, failures, outcomes and contribution with artifact links | Publish actual findings after interviews, acceptance and pilot |
+| 31. Hosted acceptance | Public deployed checks recorded; authenticated/restart acceptance pending | Dated commit/URL report for login, roles, import, review, export and recovery | Actual authenticated hosted observations, not configuration tests |
+| 32. Monitoring | Implemented locally; external alert delivery pending | Searchable operation IDs, failures, latency, import health and allowance | Injected failure can be traced; actionable alert destination configured |
+| 33. Long-running operations | Verified bounded request path and uncertain recovery; no queue added | Inspect current durable requests under interruption/concurrency | Add worker only if evidence warrants it; no duplicate possibly billed request |
+| 34. Recovery drill | Local restore and compatible API rollback recorded | Restore isolated database and compatible rollback | Revisions, accounts, annotations, embeddings and ledger verified; elapsed recovery recorded |
+| 35. Private factory data | Local boundary verified; hosted pilot acceptance pending | Demo/private workspace separation with read/export/search enforcement | Cross-workspace denial tests pass before confidential data ingestion |
+| 36. Technical case study | Evidence-based case study prepared for publication; human/pilot outcomes absent | Problem, decisions, failures, outcomes and contribution with artifact links | Publish actual findings after interviews, acceptance and pilot |
 
 ## Evidence rules
 
@@ -77,3 +77,7 @@ A fourth pass freezes ten independently AI-authored cases before validator expos
 ## Fifth-priority usability
 
 The fifth pass completes the safe first-visit simulation, work filters, explicit investigation/action states and supervisor print summary. The simulation uses synthetic practice data and cannot modify a shared incident. It is not private factory workspace isolation. Authenticated workflow details remain separate from public source evidence and from immutable report revisions. No Tamil translation is added without evidence of language needs and agreed terminology. Use the [first-visit protocol](docs/first-visit-validation.md) to establish human comprehension and report usefulness; implementation and automated navigation alone do not satisfy those human gates.
+
+## Sixth-priority production ownership
+
+The private workspace boundary, opaque factory-local identities, scoped retrieval/review, request receipts, in-app alerts and interrupted-operation inspection are implemented. Verified local restore and API rollback receipts are linked in [recovery evidence](docs/recovery-drill.md). The [technical case study](docs/technical-case-study.md) distinguishes software evidence from unmeasured customer benefit. Actual public hosted checks are dated and tied to `f5bab391`; authenticated hosted flows and restart persistence still need a designated acceptance account/environment. External alert delivery, hosted verification of the new private boundary, frontend asset rollback and production-scale recovery remain separate gates.
