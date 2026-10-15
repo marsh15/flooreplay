@@ -10,6 +10,7 @@ Artifacts produced by the recording:
 - `incident-workbench.png`: deterministic workbench screenshot.
 - `evaluation.png`: release integrity and historical evaluation screenshot.
 - `recording-manifest.json`: incident and analysis identity, cutoff and verification limits.
+- `flooreplay-demo.mp4` and `flooreplay-demo.gif`: a 20-second launch video of the redesigned workbench (1920x1080, 30fps, with music) and its looping preview for the repository README. Both show the saved synthetic report with the API unavailable and were rendered from the running app.
 
 Historical Qwen output is labeled as an archive and does not establish OpenAI quality. This recording verifies the local browser workflow. Actual OpenAI generation, embeddings, independent semantic review and a hosted smoke test each require separate evidence.
 
