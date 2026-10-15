@@ -28,7 +28,7 @@ function StatusChip({ status }: { status: string }) {
         ? 'border-amber-600/30 bg-amber-500/15 text-amber-900'
         : 'border-zinc-300 bg-zinc-100 text-zinc-600'
   return (
-    <Badge variant="outline" className={cn('text-[10px]', tone)}>
+    <Badge variant="outline" className={cn('text-xs', tone)}>
       {status.toLowerCase()}
     </Badge>
   )

@@ -126,7 +126,7 @@ export function LibraryPage() {
                           {item.scenario_id}@{item.revision}
                         </Mono>
                         {Array.from(new Set(item.tags)).map((tag) => (
-                          <Badge key={tag} variant="secondary" className="px-1.5 text-[10px]">
+                          <Badge key={tag} variant="secondary" className="px-1.5 text-xs">
                             {tag}
                           </Badge>
                         ))}

@@ -58,7 +58,7 @@ function IssueList({ issues }: { issues: { code: string; severity: string; messa
           <Badge
             variant="secondary"
             className={cn(
-              'h-auto px-1 py-0 text-[10px]',
+              'h-auto px-1 py-0 text-xs',
               issue.severity === 'BLOCKING' &&
                 'border border-red-600/30 bg-red-600/10 text-red-800',
               issue.severity === 'WARNING' &&
@@ -386,7 +386,7 @@ export function ImportsPage() {
                       <TableCell>
                         <Mono className="text-zinc-600">{row.row}</Mono>
                       </TableCell>
-                      <TableCell className="font-mono text-[11px] text-zinc-500">
+                      <TableCell className="font-mono text-xs text-zinc-500">
                         {Object.entries(row.raw)
                           .filter(([, value]) => value !== '')
                           .map(([key, value]) => (
@@ -395,14 +395,14 @@ export function ImportsPage() {
                             </span>
                           ))}
                       </TableCell>
-                      <TableCell className="font-mono text-[11px]">
+                      <TableCell className="font-mono text-xs">
                         {Object.entries(row.normalized).map(([key, value]) => (
                           <span key={key} className="mr-2 inline-block">
                             {key}=<span className="font-semibold">{value}</span>
                           </span>
                         ))}
                         {row.normalizations.length > 0 ? (
-                          <span className="mt-0.5 block text-[10px] text-blue-700">
+                          <span className="mt-0.5 block text-xs text-blue-700">
                             {row.normalizations.join('; ')}
                           </span>
                         ) : null}

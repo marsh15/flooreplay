@@ -1,7 +1,9 @@
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router'
+import { Route, Routes, useLocation } from 'react-router'
 
 import { AppShell } from '@/components/AppShell'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { NotFoundPage } from '@/pages/NotFound'
 const IncidentDemoPage = lazy(() =>
   import('@/pages/IncidentDemo').then((module) => ({ default: module.IncidentDemoPage })),
 )
@@ -43,24 +45,34 @@ const WorkspacesPage = lazy(() =>
 )
 
 function App() {
+  const { pathname } = useLocation()
   return (
     <AppShell>
-      <Suspense fallback={<p role="status">Loading page…</p>}>
-        <Routes>
-          <Route path="/operations" element={<OperationsPage />} />
-          <Route path="/workspaces" element={<WorkspacesPage />} />
-          <Route path="/" element={<IncidentLibraryPage />} />
-          <Route path="/demo" element={<IncidentDemoPage />} />
-          <Route path="/incidents/imports" element={<IncidentImportsPage />} />
-          <Route path="/incidents/:id" element={<IncidentWorkbenchPage />} />
-          <Route path="/evaluation" element={<IncidentEvaluationPage />} />
-          <Route path="/coverage" element={<LibraryPage />} />
-          <Route path="/coverage/workbench" element={<WorkbenchPage />} />
-          <Route path="/coverage/notes" element={<NotesPage />} />
-          <Route path="/coverage/imports" element={<ImportsPage />} />
-          <Route path="/coverage/comparison" element={<ComparisonPage />} />
-        </Routes>
-      </Suspense>
+      <ErrorBoundary key={pathname}>
+        <Suspense
+          fallback={
+            <p role="status" className="text-sm text-muted-foreground">
+              Loading page…
+            </p>
+          }
+        >
+          <Routes>
+            <Route path="/operations" element={<OperationsPage />} />
+            <Route path="/workspaces" element={<WorkspacesPage />} />
+            <Route path="/" element={<IncidentLibraryPage />} />
+            <Route path="/demo" element={<IncidentDemoPage />} />
+            <Route path="/incidents/imports" element={<IncidentImportsPage />} />
+            <Route path="/incidents/:id" element={<IncidentWorkbenchPage />} />
+            <Route path="/evaluation" element={<IncidentEvaluationPage />} />
+            <Route path="/coverage" element={<LibraryPage />} />
+            <Route path="/coverage/workbench" element={<WorkbenchPage />} />
+            <Route path="/coverage/notes" element={<NotesPage />} />
+            <Route path="/coverage/imports" element={<ImportsPage />} />
+            <Route path="/coverage/comparison" element={<ComparisonPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </AppShell>
   )
 }

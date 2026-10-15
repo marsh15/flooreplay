@@ -53,7 +53,7 @@ function EvidenceChip({
     <button
       type="button"
       onClick={() => onOpen(evidence)}
-      className="inline-flex items-center rounded border border-zinc-300 bg-white px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 transition-colors hover:border-zinc-400 hover:text-zinc-900 focus-visible:outline-2"
+      className="inline-flex items-center rounded border border-zinc-300 bg-white px-1.5 py-0.5 font-mono text-xs text-zinc-600 transition-colors hover:border-zinc-400 hover:text-zinc-900 focus-visible:outline-2"
       title={`Open ${evidence.snapshot_id}`}
     >
       {evidence.snapshot_id === 'event' ? 'event' : evidence.snapshot_id.replace('SNAP-', '')}
@@ -547,7 +547,7 @@ export function WorkbenchPage() {
                           >
                             <div className="flex flex-wrap items-center gap-2">
                               <Mono className="font-semibold text-zinc-700">{issue.code}</Mono>
-                              <Badge variant="secondary" className="text-[10px]">
+                              <Badge variant="secondary" className="text-xs">
                                 {issue.severity}
                               </Badge>
                               {issue.subject ? (

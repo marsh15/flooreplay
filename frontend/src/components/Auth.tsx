@@ -73,14 +73,14 @@ export function SignInControl() {
 
   if (user)
     return (
-      <div className="flex flex-wrap items-center justify-end gap-3 text-xs">
+      <div className="flex flex-wrap items-center justify-end gap-3 text-sm">
         <span className="text-right">
-          <span className="font-medium">{user.display_name}</span>
-          <span className="ml-2 text-muted-foreground"> · {user.role}</span>
+          <span className="font-medium text-board-foreground">{user.display_name}</span>
+          <span className="ml-2 text-board-muted"> · {user.role}</span>
         </span>
         <Button
           size="sm"
-          variant="outline"
+          variant="board"
           disabled={pending}
           onClick={async () => {
             setPending(true)
@@ -105,7 +105,7 @@ export function SignInControl() {
       }}
     >
       <Popover.Trigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="board">
           <LogIn aria-hidden="true" />
           Sign in
         </Button>
@@ -120,7 +120,7 @@ export function SignInControl() {
           sideOffset={10}
           collisionPadding={16}
           aria-labelledby="sign-in-heading"
-          className="z-50 w-[min(22rem,calc(100vw-2rem))] rounded-xl bg-popover p-5 text-popover-foreground shadow-[0_8px_32px_-8px_rgba(24,35,30,0.22)] outline-none"
+          className="z-50 w-[min(22rem,calc(100vw-2rem))] rounded-md border border-border bg-popover p-5 text-popover-foreground shadow-[0_12px_32px_-12px_rgba(20,24,40,0.35)] outline-none"
         >
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
@@ -155,7 +155,7 @@ export function SignInControl() {
               }
             }}
           >
-            <label className="block space-y-1.5 text-xs font-medium">
+            <label className="block space-y-1.5 text-sm font-medium">
               <span>Username</span>
               <Input
                 ref={usernameInput}
@@ -166,7 +166,7 @@ export function SignInControl() {
                 disabled={pending}
               />
             </label>
-            <label className="block space-y-1.5 text-xs font-medium">
+            <label className="block space-y-1.5 text-sm font-medium">
               <span>Password</span>
               <Input
                 type="password"
@@ -180,7 +180,7 @@ export function SignInControl() {
             {error && (
               <p
                 role="alert"
-                className="rounded-md bg-red-50 p-3 text-xs leading-relaxed text-red-800"
+                className="rounded-md bg-danger p-3 text-sm leading-relaxed text-danger-foreground"
               >
                 {error}
               </p>

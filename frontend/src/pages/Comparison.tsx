@@ -62,7 +62,7 @@ function SidePanel({ title, side }: { title: string; side: ComparisonSide }) {
       <p className="text-sm font-semibold text-zinc-800">{title}</p>
       <div className="mt-1.5 flex flex-wrap items-center gap-2">
         {side.outcome ? <OutcomeBadge outcome={side.outcome} /> : null}
-        <Badge variant="secondary" className="text-[10px]">
+        <Badge variant="secondary" className="text-xs">
           expectation {side.verdict.toLowerCase()}
         </Badge>
         {side.operator ? (
@@ -369,7 +369,7 @@ export function ComparisonPage() {
                         <Mono className="ml-1 text-zinc-600">{item.scenario_id}</Mono>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className="text-[10px]">
+                        <Badge variant="secondary" className="text-xs">
                           {item.category}
                         </Badge>
                       </TableCell>
@@ -379,7 +379,7 @@ export function ComparisonPage() {
                           {item.behavior_changed ? (
                             <Badge
                               variant="outline"
-                              className="border-blue-600/25 bg-blue-600/10 text-[10px] text-blue-800"
+                              className="border-blue-600/25 bg-blue-600/10 text-xs text-blue-800"
                             >
                               behavior changed
                             </Badge>
@@ -391,7 +391,7 @@ export function ComparisonPage() {
                           {item.baseline.outcome ? (
                             <OutcomeBadge outcome={item.baseline.outcome} />
                           ) : null}
-                          <Badge variant="secondary" className="text-[10px]">
+                          <Badge variant="secondary" className="text-xs">
                             {item.baseline.verdict.toLowerCase()}
                           </Badge>
                         </div>
@@ -401,7 +401,7 @@ export function ComparisonPage() {
                           {item.candidate.outcome ? (
                             <OutcomeBadge outcome={item.candidate.outcome} />
                           ) : null}
-                          <Badge variant="secondary" className="text-[10px]">
+                          <Badge variant="secondary" className="text-xs">
                             {item.candidate.verdict.toLowerCase()}
                           </Badge>
                         </div>
@@ -459,13 +459,13 @@ export function ComparisonPage() {
                   {entry.baseline_config_id.replace('CFG-', '')} →{' '}
                   {entry.candidate_config_id.replace('CFG-', '')}
                 </Mono>
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-xs">
                   pass {entry.totals.unchanged_pass}
                 </Badge>
                 {entry.totals.fixed > 0 ? (
                   <Badge
                     variant="secondary"
-                    className="border border-emerald-600/30 bg-emerald-600/10 text-[10px] text-emerald-800"
+                    className="border border-emerald-600/30 bg-emerald-600/10 text-xs text-emerald-800"
                   >
                     fixed {entry.totals.fixed}
                   </Badge>
@@ -473,7 +473,7 @@ export function ComparisonPage() {
                 {entry.totals.regression > 0 ? (
                   <Badge
                     variant="secondary"
-                    className="border border-red-600/30 bg-red-600/10 text-[10px] text-red-800"
+                    className="border border-red-600/30 bg-red-600/10 text-xs text-red-800"
                   >
                     regression {entry.totals.regression}
                   </Badge>

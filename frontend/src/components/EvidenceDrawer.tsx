@@ -151,7 +151,7 @@ export function EvidenceDrawer({
                                 <>
                                   <Mono>{String(row[column] ?? '')}</Mono>
                                   {highlighted && (
-                                    <span className="ml-2 inline-block rounded border border-amber-200 px-1.5 py-0.5 text-[10px] font-medium text-amber-950">
+                                    <span className="ml-2 inline-block rounded border border-amber-200 px-1.5 py-0.5 text-xs font-medium text-amber-950">
                                       Referenced
                                     </span>
                                   )}
