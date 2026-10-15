@@ -11,6 +11,7 @@ import { formatInstant } from '@/lib/status'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/board'
 
 const PAGE_SIZE = 12
 const incidentLink = (item: Pick<IncidentSummary, 'id' | 'revision'>) =>
@@ -103,66 +104,69 @@ export function IncidentLibraryPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
   const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
-  const selectClass = 'min-h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm'
+  const selectClass = 'h-10 w-full rounded-md border border-input bg-card px-3 text-sm'
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-zinc-200 pb-5">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Incident library</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
-            Understand a production delay, check its source records, and decide what needs human
-            follow-up.
-          </p>
-        </div>
-        <span className="text-xs leading-5 text-zinc-600">
-          Demo examples use synthetic data · deterministic analysis
-        </span>
-      </div>
+      <PageHeader
+        title="Incident library"
+        actions={
+          <span className="text-sm leading-6 text-muted-foreground">
+            Demo examples use synthetic data · deterministic analysis
+          </span>
+        }
+      >
+        <p className="mt-2 max-w-2xl text-base leading-7 text-muted-foreground">
+          Understand a production delay, check its source records, and decide what needs human
+          follow-up.
+        </p>
+      </PageHeader>
 
       {hero && (
         <section
           aria-labelledby="first-investigation"
-          className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 sm:p-6"
+          className="rounded-sm border-2 border-foreground bg-card p-5 sm:p-6"
         >
-          <h2 id="first-investigation" className="text-lg font-semibold tracking-tight">
+          <h2 id="first-investigation" className="text-xl font-bold font-stretch-semi-condensed">
             Start with one production delay
           </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
+          <p className="mt-2 max-w-3xl text-base leading-7 text-muted-foreground">
             Line S4 started late. Follow the recorded output, inspect the fabric-transfer evidence,
             and compare what was known before and after a later maintenance update.
           </p>
-          <ol className="my-4 grid gap-3 text-sm text-zinc-700 sm:grid-cols-3">
+          <ol className="my-4 grid gap-3 text-sm text-foreground sm:grid-cols-3">
             <li>
-              <span className="font-medium">1. Measure the gap.</span> Compare planned and recorded
-              good units.
+              <span className="font-semibold">1. Measure the gap.</span> Compare planned and
+              recorded good units.
             </li>
             <li>
-              <span className="font-medium">2. Check the explanation.</span> Open the cited records
-              and missing sources.
+              <span className="font-semibold">2. Check the explanation.</span> Open the cited
+              records and missing sources.
             </li>
             <li>
-              <span className="font-medium">3. Choose a next check.</span> Review the evidence
+              <span className="font-semibold">3. Choose a next check.</span> Review the evidence
               before approving a proposal.
             </li>
           </ol>
-          <Link
-            to={incidentLink(hero)}
-            className="inline-flex min-h-10 items-center gap-2 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2"
-          >
-            Start the example investigation
-            <ArrowUpRight aria-hidden="true" className="size-4" />
-          </Link>
+          <Button asChild size="lg">
+            <Link to={incidentLink(hero)}>
+              Start the example investigation
+              <ArrowUpRight aria-hidden="true" className="size-4" />
+            </Link>
+          </Button>
           <div className="mt-4">
-            <Link to="/demo" className="text-sm font-medium underline underline-offset-4">
+            <Link
+              to="/demo"
+              className="text-sm font-semibold text-primary underline underline-offset-4"
+            >
               Try the safe action demo
             </Link>
-            <p className="mt-1 text-xs leading-5 text-zinc-600">
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
               No account needed. Complete a browser-only simulation and reset it without changing
               shared records.
             </p>
           </div>
-          <p className="mt-3 text-xs leading-5 text-zinc-600">
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
             The knowledge cutoff means “records available by this time.” Later information stays in
             a separate revision. Finish by checking whether the proposed next step is supported; a
             complete calculation does not confirm a cause or resolve an incident.
@@ -171,11 +175,14 @@ export function IncidentLibraryPage() {
       )}
 
       {!hero && (
-        <section className="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
-          <Link to="/demo" className="text-sm font-medium underline underline-offset-4">
+        <section className="rounded-sm border-2 border-foreground bg-card p-5">
+          <Link
+            to="/demo"
+            className="text-sm font-semibold text-primary underline underline-offset-4"
+          >
             Try the safe action demo
           </Link>
-          <p className="mt-1 text-xs leading-5 text-zinc-600">
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
             No account needed. Complete a browser-only simulation and reset it without changing
             shared records.
           </p>
@@ -184,13 +191,16 @@ export function IncidentLibraryPage() {
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="w-full max-w-sm">
-          <label htmlFor="incident-search" className="mb-1 block text-xs font-medium text-zinc-700">
+          <label
+            htmlFor="incident-search"
+            className="mb-1 block text-sm font-semibold text-foreground"
+          >
             Search incident evidence
           </label>
           <div className="relative">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500"
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
               className="pl-9"
@@ -203,20 +213,19 @@ export function IncidentLibraryPage() {
           </div>
         </div>
         {capabilities.data?.imports_enabled && (
-          <Link
-            to="/incidents/imports"
-            className="inline-flex min-h-10 items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus-visible:outline-2"
-          >
-            Import incident evidence
-            <ArrowUpRight aria-hidden="true" className="size-4" />
-          </Link>
+          <Button asChild variant="outline" size="lg">
+            <Link to="/incidents/imports">
+              Import incident evidence
+              <ArrowUpRight aria-hidden="true" className="size-4" />
+            </Link>
+          </Button>
         )}
       </div>
 
       {saved && (
         <div
           role="status"
-          className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
+          className="rounded-sm border border-limit-border bg-limit p-3 text-sm text-limit-foreground"
         >
           API unavailable. Showing bundled saved demo cases. The example investigation is available
           offline. Live search, review, and OpenAI drafts are unavailable.
@@ -230,16 +239,18 @@ export function IncidentLibraryPage() {
           <Skeleton className="h-16" />
         </div>
       ) : incidents.isError ? (
-        <div role="alert" className="rounded border border-red-200 bg-red-50 p-5">
-          <h2 className="text-sm font-semibold text-red-900">Incident library unavailable</h2>
-          <p className="mt-1 text-sm text-red-800">{incidents.error.message}</p>
+        <div role="alert" className="rounded-sm border border-danger-border bg-danger p-5">
+          <h2 className="text-sm font-semibold text-danger-foreground">
+            Incident library unavailable
+          </h2>
+          <p className="mt-1 text-sm text-danger-foreground">{incidents.error.message}</p>
           <Button className="mt-3" size="sm" variant="outline" onClick={() => incidents.refetch()}>
             Retry
           </Button>
         </div>
       ) : query.trim() ? (
         saved ? (
-          <div className="rounded border border-dashed border-amber-300 bg-white p-5 text-sm text-zinc-700">
+          <div className="rounded-sm border border-dashed border-limit-border bg-card p-5 text-sm text-foreground">
             Live search is unavailable while the API is offline. Clear the search to browse the
             saved cases.{' '}
             <Button size="sm" variant="outline" className="mt-3 block" onClick={() => setQuery('')}>
@@ -251,38 +262,38 @@ export function IncidentLibraryPage() {
         ) : search.isError ? (
           <div
             role="alert"
-            className="rounded border border-red-200 bg-red-50 p-5 text-sm text-red-800"
+            className="rounded-sm border border-danger-border bg-danger p-5 text-sm text-danger-foreground"
           >
             Live search unavailable: {search.error.message}
           </div>
         ) : searchItems.length ? (
           <div className="space-y-2">
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               {searchItems.length} retrieved results matching the current library view and filters.
               Search retrieves a limited set from the historical evidence corpus.
             </p>
             {searchItems.map((item) => (
               <article
                 key={`${item.id}-${item.revision}`}
-                className="rounded border border-zinc-200 bg-white p-4"
+                className="rounded-sm border border-border bg-card p-4"
               >
                 <Link
-                  className="text-sm font-medium underline underline-offset-4"
+                  className="text-sm font-semibold text-primary underline underline-offset-4"
                   to={incidentLink(item)}
                 >
                   {item.title}
                 </Link>
-                <p className="mt-1 text-xs text-zinc-600">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {item.line} · {item.match_reason}
                 </p>
                 {item.differences.length > 0 && (
-                  <p className="mt-1 text-xs text-zinc-500">{item.differences.join(' ')}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{item.differences.join(' ')}</p>
                 )}
               </article>
             ))}
           </div>
         ) : (
-          <div className="rounded border border-dashed border-zinc-300 bg-white p-5 text-sm text-zinc-600">
+          <div className="rounded-sm border border-dashed border-input bg-card p-5 text-sm text-muted-foreground">
             No retrieved results match this query in the current view and filters. Clear the search
             to change filters.
           </div>
@@ -323,13 +334,13 @@ export function IncidentLibraryPage() {
               Engineering fixtures ({fixtures.length})
             </Button>
           </div>
-          <p className="text-sm leading-6 text-zinc-600">
+          <p className="text-sm leading-6 text-muted-foreground">
             {view === 'engineering'
               ? 'Generated historical, development, and locked evaluation fixtures. These cases test system behavior; they are not factory observations.'
               : 'Curated demo investigations and all imported cases. Generated evaluation fixtures are available in the engineering view.'}
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-xs font-medium text-zinc-700">
+            <label className="text-sm font-semibold text-foreground">
               Line
               <select
                 className={`${selectClass} mt-1`}
@@ -345,7 +356,7 @@ export function IncidentLibraryPage() {
                 ))}
               </select>
             </label>
-            <label className="text-xs font-medium text-zinc-700">
+            <label className="text-sm font-semibold text-foreground">
               Calculation coverage
               <select
                 className={`${selectClass} mt-1`}
@@ -363,7 +374,7 @@ export function IncidentLibraryPage() {
                 ))}
               </select>
             </label>
-            <label htmlFor="incident-date" className="text-xs font-medium text-zinc-700">
+            <label htmlFor="incident-date" className="text-sm font-semibold text-foreground">
               Window start date (source timezone)
               <Input
                 className="mt-1"
@@ -376,7 +387,7 @@ export function IncidentLibraryPage() {
                 }}
               />
             </label>
-            <label className="text-xs font-medium text-zinc-700">
+            <label className="text-sm font-semibold text-foreground">
               Evidence state
               <select
                 className={`${selectClass} mt-1`}
@@ -396,11 +407,11 @@ export function IncidentLibraryPage() {
                   ))}
               </select>
             </label>
-            <label className="text-xs font-medium text-zinc-700">
+            <label className="text-sm font-semibold text-foreground">
               Assignee (open actions)
               <select
                 disabled={!user || saved}
-                className={`${selectClass} mt-1 disabled:bg-zinc-100`}
+                className={`${selectClass} mt-1 disabled:bg-secondary`}
                 value={user && !saved ? assignee : ''}
                 onChange={(event) => {
                   setAssignee(event.target.value)
@@ -423,11 +434,11 @@ export function IncidentLibraryPage() {
                   ))}
               </select>
             </label>
-            <label className="text-xs font-medium text-zinc-700">
+            <label className="text-sm font-semibold text-foreground">
               Actions
               <select
                 disabled={!user || saved}
-                className={`${selectClass} mt-1 disabled:bg-zinc-100`}
+                className={`${selectClass} mt-1 disabled:bg-secondary`}
                 value={user && !saved ? actions : ''}
                 onChange={(event) => {
                   setActions(event.target.value)
@@ -441,7 +452,7 @@ export function IncidentLibraryPage() {
             </label>
           </div>
           {user && (
-            <label className="block text-xs font-medium text-zinc-700">
+            <label className="block text-sm font-semibold text-foreground">
               Workspace
               <select
                 className={`${selectClass} mt-1`}
@@ -461,44 +472,48 @@ export function IncidentLibraryPage() {
               </select>
             </label>
           )}
-          <p className="text-xs leading-5 text-zinc-600">
+          <p className="text-sm leading-6 text-muted-foreground">
             Calculation coverage describes comparable production buckets. Evidence coverage
             describes available sources. Human review and action completion require separate
             confirmation in the investigation.
           </p>
           {filtered.length === 0 ? (
-            <div className="rounded border border-dashed border-zinc-300 bg-white p-8 text-center text-sm text-zinc-600">
+            <div className="rounded-sm border border-dashed border-input bg-card p-8 text-center text-sm text-muted-foreground">
               {selected.length === 0
                 ? 'No cases are available in this view.'
                 : 'No cases match these filters.'}
             </div>
           ) : (
             <>
-              <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
-                <div className="divide-y divide-zinc-200 md:hidden">
+              <div className="overflow-hidden rounded-sm border border-border border-t-2 border-t-foreground bg-card">
+                <div className="divide-y divide-border md:hidden">
                   {visible.map((item) => (
                     <article key={item.id} className="p-4">
                       <Link
-                        className="text-base font-semibold leading-6 text-zinc-900 underline decoration-zinc-300 underline-offset-4 focus-visible:outline-2"
+                        className="text-base font-semibold leading-6 text-foreground underline decoration-input underline-offset-4 focus-visible:outline-2"
                         to={incidentLink(item)}
                       >
                         {item.title}
                       </Link>
-                      <p className="mt-1 text-xs text-zinc-600">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         {item.line} · revision {item.revision} ·{' '}
                         {item.workspace_id && item.workspace_id !== 'public-demo'
                           ? 'Private workspace'
                           : 'Public synthetic example'}
                       </p>
-                      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                         <div className="col-span-2">
-                          <dt className="text-zinc-500">Investigation window</dt>
+                          <dt className="font-semibold text-muted-foreground">
+                            Investigation window
+                          </dt>
                           <dd className="mt-1">
                             {formatInstant(item.window_start)} to {formatInstant(item.window_end)}
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-zinc-500">Observed shortfall</dt>
+                          <dt className="font-semibold text-muted-foreground">
+                            Observed shortfall
+                          </dt>
                           <dd className="mt-1 font-medium tabular-nums">
                             {item.shortfall == null
                               ? 'Unavailable'
@@ -506,29 +521,33 @@ export function IncidentLibraryPage() {
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-zinc-500">Calculation coverage</dt>
+                          <dt className="font-semibold text-muted-foreground">
+                            Calculation coverage
+                          </dt>
                           <dd className="mt-1">{calculationLabel(item.status)}</dd>
                         </div>
                         <div className="col-span-2">
-                          <dt className="text-zinc-500">Evidence coverage</dt>
+                          <dt className="font-semibold text-muted-foreground">Evidence coverage</dt>
                           <dd className="mt-1">
                             {item.evidence_completeness ?? 'Coverage not reported'}
                           </dd>
                         </div>
                         <div className="col-span-2">
-                          <dt className="text-zinc-500">Human review</dt>
+                          <dt className="font-semibold text-muted-foreground">Human review</dt>
                           <dd className="mt-1">
                             {saved ? 'Review state unavailable offline' : reviewLabel(item)}
                           </dd>
                         </div>
                         <div className="col-span-2">
-                          <dt className="text-zinc-500">Investigation state</dt>
+                          <dt className="font-semibold text-muted-foreground">
+                            Investigation state
+                          </dt>
                           <dd className="mt-1">
                             {saved ? 'State unavailable offline' : investigationLabel(item, !!user)}
                           </dd>
                         </div>
                         <div className="col-span-2">
-                          <dt className="text-zinc-500">Action state</dt>
+                          <dt className="font-semibold text-muted-foreground">Action state</dt>
                           <dd className="mt-1">
                             {saved ? 'State unavailable offline' : actionLabel(item, !!user)}
                           </dd>
@@ -543,7 +562,7 @@ export function IncidentLibraryPage() {
                       Recorded incidents with separate calculation, evidence, human review, and
                       action states
                     </caption>
-                    <thead className="border-b border-zinc-200 bg-zinc-50 text-xs text-zinc-500">
+                    <thead className="border-b border-border bg-secondary text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                       <tr>
                         {[
                           'Incident / line',
@@ -553,47 +572,47 @@ export function IncidentLibraryPage() {
                           'Evidence coverage',
                           'Human review / actions',
                         ].map((label) => (
-                          <th key={label} scope="col" className="px-4 py-3 font-medium">
+                          <th key={label} scope="col" className="px-4 py-3 font-semibold">
                             {label}
                           </th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-100">
+                    <tbody className="divide-y divide-border">
                       {visible.map((item) => (
-                        <tr key={item.id} className="align-top hover:bg-zinc-50">
+                        <tr key={item.id} className="align-top hover:bg-secondary">
                           <td className="px-4 py-4">
                             <Link
-                              className="font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-4 hover:decoration-zinc-900 focus-visible:outline-2"
+                              className="font-medium text-foreground underline decoration-input underline-offset-4 hover:decoration-foreground focus-visible:outline-2"
                               to={incidentLink(item)}
                             >
                               {item.title}
                             </Link>
-                            <span className="mt-1 block text-xs text-zinc-500">
+                            <span className="mt-1 block text-sm text-muted-foreground">
                               {item.line} · revision {item.revision} ·{' '}
                               {item.workspace_id && item.workspace_id !== 'public-demo'
                                 ? 'Private workspace'
                                 : 'Public synthetic example'}
                             </span>
                           </td>
-                          <td className="px-4 py-4 text-zinc-700">
+                          <td className="px-4 py-4 text-sm whitespace-nowrap text-foreground">
                             {formatInstant(item.window_start)}
-                            <span className="block text-xs text-zinc-500">
+                            <span className="block text-sm text-muted-foreground">
                               to {formatInstant(item.window_end)}
                             </span>
                           </td>
-                          <td className="px-4 py-4 font-medium tabular-nums">
+                          <td className="px-4 py-4 text-base font-bold tabular-nums">
                             {item.shortfall == null
                               ? 'Unavailable'
                               : `${item.shortfall} good units`}
                           </td>
-                          <td className="px-4 py-4 text-xs text-zinc-700">
+                          <td className="px-4 py-4 text-xs text-foreground">
                             {calculationLabel(item.status)}
                           </td>
-                          <td className="px-4 py-4 text-xs text-zinc-600">
+                          <td className="px-4 py-4 text-xs text-muted-foreground">
                             {item.evidence_completeness ?? 'Coverage not reported'}
                           </td>
-                          <td className="px-4 py-4 text-xs text-zinc-600">
+                          <td className="px-4 py-4 text-xs text-muted-foreground">
                             {saved ? 'Review state unavailable offline' : reviewLabel(item)}
                             <span className="mt-2 block">
                               Investigation:{' '}
@@ -616,7 +635,7 @@ export function IncidentLibraryPage() {
                 aria-label="Incident pages"
                 className="flex flex-wrap items-center justify-between gap-3"
               >
-                <p role="status" className="text-xs text-zinc-500">
+                <p role="status" className="text-xs text-muted-foreground">
                   Showing {(currentPage - 1) * PAGE_SIZE + 1}–
                   {Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length} cases ·
                   page {currentPage} of {totalPages}
@@ -644,7 +663,7 @@ export function IncidentLibraryPage() {
           )}
         </>
       )}
-      <p className="text-xs leading-5 text-zinc-600">
+      <p className="text-sm leading-6 text-muted-foreground">
         Later records create a new revision and preserve the earlier view. An unrecorded source or
         review is not evidence that no problem exists.
       </p>

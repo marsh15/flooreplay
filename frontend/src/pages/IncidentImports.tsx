@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/board'
 
 const MAX_BYTES = 2 * 1024 * 1024
 
@@ -60,14 +61,14 @@ function CsvColumnMapping({
     return (
       <div
         key={field.name}
-        className="grid gap-2 rounded border border-zinc-200 p-3 sm:grid-cols-2"
+        className="grid gap-2 rounded-sm border border-border p-3 sm:grid-cols-2"
       >
         <div>
-          <label htmlFor={`csv-map-${field.name}`} className="text-xs font-medium">
+          <label htmlFor={`csv-map-${field.name}`} className="text-sm font-semibold">
             Map {field.name}
             {field.required ? ' (required)' : ''}
           </label>
-          <p className="mt-1 text-xs leading-5 text-zinc-600">{field.description}</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">{field.description}</p>
         </div>
         <div className="space-y-2">
           <select
@@ -86,7 +87,7 @@ function CsvColumnMapping({
                     : { kind: 'column', header },
               )
             }}
-            className="min-h-10 w-full rounded border border-zinc-300 bg-white px-2 text-sm"
+            className="min-h-10 w-full rounded-md border border-input bg-card px-3 text-sm"
           >
             <option value="unmapped">Unmapped / ignore</option>
             <option value="constant">Explicit constant</option>
@@ -97,7 +98,7 @@ function CsvColumnMapping({
             ))}
           </select>
           {choice.kind === 'constant' && (
-            <label className="block text-xs">
+            <label className="block text-sm font-semibold">
               Constant for {field.name}
               <Input
                 className="mt-1"
@@ -110,7 +111,7 @@ function CsvColumnMapping({
             </label>
           )}
           {field.name === 'count_mode' && (
-            <p className="text-xs leading-5 text-amber-900">
+            <p className="text-sm leading-6 text-limit-foreground">
               Production imports require an explicit count_mode of delta. Cumulative readings must
               not be labeled as deltas.
             </p>
@@ -122,24 +123,24 @@ function CsvColumnMapping({
   return (
     <section
       aria-labelledby="csv-mapping-heading"
-      className="space-y-4 border-t border-zinc-200 pt-5"
+      className="space-y-4 border-t border-border pt-5"
     >
       <div>
-        <h2 id="csv-mapping-heading" className="text-base font-semibold">
+        <h2 id="csv-mapping-heading" className="text-lg font-bold">
           Match CSV columns
         </h2>
-        <p className="mt-1 text-sm leading-6 text-zinc-600">
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
           {inspection.row_count} original rows. Only identical canonical headers are preselected.
           Choose each source column or enter an explicit constant; unmapped columns are ignored. No
           dates, identifiers, units, or cumulative counts are inferred or converted.
         </p>
       </div>
-      <div className="max-w-full overflow-x-auto rounded border border-zinc-200">
+      <div className="max-w-full overflow-x-auto rounded-sm border border-border">
         <table className="w-full min-w-max text-left text-xs">
           <caption className="px-3 py-2 text-left font-medium">
             Original CSV sample · first {inspection.sample_rows.length} rows
           </caption>
-          <thead className="bg-zinc-50">
+          <thead className="bg-secondary">
             <tr>
               {inspection.headers.map((header) => (
                 <th
@@ -152,7 +153,7 @@ function CsvColumnMapping({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-border">
             {inspection.sample_rows.map((row, index) => (
               <tr key={index}>
                 {inspection.headers.map((header) => (
@@ -169,7 +170,7 @@ function CsvColumnMapping({
         </table>
       </div>
       {Object.keys(scopeDefaults).length > 0 && (
-        <div className="space-y-2 rounded bg-zinc-50 p-3 text-xs leading-5">
+        <div className="space-y-2 rounded-sm bg-secondary p-3 text-sm leading-6">
           <p>
             Destination scope constants available:{' '}
             {Object.entries(scopeDefaults)
@@ -185,7 +186,7 @@ function CsvColumnMapping({
           </p>
         </div>
       )}
-      <p className="text-xs leading-5 text-zinc-600">
+      <p className="text-sm leading-6 text-muted-foreground">
         Ignored source columns:{' '}
         {inspection.headers
           .filter(
@@ -225,14 +226,14 @@ function NormalizedSample({ preview }: { preview: IncidentImportPreview }) {
         .filter((group) => group.rows.length > 0)
         .map((group) => (
           <section key={group.title} className="space-y-2">
-            <h3 className="text-sm font-medium">
+            <h3 className="text-base font-semibold">
               {group.title} · first {Math.min(group.rows.length, 5)} records
             </h3>
             <div className="grid gap-2 lg:grid-cols-2">
               {group.rows.slice(0, 5).map((row, index) => (
                 <dl
                   key={index}
-                  className="space-y-1 rounded border border-zinc-200 p-3 text-xs leading-5"
+                  className="space-y-1 rounded-sm border border-border p-3 text-sm leading-6"
                 >
                   {typeof row === 'object' &&
                     row !== null &&
@@ -241,7 +242,7 @@ function NormalizedSample({ preview }: { preview: IncidentImportPreview }) {
                         key={name}
                         className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-3"
                       >
-                        <dt className="break-words font-medium text-zinc-600">
+                        <dt className="break-words font-medium text-muted-foreground">
                           {name.replaceAll('_', ' ')}
                         </dt>
                         <dd className="break-words whitespace-pre-wrap">
@@ -499,32 +500,29 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-zinc-200 pb-5">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-600 underline underline-offset-4"
-        >
-          <ArrowLeft aria-hidden="true" className="size-3.5" />
-          Incident library
-        </Link>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
-          Import incident evidence
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+      <Link
+        to="/"
+        className="inline-flex min-h-8 items-center gap-1.5 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+      >
+        <ArrowLeft aria-hidden="true" className="size-3.5" />
+        Incident library
+      </Link>
+      <PageHeader title="Import incident evidence">
+        <p className="mt-2 max-w-2xl text-base leading-7 text-muted-foreground">
           Preview a local source file and its row diagnostics before adding it to an incident.
         </p>
-      </div>
+      </PageHeader>
       {capabilities.isPending ? (
         <Skeleton className="h-32" />
       ) : capabilities.isError ? (
         <div
           role="alert"
-          className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+          className="rounded-sm border border-danger-border bg-danger p-4 text-sm text-danger-foreground"
         >
           Could not check permissions: {capabilities.error.message}
         </div>
       ) : !owner || !capabilities.data?.imports_enabled ? (
-        <div className="rounded border border-zinc-200 bg-white p-5 text-sm text-zinc-700">
+        <div className="rounded-sm border border-border bg-card p-5 text-sm text-foreground">
           Sign in with an owner account to import source evidence.
         </div>
       ) : (
@@ -534,7 +532,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
           ) : workspaces.isError ? (
             <div
               role="alert"
-              className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+              className="rounded-sm border border-danger-border bg-danger p-4 text-sm text-danger-foreground"
             >
               Private workspace service is unavailable. Import is paused until the backend confirms
               a private destination.
@@ -549,7 +547,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
             </div>
           ) : (
             <>
-              <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              <div className="rounded-sm border border-limit-border bg-limit p-4 text-sm text-limit-foreground">
                 Publishing creates an immutable incident revision. Existing reports and reviews
                 remain attached to their original revisions. A new baseline requires a new incident.
               </div>
@@ -558,22 +556,22 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
               ) : incidents.isError ? (
                 <div
                   role="alert"
-                  className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+                  className="rounded-sm border border-danger-border bg-danger p-4 text-sm text-danger-foreground"
                 >
                   Could not load incidents: {incidents.error.message}
                 </div>
               ) : (
                 <form
-                  className="space-y-6 rounded-xl border border-zinc-200 bg-white p-5 sm:p-6"
+                  className="space-y-6 rounded-sm border border-border bg-card p-5 sm:p-6"
                   onSubmit={(event) => {
                     event.preventDefault()
                     previewSource()
                   }}
                 >
                   <fieldset disabled={busy} className="space-y-6 min-w-0">
-                    <div className="border-b border-zinc-200 pb-5">
-                      <h2 className="mb-4 text-base font-semibold">Incident destination</h2>
-                      <label htmlFor="import-mode" className="mb-1 block text-xs font-medium">
+                    <div className="border-b border-border pb-5">
+                      <h2 className="mb-4 text-lg font-bold">Incident destination</h2>
+                      <label htmlFor="import-mode" className="mb-1 block text-sm font-semibold">
                         Import into
                       </label>
                       <select
@@ -583,7 +581,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                           setMode(event.target.value === 'new' ? 'new' : 'existing')
                           fileOrProfileChanged()
                         }}
-                        className="h-10 w-full max-w-sm rounded border border-zinc-300 bg-white px-2 text-sm focus-visible:outline-2"
+                        className="h-10 w-full max-w-sm rounded-md border border-input bg-card px-3 text-sm focus-visible:outline-2"
                       >
                         <option value="existing">Existing incident · new revision</option>
                         <option value="new">New incident · baseline plan</option>
@@ -591,10 +589,10 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                     </div>
                     {mode === 'new' && (
                       <div className="space-y-2">
-                        <label className="block text-xs font-medium">
+                        <label className="block text-sm font-semibold">
                           Private destination workspace
                           <select
-                            className="mt-1 min-h-10 w-full rounded border bg-white px-3 text-sm"
+                            className="mt-1 min-h-10 w-full rounded-sm border bg-card px-3 text-sm"
                             value={workspaceId}
                             onChange={(event) => {
                               setWorkspaceId(event.target.value)
@@ -611,12 +609,12 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                               ))}
                           </select>
                         </label>
-                        <p className="text-xs text-zinc-600">
+                        <p className="text-xs text-muted-foreground">
                           New records are private. Public demonstration incidents cannot receive
                           source imports.
                         </p>
                         {workspaces.isError && (
-                          <p role="alert" className="text-xs text-amber-900">
+                          <p role="alert" className="text-xs text-limit-foreground">
                             Workspace list unavailable. The default destination remains your private
                             workspace.
                           </p>
@@ -628,7 +626,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                         <div>
                           <label
                             htmlFor="import-incident"
-                            className="mb-1 block text-xs font-medium"
+                            className="mb-1 block text-sm font-semibold"
                           >
                             Incident
                           </label>
@@ -637,7 +635,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                             required
                             value={incidentId}
                             onChange={(event) => chooseIncident(event.target.value)}
-                            className="h-10 w-full rounded border border-zinc-300 bg-white px-2 text-sm focus-visible:outline-2"
+                            className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm focus-visible:outline-2"
                           >
                             <option value="">Select an incident…</option>
                             {incidents.data.items
@@ -654,7 +652,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                         <div>
                           <label
                             htmlFor="import-revision"
-                            className="mb-1 block text-xs font-medium"
+                            className="mb-1 block text-sm font-semibold"
                           >
                             Base revision
                           </label>
@@ -667,7 +665,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                               changed()
                             }}
                             disabled={!selected}
-                            className="h-10 w-full rounded border border-zinc-300 bg-white px-2 text-sm focus-visible:outline-2"
+                            className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm focus-visible:outline-2"
                           >
                             {Array.from(
                               { length: selected?.revision ?? 1 },
@@ -679,7 +677,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                               </option>
                             ))}
                           </select>
-                          <p className="mt-1 text-xs text-zinc-600">
+                          <p className="mt-1 text-xs text-muted-foreground">
                             Publication requires the latest revision.
                           </p>
                         </div>
@@ -687,7 +685,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                     ) : (
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                          <label htmlFor="new-id" className="mb-1 block text-xs font-medium">
+                          <label htmlFor="new-id" className="mb-1 block text-sm font-semibold">
                             New incident ID
                           </label>
                           <Input
@@ -703,7 +701,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                           />
                         </div>
                         <div>
-                          <label htmlFor="new-title" className="mb-1 block text-xs font-medium">
+                          <label htmlFor="new-title" className="mb-1 block text-sm font-semibold">
                             Incident title
                           </label>
                           <Input
@@ -720,7 +718,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                           />
                         </div>
                         <div>
-                          <label htmlFor="new-factory" className="mb-1 block text-xs font-medium">
+                          <label htmlFor="new-factory" className="mb-1 block text-sm font-semibold">
                             Factory
                           </label>
                           <Input
@@ -734,7 +732,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                           />
                         </div>
                         <div>
-                          <label htmlFor="new-line" className="mb-1 block text-xs font-medium">
+                          <label htmlFor="new-line" className="mb-1 block text-sm font-semibold">
                             Sewing line
                           </label>
                           <Input
@@ -748,7 +746,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                           />
                         </div>
                         <div>
-                          <label htmlFor="new-order" className="mb-1 block text-xs font-medium">
+                          <label htmlFor="new-order" className="mb-1 block text-sm font-semibold">
                             Order ID
                           </label>
                           <Input
@@ -762,7 +760,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                           />
                         </div>
                         <div>
-                          <label htmlFor="new-style" className="mb-1 block text-xs font-medium">
+                          <label htmlFor="new-style" className="mb-1 block text-sm font-semibold">
                             Style ID
                           </label>
                           <Input
@@ -778,7 +776,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                         <div>
                           <label
                             htmlFor="new-window-start"
-                            className="mb-1 block text-xs font-medium"
+                            className="mb-1 block text-sm font-semibold"
                           >
                             Window start
                           </label>
@@ -796,7 +794,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                         <div>
                           <label
                             htmlFor="new-window-end"
-                            className="mb-1 block text-xs font-medium"
+                            className="mb-1 block text-sm font-semibold"
                           >
                             Window end
                           </label>
@@ -811,20 +809,20 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                             placeholder="2026-09-28T12:00:00+05:30"
                           />
                         </div>
-                        <p className="text-xs text-zinc-600 sm:col-span-2">
+                        <p className="text-xs text-muted-foreground sm:col-span-2">
                           Scope is sewing stage, good_units. The file must include matching
                           15-minute baseline plan records.
                         </p>
                       </div>
                     )}
-                    <div className="grid gap-4 border-t border-zinc-200 pt-5 sm:grid-cols-2">
-                      <h2 className="text-base font-semibold sm:col-span-2">Source evidence</h2>
+                    <div className="grid gap-4 border-t border-border pt-5 sm:grid-cols-2">
+                      <h2 className="text-lg font-bold sm:col-span-2">Source evidence</h2>
                       <div>
                         {mode === 'existing' ? (
                           <>
                             <label
                               htmlFor="import-profile"
-                              className="mb-1 block text-xs font-medium"
+                              className="mb-1 block text-sm font-semibold"
                             >
                               Source profile
                             </label>
@@ -841,7 +839,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                                   setProfile(value)
                                 fileOrProfileChanged()
                               }}
-                              className="h-10 w-full rounded border border-zinc-300 bg-white px-2 text-sm focus-visible:outline-2"
+                              className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm focus-visible:outline-2"
                             >
                               <option value="operations-v1">Operations</option>
                               <option value="notes-v1">Notes</option>
@@ -849,13 +847,13 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                             </select>
                           </>
                         ) : (
-                          <p className="text-sm text-zinc-700">
+                          <p className="text-sm text-foreground">
                             <strong>Source profile:</strong> Production baseline
                           </p>
                         )}
                       </div>
                       <div>
-                        <label htmlFor="import-file" className="mb-1 block text-xs font-medium">
+                        <label htmlFor="import-file" className="mb-1 block text-sm font-semibold">
                           Local file
                         </label>
                         <Input
@@ -870,11 +868,11 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                             fileOrProfileChanged()
                           }}
                         />
-                        <p className="mt-1 text-xs text-zinc-600">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           UTF-8 · CSV, JSON, or JSONL · up to 10,000 rows and 2 MiB
                         </p>
                         {fileError && (
-                          <p role="alert" className="text-xs text-red-700">
+                          <p role="alert" className="text-xs text-danger-foreground">
                             {fileError}
                           </p>
                         )}
@@ -882,7 +880,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="import-source" className="mb-1 block text-xs font-medium">
+                        <label htmlFor="import-source" className="mb-1 block text-sm font-semibold">
                           Source system
                         </label>
                         <Input
@@ -896,7 +894,10 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                         />
                       </div>
                       <div>
-                        <label htmlFor="import-timezone" className="mb-1 block text-xs font-medium">
+                        <label
+                          htmlFor="import-timezone"
+                          className="mb-1 block text-sm font-semibold"
+                        >
                           Source timezone
                         </label>
                         <Input
@@ -908,14 +909,14 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                             changed()
                           }}
                         />
-                        <p className="mt-1 text-xs text-zinc-600">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           IANA timezone, for example Asia/Kolkata
                         </p>
                       </div>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="import-cutoff" className="mb-1 block text-xs font-medium">
+                        <label htmlFor="import-cutoff" className="mb-1 block text-sm font-semibold">
                           Knowledge cutoff
                         </label>
                         <Input
@@ -928,7 +929,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                           }}
                           placeholder="2026-09-28T11:30:00+05:30"
                         />
-                        <p className="mt-1 text-xs text-zinc-600">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           ISO timestamp with offset
                           {mode === 'existing'
                             ? '; later than the base revision’s cutoff.'
@@ -937,11 +938,11 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                       </div>
                       {(mode === 'new' || profile === 'production-v1') && (
                         <div>
-                          <label htmlFor="import-unit" className="mb-1 block text-xs font-medium">
+                          <label htmlFor="import-unit" className="mb-1 block text-sm font-semibold">
                             Production unit
                           </label>
                           <Input id="import-unit" required readOnly value={unit} />
-                          <p className="mt-1 text-xs text-zinc-600">
+                          <p className="mt-1 text-xs text-muted-foreground">
                             Use good_units. Counts must be 15-minute deltas.
                           </p>
                         </div>
@@ -1001,13 +1002,13 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                               ? 'Inspect CSV again and reset mapping'
                               : 'Inspect CSV columns'}
                         </Button>
-                        <p className="text-xs leading-5 text-zinc-600">
+                        <p className="text-sm leading-6 text-muted-foreground">
                           Inspect before previewing. Match unfamiliar headers explicitly and check
                           the original sample. Production quantities must already be 15-minute
                           deltas.
                         </p>
                         {inspect.isError && (
-                          <p role="alert" className="text-xs text-red-800">
+                          <p role="alert" className="text-xs text-danger-foreground">
                             Could not inspect CSV: {inspect.error.message}. Check the file and retry
                             inspection.
                           </p>
@@ -1041,7 +1042,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                       />
                     )}
                     {csv && missingMappings && (
-                      <p role="status" className="text-xs text-amber-900">
+                      <p role="status" className="text-xs text-limit-foreground">
                         Inspect the CSV and map or explicitly supply every required field before
                         previewing.
                       </p>
@@ -1060,7 +1061,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                       {previewMutation.isPending ? 'Checking rows…' : 'Preview source'}
                     </Button>
                     {previewMutation.isError && (
-                      <p role="alert" className="text-sm text-red-700">
+                      <p role="alert" className="text-sm text-danger-foreground">
                         {previewMutation.error.message}
                       </p>
                     )}
@@ -1069,26 +1070,26 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
               )}
               {preview && (
                 <section
-                  className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 sm:p-6"
+                  className="space-y-4 rounded-sm border border-border bg-card p-5 sm:p-6"
                   aria-label="Import preview"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <h2 className="text-base font-semibold">Preview: {preview.result.status}</h2>
-                      <p className="mt-1 text-xs text-zinc-600">
+                      <h2 className="text-lg font-bold">Preview: {preview.result.status}</h2>
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {preview.result.row_count} rows · {preview.result.plan_buckets.length} plan
                         · {preview.result.output_buckets.length} output ·{' '}
                         {preview.result.events.length} events
                       </p>
                     </div>
-                    <span className="rounded bg-zinc-100 px-2 py-1 font-mono text-xs">
+                    <span className="rounded-sm bg-secondary px-2 py-1 font-mono text-xs">
                       {preview.result.raw_digest.slice(0, 12)}…
                     </span>
                   </div>
                   {preview.result.issues.length ? (
-                    <div className="overflow-x-auto rounded border border-red-200">
+                    <div className="overflow-x-auto rounded-sm border border-danger-border">
                       <table className="w-full min-w-[500px] text-left text-sm">
-                        <thead className="bg-red-50 text-xs uppercase text-red-900">
+                        <thead className="bg-danger text-xs uppercase text-danger-foreground">
                           <tr>
                             <th scope="col" className="px-3 py-2">
                               Row
@@ -1113,19 +1114,19 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                       </table>
                     </div>
                   ) : (
-                    <p className="text-sm text-zinc-700">
+                    <p className="text-sm text-foreground">
                       All rows passed validation. Publication is all or nothing.
                     </p>
                   )}
                   <NormalizedSample preview={preview.result} />
                   {preview.newIncident
                     ? preview.result.plan_buckets.length === 0 && (
-                        <p className="text-xs text-amber-800">
+                        <p className="text-xs text-limit-foreground">
                           A new incident requires baseline plan records in the file.
                         </p>
                       )
                     : preview.result.plan_buckets.length > 0 && (
-                        <p className="text-xs text-amber-800">
+                        <p className="text-xs text-limit-foreground">
                           Existing baselines are immutable. This file cannot be published into the
                           selected incident.
                         </p>
@@ -1153,12 +1154,12 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                             : 'Publish new revision'}
                   </Button>
                   {publish.isError && (
-                    <p role="alert" className="text-sm text-red-700">
+                    <p role="alert" className="text-sm text-danger-foreground">
                       Publication failed: {publish.error.message}
                     </p>
                   )}
                   {publish.data && (
-                    <p role="status" className="text-sm text-zinc-700">
+                    <p role="status" className="text-sm text-foreground">
                       Revision {publish.data.revision} published.{' '}
                       <Link
                         className="underline underline-offset-4"
