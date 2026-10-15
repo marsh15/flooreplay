@@ -18,7 +18,7 @@ import type {
   WorkflowTask,
 } from '@/lib/workflow'
 
-const selectClass = 'min-h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm'
+const selectClass = 'min-h-10 w-full rounded-md border border-input bg-card px-3 text-sm'
 const indiaInstant = (value: string) => `${value.length === 16 ? `${value}:00` : value}+05:30`
 const indiaDateInput = (value: number) =>
   new Intl.DateTimeFormat('sv-SE', {
@@ -44,14 +44,14 @@ function WriteFeedback<TData, TBody>({
   return (
     <>
       {mutation.isSuccess && (
-        <p role="status" className="text-xs text-emerald-800">
+        <p role="status" className="text-xs text-success-foreground">
           Saved to the incident history.
         </p>
       )}
       {mutation.error && (
         <div
           role="alert"
-          className="space-y-2 rounded border border-red-200 bg-red-50 p-3 text-xs text-red-900"
+          className="space-y-2 rounded-sm border border-danger-border bg-danger p-3 text-xs text-danger-foreground"
         >
           <p>{mutation.error.message}</p>
           <p>
@@ -101,7 +101,7 @@ function AssignCheck({
   return (
     <form
       aria-label={`Assign check: ${fieldLabel(proposal.type)}`}
-      className="space-y-3 rounded-md border border-zinc-200 p-4"
+      className="space-y-3 rounded-md border border-border p-4"
       onSubmit={(event) => {
         event.preventDefault()
         create.mutate({
@@ -112,9 +112,9 @@ function AssignCheck({
         })
       }}
     >
-      <h4 className="text-sm font-medium">{fieldLabel(proposal.type)}</h4>
-      <p className="text-xs leading-5 text-zinc-600">{proposal.purpose}</p>
-      <p className="text-xs leading-5 text-zinc-600">
+      <h4 className="text-sm font-semibold">{fieldLabel(proposal.type)}</h4>
+      <p className="text-sm leading-6 text-muted-foreground">{proposal.purpose}</p>
+      <p className="text-sm leading-6 text-muted-foreground">
         This assigns an evidence check. Assignment does not approve the recovery proposal or confirm
         its explanation.
       </p>
@@ -138,7 +138,7 @@ function AssignCheck({
           ))}
         </select>
       </div>
-      <label className="block text-xs">
+      <label className="block text-sm font-semibold">
         Due at (India time)
         <Input
           type="datetime-local"
@@ -195,7 +195,7 @@ function UpdateCheck({
     })
   return (
     <details className="print:hidden">
-      <summary className="cursor-pointer py-2 text-xs font-medium underline underline-offset-4">
+      <summary className="cursor-pointer py-2 text-sm font-semibold underline underline-offset-4">
         Comments and assignment history
       </summary>
       <form
@@ -205,7 +205,7 @@ function UpdateCheck({
           send(null)
         }}
       >
-        <label className="block text-xs">
+        <label className="block text-sm font-semibold">
           Comment or reassignment reason
           <textarea
             required
@@ -237,7 +237,7 @@ function UpdateCheck({
                 ))}
               </select>
             </div>
-            <label className="block text-xs">
+            <label className="block text-sm font-semibold">
               New due at (India time)
               <Input
                 type="datetime-local"
@@ -309,7 +309,7 @@ function SourceResponse({
   const locked = respond.isPending || respond.isError
   return (
     <details className="print:hidden">
-      <summary className="cursor-pointer py-2 text-xs font-medium underline underline-offset-4">
+      <summary className="cursor-pointer py-2 text-sm font-semibold underline underline-offset-4">
         Record source response
       </summary>
       <form
@@ -329,11 +329,11 @@ function SourceResponse({
           })
         }}
       >
-        <p className="text-xs leading-5 text-zinc-600">
+        <p className="text-sm leading-6 text-muted-foreground">
           Use a source record or a named observation. Saving appends structured evidence to revision{' '}
           {currentRevision + 1} and opens that revision; earlier reports remain intact.
         </p>
-        <label className="block text-xs">
+        <label className="block text-sm font-semibold">
           Response summary
           <textarea
             required
@@ -344,7 +344,7 @@ function SourceResponse({
           />
         </label>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Source record reference
             <Input
               required
@@ -354,7 +354,7 @@ function SourceResponse({
               onChange={(event) => setSourceRef(event.target.value)}
             />
           </label>
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Observation occurred at (India time)
             <Input
               type="datetime-local"
@@ -391,7 +391,7 @@ function SourceResponse({
         </label>
         {blocking && (
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block text-xs">
+            <label className="block text-sm font-semibold">
               Confirmed block start (India time)
               <Input
                 type="datetime-local"
@@ -403,7 +403,7 @@ function SourceResponse({
                 onChange={(event) => setStart(event.target.value)}
               />
             </label>
-            <label className="block text-xs">
+            <label className="block text-sm font-semibold">
               Confirmed block end (India time)
               <Input
                 type="datetime-local"
@@ -441,7 +441,7 @@ function CompleteCheck({ task, refresh }: { task: WorkflowTask; refresh: () => P
   const locked = complete.isPending || complete.isError
   return (
     <details className="print:hidden">
-      <summary className="cursor-pointer py-2 text-xs font-medium underline underline-offset-4">
+      <summary className="cursor-pointer py-2 text-sm font-semibold underline underline-offset-4">
         Record action and measured outcome
       </summary>
       <form
@@ -459,11 +459,11 @@ function CompleteCheck({ task, refresh }: { task: WorkflowTask; refresh: () => P
           })
         }}
       >
-        <p className="text-xs leading-5 text-zinc-600">
+        <p className="text-sm leading-6 text-muted-foreground">
           Completing this check records what happened. It does not resolve the incident or prove
           that the action caused production to recover.
         </p>
-        <label className="block text-xs">
+        <label className="block text-sm font-semibold">
           Action actually taken
           <textarea
             required
@@ -473,7 +473,7 @@ function CompleteCheck({ task, refresh }: { task: WorkflowTask; refresh: () => P
             onChange={(event) => setAction(event.target.value)}
           />
         </label>
-        <label className="block text-xs">
+        <label className="block text-sm font-semibold">
           Actual completion at (India time)
           <Input
             type="datetime-local"
@@ -487,7 +487,7 @@ function CompleteCheck({ task, refresh }: { task: WorkflowTask; refresh: () => P
           />
         </label>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Observed good units (optional)
             <Input
               type="number"
@@ -499,7 +499,7 @@ function CompleteCheck({ task, refresh }: { task: WorkflowTask; refresh: () => P
               onChange={(event) => setUnits(event.target.value)}
             />
           </label>
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Output observed at (India time)
             <Input
               type="datetime-local"
@@ -513,7 +513,7 @@ function CompleteCheck({ task, refresh }: { task: WorkflowTask; refresh: () => P
             />
           </label>
         </div>
-        <label className="block text-xs">
+        <label className="block text-sm font-semibold">
           Outcome assessment
           <textarea
             required
@@ -523,7 +523,7 @@ function CompleteCheck({ task, refresh }: { task: WorkflowTask; refresh: () => P
             onChange={(event) => setAssessment(event.target.value)}
           />
         </label>
-        <label className="block text-xs">
+        <label className="block text-sm font-semibold">
           Remaining uncertainty
           <textarea
             required
@@ -562,23 +562,23 @@ function TaskCard({
   return (
     <article
       aria-label={`Evidence check: ${task.question}`}
-      className="space-y-3 rounded-md border border-zinc-200 bg-white p-4 print:break-inside-avoid"
+      className="space-y-3 rounded-md border border-border bg-card p-4 print:break-inside-avoid"
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <h4 className="max-w-2xl text-sm font-medium leading-6">{task.question}</h4>
+        <h4 className="max-w-2xl text-sm font-semibold leading-6">{task.question}</h4>
         <span
-          className={`rounded px-2 py-1 text-xs ${task.overdue ? 'bg-amber-100 text-amber-900' : 'bg-zinc-100 text-zinc-700'}`}
+          className={`rounded-sm px-2 py-1 text-xs ${task.overdue ? 'bg-limit text-limit-foreground' : 'bg-secondary text-foreground'}`}
         >
           {fieldLabel(task.status.toLowerCase())}
           {task.overdue ? ' · overdue' : ''}
         </span>
       </div>
-      <p className="text-xs leading-5 text-zinc-600">
+      <p className="text-sm leading-6 text-muted-foreground">
         Assigned to {task.assignee_name} · due {formatInstant(task.due_at)} · requested against
         revision {task.revision}
       </p>
       {task.response && (
-        <div className="rounded bg-zinc-50 p-3 text-xs leading-5">
+        <div className="rounded-sm bg-secondary p-3 text-sm leading-6">
           <p className="font-medium">
             Source response · evidence revision {task.response.revision}
           </p>
@@ -598,7 +598,7 @@ function TaskCard({
         </div>
       )}
       {task.outcome && (
-        <div className="rounded border border-emerald-200 p-3 text-xs leading-5">
+        <div className="rounded-sm border border-success-border p-3 text-sm leading-6">
           <p className="font-medium">Recorded outcome</p>
           <p>
             {task.outcome.action_taken} · completed{' '}
@@ -631,14 +631,14 @@ function TaskCard({
           <summary className="cursor-pointer py-2 font-medium">
             Audit history ({task.activities.length})
           </summary>
-          <ol className="mt-2 space-y-2 border-l border-zinc-200 pl-3">
+          <ol className="mt-2 space-y-2 border-l border-border pl-3">
             {task.activities.map((activity) => (
               <li key={activity.id} className="leading-5">
                 <p>
                   {fieldLabel(activity.kind)} · {activity.actor} ·{' '}
                   {formatInstant(activity.created_at)}
                 </p>
-                <p className="text-zinc-600">{activity.text}</p>
+                <p className="text-muted-foreground">{activity.text}</p>
               </li>
             ))}
           </ol>
@@ -666,7 +666,7 @@ function ResolutionControl({
     workflow.tasks.some((task) => task.status === 'COMPLETED') && workflow.tasks.every(terminal)
   return (
     <form
-      className="space-y-3 rounded border border-zinc-200 p-4 print:hidden"
+      className="space-y-3 rounded-sm border border-border p-4 print:hidden"
       onSubmit={(event) => {
         event.preventDefault()
         resolution.mutate({
@@ -677,12 +677,12 @@ function ResolutionControl({
         })
       }}
     >
-      <h3 className="text-sm font-medium">Separate incident decision</h3>
-      <p className="text-xs leading-5 text-zinc-600">
+      <h3 className="text-base font-semibold">Separate incident decision</h3>
+      <p className="text-sm leading-6 text-muted-foreground">
         A supervisor records resolution separately from check completion. Resolve only after all
         checks are completed or cancelled and at least one completed outcome is recorded.
       </p>
-      <label className="block text-xs">
+      <label className="block text-sm font-semibold">
         Resolution or reopening rationale
         <textarea
           required
@@ -753,20 +753,23 @@ export function IncidentWorkflow({
     <section
       id="assigned-checks"
       aria-labelledby="incident-workflow-heading"
-      className="space-y-4 border-t border-zinc-200 pt-6"
+      className="scroll-mt-16 space-y-5 border-t-2 border-foreground pt-3"
     >
       <div>
-        <h2 id="incident-workflow-heading" className="text-lg font-semibold tracking-tight">
+        <h2
+          id="incident-workflow-heading"
+          className="text-xl font-bold font-stretch-semi-condensed"
+        >
           Assigned checks and outcomes
         </h2>
-        <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-600">
+        <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
           Turn a recovery proposal into a named evidence check, preserve the source response, and
           record the action and observed result. This workflow shows the latest incident state,
           separately from the report revision above.
         </p>
       </div>
       {!enabled ? (
-        <p className="rounded border border-zinc-200 p-4 text-sm text-zinc-600">
+        <p className="rounded-sm border border-border p-4 text-sm text-muted-foreground">
           {report.execution_kind === 'saved_deterministic'
             ? 'Saved reports show the investigation offline. Assignments and outcome history require the live API and reviewer sign-in.'
             : 'Sign in as an owner or invited reviewer to view private assignments, outcomes, and the shift handover. Published source responses appear in the incident evidence.'}
@@ -778,7 +781,7 @@ export function IncidentWorkflow({
       ) : workflow.isError ? (
         <div
           role="alert"
-          className="space-y-2 rounded border border-red-200 p-4 text-sm text-red-800"
+          className="space-y-2 rounded-sm border border-danger-border p-4 text-sm text-danger-foreground"
         >
           <p>Workflow unavailable: {workflow.error.message}</p>
           <Button size="sm" variant="outline" onClick={() => workflow.refetch()}>
@@ -788,17 +791,17 @@ export function IncidentWorkflow({
       ) : (
         data && (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-zinc-50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-secondary p-4">
               <div>
                 <p className="text-sm font-medium">Incident {data.resolution.toLowerCase()}</p>
-                <p className="mt-1 text-xs text-zinc-600">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {data.tasks.filter((task) => !terminal(task)).length} outstanding checks ·{' '}
                   {data.tasks.filter((task) => task.overdue).length} overdue ·{' '}
                   {data.tasks.filter((task) => task.status === 'COMPLETED').length} recorded
                   outcomes
                 </p>
                 {data.resolution_rationale && (
-                  <p className="mt-2 text-xs leading-5">
+                  <p className="mt-2 text-sm leading-6">
                     Decision rationale: {data.resolution_rationale}
                   </p>
                 )}
@@ -815,26 +818,26 @@ export function IncidentWorkflow({
             <section
               id="shift-handover"
               aria-labelledby="shift-handover-heading"
-              className="space-y-2 rounded-md border border-zinc-200 p-4 print:break-inside-avoid"
+              className="space-y-2 rounded-md border border-border p-4 print:break-inside-avoid"
             >
               <h3 id="shift-handover-heading" className="text-sm font-semibold">
                 Shift handover
               </h3>
               <p className="text-sm leading-6">{data.handover.summary}</p>
-              <p className="text-xs text-zinc-600">
+              <p className="text-xs text-muted-foreground">
                 Evidence available by {formatInstant(data.handover.cutoff)} · latest revision{' '}
                 {latest}
               </p>
               {data.handover.uncertainties.length > 0 && (
-                <ul className="list-disc space-y-1 pl-4 text-xs leading-5">
+                <ul className="list-disc space-y-1 pl-4 text-sm leading-6">
                   {data.handover.uncertainties.map((value, index) => (
                     <li key={`${index}-${value}`}>{value}</li>
                   ))}
                 </ul>
               )}
-              <p className="text-xs font-medium">Outstanding checks</p>
+              <p className="text-sm font-semibold">Outstanding checks</p>
               {data.handover.outstanding_checks.length ? (
-                <ul className="space-y-1 text-xs leading-5">
+                <ul className="space-y-1 text-sm leading-6">
                   {data.handover.outstanding_checks.map((task) => (
                     <li key={task.id}>
                       {task.question} · {task.assignee_name} · due {formatInstant(task.due_at)}
@@ -843,7 +846,7 @@ export function IncidentWorkflow({
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-zinc-600">No outstanding checks recorded.</p>
+                <p className="text-xs text-muted-foreground">No outstanding checks recorded.</p>
               )}
               <Button
                 type="button"
@@ -869,14 +872,14 @@ export function IncidentWorkflow({
                 ))}
               </div>
             ) : (
-              <p className="rounded border border-dashed border-zinc-300 p-4 text-sm text-zinc-600">
+              <p className="rounded-sm border border-dashed border-input p-4 text-sm text-muted-foreground">
                 No evidence checks assigned yet.
               </p>
             )}
             <div className="space-y-3 print:hidden">
-              <h3 className="text-sm font-semibold">Assign a next check</h3>
+              <h3 className="text-base font-bold">Assign a next check</h3>
               {report.revision !== latest ? (
-                <div className="space-y-2 text-xs text-amber-900">
+                <div className="space-y-2 text-xs text-limit-foreground">
                   <p>
                     This report is revision {report.revision}. Open revision {latest} to create
                     checks against current evidence.
@@ -891,7 +894,7 @@ export function IncidentWorkflow({
                   </Button>
                 </div>
               ) : data.resolution === 'RESOLVED' ? (
-                <p className="text-xs text-zinc-600">
+                <p className="text-xs text-muted-foreground">
                   Reopen the incident before assigning another check.
                 </p>
               ) : assignees.isPending ? (
@@ -899,7 +902,7 @@ export function IncidentWorkflow({
                   Loading active reviewers…
                 </p>
               ) : assignees.isError ? (
-                <div role="alert" className="space-y-2 text-xs text-red-800">
+                <div role="alert" className="space-y-2 text-xs text-danger-foreground">
                   <p>Assignees unavailable: {assignees.error.message}</p>
                   <Button
                     type="button"
@@ -913,7 +916,7 @@ export function IncidentWorkflow({
               ) : (
                 <div className="grid gap-3 lg:grid-cols-2">
                   {assignableProposals.length === 0 && (
-                    <p className="text-xs text-zinc-600">
+                    <p className="text-xs text-muted-foreground">
                       {report.proposals.length
                         ? 'Each current proposal already has an outstanding check.'
                         : 'No recovery proposal supports a new check at this revision.'}

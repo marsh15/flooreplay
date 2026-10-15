@@ -49,14 +49,14 @@ function MutationFeedback<TData, TBody>({
   return (
     <>
       {mutation.isSuccess && (
-        <p role="status" className="text-xs text-emerald-800">
+        <p role="status" className="text-xs text-success-foreground">
           Annotation saved against this exact output. Operational approval remains separate.
         </p>
       )}
       {mutation.error && (
         <div
           role="alert"
-          className="space-y-2 rounded border border-red-200 bg-red-50 p-3 text-xs text-red-900"
+          className="space-y-2 rounded-sm border border-danger-border bg-danger p-3 text-xs text-danger-foreground"
         >
           <p>{mutation.error.message}</p>
           <p>
@@ -96,9 +96,9 @@ function DeclarationFields({
   selfReview?: boolean
 }) {
   return (
-    <fieldset disabled={disabled} className="space-y-3 rounded border border-zinc-200 p-3">
-      <legend className="px-1 text-xs font-medium">Reviewer declaration</legend>
-      <label className="block text-xs">
+    <fieldset disabled={disabled} className="space-y-3 rounded-sm border border-border p-3">
+      <legend className="px-1 text-sm font-semibold">Reviewer declaration</legend>
+      <label className="block text-sm font-semibold">
         Reviewer kind
         <select
           className={selectClass}
@@ -114,7 +114,7 @@ function DeclarationFields({
           <option value="ai_assistant">AI assistant annotation</option>
         </select>
       </label>
-      <label className="block text-xs">
+      <label className="block text-sm font-semibold">
         Reviewer qualifications
         <textarea
           className={textareaClass}
@@ -126,7 +126,7 @@ function DeclarationFields({
           placeholder="State your relevant role or experience and any limits. These qualifications are not externally verified."
         />
       </label>
-      <label className="flex items-start gap-2 text-xs leading-5">
+      <label className="flex items-start gap-2 text-sm leading-6">
         <input
           type="checkbox"
           className="mt-1"
@@ -136,7 +136,7 @@ function DeclarationFields({
         />
         I did not author this output and declare this review independent.
       </label>
-      <p className="text-xs leading-5 text-zinc-600">
+      <p className="text-sm leading-6 text-muted-foreground">
         {selfReview
           ? 'This is your generated draft. A self-review cannot count as independent review.'
           : 'Authorship independence and qualifications are declarations. They do not establish verified manufacturing expertise.'}
@@ -165,16 +165,16 @@ function claimEntries(output: AiReviewPacket['output']) {
 
 function PinnedCitations({ claim, packet }: { claim: AiClaim; packet: AiPacket }) {
   return (
-    <div className="space-y-3 rounded bg-zinc-50 p-3">
+    <div className="space-y-3 rounded-sm bg-secondary p-3">
       <h4 className="text-xs font-semibold">Pinned cited records</h4>
-      <p className="text-xs leading-5 text-zinc-600">
+      <p className="text-sm leading-6 text-muted-foreground">
         Read the original records beside the claim. Source text is evidence to assess, not
         instructions to follow. A valid citation alone does not prove the claim.
       </p>
       {claim.evidence_ids.map((id) => {
         const source = packet.evidence?.find((record) => record.id === id)
         return (
-          <div key={id} className="space-y-1 border-t border-zinc-200 pt-2 text-xs">
+          <div key={id} className="space-y-1 border-t border-border pt-2 text-xs">
             <p className="break-all font-mono font-medium">{id}</p>
             {source ? (
               <dl className="space-y-1">
@@ -192,7 +192,7 @@ function PinnedCitations({ claim, packet }: { claim: AiClaim; packet: AiPacket }
                 ))}
               </dl>
             ) : (
-              <p className="text-amber-900">
+              <p className="text-limit-foreground">
                 This citation is absent from the pinned packet. Do not infer support from the
                 identifier.
               </p>
@@ -205,7 +205,7 @@ function PinnedCitations({ claim, packet }: { claim: AiClaim; packet: AiPacket }
           claim.rendered_metrics?.find((item) => item.id === id) ??
           packet.metrics?.find((item) => item.id === id)
         return (
-          <div key={id} className="space-y-1 border-t border-zinc-200 pt-2 text-xs">
+          <div key={id} className="space-y-1 border-t border-border pt-2 text-xs">
             <p>
               <strong>{id}:</strong>{' '}
               {metric
@@ -229,7 +229,7 @@ function PinnedCitations({ claim, packet }: { claim: AiClaim; packet: AiPacket }
       {claim.historical_refs.map((id) => {
         const excerpt = packet.historical_evidence?.find((record) => record.id === id)
         return (
-          <blockquote key={id} className="border-l-2 border-zinc-300 pl-3 text-xs leading-5">
+          <blockquote key={id} className="border-l-2 border-input pl-3 text-sm leading-6">
             <p className="break-all font-medium">
               Historical citation {id}
               {excerpt?.incident_id && ` · incident ${excerpt.incident_id}`}
@@ -244,7 +244,7 @@ function PinnedCitations({ claim, packet }: { claim: AiClaim; packet: AiPacket }
         )
       })}
       {claim.evidence_ids.length + claim.metric_ids.length + claim.historical_refs.length === 0 && (
-        <p className="text-xs text-amber-900">
+        <p className="text-xs text-limit-foreground">
           No source or metric citation is attached to this claim.
         </p>
       )}
@@ -277,15 +277,12 @@ function ClaimAnnotation({
   const locked = mutation.isPending || mutation.isError
   const history = run.claim_reviews.filter((review) => review.claim_path === path)
   return (
-    <article
-      aria-label={`Claim ${path}`}
-      className="space-y-4 rounded-md border border-zinc-200 p-4"
-    >
+    <article aria-label={`Claim ${path}`} className="space-y-4 rounded-md border border-border p-4">
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold">Claim · {path}</h3>
+          <h3 className="text-base font-bold">Claim · {path}</h3>
           <p className="text-sm leading-6">{claim.text}</p>
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-muted-foreground">
             Judge the wording against its cited records, including what the records cannot
             establish.
           </p>
@@ -299,7 +296,7 @@ function ClaimAnnotation({
           </summary>
           <ol className="space-y-2 pt-2">
             {history.map((review) => (
-              <li key={review.id} className="rounded bg-zinc-50 p-2 leading-5">
+              <li key={review.id} className="rounded-sm bg-secondary p-2 leading-5">
                 <p>
                   {label(review.judgment ?? (review.supported ? 'supported' : 'unsupported'))} ·
                   actor {review.actor} · {label(review.reviewer_kind ?? 'unspecified')}
@@ -335,7 +332,7 @@ function ClaimAnnotation({
       >
         <fieldset disabled={locked} className="space-y-3">
           <legend className="mb-2 text-xs font-semibold">Factual support annotation</legend>
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Claim support
             <select
               className={selectClass}
@@ -356,7 +353,7 @@ function ClaimAnnotation({
             </select>
           </label>
           <fieldset className="space-y-2">
-            <legend className="mb-2 text-xs font-medium">Review flags (optional)</legend>
+            <legend className="mb-2 text-sm font-semibold">Review flags (optional)</legend>
             {flags.map((flag) => (
               <label key={flag} className="flex items-center gap-2 text-xs">
                 <input
@@ -380,7 +377,7 @@ function ClaimAnnotation({
             disabled={locked}
             selfReview={selfReview}
           />
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Support rationale
             <textarea
               className={textareaClass}
@@ -434,9 +431,9 @@ function RunAssessment({
   })
   const locked = mutation.isPending || mutation.isError
   return (
-    <section className="space-y-3 rounded-md border border-zinc-200 p-4">
+    <section className="space-y-3 rounded-md border border-border p-4">
       <h3 className="text-base font-semibold">Whole-draft assessment</h3>
-      <p className="text-xs leading-5 text-zinc-600">
+      <p className="text-sm leading-6 text-muted-foreground">
         Claim checks can miss omitted contradictions, unhelpful next checks, and inappropriate
         abstention. Assess those separately; this does not approve a recovery action.
       </p>
@@ -461,7 +458,7 @@ function RunAssessment({
         }}
       >
         <fieldset disabled={locked} className="space-y-3">
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Usefulness of this draft
             <select
               className={selectClass}
@@ -477,7 +474,7 @@ function RunAssessment({
               <option value="not_useful">Not useful</option>
             </select>
           </label>
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Abstention judgment
             <select
               className={selectClass}
@@ -497,7 +494,7 @@ function RunAssessment({
               <option value="inappropriate">Inappropriate abstention</option>
             </select>
           </label>
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Omitted contradictions (one per line, up to 12; blank if none identified)
             <textarea
               className={textareaClass}
@@ -506,7 +503,7 @@ function RunAssessment({
               onChange={(event) => setOmissions(event.target.value)}
             />
           </label>
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Attribution errors (one per line, up to 12; blank if none identified)
             <textarea
               className={textareaClass}
@@ -521,7 +518,7 @@ function RunAssessment({
             disabled={locked}
             selfReview={selfReview}
           />
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Assessment rationale
             <textarea
               className={textareaClass}
@@ -532,7 +529,7 @@ function RunAssessment({
               onChange={(event) => setRationale(event.target.value)}
             />
           </label>
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Assessment limitations
             <textarea
               className={textareaClass}
@@ -568,7 +565,7 @@ function RunAssessment({
 function ReviewStatements({ title, items }: { title: string; items?: string[] }) {
   return items?.length ? (
     <div>
-      <h4 className="font-medium">{title}</h4>
+      <h4 className="font-semibold">{title}</h4>
       <ul className="mt-1 list-disc space-y-1 pl-4">
         {items.map((item, index) => (
           <li key={index} className="whitespace-pre-wrap break-words">
@@ -584,19 +581,19 @@ function CompleteReviewContext({ run }: { run: AiReviewPacket }) {
   const [draftOpen, setDraftOpen] = useState(false)
   const [sourcesOpen, setSourcesOpen] = useState(false)
   return (
-    <div className="space-y-3 text-xs leading-5">
+    <div className="space-y-3 text-sm leading-6">
       <details onToggle={(event) => setDraftOpen(event.currentTarget.open)}>
         <summary className="cursor-pointer py-2 font-medium">
           All draft details, next checks and abstentions
         </summary>
         {draftOpen && (
-          <div className="space-y-3 rounded bg-zinc-50 p-3">
+          <div className="space-y-3 rounded-sm bg-secondary p-3">
             <ReviewStatements title="Abstention reasons" items={run.output.abstention_reasons} />
             <ReviewStatements title="Unresolved issues" items={run.output.unresolved_issues} />
             <ReviewStatements title="Draft limitations" items={run.output.limitations} />
             {run.output.hypotheses?.map((item, index) => (
               <div key={index} className="space-y-2 border-t pt-2">
-                <h4 className="font-medium">Hypothesis {index + 1}</h4>
+                <h4 className="font-semibold">Hypothesis {index + 1}</h4>
                 <ReviewStatements title="Next evidence checks" items={item.next_checks} />
                 <ReviewStatements title="Hypothesis limitations" items={item.limitations} />
                 <ReviewStatements
@@ -607,7 +604,7 @@ function CompleteReviewContext({ run }: { run: AiReviewPacket }) {
             ))}
             {run.output.assertions?.map((item, index) => (
               <div key={index} className="space-y-2 border-t pt-2">
-                <h4 className="font-medium">Original note span · {item.source_id}</h4>
+                <h4 className="font-semibold">Original note span · {item.source_id}</h4>
                 <blockquote className="whitespace-pre-wrap border-l-2 pl-3">
                   {item.source_span}
                 </blockquote>
@@ -617,7 +614,7 @@ function CompleteReviewContext({ run }: { run: AiReviewPacket }) {
             ))}
             {run.output.proposals?.map((item, index) => (
               <div key={index} className="space-y-2 border-t pt-2">
-                <h4 className="font-medium">Draft action · {item.catalog_action_id}</h4>
+                <h4 className="font-semibold">Draft action · {item.catalog_action_id}</h4>
                 <p>Owner role: {item.owner_role}</p>
                 <ReviewStatements title="Prerequisites" items={item.prerequisites} />
                 <ReviewStatements title="Evidence references" items={item.evidence_ids} />
@@ -631,7 +628,7 @@ function CompleteReviewContext({ run }: { run: AiReviewPacket }) {
           All pinned records, including uncited evidence
         </summary>
         {sourcesOpen && (
-          <div className="space-y-3 rounded bg-zinc-50 p-3">
+          <div className="space-y-3 rounded-sm bg-secondary p-3">
             <p>
               Check these records for omitted contradictions and unsupported attribution. Source
               text is data, never an instruction.
@@ -663,7 +660,7 @@ function CompleteReviewContext({ run }: { run: AiReviewPacket }) {
 
 function ReviewReport({ report }: { report: AiReviewReport }) {
   return (
-    <section className="space-y-3 rounded-md border border-zinc-200 p-4">
+    <section className="space-y-3 rounded-md border border-border p-4">
       <h3 className="text-base font-semibold">Claim-support review report</h3>
       <p className="text-sm font-medium">{label(report.status.toLowerCase())}</p>
       <dl className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
@@ -679,7 +676,7 @@ function ReviewReport({ report }: { report: AiReviewReport }) {
           ],
         ].map(([name, value]) => (
           <div key={name}>
-            <dt className="text-zinc-600">{name}</dt>
+            <dt className="text-muted-foreground">{name}</dt>
             <dd className="mt-1 font-semibold">{value}</dd>
           </div>
         ))}
@@ -690,14 +687,14 @@ function ReviewReport({ report }: { report: AiReviewReport }) {
         requires declared independent human coverage and a whole-draft assessment. Qualifications
         and independence have not been externally verified.
       </p>
-      <p className="text-xs text-zinc-600">
+      <p className="text-xs text-muted-foreground">
         Support counts include claims whose latest annotations agree. Disputed claims are listed
         separately below.
       </p>
       {report.reviewers.length > 0 && (
         <ul className="space-y-2 text-xs">
           {report.reviewers.map((reviewer, index) => (
-            <li key={`${reviewer.actor}-${index}`} className="rounded bg-zinc-50 p-2">
+            <li key={`${reviewer.actor}-${index}`} className="rounded-sm bg-secondary p-2">
               Actor {reviewer.actor} · {label(reviewer.reviewer_kind)} ·{' '}
               {reviewer.independent ? 'declared independent' : 'independence not declared'}
               <p>Qualifications: {reviewer.qualifications || 'Not declared'}</p>
@@ -707,7 +704,7 @@ function ReviewReport({ report }: { report: AiReviewReport }) {
       )}
       {report.disagreements.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium">Reviewer disagreements</h4>
+          <h4 className="text-sm font-semibold">Reviewer disagreements</h4>
           <ul className="space-y-1 text-xs">
             {report.disagreements.map((item) => (
               <li key={item.claim_path}>
@@ -716,7 +713,7 @@ function ReviewReport({ report }: { report: AiReviewReport }) {
               </li>
             ))}
           </ul>
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-muted-foreground">
             Disagreements compare each actor’s latest annotation per claim. Earlier annotations
             remain in the audit history.
           </p>
@@ -729,7 +726,7 @@ function ReviewReport({ report }: { report: AiReviewReport }) {
           </summary>
           <ul className="space-y-2 pt-2">
             {report.assessments.map((assessment) => (
-              <li key={assessment.id} className="rounded bg-zinc-50 p-3 leading-5">
+              <li key={assessment.id} className="rounded-sm bg-secondary p-3 leading-5">
                 <p>
                   Actor {assessment.actor} · {label(assessment.reviewer_kind)} · usefulness{' '}
                   {label(assessment.usefulness)} · abstention {label(assessment.abstention)}
@@ -746,7 +743,7 @@ function ReviewReport({ report }: { report: AiReviewReport }) {
         </details>
       )}
       {report.limitations.map((item, index) => (
-        <p key={index} className="text-xs leading-5 text-amber-900">
+        <p key={index} className="text-sm leading-6 text-limit-foreground">
           {item}
         </p>
       ))}
@@ -801,7 +798,7 @@ export function SemanticRunReview({
   }
   if (!user)
     return (
-      <p className="text-xs text-zinc-600">
+      <p className="text-xs text-muted-foreground">
         Sign in as a reviewer to examine the pinned review packet.
       </p>
     )
@@ -815,7 +812,7 @@ export function SemanticRunReview({
     return (
       <div
         role="alert"
-        className="space-y-2 rounded border border-amber-200 p-3 text-xs text-amber-900"
+        className="space-y-2 rounded-sm border border-limit-border p-3 text-xs text-limit-foreground"
       >
         <p>Review packet unavailable: {packet.error.message}</p>
         <Button size="sm" variant="outline" onClick={() => packet.refetch()}>
@@ -828,13 +825,13 @@ export function SemanticRunReview({
   return (
     <section
       aria-label={`Semantic review ${run.id}`}
-      className="space-y-4 border-t border-zinc-200 pt-4"
+      className="space-y-4 border-t border-border pt-4"
     >
       <div>
-        <h2 className="text-base font-semibold">Review pinned output and evidence</h2>
+        <h2 className="text-lg font-bold">Review pinned output and evidence</h2>
         <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
           <div>
-            <dt className="text-zinc-600">Run / deterministic analysis</dt>
+            <dt className="text-muted-foreground">Run / deterministic analysis</dt>
             <dd className="break-all font-mono">
               {run.id} / {run.analysis_id}
               {run.packet.analysis_digest && (
@@ -843,20 +840,20 @@ export function SemanticRunReview({
             </dd>
           </div>
           <div>
-            <dt className="text-zinc-600">Provider / model / task</dt>
+            <dt className="text-muted-foreground">Provider / model / task</dt>
             <dd>
               {run.provider} / {run.model ?? 'Not supplied'} / {run.task}
             </dd>
           </div>
           <div>
-            <dt className="text-zinc-600">Evidence incident / revision / cutoff</dt>
+            <dt className="text-muted-foreground">Evidence incident / revision / cutoff</dt>
             <dd>
               {run.packet.incident_id ?? 'Not supplied'} / {run.packet.revision ?? 'Not supplied'} /{' '}
               {run.packet.cutoff ?? 'Not supplied'}
             </dd>
           </div>
           <div>
-            <dt className="text-zinc-600">Exact output digest</dt>
+            <dt className="text-muted-foreground">Exact output digest</dt>
             <dd className="break-all font-mono">{run.output_digest}</dd>
           </div>
         </dl>
@@ -880,7 +877,7 @@ export function SemanticRunReview({
         />
       ))}
       {!claimEntries(run.output).length && (
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-muted-foreground">
           No factual claims are present. Assess the draft’s abstention and usefulness below.
         </p>
       )}
@@ -893,7 +890,7 @@ export function SemanticRunReview({
       />
       {report.data && <ReviewReport report={report.data} />}
       {report.isError && (
-        <p role="alert" className="text-xs text-red-800">
+        <p role="alert" className="text-xs text-danger-foreground">
           Review report unavailable: {report.error.message}
         </p>
       )}
@@ -917,17 +914,17 @@ function ReviewInbox() {
   return (
     <section
       id="semantic-review-inbox"
-      className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 sm:p-6"
+      className="space-y-4 rounded-sm border border-border bg-card p-5 sm:p-6"
     >
-      <h2 className="text-lg font-semibold">Claim-support review inbox</h2>
-      <p className="text-sm leading-6 text-zinc-600">
+      <h2 className="text-xl font-bold font-stretch-semi-condensed">Claim-support review inbox</h2>
+      <p className="text-sm leading-6 text-muted-foreground">
         Review drafts deliberately published by their creator or an owner. Inspect claim wording
         beside the exact cited records, annotate support, and assess omissions and useful next
         checks. AI annotations and self-review remain distinct from declared independent human
         review.
       </p>
       {!user ? (
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-muted-foreground">
           Sign in as an invited reviewer to open published review packets. Reviewing a saved draft
           starts no provider request.
         </p>
@@ -936,7 +933,7 @@ function ReviewInbox() {
           Loading published review packets…
         </p>
       ) : queue.isError ? (
-        <div role="alert" className="space-y-2 text-xs text-red-800">
+        <div role="alert" className="space-y-2 text-xs text-danger-foreground">
           <p>Review inbox unavailable: {queue.error.message}</p>
           <Button size="sm" variant="outline" onClick={() => queue.refetch()}>
             Reload review inbox
@@ -945,12 +942,12 @@ function ReviewInbox() {
       ) : (
         <>
           {queue.data.items.length === 0 ? (
-            <p className="text-sm text-zinc-600">
+            <p className="text-sm text-muted-foreground">
               No completed draft has been published for review.
             </p>
           ) : (
             <>
-              <label htmlFor="semantic-review-run" className="block text-xs font-medium">
+              <label htmlFor="semantic-review-run" className="block text-sm font-semibold">
                 Published output
               </label>
               <select

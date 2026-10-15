@@ -30,13 +30,13 @@ export function SupervisorReport({
   const data = enabled ? workflow.data : undefined
   return (
     <section
-      className="supervisor-export rounded-lg border border-zinc-300 bg-white p-4 sm:p-6"
+      className="supervisor-export rounded-sm border border-input bg-card p-4 sm:p-6"
       aria-label="Supervisor report export"
     >
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
-          <h2 className="text-lg font-semibold">Supervisor report</h2>
-          <p className="mt-1 text-xs text-zinc-600">
+          <h2 className="text-xl font-bold font-stretch-semi-condensed">Supervisor report</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
             A readable report with sources, open questions and named actions. Use your browser’s
             print dialog to save a PDF.
           </p>
@@ -64,7 +64,7 @@ export function SupervisorReport({
         className={`supervisor-report mt-5 space-y-5 break-words text-sm leading-6 ${expanded ? '' : 'hidden print:block'}`}
         aria-label="Printable supervisor report"
       >
-        <header className="space-y-1 border-b border-zinc-300 pb-4">
+        <header className="space-y-1 border-b border-input pb-4">
           <h2 className="text-xl font-semibold">{incident.title}</h2>
           <p>
             {incident.scope.factory} · Line {incident.scope.line_id} · {words(incident.scope.stage)}{' '}
@@ -137,11 +137,8 @@ export function SupervisorReport({
           </p>
           {report.hypotheses.length ? (
             report.hypotheses.map((item, index) => (
-              <div
-                className="mt-3 border-l-2 border-zinc-300 pl-3"
-                key={`${item.category}-${index}`}
-              >
-                <h4 className="font-medium">
+              <div className="mt-3 border-l-2 border-input pl-3" key={`${item.category}-${index}`}>
+                <h4 className="font-semibold">
                   {words(item.category)} · {words(item.status)}
                 </h4>
                 <p>{item.mechanism}</p>
@@ -171,8 +168,8 @@ export function SupervisorReport({
           <p>Proposal review records a decision; it does not prove an action was performed.</p>
           {report.proposals.length ? (
             report.proposals.map((proposal) => (
-              <div className="mt-3 border-l-2 border-zinc-300 pl-3" key={proposal.id}>
-                <h4 className="font-medium">{words(proposal.type)}</h4>
+              <div className="mt-3 border-l-2 border-input pl-3" key={proposal.id}>
+                <h4 className="font-semibold">{words(proposal.type)}</h4>
                 <p>{proposal.purpose}</p>
                 <p>
                   Responsible role: {words(proposal.owner_role)}. Review:{' '}
@@ -216,8 +213,8 @@ export function SupervisorReport({
               </p>
               {data.tasks.length ? (
                 data.tasks.map((task) => (
-                  <div className="mt-3 border-l-2 border-zinc-300 pl-3" key={task.id}>
-                    <h4 className="font-medium">{task.question}</h4>
+                  <div className="mt-3 border-l-2 border-input pl-3" key={task.id}>
+                    <h4 className="font-semibold">{task.question}</h4>
                     <p>
                       Assigned to {task.assignee_name} · Due {formatInstant(task.due_at)} ·{' '}
                       {words(task.status)}
@@ -273,7 +270,7 @@ export function SupervisorReport({
           </p>
           {report.timeline.length ? (
             report.timeline.map((event) => (
-              <div key={event.id} className="mt-3 border-t border-zinc-200 pt-2">
+              <div key={event.id} className="mt-3 border-t border-border pt-2">
                 <p className="font-medium">
                   {event.id} · {words(event.lane ?? event.type)}
                   {event.assertion ? ' · Source assertion' : ''}
@@ -290,7 +287,7 @@ export function SupervisorReport({
             <p>No timeline observations available at the cutoff.</p>
           )}
         </section>
-        <footer className="border-t border-zinc-300 pt-3 text-xs">
+        <footer className="border-t border-input pt-3 text-xs">
           This export includes deterministic analysis and available workflow records. AI drafts
           require a separate factual-support review. Check prerequisites and local conditions before
           acting.

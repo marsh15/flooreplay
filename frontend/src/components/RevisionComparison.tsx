@@ -65,7 +65,7 @@ export function RevisionComparison({
   const previous = comparison.data?.analysis
   return (
     <section
-      className="rounded border border-zinc-200 bg-white p-4 print:hidden"
+      className="rounded-sm border border-border bg-card p-4 print:hidden"
       aria-label="Revision comparison"
     >
       <Button variant="outline" size="sm" onClick={() => setOpen(!open)} aria-expanded={open}>
@@ -73,16 +73,18 @@ export function RevisionComparison({
       </Button>
       {open && (
         <div className="mt-4 space-y-4">
-          <h2 className="text-lg font-semibold">What changed in revision {incident.revision}?</h2>
+          <h2 className="text-xl font-bold font-stretch-semi-condensed">
+            What changed in revision {incident.revision}?
+          </h2>
           <div>
-            <label htmlFor="compare-revision" className="mr-2 text-xs font-medium">
+            <label htmlFor="compare-revision" className="mr-2 text-sm font-semibold">
               Compare with
             </label>
             <select
               id="compare-revision"
               value={baseline}
               onChange={(event) => setChosen(Number(event.target.value))}
-              className="rounded border p-2 text-sm"
+              className="rounded-sm border p-2 text-sm"
             >
               {earlier.map((value) => (
                 <option key={value} value={value}>
@@ -96,13 +98,13 @@ export function RevisionComparison({
               Loading earlier evidence and calculation…
             </p>
           ) : comparison.isError ? (
-            <p role="alert" className="text-sm text-red-800">
+            <p role="alert" className="text-sm text-danger-foreground">
               {comparison.error.message}
             </p>
           ) : (
             previous && (
               <>
-                <p className="text-xs text-zinc-600">
+                <p className="text-xs text-muted-foreground">
                   Evidence available by {formatInstant(previous.cutoff)} compared with{' '}
                   {formatInstant(report.cutoff)}. Later records stay excluded from the earlier
                   calculation.
@@ -143,7 +145,7 @@ export function RevisionComparison({
                     </tbody>
                   </table>
                 </div>
-                <p className="text-xs text-zinc-600">
+                <p className="text-xs text-muted-foreground">
                   {
                     (report.metrics.inputs ?? []).filter(
                       (input) =>
@@ -157,11 +159,11 @@ export function RevisionComparison({
                   newly comparable production intervals. New intervals change the calculation
                   window; correction records can change an existing observation.
                 </p>
-                <h3 className="text-sm font-medium">Source record changes</h3>
+                <h3 className="text-base font-semibold">Source record changes</h3>
                 {changes.length ? (
                   <ul className="space-y-1 text-xs">
                     {changes.map((change) => (
-                      <li key={change.id} className="rounded bg-zinc-50 p-2">
+                      <li key={change.id} className="rounded-sm bg-secondary p-2">
                         <span className="font-medium">
                           {change.kind}: {change.id}
                         </span>
@@ -174,7 +176,7 @@ export function RevisionComparison({
                 ) : (
                   <p className="text-xs">No source record changes available at these cutoffs.</p>
                 )}
-                <h3 className="text-sm font-medium">Explanation changes</h3>
+                <h3 className="text-base font-semibold">Explanation changes</h3>
                 {report.hypotheses.map((hypothesis) => {
                   const old = previous.hypotheses.find(
                     (item) => item.category === hypothesis.category,
@@ -198,7 +200,7 @@ export function RevisionComparison({
                       {old.category.replaceAll('_', ' ')}: {old.status} → absent in this revision
                     </p>
                   ))}
-                <p className="rounded bg-amber-50 p-3 text-xs text-amber-950">
+                <p className="rounded-sm bg-limit p-3 text-xs text-limit-foreground">
                   Review proposals against revision {incident.revision}. Earlier approvals remain
                   attached to their original report and do not approve the updated evidence.
                 </p>

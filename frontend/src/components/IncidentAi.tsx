@@ -81,19 +81,19 @@ export function OpenAiPanel({
     })) ?? []),
   ]
   return (
-    <section className="space-y-4 rounded-lg border bg-card p-5">
-      <h2 className="text-base font-semibold">OpenAI draft</h2>
-      <p className="text-xs text-zinc-600">
+    <section className="space-y-4 rounded-sm border border-border bg-card p-5">
+      <h2 className="text-lg font-bold">OpenAI draft</h2>
+      <p className="text-xs text-muted-foreground">
         Drafts require human review. Calculated metrics and uncertainty remain attached to every
         draft.
       </p>
       {!enabled && (
-        <p role="status" className="text-sm text-amber-900">
+        <p role="status" className="text-sm text-limit-foreground">
           {reasons.join(' ')}
         </p>
       )}
       <div className="grid gap-4">
-        <label className="block text-xs font-medium">
+        <label className="block text-sm font-semibold">
           Task
           <select
             aria-label="OpenAI task"
@@ -112,7 +112,7 @@ export function OpenAiPanel({
           </select>
         </label>
       </div>
-      <label className="block text-xs">
+      <label className="block text-sm font-semibold">
         Evidence retrieval
         <select
           className={selectClass}
@@ -133,7 +133,7 @@ export function OpenAiPanel({
         </select>
       </label>
       {retrievalMode !== 'evidence_only' && (
-        <label className="block text-xs">
+        <label className="block text-sm font-semibold">
           Corpus release
           <select
             className={selectClass}
@@ -160,17 +160,17 @@ export function OpenAiPanel({
         </p>
       )}
       {retrievalMode !== 'evidence_only' && corpora.isError && (
-        <p role="alert" className="text-xs text-red-800">
+        <p role="alert" className="text-xs text-danger-foreground">
           Corpus releases could not be loaded: {corpora.error.message}
         </p>
       )}
       {task === 'note' && (
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-muted-foreground">
           Extract observations from the pinned source evidence. Confirm draft assertions before
           publication.
         </p>
       )}
-      <label className="block text-xs font-medium">
+      <label className="block text-sm font-semibold">
         Question or task instruction
         <textarea
           className="mt-1.5 min-h-24 w-full resize-y rounded-md border border-input bg-background p-3 text-sm leading-relaxed outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
@@ -202,7 +202,7 @@ export function OpenAiPanel({
             : 'Generate draft'}
       </Button>
       <details className="border-t pt-4">
-        <summary className="cursor-pointer text-xs font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+        <summary className="cursor-pointer text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
           Recover an interrupted request
         </summary>
         <div className="mt-3 space-y-3">
@@ -222,14 +222,14 @@ export function OpenAiPanel({
           >
             {recover.isPending ? 'Looking up request…' : 'Recover existing request'}
           </Button>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             A lookup retrieves the original operation without starting another paid request. Keep
             this identity to recover after a connection interruption.
           </p>
         </div>
       </details>
       {(create.error || recover.error || status.error) && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger-foreground">
           {(create.error ?? recover.error ?? status.error)?.message}
         </p>
       )}
@@ -241,7 +241,7 @@ export function OpenAiPanel({
           </p>
           {current.result?.reason && <p>{current.result.reason}</p>}
           {current.result?.errors?.map((error, index) => (
-            <p role="alert" key={index} className="text-sm text-red-700">
+            <p role="alert" key={index} className="text-sm text-danger-foreground">
               {error === 'MODEL_ACCESS_UNAVAILABLE'
                 ? 'The configured model is unavailable to this API project.'
                 : error === 'PROVIDER_TEMPORARILY_UNAVAILABLE'
@@ -337,7 +337,7 @@ export function OpenAiPanel({
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-amber-900">
+              <p className="text-xs text-limit-foreground">
                 Draft recommendation · requires a version-bound human review.
               </p>
             </div>
@@ -348,13 +348,13 @@ export function OpenAiPanel({
             ...(output?.unresolved_issues ?? []),
             ...(current.result?.validation?.errors ?? []),
           ].map((item, index) => (
-            <p key={index} className="text-xs text-amber-900">
+            <p key={index} className="text-xs text-limit-foreground">
               {item}
             </p>
           ))}
           {output && <ReviewPublication key={current.id} run={current} />}
           {current.task === 'note' && output && (
-            <p className="text-xs text-amber-900">
+            <p className="text-xs text-limit-foreground">
               Extracted assertions are drafts. An owner must confirm the source and import it before
               it becomes incident evidence.
             </p>
@@ -372,14 +372,14 @@ function ReviewPublication({ run }: { run: AiRun }) {
   })
   if (!run.output_digest)
     return (
-      <p className="text-xs text-amber-900">
+      <p className="text-xs text-limit-foreground">
         This run did not supply an output digest. Reload its stored identity before recording
         semantic review.
       </p>
     )
   return (
     <div className="space-y-3 border-t pt-4">
-      <p className="text-xs leading-5 text-zinc-600">
+      <p className="text-sm leading-6 text-muted-foreground">
         Sharing makes this exact output and its cited records accessible to invited reviewers.
         Publication does not approve a recovery action.
       </p>
@@ -403,12 +403,12 @@ function ReviewPublication({ run }: { run: AiRun }) {
               : 'Publish draft for reviewer inbox'}
       </Button>
       {mutation.error && (
-        <p role="alert" className="text-xs text-red-800">
+        <p role="alert" className="text-xs text-danger-foreground">
           {mutation.error.message} Retry preserves the exact output identity and request key.
         </p>
       )}
       {mutation.isSuccess && (
-        <p role="status" className="text-xs text-emerald-800">
+        <p role="status" className="text-xs text-success-foreground">
           Draft published for authenticated review. Independence still requires a reviewer
           declaration and is not externally verified.
         </p>
@@ -430,10 +430,10 @@ export function PrecedentConditions({
   >
 }) {
   return (
-    <div className="space-y-2 text-xs leading-5">
+    <div className="space-y-2 text-sm leading-6">
       {item.comparison_facts?.length ? (
         <div>
-          <h4 className="font-medium">Recorded operational comparison</h4>
+          <h4 className="font-semibold">Recorded operational comparison</h4>
           <ul className="list-disc pl-4">
             {item.comparison_facts.map((fact, index) => (
               <li key={index}>{fact}</li>
@@ -442,7 +442,7 @@ export function PrecedentConditions({
         </div>
       ) : null}
       {item.missing_information?.length ? (
-        <p className="text-amber-900">
+        <p className="text-limit-foreground">
           <strong>Missing comparison evidence:</strong> {item.missing_information.join('; ')}
         </p>
       ) : null}
@@ -477,11 +477,11 @@ export function HybridPanel({ report, enabled }: { report: AnalysisReport; enabl
       }),
   })
   return (
-    <section className="space-y-4 rounded-lg border bg-card p-5">
-      <h2 className="font-semibold">Hybrid precedent search</h2>
+    <section className="space-y-4 rounded-sm border border-border bg-card p-5">
+      <h2 className="text-lg font-bold">Hybrid precedent search</h2>
       {enabled ? (
         <>
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Pinned corpus
             <select
               className={selectClass}
@@ -501,7 +501,7 @@ export function HybridPanel({ report, enabled }: { report: AnalysisReport; enabl
               ))}
             </select>
           </label>
-          <label className="block text-xs">
+          <label className="block text-sm font-semibold">
             Search evidence
             <Input value={query} onChange={(event) => setQuery(event.target.value)} />
           </label>
@@ -514,18 +514,18 @@ export function HybridPanel({ report, enabled }: { report: AnalysisReport; enabl
           </Button>
         </>
       ) : (
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-muted-foreground">
           Sign in with reviewer access and use an indexed corpus for semantic retrieval. Lexical
           precedents remain available below.
         </p>
       )}
       {search.error && (
-        <p role="alert" className="text-xs text-red-700">
+        <p role="alert" className="text-xs text-danger-foreground">
           {search.error.message}
         </p>
       )}
       {search.data && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted-foreground">
           Pinned release: {search.data.manifest.corpus_id} · cutoff: {search.data.manifest.cutoff}
         </p>
       )}
@@ -536,7 +536,7 @@ export function HybridPanel({ report, enabled }: { report: AnalysisReport; enabl
         </p>
       )}
       {corpora.isError && (
-        <p role="alert" className="text-xs text-red-800">
+        <p role="alert" className="text-xs text-danger-foreground">
           Corpus releases could not be loaded: {corpora.error.message}
         </p>
       )}
@@ -590,10 +590,10 @@ export function ExportReport({ report, enabled }: { report: AnalysisReport; enab
         {exportFile.isPending ? 'Preparing export…' : 'Export portable report'}
       </Button>
       {!enabled && (
-        <p className="mt-1 text-xs text-zinc-500">Reviewer sign-in required for export.</p>
+        <p className="mt-1 text-xs text-muted-foreground">Reviewer sign-in required for export.</p>
       )}
       {exportFile.error && (
-        <p role="alert" className="text-xs text-red-700">
+        <p role="alert" className="text-xs text-danger-foreground">
           {exportFile.error.message}
         </p>
       )}

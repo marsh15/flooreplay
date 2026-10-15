@@ -10,11 +10,11 @@ import { OUTCOME_META, VERDICT_META } from '@/lib/status'
 import type { DomainOutcome, ExecutionLifecycle, Verdict } from '@/lib/api'
 
 const TONES = {
-  ready: 'bg-emerald-600/10 text-emerald-800 border-emerald-600/25',
-  rejected: 'bg-red-600/10 text-red-800 border-red-600/40 font-semibold',
-  blocked: 'bg-amber-500/15 text-amber-900 border-amber-600/30',
-  abstain: 'bg-blue-600/10 text-blue-800 border-blue-600/25',
-  neutral: 'bg-zinc-100 text-zinc-700 border-zinc-300',
+  ready: 'bg-success text-success-foreground border-success-border',
+  rejected: 'bg-danger text-danger-foreground border-danger-border font-semibold',
+  blocked: 'bg-limit text-limit-foreground border-limit-border',
+  abstain: 'bg-info text-info-foreground border-info-border',
+  neutral: 'bg-secondary text-secondary-foreground border-border',
 } as const
 
 export function OutcomeBadge({

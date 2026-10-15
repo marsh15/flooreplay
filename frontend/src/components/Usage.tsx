@@ -13,8 +13,8 @@ export function UsagePanel() {
   })
   if (user?.role !== 'owner') return null
   return (
-    <details className="mb-6 rounded-lg border bg-card text-xs print:hidden">
-      <summary className="cursor-pointer rounded-lg px-4 py-3 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+    <details className="mb-6 rounded-sm border bg-card text-sm print:hidden">
+      <summary className="cursor-pointer rounded-sm px-4 py-3 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
         Owner API allowance
       </summary>
       {usage.data ? (
@@ -71,7 +71,9 @@ export function UsagePanel() {
         </div>
       ) : usage.isError ? (
         <div role="alert" className="space-y-2 border-t p-4">
-          <p className="text-red-800">Allowance could not be loaded: {usage.error.message}</p>
+          <p className="text-danger-foreground">
+            Allowance could not be loaded: {usage.error.message}
+          </p>
           <Button size="sm" variant="outline" onClick={() => void usage.refetch()}>
             Retry allowance
           </Button>

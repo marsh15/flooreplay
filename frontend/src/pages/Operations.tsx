@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/components/Auth'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Limits, PageHeader } from '@/components/board'
 import { getOperations } from '@/lib/operations'
 
 export function OperationsPage() {
@@ -15,21 +17,20 @@ export function OperationsPage() {
   })
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">Operational evidence</h1>
-        <p className="mt-2 text-sm text-zinc-600">
+      <PageHeader title="Operational evidence">
+        <p className="mt-2 max-w-2xl text-base leading-7 text-muted-foreground">
           Find your request receipts, provider operations and retained reservations. Source text and
           questions are excluded.
         </p>
-      </header>
+      </PageHeader>
       {user?.role !== 'owner' ? (
-        <p>Sign in as an owner to inspect your operations.</p>
+        <Limits tone="neutral">Sign in as an owner to inspect your operations.</Limits>
       ) : (
         <>
-          <label className="block text-sm">
+          <label className="block text-sm font-semibold">
             Search request, incident or operation ID
-            <input
-              className="mt-1 block w-full rounded border p-2"
+            <Input
+              className="mt-1"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -41,12 +42,17 @@ export function OperationsPage() {
           {report.error && <p role="alert">{report.error.message}</p>}
           {report.data && (
             <>
-              <section className="space-y-3">
-                <h2 className="font-semibold">Alerts requiring action</h2>
+              <section className="space-y-4">
+                <h2 className="border-t-2 border-foreground pt-3 text-xl font-bold font-stretch-semi-condensed">
+                  Alerts requiring action
+                </h2>
                 {report.data.alerts.length ? (
                   report.data.alerts.map((alert, index) => (
-                    <article key={index} className="rounded border border-amber-300 p-4">
-                      <h3>
+                    <article
+                      key={index}
+                      className="rounded-sm border border-limit-border bg-limit p-4 text-limit-foreground"
+                    >
+                      <h3 className="text-base font-bold">
                         {alert.severity} · {alert.code}
                       </h3>
                       <p className="break-all font-mono text-xs">
@@ -62,12 +68,14 @@ export function OperationsPage() {
                   <p>No alerts in this owner scope and receipt window.</p>
                 )}
               </section>
-              <section className="space-y-3">
-                <h2 className="font-semibold">Durable AI operations</h2>
+              <section className="space-y-4">
+                <h2 className="border-t-2 border-foreground pt-3 text-xl font-bold font-stretch-semi-condensed">
+                  Durable AI operations
+                </h2>
                 <p className="text-sm">{report.data.recovery_policy}</p>
                 {report.data.operations.map((operation) => (
-                  <article key={operation.id} className="rounded border p-4">
-                    <h3>
+                  <article key={operation.id} className="rounded-sm border bg-card p-4">
+                    <h3 className="text-base font-bold">
                       {operation.task} · {operation.status}
                     </h3>
                     <p className="break-all text-xs">
@@ -92,17 +100,27 @@ export function OperationsPage() {
                   </article>
                 ))}
               </section>
-              <section>
-                <h2 className="font-semibold">Request receipts and import health</h2>
-                <div className="overflow-x-auto">
+              <section className="space-y-4">
+                <h2 className="border-t-2 border-foreground pt-3 text-xl font-bold font-stretch-semi-condensed">
+                  Request receipts and import health
+                </h2>
+                <div className="overflow-x-auto rounded-sm border bg-card">
                   <table className="w-full text-left text-xs">
                     <caption className="sr-only">Actor-scoped request receipts</caption>
                     <thead>
                       <tr>
-                        <th className="p-2">Request ID</th>
-                        <th className="p-2">Route</th>
-                        <th className="p-2">Status</th>
-                        <th className="p-2">Latency</th>
+                        <th className="p-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                          Request ID
+                        </th>
+                        <th className="p-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                          Route
+                        </th>
+                        <th className="p-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                          Status
+                        </th>
+                        <th className="p-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                          Latency
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -122,8 +140,10 @@ export function OperationsPage() {
                   </table>
                 </div>
               </section>
-              <section>
-                <h2 className="font-semibold">Your allowance reservations</h2>
+              <section className="space-y-4">
+                <h2 className="border-t-2 border-foreground pt-3 text-xl font-bold font-stretch-semi-condensed">
+                  Your allowance reservations
+                </h2>
                 {report.data.allowance_entries.map((entry) => (
                   <p className="break-all text-xs" key={entry.id}>
                     {entry.id} · {entry.operation} · {entry.status} · reserved ₹
@@ -135,8 +155,8 @@ export function OperationsPage() {
                   entries only.
                 </p>
               </section>
-              <section id="operations-runbook" className="rounded border p-4">
-                <h2 className="font-semibold">Response runbook</h2>
+              <section id="operations-runbook" className="space-y-4 rounded-sm border bg-card p-4">
+                <h2 className="text-xl font-bold font-stretch-semi-condensed">Response runbook</h2>
                 <p className="mt-2 text-sm">
                   For a failed request, search its ID in host logs and check readiness and the
                   deployed commit. For uncertain provider work, compare receipt IDs against provider

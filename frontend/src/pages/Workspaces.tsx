@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { useAuth } from '@/components/Auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Limits, PageHeader } from '@/components/board'
 import { workspaceApi, type Workspace } from '@/lib/workspaces'
 
 function MembershipForm({ workspace }: { workspace: Workspace }) {
@@ -20,7 +21,7 @@ function MembershipForm({ workspace }: { workspace: Workspace }) {
         invitation.mutate()
       }}
     >
-      <label className="block text-xs font-medium">
+      <label className="block text-sm font-semibold">
         Invited account ID
         <Input
           className="mt-1"
@@ -34,7 +35,7 @@ function MembershipForm({ workspace }: { workspace: Workspace }) {
           disabled={invitation.isPending}
         />
       </label>
-      <p className="text-xs leading-5 text-zinc-600">
+      <p className="text-sm leading-6 text-muted-foreground">
         Ask the invited person for their account ID. Adding a member gives them access to this
         workspace’s records.
       </p>
@@ -47,7 +48,7 @@ function MembershipForm({ workspace }: { workspace: Workspace }) {
         </p>
       )}
       {invitation.isError && (
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="text-sm text-danger-foreground">
           {invitation.error.message}
         </p>
       )}
@@ -74,29 +75,28 @@ export function WorkspacesPage() {
   })
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-semibold">Private workspaces</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+      <PageHeader title="Private workspaces">
+        <p className="mt-2 max-w-2xl text-base leading-7 text-muted-foreground">
           Keep factory investigations within a workspace shared with invited members. Public
           synthetic examples remain separate.
         </p>
-      </header>
+      </PageHeader>
       {!user ? (
-        <p className="rounded border p-5">Sign in to view your workspaces.</p>
+        <Limits tone="neutral">Sign in to view your workspaces.</Limits>
       ) : (
         <>
-          <p className="break-all rounded border bg-white p-4 text-xs">
+          <p className="rounded-sm border bg-card p-4 text-sm break-all">
             Your account ID: {user.id}
           </p>
           {user.role === 'owner' && (
             <form
-              className="max-w-xl space-y-3 rounded border bg-white p-5"
+              className="max-w-xl space-y-3 rounded-sm border bg-card p-5"
               onSubmit={(event) => {
                 event.preventDefault()
                 create.mutate()
               }}
             >
-              <label className="block text-sm font-medium">
+              <label className="block text-sm font-semibold">
                 New workspace name
                 <Input
                   className="mt-1"
@@ -124,9 +124,9 @@ export function WorkspacesPage() {
           ) : workspaces.data.items.length ? (
             <div className="grid gap-4 sm:grid-cols-2">
               {workspaces.data.items.map((workspace) => (
-                <article key={workspace.id} className="min-w-0 rounded border bg-white p-5">
-                  <h2 className="font-semibold">{workspace.name}</h2>
-                  <p className="mt-2 break-all text-xs text-zinc-600">
+                <article key={workspace.id} className="min-w-0 rounded-sm border bg-card p-5">
+                  <h2 className="text-lg font-bold">{workspace.name}</h2>
+                  <p className="mt-2 text-sm break-all text-muted-foreground">
                     Private · {workspace.role} · {workspace.id}
                   </p>
                   {workspace.role === 'owner' && <MembershipForm workspace={workspace} />}
@@ -136,7 +136,10 @@ export function WorkspacesPage() {
           ) : (
             <p>No workspace memberships recorded.</p>
           )}
-          <Link className="inline-flex min-h-11 items-center underline" to="/incidents/imports">
+          <Link
+            className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4"
+            to="/incidents/imports"
+          >
             Import into a private workspace
           </Link>
         </>
