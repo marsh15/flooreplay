@@ -53,7 +53,7 @@ function EvidenceChip({
     <button
       type="button"
       onClick={() => onOpen(evidence)}
-      className="inline-flex items-center rounded border border-zinc-300 bg-white px-1.5 py-0.5 font-mono text-xs text-zinc-600 transition-colors hover:border-zinc-400 hover:text-zinc-900 focus-visible:outline-2"
+      className="inline-flex items-center rounded-sm border border-input bg-card px-1.5 py-0.5 font-mono text-xs text-muted-foreground transition-colors hover:border-input hover:text-foreground focus-visible:outline-2"
       title={`Open ${evidence.snapshot_id}`}
     >
       {evidence.snapshot_id === 'event' ? 'event' : evidence.snapshot_id.replace('SNAP-', '')}
@@ -65,7 +65,9 @@ function EvidenceChip({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-2">
-      <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">{title}</h2>
+      <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        {title}
+      </h2>
       {children}
     </section>
   )
@@ -74,14 +76,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function ReviewOutcome({ review }: { review: ReviewCheckResult }) {
   const tone =
     review.outcome === 'STILL_SUPPORTED'
-      ? 'border-emerald-600/30 bg-emerald-600/5'
+      ? 'border-success-border bg-success'
       : review.outcome === 'BLOCKED_CONTEXT'
-        ? 'border-red-600/30 bg-red-600/5'
-        : 'border-amber-600/30 bg-amber-500/10'
+        ? 'border-danger-border bg-danger'
+        : 'border-limit-border bg-limit'
   return (
     <div className={cn('rounded-md border p-2.5', tone)}>
       <p className="text-sm font-medium">{review.outcome.replace(/_/g, ' ').toLowerCase()}</p>
-      <p className="mt-0.5 text-xs text-zinc-500">
+      <p className="mt-0.5 text-xs text-muted-foreground">
         Checked against {review.target_scenario_id}@{review.target_scenario_revision}; the original
         replay is untouched.
       </p>
@@ -92,7 +94,7 @@ function ReviewOutcome({ review }: { review: ReviewCheckResult }) {
       ) : null}
       {review.changed_paths.length > 0 ? (
         <details className="mt-1">
-          <summary className="cursor-pointer text-xs text-zinc-500">
+          <summary className="cursor-pointer text-xs text-muted-foreground">
             {review.changed_paths.length} changed path(s)
           </summary>
           <ul className="mt-1 max-h-40 space-y-0.5 overflow-y-auto pl-4">
@@ -105,7 +107,7 @@ function ReviewOutcome({ review }: { review: ReviewCheckResult }) {
         </details>
       ) : null}
       {review.issues.length > 0 ? (
-        <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-red-700">
+        <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-danger-foreground">
           {review.issues.slice(0, 6).map((issue, index) => (
             <li key={index}>
               <Mono>{issue.code}</Mono> {issue.message}
@@ -275,8 +277,8 @@ export function WorkbenchPage() {
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         {/* ------------------------- Inputs column ------------------------- */}
         <div className="space-y-4">
-          <div className="rounded-lg border bg-white p-3">
-            <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+          <div className="rounded-sm border bg-card p-3">
+            <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
               Scenario revision
             </h2>
             <div className="mt-2 space-y-1.5">
@@ -293,12 +295,12 @@ export function WorkbenchPage() {
                     className={cn(
                       'w-full rounded-md border px-2.5 py-2 text-left text-sm transition-colors focus-visible:outline-2',
                       active
-                        ? 'border-zinc-900 bg-zinc-900 text-white'
-                        : 'border-zinc-200 bg-white hover:border-zinc-400',
+                        ? 'border-board bg-board text-board-foreground'
+                        : 'border-border bg-card hover:border-input',
                     )}
                   >
                     <span className="block leading-snug font-medium">{scenario.title}</span>
-                    <Mono className={active ? 'text-zinc-300' : 'text-zinc-400'}>
+                    <Mono className={active ? 'text-muted-foreground' : 'text-muted-foreground'}>
                       {scenario.scenario_id}@{scenario.revision}
                     </Mono>
                   </button>
@@ -307,8 +309,8 @@ export function WorkbenchPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border bg-white p-3">
-            <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+          <div className="rounded-sm border bg-card p-3">
+            <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
               Execution configuration
             </h2>
             <div className="mt-2 space-y-1.5">
@@ -323,8 +325,8 @@ export function WorkbenchPage() {
                     className={cn(
                       'w-full rounded-md border px-2.5 py-2 text-left text-sm transition-colors focus-visible:outline-2',
                       active
-                        ? 'border-zinc-900 bg-zinc-900 text-white'
-                        : 'border-zinc-200 bg-white hover:border-zinc-400',
+                        ? 'border-board bg-board text-board-foreground'
+                        : 'border-border bg-card hover:border-input',
                     )}
                   >
                     <span className="font-medium">{config.name}</span>
@@ -332,7 +334,7 @@ export function WorkbenchPage() {
                       <span
                         className={cn(
                           'mt-0.5 block text-xs leading-snug',
-                          active ? 'text-amber-200' : 'text-amber-700',
+                          active ? 'text-limit-border' : 'text-limit-foreground',
                         )}
                       >
                         {config.known_limitation}
@@ -345,24 +347,24 @@ export function WorkbenchPage() {
           </div>
 
           {detailQuery.data ? (
-            <div className="rounded-lg border bg-white p-3">
-              <h2 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">
+            <div className="rounded-sm border bg-card p-3">
+              <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                 Pinned evidence
               </h2>
               <dl className="mt-2 space-y-1.5 text-xs">
                 <div className="flex justify-between gap-2">
-                  <dt className="text-zinc-500">Event</dt>
+                  <dt className="text-muted-foreground">Event</dt>
                   <dd className="text-right">
                     <Mono>{detailQuery.data.event.subject_operator_id}</Mono> unavailable ·{' '}
                     {formatInstant(detailQuery.data.event.observed_at)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-zinc-500">Decision at</dt>
+                  <dt className="text-muted-foreground">Decision at</dt>
                   <dd>{formatInstant(detailQuery.data.decision_at)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-zinc-500">Coverage</dt>
+                  <dt className="text-muted-foreground">Coverage</dt>
                   <dd className="text-right">
                     <Mono>{detailQuery.data.target.slot_id}</Mono>
                     <br />
@@ -411,7 +413,7 @@ export function WorkbenchPage() {
           </Button>
           <Button
             variant="ghost"
-            className="w-full text-xs text-zinc-500"
+            className="w-full text-xs text-muted-foreground"
             disabled={
               !selected || !selectedConfig || savedMutation.isPending || runMutation.isPending
             }
@@ -432,7 +434,7 @@ export function WorkbenchPage() {
           {savedMutation.isError ? (
             savedMutation.error instanceof ApiError &&
             savedMutation.error.code === 'NO_SAVED_REPORT' ? (
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-muted-foreground">
                 No saved report exists for this selection yet.
               </p>
             ) : (
@@ -463,16 +465,16 @@ export function WorkbenchPage() {
         {/* ------------------------- Result column ------------------------- */}
         <div className="space-y-5">
           {!activeAttempt ? (
-            <div className="rounded-lg border border-dashed bg-white p-12 text-center">
+            <div className="rounded-sm border border-dashed bg-card p-12 text-center">
               <p className="text-sm font-medium">No replay executed for this selection yet</p>
-              <p className="mx-auto mt-1 max-w-sm text-sm text-zinc-500">
+              <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
                 Press <span className="font-medium">Run replay</span> to execute the pinned scenario
                 against the selected configuration. The result is persisted before it is shown.
               </p>
             </div>
           ) : (
             <>
-              <div className="rounded-lg border bg-white p-4">
+              <div className="rounded-sm border bg-card p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   {activeAttempt.domain_outcome ? (
                     <OutcomeBadge outcome={activeAttempt.domain_outcome} />
@@ -483,27 +485,29 @@ export function WorkbenchPage() {
                   )}
                   <LifecycleBadge lifecycle={activeAttempt.lifecycle} />
                   <ExpectationBadge verdict={activeAttempt.expectation_verdict} />
-                  <span className="ml-auto text-xs text-zinc-400">
+                  <span className="ml-auto text-xs text-muted-foreground">
                     <Mono>{activeAttempt.configuration_id}</Mono> ·{' '}
                     {loadedFromSaved ? 'Saved report' : 'Persisted attempt'} ·{' '}
                     {formatInstant(activeAttempt.created_at)}
                   </span>
                 </div>
                 {loadedFromSaved ? (
-                  <p className="mt-2 rounded-md border border-amber-600/25 bg-amber-500/10 p-2 text-xs text-amber-800">
+                  <p className="mt-2 rounded-md border border-limit-border bg-limit p-2 text-xs text-limit-foreground">
                     Loaded from history for this exact selection — not a fresh execution. Press{' '}
                     <span className="font-medium">Run replay</span> to execute now.
                   </p>
                 ) : null}
                 {activeAttempt.domain_outcome ? (
-                  <p className="mt-2 text-sm text-zinc-600">
+                  <p className="mt-2 text-sm text-muted-foreground">
                     {OUTCOME_META[activeAttempt.domain_outcome].hint}
                   </p>
                 ) : null}
                 {activeAttempt.expectation_failures?.length ? (
-                  <div className="mt-2 rounded-md border border-red-600/25 bg-red-600/5 p-2">
-                    <p className="text-xs font-medium text-red-800">Expectation failures</p>
-                    <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-red-700">
+                  <div className="mt-2 rounded-md border border-danger-border bg-danger p-2">
+                    <p className="text-xs font-medium text-danger-foreground">
+                      Expectation failures
+                    </p>
+                    <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-danger-foreground">
                       {activeAttempt.expectation_failures.map((failure) => (
                         <li key={failure}>{failure}</li>
                       ))}
@@ -515,7 +519,7 @@ export function WorkbenchPage() {
               {hasReplayResult && result && 'outcome' in result ? (
                 <>
                   <Section title="Event and proposed interval">
-                    <div className="rounded-lg border bg-white p-3 text-sm">
+                    <div className="rounded-sm border bg-card p-3 text-sm">
                       {detailQuery.data ? (
                         <p>
                           <Mono>{detailQuery.data.event.subject_operator_id}</Mono> reported
@@ -530,7 +534,7 @@ export function WorkbenchPage() {
                           .
                         </p>
                       ) : detailQuery.isError ? (
-                        <p className="text-xs text-red-700">
+                        <p className="text-xs text-danger-foreground">
                           Event details unavailable: {detailQuery.error.message}
                         </p>
                       ) : null}
@@ -543,15 +547,15 @@ export function WorkbenchPage() {
                         {result.gate_issues.map((issue, index) => (
                           <li
                             key={`${issue.code}-${issue.subject}-${index}`}
-                            className="rounded-lg border bg-white p-2.5"
+                            className="rounded-sm border bg-card p-2.5"
                           >
                             <div className="flex flex-wrap items-center gap-2">
-                              <Mono className="font-semibold text-zinc-700">{issue.code}</Mono>
+                              <Mono className="font-semibold text-foreground">{issue.code}</Mono>
                               <Badge variant="secondary" className="text-xs">
                                 {issue.severity}
                               </Badge>
                               {issue.subject ? (
-                                <Mono className="text-zinc-500">{issue.subject}</Mono>
+                                <Mono className="text-muted-foreground">{issue.subject}</Mono>
                               ) : null}
                               <span className="ml-auto flex gap-1">
                                 {issue.evidence.map((evidence, evidenceIndex) => (
@@ -563,7 +567,7 @@ export function WorkbenchPage() {
                                 ))}
                               </span>
                             </div>
-                            <p className="mt-1 text-sm text-zinc-700">{issue.message}</p>
+                            <p className="mt-1 text-sm text-foreground">{issue.message}</p>
                           </li>
                         ))}
                       </ul>
@@ -572,7 +576,7 @@ export function WorkbenchPage() {
 
                   <Section title="Recommendation">
                     {result.proposal ? (
-                      <div className="space-y-2 rounded-lg border bg-white p-3">
+                      <div className="space-y-2 rounded-sm border bg-card p-3">
                         <p className="text-sm">
                           Proposes{' '}
                           <Mono className="font-semibold">{result.proposal.operator_id}</Mono> to
@@ -580,7 +584,7 @@ export function WorkbenchPage() {
                           <Mono>{result.proposal.machine_id}</Mono>,{' '}
                           {formatInterval(result.proposal.starts_at, result.proposal.ends_at)}.
                         </p>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                           {result.proposal.ranking_factors.map(([factor, value]) => (
                             <span key={factor}>
                               {factor.replace(/_/g, ' ')}: <Mono>{value}</Mono>
@@ -589,21 +593,21 @@ export function WorkbenchPage() {
                         </div>
                       </div>
                     ) : result.abstention ? (
-                      <div className="rounded-lg border bg-white p-3">
+                      <div className="rounded-sm border bg-card p-3">
                         <p className="text-sm">
                           Abstained:{' '}
                           <Mono className="font-semibold">{result.abstention.reason_code}</Mono>
                         </p>
                         {result.abstention.candidate_exclusions.length > 0 ? (
-                          <p className="mt-1 text-xs text-zinc-500">
+                          <p className="mt-1 text-xs text-muted-foreground">
                             {result.abstention.candidate_exclusions.length} candidate(s) excluded;
                             inspect each in the persisted report.
                           </p>
                         ) : null}
                       </div>
                     ) : (
-                      <div className="rounded-lg border border-dashed bg-white p-3">
-                        <p className="text-sm text-zinc-500">
+                      <div className="rounded-sm border border-dashed bg-card p-3">
+                        <p className="text-sm text-muted-foreground">
                           No recommendation was produced: the context gate stopped this replay
                           before the policy ran.
                         </p>
@@ -613,7 +617,7 @@ export function WorkbenchPage() {
 
                   {result.constraints.length > 0 ? (
                     <Section title="Independent constraint checks">
-                      <div className="overflow-x-auto rounded-lg border bg-white">
+                      <div className="overflow-x-auto rounded-sm border bg-card">
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -639,8 +643,9 @@ export function WorkbenchPage() {
                                 <TableCell
                                   className={cn(
                                     'whitespace-normal break-words text-sm',
-                                    constraint.verdict === 'FAIL' && 'text-red-700',
-                                    constraint.verdict === 'NOT_EVALUATED' && 'text-zinc-400',
+                                    constraint.verdict === 'FAIL' && 'text-danger-foreground',
+                                    constraint.verdict === 'NOT_EVALUATED' &&
+                                      'text-muted-foreground',
                                   )}
                                 >
                                   {constraint.message}
@@ -665,7 +670,7 @@ export function WorkbenchPage() {
                   ) : null}
 
                   <Section title="Evidence and execution manifest">
-                    <div className="space-y-1 rounded-lg border bg-white p-3 text-xs">
+                    <div className="space-y-1 rounded-sm border bg-card p-3 text-xs">
                       <p>
                         Context digest: <Mono>{activeAttempt.context_digest}</Mono>
                       </p>
@@ -694,8 +699,8 @@ export function WorkbenchPage() {
 
                   {result.proposal ? (
                     <Section title="Later-context review">
-                      <div className="space-y-2 rounded-lg border bg-white p-3">
-                        <p className="text-xs text-zinc-500">
+                      <div className="space-y-2 rounded-sm border bg-card p-3">
+                        <p className="text-xs text-muted-foreground">
                           Check this proposal against an explicit later scenario revision. The
                           original replay is never altered.
                         </p>
@@ -703,7 +708,7 @@ export function WorkbenchPage() {
                           <select
                             value={reviewTargetKey}
                             onChange={(event) => setReviewTargetKey(event.target.value)}
-                            className="rounded-md border border-zinc-300 px-2 py-1.5 text-sm focus-visible:outline-2"
+                            className="rounded-md border border-input px-2 py-1.5 text-sm focus-visible:outline-2"
                             aria-label="Later scenario revision"
                           >
                             <option value="">Select later revision…</option>
@@ -739,7 +744,7 @@ export function WorkbenchPage() {
                             {reviewMutation.isPending ? 'Checking…' : 'Run review check'}
                           </Button>
                           {reviewMutation.isError ? (
-                            <span className="text-xs text-red-700">
+                            <span className="text-xs text-danger-foreground">
                               {reviewMutation.error.message}
                             </span>
                           ) : null}
@@ -762,7 +767,7 @@ export function WorkbenchPage() {
 
           {sessionAttempts.length > 1 ? (
             <Section title="Executions in this session">
-              <div className="overflow-x-auto rounded-lg border bg-white">
+              <div className="overflow-x-auto rounded-sm border bg-card">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -787,7 +792,7 @@ export function WorkbenchPage() {
                         aria-label={`Show attempt ${shortDigest(attempt.id)} under ${attempt.configuration_id}`}
                         className={cn(
                           'cursor-pointer',
-                          attempt.id === activeAttempt?.id && 'bg-zinc-100',
+                          attempt.id === activeAttempt?.id && 'bg-secondary',
                         )}
                       >
                         <TableCell>

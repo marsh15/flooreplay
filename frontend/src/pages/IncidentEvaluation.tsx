@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { incidentApi, type IncidentEvaluationReport } from '@/lib/incidents'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/board'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SemanticReviewInbox } from '@/components/IncidentSemanticReview'
 
@@ -38,17 +39,17 @@ function Metric({ name, data }: { name: string; data: unknown }) {
   return (
     <div className="grid gap-2 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-6">
       <div>
-        <h3 className="text-sm font-medium text-zinc-800">{title(name)}</h3>
-        <p className="mt-1 text-xs leading-5 text-zinc-600">
+        <h3 className="text-sm font-medium text-foreground">{title(name)}</h3>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
           {denominator != null
             ? `Denominator: ${valueText(denominator)}${denominator === 0 ? ' · no measured cases' : ''}`
             : 'Denominator not reported'}
         </p>
         {detail?.unit != null && (
-          <p className="mt-1 text-xs text-zinc-600">Unit: {valueText(detail.unit)}</p>
+          <p className="mt-1 text-xs text-muted-foreground">Unit: {valueText(detail.unit)}</p>
         )}
       </div>
-      <p className="self-center break-words text-base font-semibold tabular-nums text-zinc-900 sm:text-right">
+      <p className="self-center break-words text-base font-semibold tabular-nums text-foreground sm:text-right">
         {display}
       </p>
     </div>
@@ -70,20 +71,22 @@ function RetrievalComparison({
   ]
   return (
     <section className="space-y-3">
-      <div className="border-b border-zinc-200 pb-2">
-        <h2 className="text-base font-semibold">Common-label retrieval comparison</h2>
-        <p className="mt-0.5 text-xs text-zinc-600">
+      <div className="border-b border-border pb-2">
+        <h2 className="text-xl font-bold font-stretch-semi-condensed">
+          Common-label retrieval comparison
+        </h2>
+        <p className="mt-0.5 text-xs text-muted-foreground">
           Both configurations use the same {data.label_revision} relevance labels. Counts are
           top-five results.
         </p>
       </div>
-      <div className="overflow-x-auto rounded border border-zinc-200 bg-white">
+      <div tabIndex={0} className="overflow-x-auto rounded-sm border border-border bg-card">
         <table className="w-full min-w-[600px] text-left text-sm">
           <caption className="sr-only">
             Title-only baseline and cutoff-visible evidence-card retrieval measured against common
             labels
           </caption>
-          <thead className="border-b bg-zinc-50 text-xs uppercase text-zinc-600">
+          <thead className="border-b bg-secondary text-xs uppercase text-muted-foreground">
             <tr>
               <th scope="col" className="px-4 py-2">
                 Retriever
@@ -96,12 +99,12 @@ function RetrievalComparison({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 [&_tr]:align-top">
+          <tbody className="divide-y divide-border [&_tr]:align-top">
             {rows.map((row) => (
               <tr key={row.name}>
                 <th scope="row" className="px-4 py-3 text-sm font-medium">
                   {row.name}
-                  <span className="mt-1 block font-mono text-xs font-normal text-zinc-600">
+                  <span className="mt-1 block font-mono text-xs font-normal text-muted-foreground">
                     {row.value.configuration}
                   </span>
                 </th>
@@ -118,9 +121,9 @@ function RetrievalComparison({
       </div>
       <dl className="grid gap-3 text-xs sm:grid-cols-2">
         {rows.map((row) => (
-          <div key={row.name} className="rounded border border-zinc-200 bg-white p-3">
-            <dt className="font-medium text-zinc-700">Failed queries · {row.name}</dt>
-            <dd className="mt-1 text-zinc-600">
+          <div key={row.name} className="rounded-sm border border-border bg-card p-3">
+            <dt className="font-medium text-foreground">Failed queries · {row.name}</dt>
+            <dd className="mt-1 text-muted-foreground">
               {row.failures.length ? row.failures.join(', ') : 'None in this labeled set'}
             </dd>
           </div>
@@ -143,38 +146,41 @@ export function IncidentEvaluationPage() {
   })
   return (
     <div className="space-y-7">
-      <header className="border-b border-zinc-200 pb-5">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Incident evaluation lab
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+      <PageHeader title="Incident evaluation lab">
+        <p className="mt-2 max-w-2xl text-base leading-7 text-muted-foreground">
           Measured quality on a pinned synthetic dataset. Failures and limitations stay visible
           alongside scores.
         </p>
-      </header>
-      <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 sm:p-6">
-        <h2 className="font-semibold">Release dataset integrity</h2>
+      </PageHeader>
+      <section className="space-y-4 rounded-sm border border-border bg-card p-5 sm:p-6">
+        <h2 className="text-xl font-bold font-stretch-semi-condensed">Release dataset integrity</h2>
         {release.data ? (
           <>
-            <p className="text-xs text-zinc-600">
+            <p className="text-xs text-muted-foreground">
               {release.data.release} · {release.data.status}
             </p>
             <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
               <div>
-                <p className="text-xs text-zinc-600">Historical episodes</p>
-                <p className="text-xl font-semibold">{release.data.split_counts.historical}</p>
+                <p className="text-sm text-muted-foreground">Historical episodes</p>
+                <p className="text-3xl font-bold font-stretch-semi-condensed tabular-nums">
+                  {release.data.split_counts.historical}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-zinc-600">Development investigations</p>
-                <p className="text-xl font-semibold">{release.data.split_counts.development}</p>
+                <p className="text-sm text-muted-foreground">Development investigations</p>
+                <p className="text-3xl font-bold font-stretch-semi-condensed tabular-nums">
+                  {release.data.split_counts.development}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-zinc-600">Locked investigations</p>
-                <p className="text-xl font-semibold">{release.data.split_counts.locked}</p>
+                <p className="text-sm text-muted-foreground">Locked investigations</p>
+                <p className="text-3xl font-bold font-stretch-semi-condensed tabular-nums">
+                  {release.data.split_counts.locked}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-zinc-600">Arithmetic and structure checks</p>
-                <p className="text-xl font-semibold">
+                <p className="text-sm text-muted-foreground">Arithmetic and structure checks</p>
+                <p className="text-3xl font-bold font-stretch-semi-condensed tabular-nums">
                   {release.data.arithmetic_and_structure_cases_checked} / 60
                 </p>
               </div>
@@ -182,7 +188,7 @@ export function IncidentEvaluationPage() {
             <p className="text-xs">
               {release.data.authored_templates} authored templates · {release.data.leakage_audit}
             </p>
-            <p className="text-xs text-amber-900">
+            <p className="text-xs text-limit-foreground">
               Independent semantic support review:{' '}
               {release.data.human_support_precision == null
                 ? 'Not reviewed'
@@ -194,22 +200,22 @@ export function IncidentEvaluationPage() {
               .
             </p>
             {[...release.data.problems, ...release.data.limitations].map((item, index) => (
-              <p key={index} className="text-xs text-zinc-600">
+              <p key={index} className="text-xs text-muted-foreground">
                 {item}
               </p>
             ))}
           </>
         ) : (
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-muted-foreground">
             {release.error
               ? 'Release integrity report unavailable; no current dataset measurement is shown.'
               : 'Loading release integrity…'}
           </p>
         )}
       </section>
-      <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 sm:p-6">
-        <h2 className="font-semibold">Current OpenAI evaluation</h2>
-        <p role="status" className="text-sm text-amber-900">
+      <section className="space-y-4 rounded-sm border border-border bg-card p-5 sm:p-6">
+        <h2 className="text-xl font-bold font-stretch-semi-condensed">Current OpenAI evaluation</h2>
+        <p role="status" className="text-sm text-limit-foreground">
           {report.data?.current_provider?.status &&
           report.data.current_provider.status !== 'NOT_EVALUATED'
             ? `OpenAI: ${report.data.current_provider.status.replaceAll('_', ' ').toLowerCase()}.`
@@ -231,7 +237,7 @@ export function IncidentEvaluationPage() {
                 'reviewed',
               ].map((name) => (
                 <div key={name}>
-                  <dt className="capitalize text-zinc-600">{name.replaceAll('_', ' ')}</dt>
+                  <dt className="capitalize text-muted-foreground">{name.replaceAll('_', ' ')}</dt>
                   <dd className="mt-1 text-xl font-semibold">
                     {{
                       attempted: report.data.current_provider?.attempted,
@@ -270,10 +276,12 @@ export function IncidentEvaluationPage() {
               human annotations. Qualifications and independence are not externally verified.
             </p>
             {report.data.current_provider.review_policy && (
-              <p className="text-xs text-zinc-600">{report.data.current_provider.review_policy}</p>
+              <p className="text-xs text-muted-foreground">
+                {report.data.current_provider.review_policy}
+              </p>
             )}
             {report.data.current_provider.limitations?.map((item, index) => (
-              <p key={index} className="text-xs text-zinc-600">
+              <p key={index} className="text-xs text-muted-foreground">
                 {item}
               </p>
             ))}
@@ -281,7 +289,7 @@ export function IncidentEvaluationPage() {
         )}
       </section>
       <SemanticReviewInbox />
-      <p className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+      <p className="rounded-sm border border-limit-border bg-limit p-3 text-sm text-limit-foreground">
         Provider results below are historical Qwen measurements and retain their original
         author-review labels.
       </p>
@@ -292,9 +300,11 @@ export function IncidentEvaluationPage() {
           <Skeleton className="h-48" />
         </div>
       ) : report.isError ? (
-        <div role="alert" className="rounded border border-red-200 bg-red-50 p-5">
-          <h2 className="text-sm font-semibold text-red-900">Evaluation report unavailable</h2>
-          <p className="mt-1 text-sm text-red-800">{report.error.message}</p>
+        <div role="alert" className="rounded-sm border border-danger-border bg-danger p-5">
+          <h2 className="text-base font-bold text-danger-foreground">
+            Evaluation report unavailable
+          </h2>
+          <p className="mt-1 text-sm text-danger-foreground">{report.error.message}</p>
           <Button className="mt-3" variant="outline" size="sm" onClick={() => report.refetch()}>
             Retry
           </Button>
@@ -304,69 +314,71 @@ export function IncidentEvaluationPage() {
           {report.data.execution_kind === 'saved_evaluation' && (
             <p
               role="status"
-              className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
+              className="rounded-sm border border-limit-border bg-limit p-3 text-sm text-limit-foreground"
             >
               API unavailable. Showing the bundled saved evaluation report.
             </p>
           )}
-          <section className="rounded-xl border border-zinc-200 bg-white p-5 sm:p-6">
-            <h2 className="text-sm font-semibold">Pinned run</h2>
+          <section className="rounded-sm border border-border bg-card p-5 sm:p-6">
+            <h2 className="text-lg font-bold">Pinned run</h2>
             <dl className="mt-3 grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
               <div>
-                <dt className="text-zinc-600">Dataset revision</dt>
+                <dt className="text-muted-foreground">Dataset revision</dt>
                 <dd className="mt-1 font-mono">{report.data.dataset_revision}</dd>
               </div>
               <div>
-                <dt className="text-zinc-600">Label revision</dt>
+                <dt className="text-muted-foreground">Label revision</dt>
                 <dd className="mt-1 font-mono">{report.data.label_revision}</dd>
               </div>
               <div>
-                <dt className="text-zinc-600">Cases</dt>
+                <dt className="text-muted-foreground">Cases</dt>
                 <dd className="mt-1 font-mono">{report.data.case_count}</dd>
               </div>
               <div>
-                <dt className="text-zinc-600">Execution mode</dt>
+                <dt className="text-muted-foreground">Execution mode</dt>
                 <dd className="mt-1">
                   {report.data.execution_kind ? title(report.data.execution_kind) : 'Not reported'}
                 </dd>
               </div>
             </dl>
-            <p className="mt-3 border-t border-zinc-100 pt-3 text-xs text-zinc-600">
+            <p className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">
               <strong>Configuration:</strong> {valueText(report.data.configuration)}
             </p>
             {report.data.runtime != null && (
-              <p className="mt-1 text-xs text-zinc-600">
+              <p className="mt-1 text-xs text-muted-foreground">
                 <strong>Runtime:</strong> {valueText(report.data.runtime)}
               </p>
             )}
             {report.data.hardware != null && (
-              <p className="mt-1 text-xs text-zinc-600">
+              <p className="mt-1 text-xs text-muted-foreground">
                 <strong>Hardware:</strong> {valueText(report.data.hardware)}
               </p>
             )}
             {report.data.model != null && (
-              <p className="mt-1 text-xs text-zinc-600">
+              <p className="mt-1 text-xs text-muted-foreground">
                 <strong>Model:</strong> {valueText(report.data.model)}
               </p>
             )}
           </section>
 
           <section className="space-y-3">
-            <div className="border-b border-zinc-200 pb-2">
-              <h2 className="text-base font-semibold">Historical Qwen and deterministic results</h2>
-              <p className="mt-0.5 text-xs text-zinc-600">
+            <div className="border-b border-border pb-2">
+              <h2 className="text-xl font-bold font-stretch-semi-condensed">
+                Historical Qwen and deterministic results
+              </h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 Each metric states its reported denominator. Missing denominators are shown
                 explicitly.
               </p>
             </div>
             {Object.keys(report.data.metrics).length ? (
-              <div className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white">
+              <div className="divide-y divide-border rounded-sm border border-border bg-card">
                 {Object.entries(report.data.metrics).map(([name, data]) => (
                   <Metric key={name} name={name} data={data} />
                 ))}
               </div>
             ) : (
-              <p className="rounded border border-dashed p-5 text-sm text-zinc-600">
+              <p className="rounded-sm border border-dashed p-5 text-sm text-muted-foreground">
                 No metrics were published in this report.
               </p>
             )}
@@ -377,22 +389,22 @@ export function IncidentEvaluationPage() {
           )}
 
           <section className="space-y-3">
-            <div className="border-b border-zinc-200 pb-2">
-              <h2 className="text-base font-semibold">Failed cases</h2>
-              <p className="mt-0.5 text-xs text-zinc-600">
+            <div className="border-b border-border pb-2">
+              <h2 className="text-xl font-bold font-stretch-semi-condensed">Failed cases</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 {report.data.failures.length} reported failures
               </p>
             </div>
             {report.data.failures.length ? (
               <ul className="space-y-2">
                 {report.data.failures.map((failure, index) => (
-                  <li key={index} className="rounded border border-amber-200 bg-amber-50 p-4">
+                  <li key={index} className="rounded-sm border border-limit-border bg-limit p-4">
                     <h3 className="text-sm font-semibold">
                       {valueText(
                         failure.case ?? failure.case_id ?? failure.id ?? `Case ${index + 1}`,
                       )}
                     </h3>
-                    <dl className="mt-2 space-y-1 text-xs text-zinc-700">
+                    <dl className="mt-2 space-y-1 text-xs text-foreground">
                       {Object.entries(failure)
                         .filter(([key]) => !['case', 'case_id', 'id'].includes(key))
                         .map(([key, value]) => (
@@ -406,7 +418,7 @@ export function IncidentEvaluationPage() {
                 ))}
               </ul>
             ) : (
-              <p className="rounded border border-zinc-200 bg-white p-5 text-sm text-zinc-600">
+              <p className="rounded-sm border border-border bg-card p-5 text-sm text-muted-foreground">
                 No failures are listed. Check the metric denominators and limitations before drawing
                 conclusions.
               </p>
@@ -415,20 +427,20 @@ export function IncidentEvaluationPage() {
 
           {report.data.cases.length > 0 && (
             <section className="space-y-3">
-              <div className="border-b border-zinc-200 pb-2">
-                <h2 className="text-base font-semibold">Case results</h2>
-                <p className="mt-0.5 text-xs text-zinc-600">
+              <div className="border-b border-border pb-2">
+                <h2 className="text-xl font-bold font-stretch-semi-condensed">Case results</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   All {report.data.cases.length} published case records
                 </p>
               </div>
-              <div className="overflow-x-auto rounded border border-zinc-200 bg-white">
+              <div tabIndex={0} className="overflow-x-auto rounded-sm border border-border bg-card">
                 <table className="w-full min-w-[640px] text-left text-sm">
-                  <thead className="border-b bg-zinc-50 text-xs uppercase text-zinc-600">
+                  <thead className="border-b bg-secondary text-xs uppercase text-muted-foreground">
                     <tr>
                       <th scope="col" className="px-4 py-2">
                         Case
                       </th>
-                      <th scope="col" className="px-4 py-2">
+                      <th scope="col" className="px-4 py-2 whitespace-nowrap">
                         Result
                       </th>
                       <th scope="col" className="px-4 py-2">
@@ -436,7 +448,7 @@ export function IncidentEvaluationPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-100 [&_tr]:align-top">
+                  <tbody className="divide-y divide-border [&_tr]:align-top">
                     {report.data.cases.map((item, index) => (
                       <tr key={index}>
                         <td className="px-4 py-3 font-mono text-xs">
@@ -452,7 +464,7 @@ export function IncidentEvaluationPage() {
                                 : 'FAIL'),
                           )}
                         </td>
-                        <td className="px-4 py-3 text-xs text-zinc-600">
+                        <td className="px-4 py-3 text-xs text-muted-foreground">
                           {Object.entries(item)
                             .filter(
                               ([key]) =>
@@ -478,15 +490,15 @@ export function IncidentEvaluationPage() {
 
           {!!report.data.retrieval_cases?.length && (
             <section className="space-y-3">
-              <div className="border-b border-zinc-200 pb-2">
-                <h2 className="text-base font-semibold">Retrieval checks</h2>
-                <p className="mt-0.5 text-xs text-zinc-600">
+              <div className="border-b border-border pb-2">
+                <h2 className="text-xl font-bold font-stretch-semi-condensed">Retrieval checks</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   Relevant labels and retrieved IDs from live lexical search
                 </p>
               </div>
-              <div className="overflow-x-auto rounded border border-zinc-200 bg-white">
+              <div tabIndex={0} className="overflow-x-auto rounded-sm border border-border bg-card">
                 <table className="w-full min-w-[640px] text-left text-sm">
-                  <thead className="border-b bg-zinc-50 text-xs uppercase text-zinc-600">
+                  <thead className="border-b bg-secondary text-xs uppercase text-muted-foreground">
                     <tr>
                       <th scope="col" className="px-4 py-2">
                         Query
@@ -502,7 +514,7 @@ export function IncidentEvaluationPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-100 [&_tr]:align-top">
+                  <tbody className="divide-y divide-border [&_tr]:align-top">
                     {report.data.retrieval_cases.map((item, index) => (
                       <tr key={index}>
                         <td className="px-4 py-3">{valueText(item.query)}</td>
@@ -518,17 +530,19 @@ export function IncidentEvaluationPage() {
           )}
 
           <section className="space-y-3">
-            <div className="border-b border-zinc-200 pb-2">
-              <h2 className="text-base font-semibold">Limits of this evaluation</h2>
+            <div className="border-b border-border pb-2">
+              <h2 className="text-xl font-bold font-stretch-semi-condensed">
+                Limits of this evaluation
+              </h2>
             </div>
             {report.data.limitations.length ? (
-              <ul className="list-disc space-y-2 pl-5 text-sm text-zinc-700">
+              <ul className="list-disc space-y-2 pl-5 text-sm text-foreground">
                 {report.data.limitations.map((limit, index) => (
                   <li key={index}>{limit}</li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-zinc-600">
+              <p className="text-sm text-muted-foreground">
                 No limitations were supplied with this report.
               </p>
             )}

@@ -52,7 +52,7 @@ function IssueList({ issues }: { issues: { code: string; severity: string; messa
           key={index}
           className={cn(
             'flex items-start gap-1.5 text-xs',
-            issue.severity === 'BLOCKING' ? 'text-red-700' : 'text-amber-700',
+            issue.severity === 'BLOCKING' ? 'text-danger-foreground' : 'text-limit-foreground',
           )}
         >
           <Badge
@@ -60,9 +60,9 @@ function IssueList({ issues }: { issues: { code: string; severity: string; messa
             className={cn(
               'h-auto px-1 py-0 text-xs',
               issue.severity === 'BLOCKING' &&
-                'border border-red-600/30 bg-red-600/10 text-red-800',
+                'border border-danger-border bg-danger text-danger-foreground',
               issue.severity === 'WARNING' &&
-                'border border-amber-600/30 bg-amber-500/15 text-amber-900',
+                'border border-limit-border bg-limit text-limit-foreground',
             )}
           >
             {issue.code}
@@ -182,8 +182,8 @@ export function ImportsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Imports</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+        <h1 className="text-3xl font-bold font-stretch-semi-condensed sm:text-4xl">Imports</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
           Upload a source export, inspect exactly what the system understood, and publish it as an
           immutable snapshot. Publication is all-or-nothing: a malformed row can never quietly
           disappear.
@@ -192,7 +192,7 @@ export function ImportsPage() {
 
       {/* Step 1: profile */}
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-zinc-800">Source profile</h2>
+        <h2 className="text-lg font-bold">Source profile</h2>
         <div className="grid gap-2 sm:grid-cols-2">
           {PROFILES.map((profile) => (
             <button
@@ -201,17 +201,17 @@ export function ImportsPage() {
               aria-pressed={profileId === profile.id}
               onClick={() => setProfileId(profile.id)}
               className={cn(
-                'rounded-lg border p-3 text-left text-sm transition-colors focus-visible:outline-2',
+                'rounded-sm border p-3 text-left text-sm transition-colors focus-visible:outline-2',
                 profileId === profile.id
-                  ? 'border-zinc-900 bg-zinc-900 text-white'
-                  : 'border-zinc-200 bg-white hover:border-zinc-400',
+                  ? 'border-board bg-board text-board-foreground'
+                  : 'border-border bg-card hover:border-input',
               )}
             >
               <span className="font-medium">{profile.name}</span>
               <span
                 className={cn(
                   'mt-1 block text-xs leading-snug',
-                  profileId === profile.id ? 'text-zinc-300' : 'text-zinc-500',
+                  profileId === profile.id ? 'text-muted-foreground' : 'text-muted-foreground',
                 )}
               >
                 {profile.contract}
@@ -223,20 +223,20 @@ export function ImportsPage() {
 
       {/* Step 2: metadata + CSV */}
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-zinc-800">Upload and source metadata</h2>
-        <div className="space-y-3 rounded-lg border bg-white p-3">
+        <h2 className="text-lg font-bold">Upload and source metadata</h2>
+        <div className="space-y-3 rounded-sm border bg-card p-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-xs">
-              <span className="mb-1 block font-medium text-zinc-600">
+              <span className="mb-1 block font-medium text-muted-foreground">
                 Declared evidence time (when the source says this was true)
               </span>
               <input
                 value={declaredAt}
                 onChange={(event) => setDeclaredAt(event.target.value)}
-                className="w-full rounded-md border border-zinc-300 px-2 py-1.5 font-mono text-xs focus-visible:outline-2"
+                className="w-full rounded-md border border-input px-2 py-1.5 font-mono text-xs focus-visible:outline-2"
                 placeholder="2026-09-22T07:55:00+05:30"
               />
-              <span className="mt-1 block text-zinc-600">
+              <span className="mt-1 block text-muted-foreground">
                 Never taken from the upload clock; must carry a UTC offset.
               </span>
             </label>
@@ -248,10 +248,10 @@ export function ImportsPage() {
                 className="mt-0.5"
               />
               <span>
-                <span className="block font-medium text-zinc-600">
+                <span className="block font-medium text-muted-foreground">
                   Source asserts complete coverage
                 </span>
-                <span className="mt-1 block text-zinc-600">
+                <span className="mt-1 block text-muted-foreground">
                   The application cannot prove an external export's completeness; this is the
                   importer's assertion and it is recorded on the snapshot.
                 </span>
@@ -260,7 +260,7 @@ export function ImportsPage() {
           </div>
 
           <label className="block text-xs">
-            <span className="mb-1 block font-medium text-zinc-600">
+            <span className="mb-1 block font-medium text-muted-foreground">
               CSV text (UTF-8, comma, max 1 MiB / 5,000 rows)
             </span>
             <textarea
@@ -268,7 +268,7 @@ export function ImportsPage() {
               onChange={(event) => setCsvText(event.target.value)}
               rows={8}
               spellCheck={false}
-              className="w-full rounded-md border border-zinc-300 p-2 font-mono text-xs focus-visible:outline-2"
+              className="w-full rounded-md border border-input p-2 font-mono text-xs focus-visible:outline-2"
               placeholder="operator_id,status,observed_at&#10;O219,P,2026-09-22 07:55"
             />
           </label>
@@ -285,7 +285,7 @@ export function ImportsPage() {
               Choose CSV file
             </Button>
             <Separator orientation="vertical" className="h-5" />
-            <span className="text-xs text-zinc-600">Curated examples:</span>
+            <span className="text-xs text-muted-foreground">Curated examples:</span>
             {CURATED_EXAMPLES.map((example) => (
               <Button
                 key={example.id}
@@ -297,14 +297,14 @@ export function ImportsPage() {
               </Button>
             ))}
           </div>
-          {uploadError ? <p className="text-xs text-red-700">{uploadError}</p> : null}
+          {uploadError ? <p className="text-xs text-danger-foreground">{uploadError}</p> : null}
         </div>
       </section>
 
       {/* Step 3: preview */}
       <section className="space-y-2">
         <div className="flex items-center gap-3">
-          <h2 className="text-sm font-semibold text-zinc-800">Normalized preview</h2>
+          <h2 className="text-lg font-bold">Normalized preview</h2>
           <Button
             size="sm"
             disabled={!csvText.trim() || previewMutation.isPending}
@@ -331,7 +331,7 @@ export function ImportsPage() {
                 variant="secondary"
                 className={cn(
                   preview.counts.blocking > 0 &&
-                    'border border-red-600/30 bg-red-600/10 text-red-800',
+                    'border border-danger-border bg-danger text-danger-foreground',
                 )}
               >
                 {preview.counts.blocking} blocking
@@ -340,30 +340,30 @@ export function ImportsPage() {
                 variant="secondary"
                 className={cn(
                   preview.counts.warning > 0 &&
-                    'border border-amber-600/30 bg-amber-500/15 text-amber-900',
+                    'border border-limit-border bg-limit text-limit-foreground',
                 )}
               >
                 {preview.counts.warning} warnings
               </Badge>
               {preview.ignored_columns.length > 0 ? (
-                <span className="text-zinc-600">
+                <span className="text-muted-foreground">
                   Ignored extra columns: {preview.ignored_columns.join(', ')}
                 </span>
               ) : null}
-              <span className="ml-auto text-zinc-600">
+              <span className="ml-auto text-muted-foreground">
                 Evidence time {formatInstant(preview.declared_evidence_at)} ·{' '}
                 <Mono>{shortDigest(preview.preview_digest)}</Mono>
               </span>
             </div>
 
             {preview.file_issues.length > 0 ? (
-              <div className="rounded-lg border border-amber-600/30 bg-amber-500/10 p-2.5">
-                <p className="text-xs font-semibold text-amber-900">File-level findings</p>
+              <div className="rounded-sm border border-limit-border bg-limit p-2.5">
+                <p className="text-xs font-semibold text-limit-foreground">File-level findings</p>
                 <IssueList issues={preview.file_issues} />
               </div>
             ) : null}
 
-            <div className="overflow-x-auto rounded-lg border bg-white">
+            <div className="overflow-x-auto rounded-sm border bg-card">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -379,19 +379,19 @@ export function ImportsPage() {
                       key={row.row}
                       className={
                         row.issues.some((issue) => issue.severity === 'BLOCKING')
-                          ? 'bg-red-600/5'
+                          ? 'bg-danger'
                           : undefined
                       }
                     >
                       <TableCell>
-                        <Mono className="text-zinc-600">{row.row}</Mono>
+                        <Mono className="text-muted-foreground">{row.row}</Mono>
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-zinc-500">
+                      <TableCell className="font-mono text-xs text-muted-foreground">
                         {Object.entries(row.raw)
                           .filter(([, value]) => value !== '')
                           .map(([key, value]) => (
                             <span key={key} className="mr-2 inline-block">
-                              {key}=<span className="text-zinc-700">{value}</span>
+                              {key}=<span className="text-foreground">{value}</span>
                             </span>
                           ))}
                       </TableCell>
@@ -402,7 +402,7 @@ export function ImportsPage() {
                           </span>
                         ))}
                         {row.normalizations.length > 0 ? (
-                          <span className="mt-0.5 block text-xs text-blue-700">
+                          <span className="mt-0.5 block text-xs text-info-foreground">
                             {row.normalizations.join('; ')}
                           </span>
                         ) : null}
@@ -428,7 +428,9 @@ export function ImportsPage() {
                     : 'Publish immutable snapshot'}
               </Button>
               {publishMutation.isError ? (
-                <span className="text-xs text-red-700">{publishMutation.error.message}</span>
+                <span className="text-xs text-danger-foreground">
+                  {publishMutation.error.message}
+                </span>
               ) : null}
             </div>
           </div>
@@ -438,24 +440,24 @@ export function ImportsPage() {
       {/* Step 4: publish + fork */}
       {published ? (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-zinc-800">Published</h2>
-          <div className="rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-3">
+          <h2 className="text-lg font-bold">Published</h2>
+          <div className="rounded-sm border border-success-border bg-success p-3">
             <p className="text-sm">
               Snapshot <Mono className="font-semibold">{published.snapshot_id}</Mono> is published
               and immutable.
             </p>
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               Content digest <Mono>{published.content_digest}</Mono>. Corrections never edit this
               snapshot; they create a new one.
             </p>
             <Separator className="my-3" />
-            <p className="text-xs font-medium text-zinc-600">
+            <p className="text-xs font-medium text-muted-foreground">
               Fork a scenario onto this evidence (a new revision; history stays untouched)
             </p>
             {scenariosQuery.isPending ? (
               <Skeleton className="mt-2 h-8 w-64" />
             ) : scenariosQuery.isError ? (
-              <p className="mt-2 text-xs text-red-700">
+              <p className="mt-2 text-xs text-danger-foreground">
                 Scenarios could not be loaded: {scenariosQuery.error.message}
               </p>
             ) : (
@@ -478,7 +480,7 @@ export function ImportsPage() {
                 ))}
               </div>
             )}
-            {forkError ? <p className="mt-2 text-xs text-red-700">{forkError}</p> : null}
+            {forkError ? <p className="mt-2 text-xs text-danger-foreground">{forkError}</p> : null}
           </div>
         </section>
       ) : null}

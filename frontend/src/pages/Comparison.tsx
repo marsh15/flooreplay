@@ -33,18 +33,21 @@ import { cn } from '@/lib/utils'
 const CLASSIFICATION_META: Record<Classification, { label: string; tone: string }> = {
   UNCHANGED_PASS: {
     label: 'Unchanged pass',
-    tone: 'bg-emerald-600/10 text-emerald-800 border-emerald-600/25',
+    tone: 'bg-success text-success-foreground border-success-border',
   },
   FIXED: {
     label: 'Fixed',
-    tone: 'bg-emerald-600/15 text-emerald-900 border-emerald-600/40 font-semibold',
+    tone: 'bg-success text-success-foreground border-success-border font-semibold',
   },
   REGRESSION: {
     label: 'Regression',
-    tone: 'bg-red-600/10 text-red-800 border-red-600/40 font-semibold',
+    tone: 'bg-danger text-danger-foreground border-danger-border font-semibold',
   },
-  UNCHANGED_FAIL: { label: 'Unchanged fail', tone: 'bg-red-600/10 text-red-800 border-red-600/25' },
-  NOT_COMPARABLE: { label: 'Not comparable', tone: 'bg-zinc-100 text-zinc-700 border-zinc-300' },
+  UNCHANGED_FAIL: {
+    label: 'Unchanged fail',
+    tone: 'bg-danger text-danger-foreground border-danger-border',
+  },
+  NOT_COMPARABLE: { label: 'Not comparable', tone: 'bg-secondary text-foreground border-input' },
 }
 
 function ClassificationBadge({ classification }: { classification: Classification }) {
@@ -58,8 +61,8 @@ function ClassificationBadge({ classification }: { classification: Classificatio
 
 function SidePanel({ title, side }: { title: string; side: ComparisonSide }) {
   return (
-    <div className="rounded-lg border bg-white p-3">
-      <p className="text-sm font-semibold text-zinc-800">{title}</p>
+    <div className="rounded-sm border bg-card p-3">
+      <p className="text-sm font-semibold text-foreground">{title}</p>
       <div className="mt-1.5 flex flex-wrap items-center gap-2">
         {side.outcome ? <OutcomeBadge outcome={side.outcome} /> : null}
         <Badge variant="secondary" className="text-xs">
@@ -72,15 +75,15 @@ function SidePanel({ title, side }: { title: string; side: ComparisonSide }) {
         ) : null}
       </div>
       {side.outcome ? (
-        <p className="mt-1 text-xs text-zinc-500">{OUTCOME_META[side.outcome].hint}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{OUTCOME_META[side.outcome].hint}</p>
       ) : null}
       {side.issue_codes.length > 0 ? (
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           issues: <Mono>{side.issue_codes.join(', ')}</Mono>
         </p>
       ) : null}
       {side.failures.length > 0 ? (
-        <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-red-700">
+        <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-danger-foreground">
           {side.failures.map((failure) => (
             <li key={failure}>{failure}</li>
           ))}
@@ -110,7 +113,7 @@ function SortHead({
       <button
         type="button"
         onClick={() => onSort(sort)}
-        className="inline-flex items-center gap-1 text-xs hover:text-zinc-900 focus-visible:outline-2"
+        className="inline-flex items-center gap-1 text-xs hover:text-foreground focus-visible:outline-2"
       >
         {children}
         {activeKey === sort ? <span aria-hidden>{ascending ? '↑' : '↓'}</span> : null}
@@ -205,22 +208,26 @@ export function ComparisonPage() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-zinc-200 pb-5">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Comparison report</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+      <div className="border-b-2 border-foreground pb-5">
+        <h1 className="text-3xl font-bold font-stretch-semi-condensed sm:text-4xl">
+          Comparison report
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
           Execute the pinned suite ({suite?.case_count ?? 0} cases) under two configurations and
           inspect which behavior changed. Pass/fail is judgment; behavior changes are reported
           separately.
         </p>
       </div>
 
-      <div className="grid items-end gap-4 rounded-xl border bg-white p-5 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
+      <div className="grid items-end gap-4 rounded-sm border bg-card p-5 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
         <label className="text-xs">
-          <span className="mb-1 block font-medium text-zinc-600">Baseline configuration</span>
+          <span className="mb-1 block font-medium text-muted-foreground">
+            Baseline configuration
+          </span>
           <select
             value={baselineId}
             onChange={(event) => setBaselineId(event.target.value)}
-            className="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm focus-visible:outline-2"
+            className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm focus-visible:outline-2"
           >
             {configurations.map((config) => (
               <option key={config.id} value={config.id}>
@@ -230,11 +237,13 @@ export function ComparisonPage() {
           </select>
         </label>
         <label className="text-xs">
-          <span className="mb-1 block font-medium text-zinc-600">Candidate configuration</span>
+          <span className="mb-1 block font-medium text-muted-foreground">
+            Candidate configuration
+          </span>
           <select
             value={candidateId}
             onChange={(event) => setCandidateId(event.target.value)}
-            className="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm focus-visible:outline-2"
+            className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm focus-visible:outline-2"
           >
             {configurations.map((config) => (
               <option key={config.id} value={config.id}>
@@ -244,7 +253,7 @@ export function ComparisonPage() {
           </select>
         </label>
         {executionLocalOnly ? (
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Sign in as an owner in the local deployment to execute this archived suite. Saved
             reports remain readable.
           </p>
@@ -257,7 +266,7 @@ export function ComparisonPage() {
           </Button>
         )}
         {runMutation.isError ? (
-          <span className="text-xs text-red-700">{runMutation.error.message}</span>
+          <span className="text-xs text-danger-foreground">{runMutation.error.message}</span>
         ) : null}
       </div>
 
@@ -273,7 +282,7 @@ export function ComparisonPage() {
             </Alert>
           ) : null}
 
-          <div className="grid grid-cols-2 gap-y-5 rounded-xl border bg-white px-5 py-5 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-y-5 rounded-sm border bg-card px-5 py-5 sm:grid-cols-4">
             {(
               [
                 ['unchanged_pass', 'Unchanged pass'],
@@ -284,19 +293,19 @@ export function ComparisonPage() {
             ).map(([key, label]) => (
               <div key={key} role="group" aria-label={label} className="px-3">
                 <p className="text-lg font-semibold tabular-nums">{totals?.[key] ?? 0}</p>
-                <p className="mt-0.5 text-xs text-zinc-500">{label}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
               </div>
             ))}
           </div>
 
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-muted-foreground">
             Baseline <Mono>{report.baseline_config_id}</Mono> vs candidate{' '}
             <Mono>{report.candidate_config_id}</Mono> · Suite {report.suite_id}@
             {report.suite_revision} · executed {formatInstant(report.created_at)} · persisted report
             · manifest <Mono>{report.manifest_digest?.slice(0, 19)}…</Mono>
           </p>
 
-          <div className="overflow-x-auto rounded-lg border bg-white">
+          <div className="overflow-x-auto rounded-sm border bg-card">
             <Table className="min-w-[860px]">
               <TableHeader>
                 <TableRow>
@@ -359,14 +368,14 @@ export function ComparisonPage() {
                       aria-label={`Toggle detail for ${item.scenario_id}`}
                       className={cn(
                         'cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px]',
-                        expanded === item.scenario_id && 'bg-zinc-100',
-                        item.classification === 'REGRESSION' && 'bg-red-600/5',
+                        expanded === item.scenario_id && 'bg-secondary',
+                        item.classification === 'REGRESSION' && 'bg-danger',
                       )}
                       aria-expanded={expanded === item.scenario_id}
                     >
                       <TableCell>
                         <span className="font-medium">{item.title}</span>
-                        <Mono className="ml-1 text-zinc-600">{item.scenario_id}</Mono>
+                        <Mono className="ml-1 text-muted-foreground">{item.scenario_id}</Mono>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">
@@ -379,7 +388,7 @@ export function ComparisonPage() {
                           {item.behavior_changed ? (
                             <Badge
                               variant="outline"
-                              className="border-blue-600/25 bg-blue-600/10 text-xs text-blue-800"
+                              className="border-info-border bg-info text-xs text-info-foreground"
                             >
                               behavior changed
                             </Badge>
@@ -409,8 +418,8 @@ export function ComparisonPage() {
                     </TableRow>
                     {expanded === item.scenario_id ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="bg-zinc-50">
-                          <p className="mb-2 text-xs text-zinc-500">
+                        <TableCell colSpan={5} className="bg-secondary">
+                          <p className="mb-2 text-xs text-muted-foreground">
                             Catches: {item.defect_statement}
                           </p>
                           <div className="grid gap-2 sm:grid-cols-2">
@@ -433,9 +442,9 @@ export function ComparisonPage() {
           </div>
         </>
       ) : (
-        <div className="rounded-lg border border-dashed bg-white p-10 text-center">
+        <div className="rounded-sm border border-dashed bg-card p-10 text-center">
           <p className="text-sm font-medium">No comparison executed yet</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-zinc-500">
+          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
             Choose a baseline and a candidate configuration and press{' '}
             <span className="font-medium">Run comparison</span>. The suite executes sequentially
             with a bounded budget; the persisted report appears here with per-case transitions.
@@ -444,18 +453,18 @@ export function ComparisonPage() {
       )}
 
       {historyQuery.isError ? (
-        <p className="text-xs text-red-700">
+        <p className="text-xs text-danger-foreground">
           Comparison history could not be loaded: {historyQuery.error.message}
         </p>
       ) : null}
 
       {historyQuery.data && historyQuery.data.items.length > 0 ? (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-zinc-800">Recent comparisons</h2>
-          <ul className="divide-y divide-zinc-200 rounded-lg border bg-white text-sm">
+          <h2 className="text-lg font-bold">Recent comparisons</h2>
+          <ul className="divide-y divide-border rounded-sm border bg-card text-sm">
             {historyQuery.data.items.slice(0, 6).map((entry) => (
               <li key={entry.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
-                <Mono className="text-zinc-500">
+                <Mono className="text-muted-foreground">
                   {entry.baseline_config_id.replace('CFG-', '')} →{' '}
                   {entry.candidate_config_id.replace('CFG-', '')}
                 </Mono>
@@ -465,7 +474,7 @@ export function ComparisonPage() {
                 {entry.totals.fixed > 0 ? (
                   <Badge
                     variant="secondary"
-                    className="border border-emerald-600/30 bg-emerald-600/10 text-xs text-emerald-800"
+                    className="border border-success-border bg-success text-xs text-success-foreground"
                   >
                     fixed {entry.totals.fixed}
                   </Badge>
@@ -473,12 +482,12 @@ export function ComparisonPage() {
                 {entry.totals.regression > 0 ? (
                   <Badge
                     variant="secondary"
-                    className="border border-red-600/30 bg-red-600/10 text-xs text-red-800"
+                    className="border border-danger-border bg-danger text-xs text-danger-foreground"
                   >
                     regression {entry.totals.regression}
                   </Badge>
                 ) : null}
-                <span className="ml-auto text-xs text-zinc-600">
+                <span className="ml-auto text-xs text-muted-foreground">
                   {formatInstant(entry.created_at)}
                 </span>
               </li>

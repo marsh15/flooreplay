@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router'
 import { api } from '@/lib/api'
 import { UsagePanel } from '@/components/Usage'
 import { SignInControl, useAuth } from '@/components/Auth'
+import { Limits } from '@/components/board'
 import { cn } from '@/lib/utils'
 
 const NAV = [{ to: '/', label: 'Incidents', icon: Library }]
@@ -21,6 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     ...(user?.role === 'owner' ? [{ to: '/operations', label: 'Operations', icon: Activity }] : []),
   ]
   const isDemo = pathname === '/demo'
+  const isArchive = pathname === '/coverage' || pathname.startsWith('/coverage/')
   const capabilities = useQuery({
     queryKey: ['capabilities', user?.id ?? 'public'],
     queryFn: api.capabilities,
@@ -109,6 +111,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         className="mx-auto w-full max-w-6xl flex-1 px-4 py-7 sm:px-6 sm:py-10 lg:px-8"
       >
         {!isDemo && <UsagePanel />}
+        {isArchive && (
+          <Limits tone="neutral" className="mb-6 print:hidden">
+            <strong>Archive.</strong> The older operator-coverage workbench remains an archived
+            engineering demonstration. The current product is the incident investigation workflow.
+          </Limits>
+        )}
         {children}
       </main>
       <footer className="mx-auto w-full max-w-6xl px-4 pt-8 pb-6 sm:px-6 lg:px-8">

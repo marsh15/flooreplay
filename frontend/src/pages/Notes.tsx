@@ -23,10 +23,10 @@ const EXAMPLE_NOTE =
 function StatusChip({ status }: { status: string }) {
   const tone =
     status === 'RESOLVED'
-      ? 'border-emerald-600/30 bg-emerald-600/10 text-emerald-800'
+      ? 'border-success-border bg-success text-success-foreground'
       : status === 'AMBIGUOUS'
-        ? 'border-amber-600/30 bg-amber-500/15 text-amber-900'
-        : 'border-zinc-300 bg-zinc-100 text-zinc-600'
+        ? 'border-limit-border bg-limit text-limit-foreground'
+        : 'border-input bg-secondary text-muted-foreground'
   return (
     <Badge variant="outline" className={cn('text-xs', tone)}>
       {status.toLowerCase()}
@@ -100,8 +100,8 @@ export function NotesPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Floor notes</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+        <h1 className="text-3xl font-bold font-stretch-semi-condensed sm:text-4xl">Floor notes</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
           The parser produces a draft, never an event. Mentions resolve by exact id or curated
           alias; ambiguity stays ambiguous. A human confirms the structured event, which forks a new
           scenario revision. History is never rewritten.
@@ -109,14 +109,12 @@ export function NotesPage() {
       </div>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-zinc-800">
-          Note (English, max 2,000 characters)
-        </h2>
+        <h2 className="text-lg font-bold">Note (English, max 2,000 characters)</h2>
         <textarea
           value={noteText}
           onChange={(event) => setNoteText(event.target.value)}
           rows={4}
-          className="w-full rounded-md border border-zinc-300 bg-white p-2 font-mono text-xs focus-visible:outline-2"
+          className="w-full rounded-md border border-input bg-card p-2 font-mono text-xs focus-visible:outline-2"
         />
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -129,7 +127,7 @@ export function NotesPage() {
             {parseMutation.isPending ? 'Extracting draft…' : 'Extract draft'}
           </Button>
           {!canAuthor && (
-            <p className="text-xs text-zinc-600">
+            <p className="text-xs text-muted-foreground">
               Sign in as an owner in the local deployment to extract or confirm archived floor
               notes.
             </p>
@@ -144,7 +142,7 @@ export function NotesPage() {
           >
             Skip parsing: manual entry
           </Button>
-          <span className="ml-auto text-xs text-zinc-600">
+          <span className="ml-auto text-xs text-muted-foreground">
             {parse ? (
               <>
                 draft by <Mono>{parse.parser_kind}</Mono>
@@ -165,14 +163,14 @@ export function NotesPage() {
 
       {parse ? (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-zinc-800">Draft and resolution</h2>
+          <h2 className="text-lg font-bold">Draft and resolution</h2>
           {!draftIsCurrent ? (
-            <p className="rounded-md border border-amber-600/30 bg-amber-500/10 p-2 text-xs text-amber-900">
+            <p className="rounded-md border border-limit-border bg-limit p-2 text-xs text-limit-foreground">
               The note was edited after this draft was extracted, so the draft below is stale.
               Re-extract to refresh it; confirming now records the event without citing the parser.
             </p>
           ) : null}
-          <div className="space-y-2 rounded-lg border bg-white p-3 text-sm">
+          <div className="space-y-2 rounded-sm border bg-card p-3 text-sm">
             <p>
               Category <Mono className="font-semibold">{parse.draft.event_category}</Mono> ·
               polarity <Mono>{parse.draft.polarity}</Mono>
@@ -192,7 +190,7 @@ export function NotesPage() {
                     <Mono className="font-semibold">{entry.resolved_id}</Mono>
                   ) : null}
                   {entry.candidates.length > 1 ? (
-                    <span className="text-amber-700">
+                    <span className="text-limit-foreground">
                       candidates: {entry.candidates.join(', ')}
                     </span>
                   ) : null}
@@ -209,28 +207,30 @@ export function NotesPage() {
               ))}
             </ul>
             {parse.draft.raw_temporal_expressions.length > 0 ? (
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-muted-foreground">
                 Raw time expressions ({parse.draft.raw_temporal_expressions.join(', ')}) must be
                 resolved to an explicit instant below.
               </p>
             ) : null}
             {parse.draft.ambiguity_notes.length > 0 ? (
-              <p className="text-xs text-amber-700">{parse.draft.ambiguity_notes.join(' ')}</p>
+              <p className="text-xs text-limit-foreground">
+                {parse.draft.ambiguity_notes.join(' ')}
+              </p>
             ) : null}
           </div>
         </section>
       ) : null}
 
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-zinc-800">Confirm structured event</h2>
-        <div className="grid gap-3 rounded-lg border bg-white p-3 sm:grid-cols-2">
+        <h2 className="text-lg font-bold">Confirm structured event</h2>
+        <div className="grid gap-3 rounded-sm border bg-card p-3 sm:grid-cols-2">
           {scenariosQuery.isError ? (
-            <p className="text-xs text-red-700 sm:col-span-2">
+            <p className="text-xs text-danger-foreground sm:col-span-2">
               Scenarios could not be loaded: {scenariosQuery.error.message}
             </p>
           ) : null}
           <label className="block text-xs">
-            <span className="mb-1 block font-medium text-zinc-600">
+            <span className="mb-1 block font-medium text-muted-foreground">
               Fork onto scenario revision
             </span>
             <select
@@ -240,7 +240,7 @@ export function NotesPage() {
                   : ''
               }
               onChange={(event) => setScenarioKey(event.target.value)}
-              className="w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm focus-visible:outline-2"
+              className="w-full rounded-md border border-input px-2 py-1.5 text-sm focus-visible:outline-2"
             >
               {scenarios.map((scenario) => (
                 <option
@@ -253,31 +253,33 @@ export function NotesPage() {
             </select>
           </label>
           <label className="block text-xs">
-            <span className="mb-1 block font-medium text-zinc-600">Unavailable operator</span>
+            <span className="mb-1 block font-medium text-muted-foreground">
+              Unavailable operator
+            </span>
             <input
               value={operatorId}
               onChange={(event) => setOperatorId(event.target.value.toUpperCase())}
               placeholder="O117"
-              className="w-full rounded-md border border-zinc-300 px-2 py-1.5 font-mono text-sm focus-visible:outline-2"
+              className="w-full rounded-md border border-input px-2 py-1.5 font-mono text-sm focus-visible:outline-2"
             />
           </label>
           <label className="block text-xs">
-            <span className="mb-1 block font-medium text-zinc-600">
+            <span className="mb-1 block font-medium text-muted-foreground">
               Observed at (explicit UTC offset required)
             </span>
             <input
               value={observedAt}
               onChange={(event) => setObservedAt(event.target.value)}
-              className="w-full rounded-md border border-zinc-300 px-2 py-1.5 font-mono text-xs focus-visible:outline-2"
+              className="w-full rounded-md border border-input px-2 py-1.5 font-mono text-xs focus-visible:outline-2"
             />
           </label>
           <label className="block text-xs">
-            <span className="mb-1 block font-medium text-zinc-600">Summary</span>
+            <span className="mb-1 block font-medium text-muted-foreground">Summary</span>
             <input
               value={summary}
               onChange={(event) => setSummary(event.target.value)}
               placeholder="Confirmed from floor note"
-              className="w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm focus-visible:outline-2"
+              className="w-full rounded-md border border-input px-2 py-1.5 text-sm focus-visible:outline-2"
             />
           </label>
         </div>
@@ -288,7 +290,7 @@ export function NotesPage() {
           >
             {confirmMutation.isPending ? 'Confirming…' : 'Confirm event and fork revision'}
           </Button>
-          <label className="flex items-center gap-1.5 text-xs text-zinc-500">
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <input
               type="radio"
               checked={sourceKind === 'note'}
@@ -296,7 +298,7 @@ export function NotesPage() {
             />
             from parsed note
           </label>
-          <label className="flex items-center gap-1.5 text-xs text-zinc-500">
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <input
               type="radio"
               checked={sourceKind === 'manual'}
@@ -305,14 +307,14 @@ export function NotesPage() {
             manual entry
           </label>
           {confirmMutation.isError ? (
-            <span className="text-xs text-red-700">{confirmMutation.error.message}</span>
+            <span className="text-xs text-danger-foreground">{confirmMutation.error.message}</span>
           ) : null}
         </div>
       </section>
 
       {confirmed ? (
         <section className="space-y-2">
-          <div className="rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-3">
+          <div className="rounded-sm border border-success-border bg-success p-3">
             <p className="text-sm">
               Confirmed. New revision{' '}
               <Mono className="font-semibold">
