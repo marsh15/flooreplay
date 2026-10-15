@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
+@import './styles/shadcn-tailwind.css';
 @import '@fontsource-variable/archivo/wdth.css';
 
 /* Light-only product. shadcn components carry dark: classes; keeping the class-based

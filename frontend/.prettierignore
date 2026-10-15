@@ -4,3 +4,4 @@ test-results
 playwright-report
 src/lib/generated-api.ts
 src/data
+src/styles/shadcn-tailwind.css
