@@ -42,7 +42,10 @@ export function shortDigest(digest: string | null | undefined): string {
 
 type OutcomeTone = 'ready' | 'rejected' | 'blocked' | 'abstain'
 
-export const OUTCOME_META: Record<DomainOutcome, { label: string; tone: OutcomeTone; hint: string }> = {
+export const OUTCOME_META: Record<
+  DomainOutcome,
+  { label: string; tone: OutcomeTone; hint: string }
+> = {
   READY_FOR_REVIEW: {
     label: 'Ready for review',
     tone: 'ready',

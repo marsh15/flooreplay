@@ -5,7 +5,9 @@
 export async function ensureBackend(): Promise<void> {
   for (let attempt = 0; attempt < 30; attempt++) {
     try {
-      const response = await fetch(`${(process.env.E2E_API_BASE ?? 'http://localhost:8000').replace(/\/api\/v1\/?$/, '')}/api/v1/health/ready`)
+      const response = await fetch(
+        `${(process.env.E2E_API_BASE ?? 'http://localhost:8000').replace(/\/api\/v1\/?$/, '')}/api/v1/health/ready`,
+      )
       if (response.ok) return
     } catch {
       // not up yet; retry
@@ -20,7 +22,10 @@ export async function ensureBackend(): Promise<void> {
 export async function signInOwner(page: import('@playwright/test').Page): Promise<void> {
   const username = process.env.E2E_USERNAME
   const password = process.env.E2E_PASSWORD
-  if (!username || !password) throw new Error('Set E2E_USERNAME and E2E_PASSWORD for an owner in the isolated browser-test database.')
+  if (!username || !password)
+    throw new Error(
+      'Set E2E_USERNAME and E2E_PASSWORD for an owner in the isolated browser-test database.',
+    )
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   await page.getByLabel('Username').fill(username)
   await page.getByLabel('Password').fill(password)

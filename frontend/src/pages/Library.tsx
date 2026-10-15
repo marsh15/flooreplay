@@ -76,10 +76,18 @@ export function LibraryPage() {
         </p>
       </div>
       <div className="flex flex-wrap gap-3 text-xs text-zinc-600">
-        <Link className="underline underline-offset-4" to="/coverage/workbench">Replay workbench</Link>
-        <Link className="underline underline-offset-4" to="/coverage/notes">Floor notes</Link>
-        <Link className="underline underline-offset-4" to="/coverage/imports">Imports</Link>
-        <Link className="underline underline-offset-4" to="/coverage/comparison">Comparison</Link>
+        <Link className="underline underline-offset-4" to="/coverage/workbench">
+          Replay workbench
+        </Link>
+        <Link className="underline underline-offset-4" to="/coverage/notes">
+          Floor notes
+        </Link>
+        <Link className="underline underline-offset-4" to="/coverage/imports">
+          Imports
+        </Link>
+        <Link className="underline underline-offset-4" to="/coverage/comparison">
+          Comparison
+        </Link>
       </div>
 
       {data.items.length === 0 ? (
@@ -136,7 +144,10 @@ export function LibraryPage() {
                       ) : (
                         <ul className="space-y-1.5">
                           {attempts.map((attempt) => (
-                            <li key={attempt.configuration_id} className="flex flex-wrap items-center gap-2">
+                            <li
+                              key={attempt.configuration_id}
+                              className="flex flex-wrap items-center gap-2"
+                            >
                               <Mono className="w-14 shrink-0 text-zinc-500">
                                 <ConfigLabel id={attempt.configuration_id} />
                               </Mono>

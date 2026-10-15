@@ -17,7 +17,13 @@ const TONES = {
   neutral: 'bg-zinc-100 text-zinc-700 border-zinc-300',
 } as const
 
-export function OutcomeBadge({ outcome, className }: { outcome: DomainOutcome; className?: string }) {
+export function OutcomeBadge({
+  outcome,
+  className,
+}: {
+  outcome: DomainOutcome
+  className?: string
+}) {
   const meta = OUTCOME_META[outcome]
   return (
     <Badge

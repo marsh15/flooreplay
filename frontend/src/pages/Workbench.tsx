@@ -18,7 +18,13 @@ import {
   type ReviewCheckResult,
 } from '@/lib/api'
 import { formatInstant, formatInterval, OUTCOME_META, shortDigest } from '@/lib/status'
-import { ExpectationBadge, LifecycleBadge, Mono, OutcomeBadge, VerdictBadge } from '@/components/status'
+import {
+  ExpectationBadge,
+  LifecycleBadge,
+  Mono,
+  OutcomeBadge,
+  VerdictBadge,
+} from '@/components/status'
 import { EvidenceDrawer } from '@/components/EvidenceDrawer'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -236,9 +242,7 @@ export function WorkbenchPage() {
     return (
       <Alert variant="destructive">
         <AlertTitle>The workbench could not load its inputs</AlertTitle>
-        <AlertDescription>
-          {(scenariosQuery.error ?? configsQuery.error)?.message}
-        </AlertDescription>
+        <AlertDescription>{(scenariosQuery.error ?? configsQuery.error)?.message}</AlertDescription>
       </Alert>
     )
   }
@@ -252,7 +256,11 @@ export function WorkbenchPage() {
         <Alert variant="destructive">
           <AlertTitle>Requested scenario revision was not found</AlertTitle>
           <AlertDescription>
-            No scenario matches <Mono>{scenarioParam}@{revisionParam}</Mono> from the URL; showing{' '}
+            No scenario matches{' '}
+            <Mono>
+              {scenarioParam}@{revisionParam}
+            </Mono>{' '}
+            from the URL; showing{' '}
             {selected ? (
               <Mono>
                 {selected.scenario_id}@{selected.revision}
@@ -358,7 +366,10 @@ export function WorkbenchPage() {
                   <dd className="text-right">
                     <Mono>{detailQuery.data.target.slot_id}</Mono>
                     <br />
-                    {formatInterval(detailQuery.data.target.starts_at, detailQuery.data.target.ends_at)}
+                    {formatInterval(
+                      detailQuery.data.target.starts_at,
+                      detailQuery.data.target.ends_at,
+                    )}
                   </dd>
                 </div>
               </dl>
@@ -419,7 +430,8 @@ export function WorkbenchPage() {
               : 'Open latest saved report for this selection'}
           </Button>
           {savedMutation.isError ? (
-            savedMutation.error instanceof ApiError && savedMutation.error.code === 'NO_SAVED_REPORT' ? (
+            savedMutation.error instanceof ApiError &&
+            savedMutation.error.code === 'NO_SAVED_REPORT' ? (
               <p className="text-xs text-zinc-400">
                 No saved report exists for this selection yet.
               </p>
@@ -454,9 +466,8 @@ export function WorkbenchPage() {
             <div className="rounded-lg border border-dashed bg-white p-12 text-center">
               <p className="text-sm font-medium">No replay executed for this selection yet</p>
               <p className="mx-auto mt-1 max-w-sm text-sm text-zinc-500">
-                Press <span className="font-medium">Run replay</span> to execute the pinned
-                scenario against the selected configuration. The result is persisted before it is
-                shown.
+                Press <span className="font-medium">Run replay</span> to execute the pinned scenario
+                against the selected configuration. The result is persisted before it is shown.
               </p>
             </div>
           ) : (
@@ -563,8 +574,9 @@ export function WorkbenchPage() {
                     {result.proposal ? (
                       <div className="space-y-2 rounded-lg border bg-white p-3">
                         <p className="text-sm">
-                          Proposes <Mono className="font-semibold">{result.proposal.operator_id}</Mono>{' '}
-                          to cover <Mono>{result.proposal.target_slot_id}</Mono> on{' '}
+                          Proposes{' '}
+                          <Mono className="font-semibold">{result.proposal.operator_id}</Mono> to
+                          cover <Mono>{result.proposal.target_slot_id}</Mono> on{' '}
                           <Mono>{result.proposal.machine_id}</Mono>,{' '}
                           {formatInterval(result.proposal.starts_at, result.proposal.ends_at)}.
                         </p>
@@ -708,7 +720,8 @@ export function WorkbenchPage() {
                                   key={`${scenario.scenario_id}@${scenario.revision}`}
                                   value={`${scenario.scenario_id}@${scenario.revision}`}
                                 >
-                                  {scenario.scenario_id}@{scenario.revision} · {scenario.title.slice(0, 40)}
+                                  {scenario.scenario_id}@{scenario.revision} ·{' '}
+                                  {scenario.title.slice(0, 40)}
                                 </option>
                               ))}
                           </select>
@@ -726,7 +739,9 @@ export function WorkbenchPage() {
                             {reviewMutation.isPending ? 'Checking…' : 'Run review check'}
                           </Button>
                           {reviewMutation.isError ? (
-                            <span className="text-xs text-red-700">{reviewMutation.error.message}</span>
+                            <span className="text-xs text-red-700">
+                              {reviewMutation.error.message}
+                            </span>
                           ) : null}
                         </div>
                         {reviewFor && reviewFor.attemptId === activeAttempt.id ? (

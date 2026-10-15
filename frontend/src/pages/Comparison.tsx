@@ -31,9 +31,18 @@ import {
 import { cn } from '@/lib/utils'
 
 const CLASSIFICATION_META: Record<Classification, { label: string; tone: string }> = {
-  UNCHANGED_PASS: { label: 'Unchanged pass', tone: 'bg-emerald-600/10 text-emerald-800 border-emerald-600/25' },
-  FIXED: { label: 'Fixed', tone: 'bg-emerald-600/15 text-emerald-900 border-emerald-600/40 font-semibold' },
-  REGRESSION: { label: 'Regression', tone: 'bg-red-600/10 text-red-800 border-red-600/40 font-semibold' },
+  UNCHANGED_PASS: {
+    label: 'Unchanged pass',
+    tone: 'bg-emerald-600/10 text-emerald-800 border-emerald-600/25',
+  },
+  FIXED: {
+    label: 'Fixed',
+    tone: 'bg-emerald-600/15 text-emerald-900 border-emerald-600/40 font-semibold',
+  },
+  REGRESSION: {
+    label: 'Regression',
+    tone: 'bg-red-600/10 text-red-800 border-red-600/40 font-semibold',
+  },
   UNCHANGED_FAIL: { label: 'Unchanged fail', tone: 'bg-red-600/10 text-red-800 border-red-600/25' },
   NOT_COMPARABLE: { label: 'Not comparable', tone: 'bg-zinc-100 text-zinc-700 border-zinc-300' },
 }
@@ -115,11 +124,16 @@ export function ComparisonPage() {
   const suitesQuery = useQuery({ queryKey: ['suites'], queryFn: api.suites })
   const configsQuery = useQuery({ queryKey: ['configurations'], queryFn: api.configurations })
   const historyQuery = useQuery({ queryKey: ['comparisons'], queryFn: api.comparisons })
-  const capsQuery = useQuery({ queryKey: ['capabilities', user?.id ?? 'public'], queryFn: api.capabilities })
+  const capsQuery = useQuery({
+    queryKey: ['capabilities', user?.id ?? 'public'],
+    queryFn: api.capabilities,
+  })
 
   const suite = suitesQuery.data?.items[0]
   const configurations = configsQuery.data?.items ?? []
-  const executionLocalOnly = !capsQuery.data?.imports_enabled || capsQuery.data.execution_limits.comparison_execution === 'local_only'
+  const executionLocalOnly =
+    !capsQuery.data?.imports_enabled ||
+    capsQuery.data.execution_limits.comparison_execution === 'local_only'
   const [baselineId, setBaselineId] = useState<string>('CFG-BASELINE-V1')
   const [candidateId, setCandidateId] = useState<string>('CFG-IMPROVED-V1')
   const [report, setReport] = useState<ComparisonReport | null>(null)
@@ -182,9 +196,7 @@ export function ComparisonPage() {
     return (
       <Alert variant="destructive">
         <AlertTitle>Comparisons are unavailable</AlertTitle>
-        <AlertDescription>
-          {(suitesQuery.error ?? configsQuery.error)?.message}
-        </AlertDescription>
+        <AlertDescription>{(suitesQuery.error ?? configsQuery.error)?.message}</AlertDescription>
       </Alert>
     )
   }
@@ -233,7 +245,8 @@ export function ComparisonPage() {
         </label>
         {executionLocalOnly ? (
           <p className="text-xs text-zinc-500">
-            Sign in as an owner in the local deployment to execute this archived suite. Saved reports remain readable.
+            Sign in as an owner in the local deployment to execute this archived suite. Saved
+            reports remain readable.
           </p>
         ) : (
           <Button
@@ -279,27 +292,52 @@ export function ComparisonPage() {
           <p className="text-xs text-zinc-600">
             Baseline <Mono>{report.baseline_config_id}</Mono> vs candidate{' '}
             <Mono>{report.candidate_config_id}</Mono> · Suite {report.suite_id}@
-            {report.suite_revision} · executed {formatInstant(report.created_at)} · persisted
-            report · manifest <Mono>{report.manifest_digest?.slice(0, 19)}…</Mono>
+            {report.suite_revision} · executed {formatInstant(report.created_at)} · persisted report
+            · manifest <Mono>{report.manifest_digest?.slice(0, 19)}…</Mono>
           </p>
 
           <div className="overflow-x-auto rounded-lg border bg-white">
             <Table className="min-w-[860px]">
               <TableHeader>
                 <TableRow>
-                  <SortHead sort="scenario" activeKey={sortKey} ascending={sortAsc} onSort={headerClick}>
+                  <SortHead
+                    sort="scenario"
+                    activeKey={sortKey}
+                    ascending={sortAsc}
+                    onSort={headerClick}
+                  >
                     Scenario
                   </SortHead>
-                  <SortHead sort="category" activeKey={sortKey} ascending={sortAsc} onSort={headerClick}>
+                  <SortHead
+                    sort="category"
+                    activeKey={sortKey}
+                    ascending={sortAsc}
+                    onSort={headerClick}
+                  >
                     Category
                   </SortHead>
-                  <SortHead sort="classification" activeKey={sortKey} ascending={sortAsc} onSort={headerClick}>
+                  <SortHead
+                    sort="classification"
+                    activeKey={sortKey}
+                    ascending={sortAsc}
+                    onSort={headerClick}
+                  >
                     Classification
                   </SortHead>
-                  <SortHead sort="baseline" activeKey={sortKey} ascending={sortAsc} onSort={headerClick}>
+                  <SortHead
+                    sort="baseline"
+                    activeKey={sortKey}
+                    ascending={sortAsc}
+                    onSort={headerClick}
+                  >
                     Baseline
                   </SortHead>
-                  <SortHead sort="candidate" activeKey={sortKey} ascending={sortAsc} onSort={headerClick}>
+                  <SortHead
+                    sort="candidate"
+                    activeKey={sortKey}
+                    ascending={sortAsc}
+                    onSort={headerClick}
+                  >
                     Candidate
                   </SortHead>
                 </TableRow>
@@ -308,7 +346,9 @@ export function ComparisonPage() {
                 {items.map((item) => (
                   <Fragment key={`${item.scenario_id}:${item.title}:${item.category}`}>
                     <TableRow
-                      onClick={() => setExpanded(expanded === item.scenario_id ? null : item.scenario_id)}
+                      onClick={() =>
+                        setExpanded(expanded === item.scenario_id ? null : item.scenario_id)
+                      }
                       onKeyDown={(event) => {
                         if (event.key === 'Enter' || event.key === ' ') {
                           event.preventDefault()
@@ -337,7 +377,10 @@ export function ComparisonPage() {
                         <div className="flex flex-wrap items-center gap-1.5">
                           <ClassificationBadge classification={item.classification} />
                           {item.behavior_changed ? (
-                            <Badge variant="outline" className="border-blue-600/25 bg-blue-600/10 text-[10px] text-blue-800">
+                            <Badge
+                              variant="outline"
+                              className="border-blue-600/25 bg-blue-600/10 text-[10px] text-blue-800"
+                            >
                               behavior changed
                             </Badge>
                           ) : null}
@@ -371,8 +414,14 @@ export function ComparisonPage() {
                             Catches: {item.defect_statement}
                           </p>
                           <div className="grid gap-2 sm:grid-cols-2">
-                            <SidePanel title={`Baseline · ${report.baseline_config_id}`} side={item.baseline} />
-                            <SidePanel title={`Candidate · ${report.candidate_config_id}`} side={item.candidate} />
+                            <SidePanel
+                              title={`Baseline · ${report.baseline_config_id}`}
+                              side={item.baseline}
+                            />
+                            <SidePanel
+                              title={`Candidate · ${report.candidate_config_id}`}
+                              side={item.candidate}
+                            />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -402,9 +451,7 @@ export function ComparisonPage() {
 
       {historyQuery.data && historyQuery.data.items.length > 0 ? (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-zinc-800">
-            Recent comparisons
-          </h2>
+          <h2 className="text-sm font-semibold text-zinc-800">Recent comparisons</h2>
           <ul className="divide-y divide-zinc-200 rounded-lg border bg-white text-sm">
             {historyQuery.data.items.slice(0, 6).map((entry) => (
               <li key={entry.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
@@ -416,12 +463,18 @@ export function ComparisonPage() {
                   pass {entry.totals.unchanged_pass}
                 </Badge>
                 {entry.totals.fixed > 0 ? (
-                  <Badge variant="secondary" className="border border-emerald-600/30 bg-emerald-600/10 text-[10px] text-emerald-800">
+                  <Badge
+                    variant="secondary"
+                    className="border border-emerald-600/30 bg-emerald-600/10 text-[10px] text-emerald-800"
+                  >
                     fixed {entry.totals.fixed}
                   </Badge>
                 ) : null}
                 {entry.totals.regression > 0 ? (
-                  <Badge variant="secondary" className="border border-red-600/30 bg-red-600/10 text-[10px] text-red-800">
+                  <Badge
+                    variant="secondary"
+                    className="border border-red-600/30 bg-red-600/10 text-[10px] text-red-800"
+                  >
                     regression {entry.totals.regression}
                   </Badge>
                 ) : null}

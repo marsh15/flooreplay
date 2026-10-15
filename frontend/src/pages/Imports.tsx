@@ -32,12 +32,14 @@ const PROFILES = [
   {
     id: 'attendance-v1',
     name: 'Attendance export',
-    contract: 'Required columns: operator_id, status, observed_at. Status codes: P, A, PRESENT, ABSENT, U, UNKNOWN, 1, 0, blank (blank means UNKNOWN, never absent).',
+    contract:
+      'Required columns: operator_id, status, observed_at. Status codes: P, A, PRESENT, ABSENT, U, UNKNOWN, 1, 0, blank (blank means UNKNOWN, never absent).',
   },
   {
     id: 'skills-v1',
     name: 'Skill matrix export',
-    contract: 'Required columns: operator_id, operation_id, level (1-4), assessed_at. Naive timestamps are interpreted as Asia/Kolkata.',
+    contract:
+      'Required columns: operator_id, operation_id, level (1-4), assessed_at. Naive timestamps are interpreted as Asia/Kolkata.',
   },
 ]
 
@@ -57,8 +59,10 @@ function IssueList({ issues }: { issues: { code: string; severity: string; messa
             variant="secondary"
             className={cn(
               'h-auto px-1 py-0 text-[10px]',
-              issue.severity === 'BLOCKING' && 'border border-red-600/30 bg-red-600/10 text-red-800',
-              issue.severity === 'WARNING' && 'border border-amber-600/30 bg-amber-500/15 text-amber-900',
+              issue.severity === 'BLOCKING' &&
+                'border border-red-600/30 bg-red-600/10 text-red-800',
+              issue.severity === 'WARNING' &&
+                'border border-amber-600/30 bg-amber-500/15 text-amber-900',
             )}
           >
             {issue.code}
@@ -80,7 +84,10 @@ export function ImportsPage() {
   const [declaredAt, setDeclaredAt] = useState('2026-09-22T07:55:00+05:30')
   const [coverageComplete, setCoverageComplete] = useState(true)
   const [preview, setPreview] = useState<ImportPreview | null>(null)
-  const [published, setPublished] = useState<{ snapshot_id: string; content_digest: string } | null>(null)
+  const [published, setPublished] = useState<{
+    snapshot_id: string
+    content_digest: string
+  } | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [forkError, setForkError] = useState<string | null>(null)
 
@@ -177,17 +184,15 @@ export function ImportsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Imports</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
-          Upload a source export, inspect exactly what the system understood, and publish it as
-          an immutable snapshot. Publication is all-or-nothing: a malformed row can never quietly
+          Upload a source export, inspect exactly what the system understood, and publish it as an
+          immutable snapshot. Publication is all-or-nothing: a malformed row can never quietly
           disappear.
         </p>
       </div>
 
       {/* Step 1: profile */}
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-zinc-800">
-          Source profile
-        </h2>
+        <h2 className="text-sm font-semibold text-zinc-800">Source profile</h2>
         <div className="grid gap-2 sm:grid-cols-2">
           {PROFILES.map((profile) => (
             <button
@@ -218,9 +223,7 @@ export function ImportsPage() {
 
       {/* Step 2: metadata + CSV */}
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-zinc-800">
-          Upload and source metadata
-        </h2>
+        <h2 className="text-sm font-semibold text-zinc-800">Upload and source metadata</h2>
         <div className="space-y-3 rounded-lg border bg-white p-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-xs">
@@ -257,7 +260,9 @@ export function ImportsPage() {
           </div>
 
           <label className="block text-xs">
-            <span className="mb-1 block font-medium text-zinc-600">CSV text (UTF-8, comma, max 1 MiB / 5,000 rows)</span>
+            <span className="mb-1 block font-medium text-zinc-600">
+              CSV text (UTF-8, comma, max 1 MiB / 5,000 rows)
+            </span>
             <textarea
               value={csvText}
               onChange={(event) => setCsvText(event.target.value)}
@@ -282,7 +287,12 @@ export function ImportsPage() {
             <Separator orientation="vertical" className="h-5" />
             <span className="text-xs text-zinc-600">Curated examples:</span>
             {CURATED_EXAMPLES.map((example) => (
-              <Button key={example.id} variant="secondary" size="sm" onClick={() => loadExample(example)}>
+              <Button
+                key={example.id}
+                variant="secondary"
+                size="sm"
+                onClick={() => loadExample(example)}
+              >
                 {example.label}
               </Button>
             ))}
@@ -294,9 +304,7 @@ export function ImportsPage() {
       {/* Step 3: preview */}
       <section className="space-y-2">
         <div className="flex items-center gap-3">
-          <h2 className="text-sm font-semibold text-zinc-800">
-            Normalized preview
-          </h2>
+          <h2 className="text-sm font-semibold text-zinc-800">Normalized preview</h2>
           <Button
             size="sm"
             disabled={!csvText.trim() || previewMutation.isPending}
@@ -322,7 +330,8 @@ export function ImportsPage() {
               <Badge
                 variant="secondary"
                 className={cn(
-                  preview.counts.blocking > 0 && 'border border-red-600/30 bg-red-600/10 text-red-800',
+                  preview.counts.blocking > 0 &&
+                    'border border-red-600/30 bg-red-600/10 text-red-800',
                 )}
               >
                 {preview.counts.blocking} blocking
@@ -330,7 +339,8 @@ export function ImportsPage() {
               <Badge
                 variant="secondary"
                 className={cn(
-                  preview.counts.warning > 0 && 'border border-amber-600/30 bg-amber-500/15 text-amber-900',
+                  preview.counts.warning > 0 &&
+                    'border border-amber-600/30 bg-amber-500/15 text-amber-900',
                 )}
               >
                 {preview.counts.warning} warnings
@@ -428,9 +438,7 @@ export function ImportsPage() {
       {/* Step 4: publish + fork */}
       {published ? (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-zinc-800">
-            Published
-          </h2>
+          <h2 className="text-sm font-semibold text-zinc-800">Published</h2>
           <div className="rounded-lg border border-emerald-600/30 bg-emerald-600/5 p-3">
             <p className="text-sm">
               Snapshot <Mono className="font-semibold">{published.snapshot_id}</Mono> is published
@@ -470,9 +478,7 @@ export function ImportsPage() {
                 ))}
               </div>
             )}
-            {forkError ? (
-              <p className="mt-2 text-xs text-red-700">{forkError}</p>
-            ) : null}
+            {forkError ? <p className="mt-2 text-xs text-red-700">{forkError}</p> : null}
           </div>
         </section>
       ) : null}

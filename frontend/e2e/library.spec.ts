@@ -18,5 +18,7 @@ test('library surfaces persisted latest-attempt summaries', async ({ page }) => 
   await page.getByRole('button', { name: 'Run replay' }).click()
   await expect(page.getByText('Ready for review')).toBeVisible()
   await page.goto('/coverage')
-  await expect(page.getByRole('row', { name: /SCEN-HERO@2(?!\d)/ })).toContainText('Ready for review')
+  await expect(page.getByRole('row', { name: /SCEN-HERO@2(?!\d)/ })).toContainText(
+    'Ready for review',
+  )
 })
