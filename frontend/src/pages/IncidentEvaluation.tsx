@@ -1,68 +1,554 @@
 import { useQuery } from '@tanstack/react-query'
 import { incidentApi, type IncidentEvaluationReport } from '@/lib/incidents'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/board'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SemanticReviewInbox } from '@/components/IncidentSemanticReview'
 
-const title = (key: string) => key.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+const title = (key: string) =>
+  key.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 
 function valueText(value: unknown): string {
   if (value == null) return 'Not reported'
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+    return String(value)
   if (Array.isArray(value)) return value.map(valueText).join(', ')
-  return Object.entries(value as Record<string, unknown>).map(([key, item]) => `${title(key)}: ${valueText(item)}`).join(' · ')
+  return Object.entries(value as Record<string, unknown>)
+    .map(([key, item]) => `${title(key)}: ${valueText(item)}`)
+    .join(' · ')
 }
 
 function Metric({ name, data }: { name: string; data: unknown }) {
-  const detail = data && typeof data === 'object' && !Array.isArray(data) ? data as Record<string, unknown> : null
+  const detail =
+    data && typeof data === 'object' && !Array.isArray(data)
+      ? (data as Record<string, unknown>)
+      : null
   const shown = detail?.value ?? detail?.score ?? detail?.rate ?? data
   const numerator = detail?.numerator ?? detail?.passed ?? detail?.correct
   const denominator = detail?.denominator ?? detail?.total ?? detail?.evaluated
-  const display = denominator === 0 && numerator == null ? 'Not evaluated' : detail?.value == null && detail?.score == null && detail?.rate == null && numerator != null && denominator != null ? `${valueText(numerator)} / ${valueText(denominator)}` : valueText(shown)
-  return <div className="grid gap-2 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-6">
-    <div><h3 className="text-sm font-medium text-zinc-800">{title(name)}</h3>
-    <p className="mt-1 text-xs leading-5 text-zinc-600">{denominator != null ? `Denominator: ${valueText(denominator)}${denominator === 0 ? ' · no measured cases' : ''}` : 'Denominator not reported'}</p>
-    {detail?.unit != null && <p className="mt-1 text-xs text-zinc-600">Unit: {valueText(detail.unit)}</p>}</div>
-    <p className="self-center break-words text-base font-semibold tabular-nums text-zinc-900 sm:text-right">{display}</p>
-  </div>
+  const display =
+    denominator === 0 && numerator == null
+      ? 'Not evaluated'
+      : detail?.value == null &&
+          detail?.score == null &&
+          detail?.rate == null &&
+          numerator != null &&
+          denominator != null
+        ? `${valueText(numerator)} / ${valueText(denominator)}`
+        : valueText(shown)
+  return (
+    <div className="grid gap-2 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-6">
+      <div>
+        <h3 className="text-sm font-medium text-foreground">{title(name)}</h3>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+          {denominator != null
+            ? `Denominator: ${valueText(denominator)}${denominator === 0 ? ' · no measured cases' : ''}`
+            : 'Denominator not reported'}
+        </p>
+        {detail?.unit != null && (
+          <p className="mt-1 text-xs text-muted-foreground">Unit: {valueText(detail.unit)}</p>
+        )}
+      </div>
+      <p className="self-center break-words text-base font-semibold tabular-nums text-foreground sm:text-right">
+        {display}
+      </p>
+    </div>
+  )
 }
 
-function RetrievalComparison({ data }: { data: NonNullable<IncidentEvaluationReport['baseline_comparison']> }) {
+function RetrievalComparison({
+  data,
+}: {
+  data: NonNullable<IncidentEvaluationReport['baseline_comparison']>
+}) {
   const rows = [
     { name: 'Baseline · title only', value: data.baseline, failures: data.failed_baseline_queries },
-    { name: 'Candidate · cutoff-visible evidence card', value: data.candidate, failures: data.failed_candidate_queries },
+    {
+      name: 'Candidate · cutoff-visible evidence card',
+      value: data.candidate,
+      failures: data.failed_candidate_queries,
+    },
   ]
-  return <section className="space-y-3">
-    <div className="border-b border-zinc-200 pb-2"><h2 className="text-base font-semibold">Common-label retrieval comparison</h2><p className="mt-0.5 text-xs text-zinc-600">Both configurations use the same {data.label_revision} relevance labels. Counts are top-five results.</p></div>
-    <div className="overflow-x-auto rounded border border-zinc-200 bg-white"><table className="w-full min-w-[600px] text-left text-sm"><caption className="sr-only">Title-only baseline and cutoff-visible evidence-card retrieval measured against common labels</caption><thead className="border-b bg-zinc-50 text-xs uppercase text-zinc-600"><tr><th scope="col" className="px-4 py-2">Retriever</th><th scope="col" className="px-4 py-2">Hit at 5</th><th scope="col" className="px-4 py-2">Recall at 5</th></tr></thead><tbody className="divide-y divide-zinc-100 [&_tr]:align-top">{rows.map((row) => <tr key={row.name}><th scope="row" className="px-4 py-3 text-sm font-medium">{row.name}<span className="mt-1 block font-mono text-xs font-normal text-zinc-600">{row.value.configuration}</span></th><td className="px-4 py-3 font-mono text-sm tabular-nums">{row.value.hit_at_5.passed} / {row.value.hit_at_5.total}</td><td className="px-4 py-3 font-mono text-sm tabular-nums">{row.value.recall_at_5.passed} / {row.value.recall_at_5.total}</td></tr>)}</tbody></table></div>
-    <dl className="grid gap-3 text-xs sm:grid-cols-2">{rows.map((row) => <div key={row.name} className="rounded border border-zinc-200 bg-white p-3"><dt className="font-medium text-zinc-700">Failed queries · {row.name}</dt><dd className="mt-1 text-zinc-600">{row.failures.length ? row.failures.join(', ') : 'None in this labeled set'}</dd></div>)}</dl>
-  </section>
+  return (
+    <section className="space-y-3">
+      <div className="border-b border-border pb-2">
+        <h2 className="text-xl font-bold font-stretch-semi-condensed">
+          Common-label retrieval comparison
+        </h2>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          Both configurations use the same {data.label_revision} relevance labels. Counts are
+          top-five results.
+        </p>
+      </div>
+      <div tabIndex={0} className="overflow-x-auto rounded-sm border border-border bg-card">
+        <table className="w-full min-w-[600px] text-left text-sm">
+          <caption className="sr-only">
+            Title-only baseline and cutoff-visible evidence-card retrieval measured against common
+            labels
+          </caption>
+          <thead className="border-b bg-secondary text-xs uppercase text-muted-foreground">
+            <tr>
+              <th scope="col" className="px-4 py-2">
+                Retriever
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Hit at 5
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Recall at 5
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border [&_tr]:align-top">
+            {rows.map((row) => (
+              <tr key={row.name}>
+                <th scope="row" className="px-4 py-3 text-sm font-medium">
+                  {row.name}
+                  <span className="mt-1 block font-mono text-xs font-normal text-muted-foreground">
+                    {row.value.configuration}
+                  </span>
+                </th>
+                <td className="px-4 py-3 font-mono text-sm tabular-nums">
+                  {row.value.hit_at_5.passed} / {row.value.hit_at_5.total}
+                </td>
+                <td className="px-4 py-3 font-mono text-sm tabular-nums">
+                  {row.value.recall_at_5.passed} / {row.value.recall_at_5.total}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <dl className="grid gap-3 text-xs sm:grid-cols-2">
+        {rows.map((row) => (
+          <div key={row.name} className="rounded-sm border border-border bg-card p-3">
+            <dt className="font-medium text-foreground">Failed queries · {row.name}</dt>
+            <dd className="mt-1 text-muted-foreground">
+              {row.failures.length ? row.failures.join(', ') : 'None in this labeled set'}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
 }
 
 export function IncidentEvaluationPage() {
-  const release = useQuery({ queryKey: ['release-evaluation'], queryFn: incidentApi.releaseEvaluation, retry: false })
-  const report = useQuery({ queryKey: ['incident-evaluation', 'incident-core-v1'], queryFn: () => incidentApi.evaluationReport('incident-core-v1'), retry: false })
-  return <div className="space-y-7">
-    <header className="border-b border-zinc-200 pb-5"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Incident evaluation lab</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">Measured quality on a pinned synthetic dataset. Failures and limitations stay visible alongside scores.</p></header>
-    <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 sm:p-6"><h2 className="font-semibold">Release dataset integrity</h2>{release.data ? <><p className="text-xs text-zinc-600">{release.data.release} · {release.data.status}</p><div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4"><div><p className="text-xs text-zinc-600">Historical episodes</p><p className="text-xl font-semibold">{release.data.split_counts.historical}</p></div><div><p className="text-xs text-zinc-600">Development investigations</p><p className="text-xl font-semibold">{release.data.split_counts.development}</p></div><div><p className="text-xs text-zinc-600">Locked investigations</p><p className="text-xl font-semibold">{release.data.split_counts.locked}</p></div><div><p className="text-xs text-zinc-600">Arithmetic and structure checks</p><p className="text-xl font-semibold">{release.data.arithmetic_and_structure_cases_checked} / 60</p></div></div><p className="text-xs">{release.data.authored_templates} authored templates · {release.data.leakage_audit}</p><p className="text-xs text-amber-900">Independent semantic support review: {release.data.human_support_precision == null ? 'Not reviewed' : release.data.human_support_precision}. OpenAI: {(report.data?.current_provider?.status ?? release.data.provider_status).replaceAll('_', ' ').toLowerCase()}.</p>{[...release.data.problems, ...release.data.limitations].map((item, index) => <p key={index} className="text-xs text-zinc-600">{item}</p>)}</> : <p className="text-xs text-zinc-600">{release.error ? 'Release integrity report unavailable; no current dataset measurement is shown.' : 'Loading release integrity…'}</p>}</section>
-    <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 sm:p-6"><h2 className="font-semibold">Current OpenAI evaluation</h2><p role="status" className="text-sm text-amber-900">{report.data?.current_provider?.status && report.data.current_provider.status !== 'NOT_EVALUATED' ? `OpenAI: ${report.data.current_provider.status.replaceAll('_', ' ').toLowerCase()}.` : report.isPending ? 'Loading current evaluation…' : report.isError ? 'Current evaluation unavailable.' : 'OpenAI not evaluated.'}</p>{report.data?.current_provider && <><dl className="grid grid-cols-2 gap-x-6 gap-y-4 text-xs sm:grid-cols-3">{['attempted', 'completed', 'failed', 'running', 'unverified_completed', 'reviewed'].map((name) => <div key={name}><dt className="capitalize text-zinc-600">{name.replaceAll('_', ' ')}</dt><dd className="mt-1 text-xl font-semibold">{({ attempted: report.data.current_provider?.attempted, completed: report.data.current_provider?.completed, failed: report.data.current_provider?.failed, running: report.data.current_provider?.running, unverified_completed: report.data.current_provider?.unverified_completed, reviewed: report.data.current_provider?.reviewed })[name] ?? 'Not reported'}</dd></div>)}</dl><p className="text-xs">Human-reviewed claim support: {report.data.current_provider.declared_human_reviewed_claims ? `${report.data.current_provider.declared_human_reviewed_claims} declared human annotations; qualifications not independently verified.` : 'Not reviewed by a declared human reviewer.'} Declared independent annotations: {report.data.current_provider.declared_independent_reviewed_claims ?? 0}. See exact-output reports for coverage and disagreements. {report.data.current_provider.reviewed_claims ? `Recorded claim annotations: ${report.data.current_provider.supported_claims ?? 'Not reported'} supported / ${report.data.current_provider.reviewed_claims} reviewed.` : 'No claim annotations recorded.'} Valid citation references alone do not establish claim support.</p><p className="text-xs">Declared-human annotation support rate: {report.data.current_provider.human_support_precision == null ? 'Not evaluated' : new Intl.NumberFormat('en', { style: 'percent', maximumFractionDigits: 1 }).format(report.data.current_provider.human_support_precision)} across {report.data.current_provider.declared_human_reviewed_claims ?? 0} declared human annotations. Qualifications and independence are not externally verified.</p>{report.data.current_provider.review_policy && <p className="text-xs text-zinc-600">{report.data.current_provider.review_policy}</p>}{report.data.current_provider.limitations?.map((item, index) => <p key={index} className="text-xs text-zinc-600">{item}</p>)}</>}</section>
-    <SemanticReviewInbox />
-    <p className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Provider results below are historical Qwen measurements and retain their original author-review labels.</p>
-    {report.isPending ? <div className="space-y-3" aria-busy="true" aria-label="Loading evaluation report"><Skeleton className="h-20" /><Skeleton className="h-36" /><Skeleton className="h-48" /></div> : report.isError ? <div role="alert" className="rounded border border-red-200 bg-red-50 p-5"><h2 className="text-sm font-semibold text-red-900">Evaluation report unavailable</h2><p className="mt-1 text-sm text-red-800">{report.error.message}</p><Button className="mt-3" variant="outline" size="sm" onClick={() => report.refetch()}>Retry</Button></div> : <>
-      {report.data.execution_kind === 'saved_evaluation' && <p role="status" className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">API unavailable. Showing the bundled saved evaluation report.</p>}
-      <section className="rounded-xl border border-zinc-200 bg-white p-5 sm:p-6"><h2 className="text-sm font-semibold">Pinned run</h2><dl className="mt-3 grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-4"><div><dt className="text-zinc-600">Dataset revision</dt><dd className="mt-1 font-mono">{report.data.dataset_revision}</dd></div><div><dt className="text-zinc-600">Label revision</dt><dd className="mt-1 font-mono">{report.data.label_revision}</dd></div><div><dt className="text-zinc-600">Cases</dt><dd className="mt-1 font-mono">{report.data.case_count}</dd></div><div><dt className="text-zinc-600">Execution mode</dt><dd className="mt-1">{report.data.execution_kind ? title(report.data.execution_kind) : 'Not reported'}</dd></div></dl><p className="mt-3 border-t border-zinc-100 pt-3 text-xs text-zinc-600"><strong>Configuration:</strong> {valueText(report.data.configuration)}</p>{report.data.runtime != null && <p className="mt-1 text-xs text-zinc-600"><strong>Runtime:</strong> {valueText(report.data.runtime)}</p>}{report.data.hardware != null && <p className="mt-1 text-xs text-zinc-600"><strong>Hardware:</strong> {valueText(report.data.hardware)}</p>}{report.data.model != null && <p className="mt-1 text-xs text-zinc-600"><strong>Model:</strong> {valueText(report.data.model)}</p>}</section>
+  const release = useQuery({
+    queryKey: ['release-evaluation'],
+    queryFn: incidentApi.releaseEvaluation,
+    retry: false,
+  })
+  const report = useQuery({
+    queryKey: ['incident-evaluation', 'incident-core-v1'],
+    queryFn: () => incidentApi.evaluationReport('incident-core-v1'),
+    retry: false,
+  })
+  return (
+    <div className="space-y-7">
+      <PageHeader title="Incident evaluation lab">
+        <p className="mt-2 max-w-2xl text-base leading-7 text-muted-foreground">
+          Measured quality on a pinned synthetic dataset. Failures and limitations stay visible
+          alongside scores.
+        </p>
+      </PageHeader>
+      <section className="space-y-4 rounded-sm border border-border bg-card p-5 sm:p-6">
+        <h2 className="text-xl font-bold font-stretch-semi-condensed">Release dataset integrity</h2>
+        {release.data ? (
+          <>
+            <p className="text-xs text-muted-foreground">
+              {release.data.release} · {release.data.status}
+            </p>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Historical episodes</p>
+                <p className="text-3xl font-bold font-stretch-semi-condensed tabular-nums">
+                  {release.data.split_counts.historical}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Development investigations</p>
+                <p className="text-3xl font-bold font-stretch-semi-condensed tabular-nums">
+                  {release.data.split_counts.development}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Locked investigations</p>
+                <p className="text-3xl font-bold font-stretch-semi-condensed tabular-nums">
+                  {release.data.split_counts.locked}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Arithmetic and structure checks</p>
+                <p className="text-3xl font-bold font-stretch-semi-condensed tabular-nums">
+                  {release.data.arithmetic_and_structure_cases_checked} / 60
+                </p>
+              </div>
+            </div>
+            <p className="text-xs">
+              {release.data.authored_templates} authored templates · {release.data.leakage_audit}
+            </p>
+            <p className="text-xs text-limit-foreground">
+              Independent semantic support review:{' '}
+              {release.data.human_support_precision == null
+                ? 'Not reviewed'
+                : release.data.human_support_precision}
+              . OpenAI:{' '}
+              {(report.data?.current_provider?.status ?? release.data.provider_status)
+                .replaceAll('_', ' ')
+                .toLowerCase()}
+              .
+            </p>
+            {[...release.data.problems, ...release.data.limitations].map((item, index) => (
+              <p key={index} className="text-xs text-muted-foreground">
+                {item}
+              </p>
+            ))}
+          </>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            {release.error
+              ? 'Release integrity report unavailable; no current dataset measurement is shown.'
+              : 'Loading release integrity…'}
+          </p>
+        )}
+      </section>
+      <section className="space-y-4 rounded-sm border border-border bg-card p-5 sm:p-6">
+        <h2 className="text-xl font-bold font-stretch-semi-condensed">Current OpenAI evaluation</h2>
+        <p role="status" className="text-sm text-limit-foreground">
+          {report.data?.current_provider?.status &&
+          report.data.current_provider.status !== 'NOT_EVALUATED'
+            ? `OpenAI: ${report.data.current_provider.status.replaceAll('_', ' ').toLowerCase()}.`
+            : report.isPending
+              ? 'Loading current evaluation…'
+              : report.isError
+                ? 'Current evaluation unavailable.'
+                : 'OpenAI not evaluated.'}
+        </p>
+        {report.data?.current_provider && (
+          <>
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 text-xs sm:grid-cols-3">
+              {[
+                'attempted',
+                'completed',
+                'failed',
+                'running',
+                'unverified_completed',
+                'reviewed',
+              ].map((name) => (
+                <div key={name}>
+                  <dt className="capitalize text-muted-foreground">{name.replaceAll('_', ' ')}</dt>
+                  <dd className="mt-1 text-xl font-semibold">
+                    {{
+                      attempted: report.data.current_provider?.attempted,
+                      completed: report.data.current_provider?.completed,
+                      failed: report.data.current_provider?.failed,
+                      running: report.data.current_provider?.running,
+                      unverified_completed: report.data.current_provider?.unverified_completed,
+                      reviewed: report.data.current_provider?.reviewed,
+                    }[name] ?? 'Not reported'}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p className="text-xs">
+              Human-reviewed claim support:{' '}
+              {report.data.current_provider.declared_human_reviewed_claims
+                ? `${report.data.current_provider.declared_human_reviewed_claims} declared human annotations; qualifications not independently verified.`
+                : 'Not reviewed by a declared human reviewer.'}{' '}
+              Declared independent annotations:{' '}
+              {report.data.current_provider.declared_independent_reviewed_claims ?? 0}. See
+              exact-output reports for coverage and disagreements.{' '}
+              {report.data.current_provider.reviewed_claims
+                ? `Recorded claim annotations: ${report.data.current_provider.supported_claims ?? 'Not reported'} supported / ${report.data.current_provider.reviewed_claims} reviewed.`
+                : 'No claim annotations recorded.'}{' '}
+              Valid citation references alone do not establish claim support.
+            </p>
+            <p className="text-xs">
+              Declared-human annotation support rate:{' '}
+              {report.data.current_provider.human_support_precision == null
+                ? 'Not evaluated'
+                : new Intl.NumberFormat('en', {
+                    style: 'percent',
+                    maximumFractionDigits: 1,
+                  }).format(report.data.current_provider.human_support_precision)}{' '}
+              across {report.data.current_provider.declared_human_reviewed_claims ?? 0} declared
+              human annotations. Qualifications and independence are not externally verified.
+            </p>
+            {report.data.current_provider.review_policy && (
+              <p className="text-xs text-muted-foreground">
+                {report.data.current_provider.review_policy}
+              </p>
+            )}
+            {report.data.current_provider.limitations?.map((item, index) => (
+              <p key={index} className="text-xs text-muted-foreground">
+                {item}
+              </p>
+            ))}
+          </>
+        )}
+      </section>
+      <SemanticReviewInbox />
+      <p className="rounded-sm border border-limit-border bg-limit p-3 text-sm text-limit-foreground">
+        Provider results below are historical Qwen measurements and retain their original
+        author-review labels.
+      </p>
+      {report.isPending ? (
+        <div className="space-y-3" aria-busy="true" aria-label="Loading evaluation report">
+          <Skeleton className="h-20" />
+          <Skeleton className="h-36" />
+          <Skeleton className="h-48" />
+        </div>
+      ) : report.isError ? (
+        <div role="alert" className="rounded-sm border border-danger-border bg-danger p-5">
+          <h2 className="text-base font-bold text-danger-foreground">
+            Evaluation report unavailable
+          </h2>
+          <p className="mt-1 text-sm text-danger-foreground">{report.error.message}</p>
+          <Button className="mt-3" variant="outline" size="sm" onClick={() => report.refetch()}>
+            Retry
+          </Button>
+        </div>
+      ) : (
+        <>
+          {report.data.execution_kind === 'saved_evaluation' && (
+            <p
+              role="status"
+              className="rounded-sm border border-limit-border bg-limit p-3 text-sm text-limit-foreground"
+            >
+              API unavailable. Showing the bundled saved evaluation report.
+            </p>
+          )}
+          <section className="rounded-sm border border-border bg-card p-5 sm:p-6">
+            <h2 className="text-lg font-bold">Pinned run</h2>
+            <dl className="mt-3 grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <dt className="text-muted-foreground">Dataset revision</dt>
+                <dd className="mt-1 font-mono">{report.data.dataset_revision}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Label revision</dt>
+                <dd className="mt-1 font-mono">{report.data.label_revision}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Cases</dt>
+                <dd className="mt-1 font-mono">{report.data.case_count}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Execution mode</dt>
+                <dd className="mt-1">
+                  {report.data.execution_kind ? title(report.data.execution_kind) : 'Not reported'}
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">
+              <strong>Configuration:</strong> {valueText(report.data.configuration)}
+            </p>
+            {report.data.runtime != null && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                <strong>Runtime:</strong> {valueText(report.data.runtime)}
+              </p>
+            )}
+            {report.data.hardware != null && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                <strong>Hardware:</strong> {valueText(report.data.hardware)}
+              </p>
+            )}
+            {report.data.model != null && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                <strong>Model:</strong> {valueText(report.data.model)}
+              </p>
+            )}
+          </section>
 
-      <section className="space-y-3"><div className="border-b border-zinc-200 pb-2"><h2 className="text-base font-semibold">Historical Qwen and deterministic results</h2><p className="mt-0.5 text-xs text-zinc-600">Each metric states its reported denominator. Missing denominators are shown explicitly.</p></div>{Object.keys(report.data.metrics).length ? <div className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white">{Object.entries(report.data.metrics).map(([name, data]) => <Metric key={name} name={name} data={data} />)}</div> : <p className="rounded border border-dashed p-5 text-sm text-zinc-600">No metrics were published in this report.</p>}</section>
+          <section className="space-y-3">
+            <div className="border-b border-border pb-2">
+              <h2 className="text-xl font-bold font-stretch-semi-condensed">
+                Historical Qwen and deterministic results
+              </h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Each metric states its reported denominator. Missing denominators are shown
+                explicitly.
+              </p>
+            </div>
+            {Object.keys(report.data.metrics).length ? (
+              <div className="divide-y divide-border rounded-sm border border-border bg-card">
+                {Object.entries(report.data.metrics).map(([name, data]) => (
+                  <Metric key={name} name={name} data={data} />
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-sm border border-dashed p-5 text-sm text-muted-foreground">
+                No metrics were published in this report.
+              </p>
+            )}
+          </section>
 
-      {report.data.baseline_comparison && <RetrievalComparison data={report.data.baseline_comparison} />}
+          {report.data.baseline_comparison && (
+            <RetrievalComparison data={report.data.baseline_comparison} />
+          )}
 
-      <section className="space-y-3"><div className="border-b border-zinc-200 pb-2"><h2 className="text-base font-semibold">Failed cases</h2><p className="mt-0.5 text-xs text-zinc-600">{report.data.failures.length} reported failures</p></div>{report.data.failures.length ? <ul className="space-y-2">{report.data.failures.map((failure, index) => <li key={index} className="rounded border border-amber-200 bg-amber-50 p-4"><h3 className="text-sm font-semibold">{valueText(failure.case ?? failure.case_id ?? failure.id ?? `Case ${index + 1}`)}</h3><dl className="mt-2 space-y-1 text-xs text-zinc-700">{Object.entries(failure).filter(([key]) => !['case', 'case_id', 'id'].includes(key)).map(([key, value]) => <div key={key}><dt className="inline font-medium">{title(key)}: </dt><dd className="inline">{valueText(value)}</dd></div>)}</dl></li>)}</ul> : <p className="rounded border border-zinc-200 bg-white p-5 text-sm text-zinc-600">No failures are listed. Check the metric denominators and limitations before drawing conclusions.</p>}</section>
+          <section className="space-y-3">
+            <div className="border-b border-border pb-2">
+              <h2 className="text-xl font-bold font-stretch-semi-condensed">Failed cases</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {report.data.failures.length} reported failures
+              </p>
+            </div>
+            {report.data.failures.length ? (
+              <ul className="space-y-2">
+                {report.data.failures.map((failure, index) => (
+                  <li key={index} className="rounded-sm border border-limit-border bg-limit p-4">
+                    <h3 className="text-sm font-semibold">
+                      {valueText(
+                        failure.case ?? failure.case_id ?? failure.id ?? `Case ${index + 1}`,
+                      )}
+                    </h3>
+                    <dl className="mt-2 space-y-1 text-xs text-foreground">
+                      {Object.entries(failure)
+                        .filter(([key]) => !['case', 'case_id', 'id'].includes(key))
+                        .map(([key, value]) => (
+                          <div key={key}>
+                            <dt className="inline font-medium">{title(key)}: </dt>
+                            <dd className="inline">{valueText(value)}</dd>
+                          </div>
+                        ))}
+                    </dl>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="rounded-sm border border-border bg-card p-5 text-sm text-muted-foreground">
+                No failures are listed. Check the metric denominators and limitations before drawing
+                conclusions.
+              </p>
+            )}
+          </section>
 
-      {report.data.cases.length > 0 && <section className="space-y-3"><div className="border-b border-zinc-200 pb-2"><h2 className="text-base font-semibold">Case results</h2><p className="mt-0.5 text-xs text-zinc-600">All {report.data.cases.length} published case records</p></div><div className="overflow-x-auto rounded border border-zinc-200 bg-white"><table className="w-full min-w-[640px] text-left text-sm"><thead className="border-b bg-zinc-50 text-xs uppercase text-zinc-600"><tr><th scope="col" className="px-4 py-2">Case</th><th scope="col" className="px-4 py-2">Result</th><th scope="col" className="px-4 py-2">Details</th></tr></thead><tbody className="divide-y divide-zinc-100 [&_tr]:align-top">{report.data.cases.map((item, index) => <tr key={index}><td className="px-4 py-3 font-mono text-xs">{valueText(item.incident_id ?? item.case_id ?? item.id ?? index + 1)}</td><td className="px-4 py-3">{valueText(item.status ?? item.verdict ?? item.result ?? (item.numeric_pass === true && item.category_pass === true ? 'PASS' : 'FAIL'))}</td><td className="px-4 py-3 text-xs text-zinc-600">{Object.entries(item).filter(([key]) => !['incident_id', 'case_id', 'id', 'status', 'verdict', 'result'].includes(key)).map(([key, value]) => `${title(key)}: ${valueText(value)}`).join(' · ')}</td></tr>)}</tbody></table></div></section>}
+          {report.data.cases.length > 0 && (
+            <section className="space-y-3">
+              <div className="border-b border-border pb-2">
+                <h2 className="text-xl font-bold font-stretch-semi-condensed">Case results</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  All {report.data.cases.length} published case records
+                </p>
+              </div>
+              <div tabIndex={0} className="overflow-x-auto rounded-sm border border-border bg-card">
+                <table className="w-full min-w-[640px] text-left text-sm">
+                  <thead className="border-b bg-secondary text-xs uppercase text-muted-foreground">
+                    <tr>
+                      <th scope="col" className="px-4 py-2">
+                        Case
+                      </th>
+                      <th scope="col" className="px-4 py-2 whitespace-nowrap">
+                        Result
+                      </th>
+                      <th scope="col" className="px-4 py-2">
+                        Details
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border [&_tr]:align-top">
+                    {report.data.cases.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-3 font-mono text-xs">
+                          {valueText(item.incident_id ?? item.case_id ?? item.id ?? index + 1)}
+                        </td>
+                        <td className="px-4 py-3">
+                          {valueText(
+                            item.status ??
+                              item.verdict ??
+                              item.result ??
+                              (item.numeric_pass === true && item.category_pass === true
+                                ? 'PASS'
+                                : 'FAIL'),
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                          {Object.entries(item)
+                            .filter(
+                              ([key]) =>
+                                ![
+                                  'incident_id',
+                                  'case_id',
+                                  'id',
+                                  'status',
+                                  'verdict',
+                                  'result',
+                                ].includes(key),
+                            )
+                            .map(([key, value]) => `${title(key)}: ${valueText(value)}`)
+                            .join(' · ')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
 
-      {!!report.data.retrieval_cases?.length && <section className="space-y-3"><div className="border-b border-zinc-200 pb-2"><h2 className="text-base font-semibold">Retrieval checks</h2><p className="mt-0.5 text-xs text-zinc-600">Relevant labels and retrieved IDs from live lexical search</p></div><div className="overflow-x-auto rounded border border-zinc-200 bg-white"><table className="w-full min-w-[640px] text-left text-sm"><thead className="border-b bg-zinc-50 text-xs uppercase text-zinc-600"><tr><th scope="col" className="px-4 py-2">Query</th><th scope="col" className="px-4 py-2">Relevant</th><th scope="col" className="px-4 py-2">Retrieved</th><th scope="col" className="px-4 py-2">Hits</th></tr></thead><tbody className="divide-y divide-zinc-100 [&_tr]:align-top">{report.data.retrieval_cases.map((item, index) => <tr key={index}><td className="px-4 py-3">{valueText(item.query)}</td><td className="px-4 py-3 font-mono text-xs">{valueText(item.relevant)}</td><td className="px-4 py-3 font-mono text-xs">{valueText(item.retrieved)}</td><td className="px-4 py-3 font-mono text-xs">{valueText(item.hits)}</td></tr>)}</tbody></table></div></section>}
+          {!!report.data.retrieval_cases?.length && (
+            <section className="space-y-3">
+              <div className="border-b border-border pb-2">
+                <h2 className="text-xl font-bold font-stretch-semi-condensed">Retrieval checks</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Relevant labels and retrieved IDs from live lexical search
+                </p>
+              </div>
+              <div tabIndex={0} className="overflow-x-auto rounded-sm border border-border bg-card">
+                <table className="w-full min-w-[640px] text-left text-sm">
+                  <thead className="border-b bg-secondary text-xs uppercase text-muted-foreground">
+                    <tr>
+                      <th scope="col" className="px-4 py-2">
+                        Query
+                      </th>
+                      <th scope="col" className="px-4 py-2">
+                        Relevant
+                      </th>
+                      <th scope="col" className="px-4 py-2">
+                        Retrieved
+                      </th>
+                      <th scope="col" className="px-4 py-2">
+                        Hits
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border [&_tr]:align-top">
+                    {report.data.retrieval_cases.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-3">{valueText(item.query)}</td>
+                        <td className="px-4 py-3 font-mono text-xs">{valueText(item.relevant)}</td>
+                        <td className="px-4 py-3 font-mono text-xs">{valueText(item.retrieved)}</td>
+                        <td className="px-4 py-3 font-mono text-xs">{valueText(item.hits)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
 
-      <section className="space-y-3"><div className="border-b border-zinc-200 pb-2"><h2 className="text-base font-semibold">Limits of this evaluation</h2></div>{report.data.limitations.length ? <ul className="list-disc space-y-2 pl-5 text-sm text-zinc-700">{report.data.limitations.map((limit, index) => <li key={index}>{limit}</li>)}</ul> : <p className="text-sm text-zinc-600">No limitations were supplied with this report.</p>}</section>
-    </>}
-  </div>
+          <section className="space-y-3">
+            <div className="border-b border-border pb-2">
+              <h2 className="text-xl font-bold font-stretch-semi-condensed">
+                Limits of this evaluation
+              </h2>
+            </div>
+            {report.data.limitations.length ? (
+              <ul className="list-disc space-y-2 pl-5 text-sm text-foreground">
+                {report.data.limitations.map((limit, index) => (
+                  <li key={index}>{limit}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No limitations were supplied with this report.
+              </p>
+            )}
+          </section>
+        </>
+      )}
+    </div>
+  )
 }

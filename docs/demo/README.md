@@ -10,7 +10,12 @@ Artifacts produced by the recording:
 - `incident-workbench.png`: deterministic workbench screenshot.
 - `evaluation.png`: release integrity and historical evaluation screenshot.
 - `recording-manifest.json`: incident and analysis identity, cutoff and verification limits.
+- `flooreplay-demo.mp4` and `flooreplay-demo.gif`: a 20-second launch video of the redesigned workbench (1920x1080, 30fps, with music) and its looping preview for the repository README. Both show the saved synthetic report with the API unavailable and were rendered from the running app.
 
 Historical Qwen output is labeled as an archive and does not establish OpenAI quality. This recording verifies the local browser workflow. Actual OpenAI generation, embeddings, independent semantic review and a hosted smoke test each require separate evidence.
 
 To record against an isolated application database, set `E2E_BASE_URL`, `E2E_API_BASE`, `E2E_USERNAME` and `E2E_PASSWORD` in the shell, then run `node docs/demo/record-demo.mjs` from the repository root. Credentials should identify a disposable owner. The password field is masked, session tokens stay in browser memory, and the recorder refuses to generate a draft when provider generation is enabled. The recording creates a fresh deterministic analysis and appends its submission and approval records to the isolated database.
+
+## Screenshot refresh
+
+`incident-workbench.png` and `evaluation.png` were recaptured after the production-board redesign from the app's saved synthetic demo data, with the API unavailable. They show the saved deterministic report, not the authenticated session the recorder produces. `flooreplay-local-demo.webm` and `recording-manifest.json` still describe the earlier recording of the previous interface and should be regenerated with `record-demo.mjs` against an isolated backend.

@@ -11,7 +11,9 @@ test('incident investigation keeps evidence and later revision separate', async 
   await expect(page.getByRole('heading', { name: 'Observed situation' })).toBeVisible()
   await expect(page.getByText('74', { exact: true }).first()).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Historical local-model result' })).toBeVisible()
-  await expect(page.getByText(/Project-author review supported 1 of 4 factual claims/)).toBeVisible()
+  await expect(
+    page.getByText(/Project-author review supported 1 of 4 factual claims/),
+  ).toBeVisible()
   await page.getByRole('combobox', { name: 'Evidence revision' }).selectOption('1')
   await expect(page.getByText('73', { exact: true }).first()).toBeVisible()
   await expect(page.getByText(/This proposal belongs to revision 1/).first()).toBeVisible()
@@ -21,7 +23,9 @@ test('incident investigation keeps evidence and later revision separate', async 
   await page.keyboard.press('Escape')
   await expect(page.getByRole('heading', { name: 'Historical precedents' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Open precedent' }).first()).toBeVisible()
-  await expect(page.getByText(/Proposal prerequisites require separate current-source verification/).first()).toBeVisible()
+  await expect(
+    page.getByText(/Proposal prerequisites require separate current-source verification/).first(),
+  ).toBeVisible()
   await page.getByRole('combobox', { name: 'Evidence revision' }).selectOption('2')
   await expect(page.getByRole('button', { name: 'EV-MAINT-1', exact: true }).first()).toBeVisible()
   await expect(page.getByRole('button', { name: 'Export portable report' })).toBeDisabled()
@@ -53,12 +57,26 @@ test('incident import preview blocks an invalid source row', async ({ page }) =>
   await page.getByLabel('Window end', { exact: true }).fill('2026-09-28T12:00:00+05:30')
   await page.getByLabel('Knowledge cutoff', { exact: true }).fill('2026-09-28T12:00:00+05:30')
   await page.getByLabel('Local file').setInputFiles({
-    name: 'invalid.json', mimeType: 'application/json',
-    buffer: Buffer.from(JSON.stringify([{ id: 'test-plan', record_type: 'baseline_plan', available_at: '2026-09-28T11:40:00+05:30', line_id: 'S4' }])),
+    name: 'invalid.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(
+      JSON.stringify([
+        {
+          id: 'test-plan',
+          record_type: 'baseline_plan',
+          available_at: '2026-09-28T11:40:00+05:30',
+          line_id: 'S4',
+        },
+      ]),
+    ),
   })
   await page.getByRole('button', { name: 'Preview source' }).click()
   await expect(page.getByRole('heading', { name: 'Preview: BLOCKED' })).toBeVisible()
-  await expect(page.getByText('Production records require factory, order_id, style_id, and stage', { exact: true })).toBeVisible()
+  await expect(
+    page.getByText('Production records require factory, order_id, style_id, and stage', {
+      exact: true,
+    }),
+  ).toBeVisible()
   await expect(page.getByRole('button', { name: 'Create incident', exact: true })).toBeDisabled()
 })
 
@@ -74,6 +92,8 @@ test('bundled investigation remains readable while the API is unavailable', asyn
   await page.getByRole('button', { name: 'EV-MAT-1' }).first().click()
   await expect(page.getByText('material-transfer-218', { exact: true })).toBeVisible()
   await page.goto('/evaluation')
-  await expect(page.getByText('API unavailable. Showing the bundled saved evaluation report.')).toBeVisible()
+  await expect(
+    page.getByText('API unavailable. Showing the bundled saved evaluation report.'),
+  ).toBeVisible()
   await expect(page.getByText('8 / 16').first()).toBeVisible()
 })

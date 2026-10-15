@@ -34,7 +34,8 @@ export interface Issue {
 }
 
 export interface ConstraintResult {
-  code: 'C01' | 'C02' | 'C03' | 'C04' | 'C05' | 'C06' | 'C07' | 'C08' | 'C09' | 'C10' | 'C11' | 'C12'
+  code:
+    'C01' | 'C02' | 'C03' | 'C04' | 'C05' | 'C06' | 'C07' | 'C08' | 'C09' | 'C10' | 'C11' | 'C12'
   verdict: Verdict
   reason_code: string
   message: string
@@ -198,7 +199,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       // non-JSON error body; keep defaults
     }
-    throw new ApiError(code, message, response.status, response.headers.get('X-Request-ID') ?? undefined)
+    throw new ApiError(
+      code,
+      message,
+      response.status,
+      response.headers.get('X-Request-ID') ?? undefined,
+    )
   }
   return response.json() as Promise<T>
 }
@@ -270,7 +276,8 @@ export interface ForkResult {
   pinned_snapshot_ids: string[]
 }
 
-export type Classification = 'UNCHANGED_PASS' | 'FIXED' | 'REGRESSION' | 'UNCHANGED_FAIL' | 'NOT_COMPARABLE'
+export type Classification =
+  'UNCHANGED_PASS' | 'FIXED' | 'REGRESSION' | 'UNCHANGED_FAIL' | 'NOT_COMPARABLE'
 
 export interface ComparisonSide {
   outcome: DomainOutcome | null
@@ -375,7 +382,14 @@ export const api = {
       imports_enabled: boolean
       reviews_enabled?: boolean
       export_enabled?: boolean
-      ai?: { generation_available: boolean; reason: string | null; provider: string; model: string; index_ready: boolean; evaluation_status: string }
+      ai?: {
+        generation_available: boolean
+        reason: string | null
+        provider: string
+        model: string
+        index_ready: boolean
+        evaluation_status: string
+      }
       build_id: string
       live_parser_available: boolean
       execution_limits: {

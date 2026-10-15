@@ -14,9 +14,15 @@ test('the 32-case suite runs under two configurations and reports totals', async
   await expect(page.getByText(/Suite SUITE-OPS-V1@/)).toBeVisible({ timeout: 45_000 })
   // baseline vs improved: every case passes under its own documented demands,
   // with no fixes and no regressions
-  await expect(page.getByRole('group', { name: 'Unchanged pass', exact: true }).getByText('32', { exact: true })).toBeVisible()
+  await expect(
+    page
+      .getByRole('group', { name: 'Unchanged pass', exact: true })
+      .getByText('32', { exact: true }),
+  ).toBeVisible()
   for (const label of ['Fixed', 'Regression', 'Unchanged fail']) {
-    await expect(page.getByRole('group', { name: label, exact: true }).getByText('0', { exact: true })).toBeVisible()
+    await expect(
+      page.getByRole('group', { name: label, exact: true }).getByText('0', { exact: true }),
+    ).toBeVisible()
   }
 })
 

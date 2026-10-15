@@ -4,6 +4,12 @@ FloorReplay is a workbench for investigating manufacturing incidents. Reconstruc
 
 Public examples use synthetic records. Private investigations require workspace membership. AI drafts are optional and require human review. FloorReplay has no factory pilot or measured operational benefit.
 
+## Demo
+
+[![FloorReplay demo: a 74-unit shortfall traced to its source records, with uncounted intervals and next checks](docs/demo/flooreplay-demo.gif)](docs/demo/flooreplay-demo.mp4)
+
+A 20-second walkthrough of the incident workbench on the bundled synthetic data. Select the preview to play the full video with sound, or open [the MP4](docs/demo/flooreplay-demo.mp4).
+
 ## Try the workflow
 
 1. Open the incident library and choose "Delayed start on sewing line S4". Inspect the observed shortfall and follow an evidence reference to its source record.

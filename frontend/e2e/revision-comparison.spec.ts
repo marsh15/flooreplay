@@ -3,12 +3,16 @@ import { ensureBackend } from './helpers'
 
 test.beforeAll(ensureBackend)
 
-test('live comparison explains corrected and newly available evidence without changing the earlier report', async ({ page }) => {
+test('live comparison explains corrected and newly available evidence without changing the earlier report', async ({
+  page,
+}) => {
   await page.goto('/incidents/INC-001?revision=2')
   await expect(page.getByRole('heading', { name: 'Observed situation' })).toBeVisible()
   await page.getByRole('button', { name: 'Compare revisions', exact: true }).click()
   const comparison = page.getByRole('region', { name: 'Revision comparison' })
-  await expect(comparison.getByRole('heading', { name: 'What changed in revision 2?' })).toBeVisible()
+  await expect(
+    comparison.getByRole('heading', { name: 'What changed in revision 2?' }),
+  ).toBeVisible()
   await expect(comparison.getByText('added: EV-MAINT-1', { exact: true })).toBeVisible()
   await expect(comparison.getByText('added: EV-MACH-CORR', { exact: true })).toBeVisible()
   await expect(comparison.getByText(/corrects EV-MACH-1/)).toBeVisible()
@@ -21,16 +25,24 @@ test('live comparison explains corrected and newly available evidence without ch
   await expect(page.getByRole('button', { name: 'EV-MAINT-1', exact: true })).toHaveCount(0)
 })
 
-test('print report keeps facts and source identifiers while hiding navigation and controls', async ({ page }) => {
+test('print report keeps facts and source identifiers while hiding navigation and controls', async ({
+  page,
+}) => {
   await page.goto('/incidents/INC-001?revision=2')
   await expect(page.getByRole('heading', { name: 'Observed situation' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Print investigation report', exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Print investigation report', exact: true }),
+  ).toBeVisible()
   await page.emulateMedia({ media: 'print' })
-  await expect(page.getByRole('button', { name: 'Print investigation report', exact: true })).toBeHidden()
+  await expect(
+    page.getByRole('button', { name: 'Print investigation report', exact: true }),
+  ).toBeHidden()
   await expect(page.getByRole('navigation', { name: 'Primary' })).toBeHidden()
   const supervisor = page.getByRole('article', { name: 'Printable supervisor report' })
   await expect(supervisor.getByText(/Pinned report:.*Evidence revision 2/)).toBeVisible()
   await expect(page.getByRole('heading', { name: 'OpenAI draft', exact: true })).toBeHidden()
-  await expect(supervisor.getByRole('heading', { name: 'Findings from the recorded data' })).toBeVisible()
+  await expect(
+    supervisor.getByRole('heading', { name: 'Findings from the recorded data' }),
+  ).toBeVisible()
   await expect(supervisor.getByText('EV-MAT-1 · materials', { exact: true })).toBeVisible()
 })

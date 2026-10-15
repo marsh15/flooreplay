@@ -21,6 +21,15 @@ export function formatInstant(iso: string): string {
   }).format(date)
 }
 
+export function formatClock(iso: string): string {
+  return new Intl.DateTimeFormat('en-IN', {
+    timeZone: FACTORY_TZ,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(iso))
+}
+
 export function formatInterval(startIso: string, endIso: string): string {
   const start = new Date(startIso)
   const end = new Date(endIso)
@@ -42,7 +51,10 @@ export function shortDigest(digest: string | null | undefined): string {
 
 type OutcomeTone = 'ready' | 'rejected' | 'blocked' | 'abstain'
 
-export const OUTCOME_META: Record<DomainOutcome, { label: string; tone: OutcomeTone; hint: string }> = {
+export const OUTCOME_META: Record<
+  DomainOutcome,
+  { label: string; tone: OutcomeTone; hint: string }
+> = {
   READY_FOR_REVIEW: {
     label: 'Ready for review',
     tone: 'ready',

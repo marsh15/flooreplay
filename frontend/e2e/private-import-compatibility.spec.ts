@@ -4,8 +4,17 @@ test('private import stops when an older backend has no workspace service', asyn
   const writes: string[] = []
   await page.route('**/api/v1/**', (route) => {
     const path = new URL(route.request().url()).pathname
-    if (path.endsWith('/auth/login')) return route.fulfill({ json: { token: 'synthetic-login', user: { id: 'owner', username: 'owner', display_name: 'Owner', role: 'owner' } } })
-    if (path.endsWith('/capabilities')) return route.fulfill({ json: { mode: 'local', imports_enabled: true, reviews_enabled: true } })
+    if (path.endsWith('/auth/login'))
+      return route.fulfill({
+        json: {
+          token: 'synthetic-login',
+          user: { id: 'owner', username: 'owner', display_name: 'Owner', role: 'owner' },
+        },
+      })
+    if (path.endsWith('/capabilities'))
+      return route.fulfill({
+        json: { mode: 'local', imports_enabled: true, reviews_enabled: true },
+      })
     if (path.endsWith('/incidents')) return route.fulfill({ json: { items: [] } })
     if (route.request().method() !== 'GET') writes.push(path)
     return route.fulfill({ status: 404, json: { message: 'Legacy endpoint unavailable' } })

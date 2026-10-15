@@ -5,7 +5,13 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { api, type EvidenceRef } from '@/lib/api'
 import { formatInstant } from '@/lib/status'
@@ -77,7 +83,12 @@ export function EvidenceDrawer({
             <Skeleton className="h-6 w-5/6" />
           </div>
         ) : isError ? (
-          <div role="alert" className="space-y-3 px-6 text-sm"><p className="text-red-800">Snapshot could not be loaded: {error.message}</p><Button variant="outline" size="sm" onClick={() => void refetch()}>Retry snapshot</Button></div>
+          <div role="alert" className="space-y-3 px-6 text-sm">
+            <p className="text-danger-foreground">Snapshot could not be loaded: {error.message}</p>
+            <Button variant="outline" size="sm" onClick={() => void refetch()}>
+              Retry snapshot
+            </Button>
+          </div>
         ) : isEvent ? (
           <div className="px-6 text-sm leading-relaxed">
             <p className="text-muted-foreground">
@@ -93,16 +104,27 @@ export function EvidenceDrawer({
               <dt className="text-muted-foreground">Evidence time</dt>
               <dd>{formatInstant(data.declared_evidence_at)}</dd>
               <dt className="text-muted-foreground">Coverage</dt>
-              <dd>{data.coverage_complete ? 'Complete (source asserts no missing rows)' : 'Incomplete'}</dd>
+              <dd>
+                {data.coverage_complete
+                  ? 'Complete (source asserts no missing rows)'
+                  : 'Incomplete'}
+              </dd>
               <dt className="text-muted-foreground">Digest</dt>
               <dd>
                 <Mono className="break-all">{data.content_digest}</Mono>
               </dd>
             </dl>
 
-            {evidence?.source_ref && <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">Referenced source row: <Mono className="break-all">{evidence.source_ref}</Mono>{rows.some((row) => row.source_ref === evidence.source_ref) ? ' · Marked below' : ' · No matching row in this snapshot'}</p>}
+            {evidence?.source_ref && (
+              <p className="rounded-md border border-limit-border bg-limit p-3 text-xs leading-relaxed text-limit-foreground">
+                Referenced source row: <Mono className="break-all">{evidence.source_ref}</Mono>
+                {rows.some((row) => row.source_ref === evidence.source_ref)
+                  ? ' · Marked below'
+                  : ' · No matching row in this snapshot'}
+              </p>
+            )}
             {rows.length > 0 ? (
-              <div className="rounded-lg border">
+              <div className="rounded-sm border">
                 <Table aria-label="Pinned source rows">
                   <TableHeader>
                     <TableRow>
@@ -121,12 +143,19 @@ export function EvidenceDrawer({
                         <TableRow
                           key={index}
                           aria-current={highlighted ? true : undefined}
-                          className={highlighted ? 'bg-amber-50 hover:bg-amber-50' : undefined}
+                          className={highlighted ? 'bg-limit hover:bg-limit' : undefined}
                         >
                           {columns.map((column) => (
                             <TableCell key={column} className="px-2 py-1.5 text-xs">
                               {column === 'source_ref' ? (
-                                <><Mono>{String(row[column] ?? '')}</Mono>{highlighted && <span className="ml-2 inline-block rounded border border-amber-200 px-1.5 py-0.5 text-[10px] font-medium text-amber-950">Referenced</span>}</>
+                                <>
+                                  <Mono>{String(row[column] ?? '')}</Mono>
+                                  {highlighted && (
+                                    <span className="ml-2 inline-block rounded-sm border border-limit-border px-1.5 py-0.5 text-xs font-medium text-limit-foreground">
+                                      Referenced
+                                    </span>
+                                  )}
+                                </>
                               ) : (
                                 String(row[column] ?? '')
                               )}
@@ -139,7 +168,7 @@ export function EvidenceDrawer({
                 </Table>
               </div>
             ) : (
-              <pre className="overflow-x-auto rounded-lg border bg-zinc-50 p-3 font-mono text-xs">
+              <pre className="overflow-x-auto rounded-sm border bg-secondary p-3 font-mono text-xs">
                 {JSON.stringify(data.payload.plan ?? data.payload, null, 2)}
               </pre>
             )}
