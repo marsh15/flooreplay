@@ -31,7 +31,8 @@ test('source health separates reported intervals from missing records on the see
   await expect(section.getByText(/rejected rows are not counted/)).toBeVisible()
 })
 
-test('cumulative counter readings import as derived deltas with every reading accounted for', async ({
+// One sign-in for both live flows: the suite shares a 10-per-15-minute sign-in limit.
+test('cumulative readings and a reviewed alias import with every source value accounted for', async ({
   page,
 }) => {
   test.setTimeout(120_000)
@@ -47,12 +48,13 @@ test('cumulative counter readings import as derived deltas with every reading ac
   await page.getByLabel('Order ID', { exact: true }).fill(`ORD-CNT-${suffix}`)
   await page.getByLabel('Style ID', { exact: true }).fill('STYLE-CNT')
   await page.getByLabel('Window start', { exact: true }).fill(stamp(9, 0))
-  await page.getByLabel('Window end', { exact: true }).fill(stamp(9, 30))
+  await page.getByLabel('Window end', { exact: true }).fill(stamp(9, 45))
   await page.getByLabel('Knowledge cutoff', { exact: true }).fill(stamp(9, 0))
   const plan = [
     header,
     `plan-a-${suffix},baseline_plan,${stamp(8, 30)},${stamp(9, 0)},${stamp(9, 15)},20,good_units,delta,${scope}`,
     `plan-b-${suffix},baseline_plan,${stamp(8, 30)},${stamp(9, 15)},${stamp(9, 30)},20,good_units,delta,${scope}`,
+    `plan-c-${suffix},baseline_plan,${stamp(8, 30)},${stamp(9, 30)},${stamp(9, 45)},20,good_units,delta,${scope}`,
   ].join('\n')
   await previewCsv(page, plan, 'plan.csv')
   await expect(page.getByRole('heading', { name: 'Preview: READY' })).toBeVisible()
@@ -91,6 +93,34 @@ test('cumulative counter readings import as derived deltas with every reading ac
   await expect(page.getByRole('combobox', { name: 'Evidence revision' })).toHaveValue('2')
   const health = page.locator('#source-health')
   await expect(health.getByText('2 due intervals reported; 2 below plan.')).toBeVisible()
+
+  // The MES names the line differently; a reviewed alias reconciles it and keeps the original.
+  await page.getByRole('link', { name: 'Incident library', exact: true }).click()
+  await page.getByRole('link', { name: 'Import incident evidence', exact: true }).click()
+  await page.getByLabel('Incident', { exact: true }).selectOption(incidentId)
+  await page.getByLabel('Source profile').selectOption('production-v1')
+  await page.getByLabel('Knowledge cutoff', { exact: true }).fill(stamp(9, 50))
+  const mes = `${header}\nmes-${suffix},final_good_delta,${stamp(9, 46)},${stamp(9, 30)},${stamp(9, 45)},20,good_units,delta,${scope.replace(`S-CNT-${suffix}`, 'Line C')}`
+  await page
+    .getByLabel('Local file')
+    .setInputFiles({ name: 'mes.csv', mimeType: 'text/csv', buffer: Buffer.from(mes) })
+  await page.getByRole('button', { name: 'Inspect CSV columns', exact: true }).click()
+  await page.getByText(/^Identifier aliases/).click()
+  await page.getByRole('button', { name: 'Add identifier alias', exact: true }).click()
+  await page.getByLabel('Source value', { exact: true }).fill('Line C')
+  await expect(page.getByText(`→ S-CNT-${suffix}`)).toBeVisible()
+  await page.getByRole('button', { name: 'Preview source', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Preview: READY' })).toBeVisible()
+  await expect(page.getByText('{"line_id":"Line C"}')).toBeVisible()
+  await page
+    .getByRole('region', { name: 'Import preview' })
+    .getByRole('button', { name: 'Publish new revision', exact: true })
+    .click()
+  await expect(page.getByText('Revision 3 published.', { exact: false })).toBeVisible()
+  await page.getByRole('link', { name: 'Open the new investigation' }).click()
+  await expect(
+    page.locator('#source-health').getByText('3 due intervals reported; 2 below plan.'),
+  ).toBeVisible()
 })
 
 for (const path of ['/incidents', '/incidents/INC-001?revision=2', '/incidents/imports']) {

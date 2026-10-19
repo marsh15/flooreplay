@@ -380,6 +380,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/incidents/{incident_id}/revisions/{revision}/source-health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Incident Source Health */
+        get: operations["get_incident_source_health_api_v1_incidents__incident_id__revisions__revision__source_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/incidents/{incident_id}/analyses": {
         parameters: {
             query?: never;
@@ -1255,6 +1272,12 @@ export interface components {
             field_defaults?: {
                 [key: string]: string;
             } | null;
+            /** Identifier Aliases */
+            identifier_aliases?: {
+                [key: string]: {
+                    [key: string]: string;
+                };
+            } | null;
             /** Scope */
             scope: {
                 [key: string]: string;
@@ -1343,6 +1366,12 @@ export interface components {
             field_defaults?: {
                 [key: string]: string;
             } | null;
+            /** Identifier Aliases */
+            identifier_aliases?: {
+                [key: string]: {
+                    [key: string]: string;
+                };
+            } | null;
         };
         /** IncidentPublishRequest */
         IncidentPublishRequest: {
@@ -1377,6 +1406,12 @@ export interface components {
             /** Field Defaults */
             field_defaults?: {
                 [key: string]: string;
+            } | null;
+            /** Identifier Aliases */
+            identifier_aliases?: {
+                [key: string]: {
+                    [key: string]: string;
+                };
             } | null;
             /** Preview Digest */
             preview_digest: string;
@@ -2194,6 +2229,40 @@ export interface operations {
         };
     };
     get_incident_api_v1_incidents__incident_id__revisions__revision__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+                revision: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_incident_source_health_api_v1_incidents__incident_id__revisions__revision__source_health_get: {
         parameters: {
             query?: never;
             header?: never;

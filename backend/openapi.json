@@ -883,6 +883,56 @@
         }
       }
     },
+    "/api/v1/incidents/{incident_id}/revisions/{revision}/source-health": {
+      "get": {
+        "summary": "Get Incident Source Health",
+        "operationId": "get_incident_source_health_api_v1_incidents__incident_id__revisions__revision__source_health_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          },
+          {
+            "name": "revision",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Revision"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Incident Source Health Api V1 Incidents  Incident Id  Revisions  Revision  Source Health Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/incidents/{incident_id}/analyses": {
       "post": {
         "summary": "Run Incident Analysis",
@@ -3206,6 +3256,23 @@
             ],
             "title": "Field Defaults"
           },
+          "identifier_aliases": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier Aliases"
+          },
           "scope": {
             "additionalProperties": {
               "type": "string"
@@ -3463,6 +3530,23 @@
               }
             ],
             "title": "Field Defaults"
+          },
+          "identifier_aliases": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier Aliases"
           }
         },
         "type": "object",
@@ -3592,6 +3676,23 @@
               }
             ],
             "title": "Field Defaults"
+          },
+          "identifier_aliases": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier Aliases"
           },
           "preview_digest": {
             "type": "string",

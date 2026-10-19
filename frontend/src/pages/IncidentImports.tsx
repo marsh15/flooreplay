@@ -289,6 +289,96 @@ function CumulativeReadings({ readings }: { readings: CumulativeReading[] }) {
   )
 }
 
+const ALIAS_FIELDS = [
+  ['line_id', 'Line'],
+  ['order_id', 'Order'],
+  ['style_id', 'Style'],
+  ['factory', 'Factory'],
+] as const
+type AliasField = (typeof ALIAS_FIELDS)[number][0]
+interface AliasRow {
+  key: number
+  field: AliasField
+  source: string
+}
+
+function IdentifierAliases({
+  rows,
+  scope,
+  onChange,
+}: {
+  rows: AliasRow[]
+  scope: Record<string, string>
+  onChange: (rows: AliasRow[]) => void
+}) {
+  const update = (key: number, change: Partial<AliasRow>) =>
+    onChange(rows.map((row) => (row.key === key ? { ...row, ...change } : row)))
+  return (
+    <details className="space-y-3" open={rows.length > 0}>
+      <summary className="cursor-pointer py-2 text-sm font-medium">
+        Identifier aliases ({rows.length})
+      </summary>
+      <p className="text-sm leading-6 text-muted-foreground">
+        Use this when the source names this incident's line, order, style or factory differently,
+        for example “Line 4” for S4. Each alias maps one exact source value to the incident's
+        identifier. Records keep their original value, and any other unrecognized identifier blocks
+        the preview.
+      </p>
+      {rows.map((row) => (
+        <div key={row.key} className="flex flex-wrap items-end gap-2">
+          <label className="text-sm font-semibold">
+            Field
+            <select
+              value={row.field}
+              onChange={(event) => update(row.key, { field: event.target.value as AliasField })}
+              className="mt-1 block min-h-10 rounded-md border border-input bg-card px-3 text-sm"
+            >
+              {ALIAS_FIELDS.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm font-semibold">
+            Source value
+            <Input
+              className="mt-1"
+              value={row.source}
+              onChange={(event) => update(row.key, { source: event.target.value })}
+            />
+          </label>
+          <p className="min-h-10 py-2 text-sm">
+            →{' '}
+            {scope[row.field] || <span className="text-limit-foreground">set the scope first</span>}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onChange(rows.filter((item) => item.key !== row.key))}
+          >
+            Remove
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() =>
+          onChange([
+            ...rows,
+            { key: Math.max(0, ...rows.map((row) => row.key)) + 1, field: 'line_id', source: '' },
+          ])
+        }
+      >
+        Add identifier alias
+      </Button>
+    </details>
+  )
+}
+
 function NormalizedSample({ preview }: { preview: IncidentImportPreview }) {
   const groups = [
     { title: 'Normalized baseline plans', rows: preview.plan_buckets },
@@ -383,6 +473,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
   const [preview, setPreview] = useState<ImportPreviewState | null>(null)
   const [inspection, setInspection] = useState<IncidentCsvInspection | null>(null)
   const [choices, setChoices] = useState<ColumnChoices>({})
+  const [aliasRows, setAliasRows] = useState<AliasRow[]>([])
   const version = useRef(0)
   const fileVersion = useRef(0)
   const selected = incidents.data?.items.find((item) => item.id === incidentId)
@@ -433,6 +524,23 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
     },
     retry: false,
   })
+  const aliasPairs = aliasRows.filter(
+    (row) => row.source.trim() && scopeDefaults[row.field]?.trim(),
+  )
+  const aliases = aliasPairs.length
+    ? {
+        identifier_aliases: aliasPairs.reduce<Record<string, Record<string, string>>>(
+          (map, row) => ({
+            ...map,
+            [row.field]: {
+              ...map[row.field],
+              [row.source.trim()]: scopeDefaults[row.field].trim(),
+            },
+          }),
+          {},
+        ),
+      }
+    : {}
   const mapping =
     csv && inspection
       ? {
@@ -547,6 +655,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
             source_system: sourceSystem.trim(),
             timezone: timezone.trim(),
             ...mapping,
+            ...aliases,
           }
         : undefined
     const body: Omit<IncidentImportBody, 'raw_text' | 'filename'> = {
@@ -560,6 +669,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
       unit: effectiveProfile === 'production-v1' ? unit.trim() : null,
       ...(newIncident ? { scope: newIncident.scope } : {}),
       ...mapping,
+      ...aliases,
     }
     setPreview(null)
     previewMutation.mutate({ file, body, newIncident, version: version.current })
@@ -1120,6 +1230,16 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                               next[field.name] = { kind: 'constant', value: value.trim() }
                           }
                           setChoices(next)
+                          changed()
+                        }}
+                      />
+                    )}
+                    {file && (
+                      <IdentifierAliases
+                        rows={aliasRows}
+                        scope={scopeDefaults}
+                        onChange={(rows) => {
+                          setAliasRows(rows)
                           changed()
                         }}
                       />
