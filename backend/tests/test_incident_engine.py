@@ -186,3 +186,45 @@ def test_next_checks_follow_remaining_uncertainty():
     disputed = next(item for item in analyze_incident(revision)['hypotheses'] if item['category'] == 'material')
     assert disputed['status'] == 'CONTRADICTED'
     assert 'conflicting observations' in disputed['next_check']
+
+
+def _calendar_event(event_id: str, kind: str, start: str, end: str, available: str = "08:00") -> dict:
+    return {"id": event_id, "type": kind, "lane": "production", "summary": f"{kind} {start}-{end}", "start": f"2026-01-01T{start}:00+05:30", "end": f"2026-01-01T{end}:00+05:30", "available_at": f"2026-01-01T{available}:00+05:30", "source_id": f"calendar:{event_id}"}
+
+
+def test_declared_breaks_reduce_working_time_for_the_remaining_target():
+    plain = analyze_incident(_revision())
+    revision = _revision()
+    revision["events"] += [
+        _calendar_event("break-early", "planned_break", "09:05", "09:10"),
+        _calendar_event("break-late", "planned_break", "09:45", "09:52"),
+        _calendar_event("downtime", "planned_downtime", "09:50", "09:55"),
+        # Scheduled after the cutoff but only published at 09:40, so it was unknown at 09:37.
+        _calendar_event("unknown-at-cutoff", "planned_break", "09:55", "10:00", available="09:40"),
+    ]
+    report = analyze_incident(revision)
+    pressure = report["metrics"]["target_pressure"]
+    assert pressure["time_basis"] == "declared_working_calendar"
+    assert pressure["remaining_elapsed_minutes"] == 30 and pressure["remaining_working_minutes"] == 20
+    assert pressure["remaining_target"] == plain["metrics"]["target_pressure"]["remaining_target"] == 50
+    assert pressure["required_units_per_hour"] == 150
+    assert pressure["baseline_units_per_hour"] == 80  # 60 planned units over 45 working minutes
+    calendar = pressure["planned_non_working"]
+    assert (calendar["window_minutes"], calendar["remaining_minutes"]) == (15, 10)
+    assert [segment["evidence"] for segment in calendar["remaining_segments"]] == [["break-late", "downtime"]]
+    assert "break-early, break-late, downtime" in pressure["assumptions"][0]
+    descriptors = {metric["id"]: metric for metric in report["metrics"]["descriptors"]}
+    assert descriptors["remaining_working_minutes"]["value"] == 20
+    assert {"break-late", "downtime"} <= set(descriptors["required_units_per_hour"]["input_refs"])
+    assert "break-early" not in descriptors["required_units_per_hour"]["input_refs"]
+    # Declared non-working time is not a line block and produces no cause hypothesis.
+    assert report["metrics"]["blocked_minutes"] == plain["metrics"]["blocked_minutes"]
+    assert [item["category"] for item in report["hypotheses"]] == [item["category"] for item in plain["hypotheses"]]
+
+
+def test_reports_without_a_calendar_keep_their_existing_shape():
+    revision = _revision()
+    revision["events"].append({**_calendar_event("note", "routine_note", "09:45", "09:50")})
+    pressure = analyze_incident(revision)["metrics"]["target_pressure"]
+    assert pressure["time_basis"] == "elapsed_wall_clock" and "planned_non_working" not in pressure
+    assert pressure["remaining_working_minutes"] == pressure["remaining_elapsed_minutes"] == 30

@@ -98,7 +98,20 @@ export interface IncidentMetric {
     baseline_units_per_hour: number | null
     target_met: boolean | null
     assumptions: string[]
+    time_basis?: 'elapsed_wall_clock' | 'declared_working_calendar'
+    planned_non_working?: {
+      window_minutes: number
+      remaining_minutes: number
+      segments: CalendarSegment[]
+      remaining_segments: CalendarSegment[]
+    }
   } | null
+}
+
+export interface CalendarSegment {
+  start: string
+  end: string
+  evidence: string[]
 }
 
 export interface TimelineEvent {

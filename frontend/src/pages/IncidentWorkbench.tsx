@@ -656,13 +656,43 @@ export function IncidentWorkbenchPage() {
                           {formatInstant(report.metrics.target_pressure.as_of)}
                         </p>
                       )}
-                      <p className="mt-1 text-foreground">
-                        {report.metrics.target_pressure.remaining_target}{' '}
-                        {report.metrics.unit.replaceAll('_', ' ')} across{' '}
-                        {report.metrics.target_pressure.remaining_elapsed_minutes ??
-                          report.metrics.target_pressure.remaining_working_minutes}{' '}
-                        elapsed minutes under the report assumptions.
-                      </p>
+                      {report.metrics.target_pressure.planned_non_working ? (
+                        <>
+                          <p className="mt-1 text-foreground">
+                            {report.metrics.target_pressure.remaining_target}{' '}
+                            {report.metrics.unit.replaceAll('_', ' ')} across{' '}
+                            {report.metrics.target_pressure.remaining_working_minutes} working
+                            minutes: {report.metrics.target_pressure.remaining_elapsed_minutes}{' '}
+                            elapsed, less{' '}
+                            {report.metrics.target_pressure.planned_non_working.remaining_minutes}{' '}
+                            declared non-working.
+                          </p>
+                          {report.metrics.target_pressure.planned_non_working.remaining_segments
+                            .length > 0 && (
+                            <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                              {report.metrics.target_pressure.planned_non_working.remaining_segments.map(
+                                (segment) => (
+                                  <li key={segment.start}>
+                                    {formatInstant(segment.start)} to {formatInstant(segment.end)}{' '}
+                                    ·{' '}
+                                    {segment.evidence.map((id) => (
+                                      <EvidenceLink key={id} id={id} onOpen={setEvidenceId} />
+                                    ))}
+                                  </li>
+                                ),
+                              )}
+                            </ul>
+                          )}
+                        </>
+                      ) : (
+                        <p className="mt-1 text-foreground">
+                          {report.metrics.target_pressure.remaining_target}{' '}
+                          {report.metrics.unit.replaceAll('_', ' ')} across{' '}
+                          {report.metrics.target_pressure.remaining_elapsed_minutes ??
+                            report.metrics.target_pressure.remaining_working_minutes}{' '}
+                          elapsed minutes under the report assumptions.
+                        </p>
+                      )}
                       <p className="mt-1 text-xs text-muted-foreground">
                         Required average:{' '}
                         {report.metrics.target_pressure.required_units_per_hour ?? 'Unavailable'}{' '}

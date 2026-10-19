@@ -120,6 +120,31 @@ def _blocks(events: list[dict[str, Any]], start: datetime, end: datetime) -> tup
     return minutes, segments
 
 
+CALENDAR_TYPES = {"planned_break", "planned_downtime"}
+
+
+def _union(intervals: list[tuple[datetime, datetime, str]], left: datetime, right: datetime) -> tuple[int, list[dict[str, Any]]]:
+    """Merge intervals clipped to [left, right) and keep the records behind each segment."""
+    clipped = sorted((max(a, left), min(b, right), record_id) for a, b, record_id in intervals if a < right and b > left)
+    segments: list[dict[str, Any]] = []
+    for a, b, record_id in clipped:
+        if segments and a <= _time(segments[-1]["end"]):
+            segments[-1]["end"] = max(_time(segments[-1]["end"]), b).isoformat()
+            segments[-1]["evidence"] = sorted({*segments[-1]["evidence"], record_id})
+        else:
+            segments.append({"start": a.isoformat(), "end": b.isoformat(), "evidence": [record_id]})
+    return int(sum((_time(x["end"]) - _time(x["start"])).total_seconds() / 60 for x in segments)), segments
+
+
+def _calendar(revision: dict[str, Any], scope: dict[str, Any], cutoff: datetime) -> list[tuple[datetime, datetime, str]]:
+    """Planned breaks and downtime known at the cutoff, including ones scheduled after it."""
+    return [
+        (_time(event["start"]), _time(event["end"]), str(event["id"]))
+        for event in _visible(revision.get("events", []), cutoff, scope)
+        if event.get("type") in CALENDAR_TYPES and _scope_matches(event, scope) and event.get("start") and event.get("end")
+    ]
+
+
 def analyze_incident(revision: dict[str, Any]) -> dict[str, Any]:
     """Return a JSON-serializable report; never read external state or infer missing counts."""
     scope = revision["scope"]
@@ -230,6 +255,22 @@ def analyze_incident(revision: dict[str, Any]) -> dict[str, Any]:
         "target_met": remaining_target == 0 if remaining_target is not None else None,
         "assumptions": ["Elapsed wall-clock time from the observation watermark to window end; breaks and shift calendars are not modeled."],
     }
+    calendar = _calendar(revision, scope, cutoff)
+    window_off_minutes, window_off_segments = _union(calendar, start, end)
+    remaining_off_minutes, remaining_off_segments = _union(calendar, observation_watermark, end)
+    calendar_refs = sorted({ref for segment in window_off_segments for ref in segment["evidence"]})
+    if window_off_segments:
+        # Declared non-working time changes the rate the remaining target needs; undeclared breaks still do not.
+        working_minutes = remaining_minutes - remaining_off_minutes
+        window_working_minutes = (end - start).total_seconds() / 60 - window_off_minutes
+        target_pressure.update(
+            remaining_working_minutes=working_minutes,
+            time_basis="declared_working_calendar",
+            required_units_per_hour=round(remaining_target * 60 / working_minutes, 2) if remaining_target is not None and working_minutes else None,
+            baseline_units_per_hour=round(baseline_target * 60 / window_working_minutes, 2) if baseline_target is not None and window_working_minutes else None,
+            planned_non_working={"window_minutes": window_off_minutes, "remaining_minutes": remaining_off_minutes, "segments": window_off_segments, "remaining_segments": remaining_off_segments},
+            assumptions=[f"Working time excludes {window_off_minutes} minutes of declared planned breaks and downtime ({', '.join(calendar_refs)}), {remaining_off_minutes} of them after the observation watermark. Breaks or downtime not recorded as planned_break or planned_downtime are not modeled."],
+        )
     metrics = {
         "status": production_status,
         "planned": planned,
@@ -327,6 +368,12 @@ def analyze_incident(revision: dict[str, Any]) -> dict[str, Any]:
         {"id": "remaining_elapsed_minutes", "value": remaining_minutes, "unit": "minutes", "formula": "window_end - observation_watermark (elapsed wall-clock)", "interval": {"start": observation_watermark.isoformat(), "end": end.isoformat()}, "input_refs": production_refs},
         {"id": "required_units_per_hour", "value": target_pressure["required_units_per_hour"], "unit": f"{unit}/hour", "formula": "remaining_target * 60 / remaining_elapsed_minutes", "interval": {"start": observation_watermark.isoformat(), "end": end.isoformat()}, "input_refs": sorted(set(production_refs + [plans[key][0]["id"] for key in expected_keys if key in plans and len(plans[key]) == 1]))},
     ])
+    if window_off_segments:
+        remaining_off_refs = sorted({ref for segment in remaining_off_segments for ref in segment["evidence"]})
+        for descriptor in metrics["descriptors"]:
+            if descriptor["id"] == "required_units_per_hour":
+                descriptor.update(formula="remaining_target * 60 / remaining_working_minutes", input_refs=sorted({*descriptor["input_refs"], *remaining_off_refs}))
+        metrics["descriptors"].append({"id": "remaining_working_minutes", "value": target_pressure["remaining_working_minutes"], "unit": "minutes", "formula": "remaining_elapsed_minutes - duration(union(planned breaks and downtime after the observation watermark))", "interval": {"start": observation_watermark.isoformat(), "end": end.isoformat()}, "input_refs": sorted({*production_refs, *remaining_off_refs})})
     declarations = revision.get("coverage", {})
     coverage_complete = bool(declarations) and all(
         isinstance(value, dict) and value.get("complete") is True and not value.get("gaps")

@@ -22,7 +22,9 @@ EVENT_TYPES = {
     "material_readiness", "line_block", "line_start", "machine_interruption",
     "staffing_event", "qc_hold", "qc_release", "setup_changeover",
     "reporting_correction", "plan_revision", "routine_note",
+    "planned_break", "planned_downtime",
 }
+CALENDAR_TYPES = {"planned_break", "planned_downtime"}
 NOTE_TYPES = {"maintenance_note", "supervisor_note"}
 
 HYPOTHESIS_CATEGORIES = {"material", "machine", "quality", "staffing", "changeover", "planning_reporting"}
@@ -69,7 +71,7 @@ def _time(value: Any, timezone: ZoneInfo) -> str:
 
 FIELD_DESCRIPTIONS = {
     "id": "Unique source record ID; retained in evidence links.",
-    "record_type": "Production: baseline_plan/final_good_delta; otherwise a supported operations or note type.",
+    "record_type": "Production: baseline_plan/final_good_delta; otherwise a supported operations or note type. planned_break and planned_downtime declare non-working time.",
     "available_at": "ISO timestamp when this source became available, independently of occurrence.",
     "source_id": "Optional original source identity; otherwise source_system:id.",
     "supersedes_id": "Original record ID corrected by this row; originals remain immutable.",
@@ -277,6 +279,8 @@ def _normalize(row: dict[str, Any], profile: str, source_system: str, timezone: 
         raise ValueError("occurred_at or start is required")
     if event.get("end") and (not event.get("start") or datetime.fromisoformat(event["end"]) <= datetime.fromisoformat(event["start"])):
         raise ValueError("end must follow start")
+    if kind in CALENDAR_TYPES and not (event.get("start") and event.get("end")):
+        raise ValueError("Planned breaks and downtime need start and end")
     if row.get("line_blocking") in (True, "true", "TRUE", "1", "yes"):
         if kind != "line_block" or not (event.get("start") and event.get("end")):
             raise ValueError("Only explicit line_block intervals may be line_blocking")

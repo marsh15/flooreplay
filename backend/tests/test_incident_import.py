@@ -262,3 +262,12 @@ def test_cumulative_interpretation_is_bound_into_preview_identity():
     assert delta["status"] == "READY" and [row["quantity"] for row in delta["output_buckets"]] == [100, 112]
     assert cumulative["raw_digest"] == delta["raw_digest"] and cumulative["preview_digest"] != delta["preview_digest"]
     assert "cumulative_readings" not in delta and delta["interpretation_version"] == "incident-import-v3"
+
+
+def test_planned_breaks_import_as_calendar_records_with_intervals():
+    row = {"id": "b1", "record_type": "planned_break", "line_id": "S4", "summary": "Lunch", "start": "2026-09-28T13:00:00", "end": "2026-09-28T13:30:00", "available_at": "2026-09-28T07:00:00"}
+    meta = {"profile": "operations-v1", "source_system": "shift-calendar", "timezone": "Asia/Kolkata", "filename": "calendar.json"}
+    preview = preview_incident_import(json.dumps([row]).encode(), **meta)
+    assert preview["status"] == "READY" and preview["events"][0]["type"] == "planned_break"
+    open_ended = preview_incident_import(json.dumps([{**row, "end": ""}]).encode(), **meta)
+    assert "need start and end" in open_ended["issues"][0]["message"]
