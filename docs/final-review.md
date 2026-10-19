@@ -2,6 +2,8 @@
 
 This review records application improvements, portfolio copy changes and their verification limits. It does not certify production acceptance. The work preserved existing workspace and operations changes and initiated no deployment or paid provider call.
 
+The code changes listed below exist only on the unmerged branch `codex/portfolio-upgrade`. `main` received this document and the guide updates in `acb62ba` without that code. See [status on main](#status-on-main-october-19-2026) for what `main` actually contains and what its CI verifies.
+
 ## Changes
 
 - Replay reviews inherit their source workspace and reject mixed-workspace input. Linked records fail closed when their parent cannot be found.
@@ -45,3 +47,27 @@ The security-audit workflow covered part of the source. Its external run retains
 The audit skill requires OS-enforced execution isolation. This host has macOS toolchains and a cached PostgreSQL Docker image, but no verified complete sandbox for project/database/browser execution with every required resource and write boundary. The review therefore did not run the target code. Static analyzers and package-manager advisory checks do not substitute for those runtime gates.
 
 Dependency controls follow [pnpm settings](https://pnpm.io/settings) and [uv installation controls](https://docs.astral.sh/uv/reference/cli/). Advisory checks do not establish package provenance or absence of unknown vulnerabilities.
+
+## Status on main, October 19, 2026
+
+The hardening above was committed to `codex/portfolio-upgrade` from `e610169`. That branch diverged at `e9eb3de` and was never merged. `main` then gained the production-board redesign (PR 4). At `main` commit `6325812`, these listed changes are absent:
+
+- `http_security.py`: the 16 MiB JSON envelope cap, the 30-second body-delivery limit and security headers on API error responses
+- Rejection of mixed-workspace replay review input
+- The bounded, synchronized public replay limiter. The limiter on `main` keeps one entry per client key with no upper bound
+- nginx body cap and static security headers; Vercel CSP, Permissions-Policy and HSTS
+- The CI and Vercel install policy: CI on `main` uses uv 0.10.4, `uv sync --frozen` without `--no-build` and `pnpm install --frozen-lockfile` without `--ignore-scripts`, and runs only `pnpm audit`
+- The regressions in `test_final_hardening.py`, `test_http_security.py` and `final-hardening.spec.ts`
+
+The redesign separately added a not-found page and a rendering error boundary to `main`.
+
+CI run `38723895367` passed on `6325812` on October 15, 2026. It ran Ruff, mypy, frontend lint, the Vercel-mode production build and `pnpm audit --audit-level high`; a fresh migration, two seeds and dataset verification; 241 backend tests; OpenAPI, generated-client and saved-report consistency; 62 Playwright scenarios against a real API with no provider key; and Compose configuration validation. This supersedes the "Pending" production build and the unexecuted existing suites in the table above for `main`.
+
+Still open for `main`:
+
+1. Port the `codex/portfolio-upgrade` hardening onto the redesigned frontend and run its regressions.
+2. Exercise the clean policy install. CI does not use lifecycle-script or source-build restrictions.
+3. Run mobile browser acceptance. The CI browser suite uses only a 1440×900 viewport.
+4. Complete authenticated hosted acceptance. On October 19 the hosted API reported build `acb62ba` and schema `20261001_operations`, and no backend source has changed between that build and `6325812`.
+
+Items 2 to 4 of "Before production sign-off" are unchanged.

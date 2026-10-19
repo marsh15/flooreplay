@@ -29,3 +29,9 @@ frontend/test-results/
 frontend/playwright-report/
 .playwright-cli/
 output/playwright/
+
+# Local agent tooling and generated launch videos
+.agents/
+.claude/
+skills-lock.json
+brag-output*/
