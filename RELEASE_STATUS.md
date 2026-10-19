@@ -136,3 +136,25 @@ The [actual hosted HTTP](docs/evidence/hosted-2026-10-01.json) and [browser](doc
 The [final restore](docs/evidence/recovery-final-2026-10-02.json) preserved all 36 table contents and verified unchanged source data. Restore took 0.98 seconds; the complete local drill took 34.04 seconds. The [compatible API rollback](docs/evidence/application-rollback-2026-10-02.json) exercised current → `ba91a26` → `61f64ef`, real HTTP logins, private analysis/review/export, denied foreign reads and persisted review after restart. The older API became ready in 1.66 seconds; return-to-current readiness/verification took 3.57 seconds. No schema downgrade or provider call occurred. This is an API-component exercise; retain current frontend authentication protections. Old frontend assets from `ba91a26` and `61f64ef` are not approved rollback targets. Local synthetic timings do not establish production RTO/RPO or hosted frontend asset rollback.
 
 The [technical case study](docs/technical-case-study.md) ties architecture choices, inspection feedback, failures and measurements to artifacts. Factory effectiveness, practitioner outcomes and qualified human AI support remain unmeasured. No confidential factory pilot or paid provider call was performed in this pass.
+
+## Remaining software ledger, October 19, 2026
+
+This pass implements improvement ideas 13 (cumulative output), 14 (identifier reconciliation), 15 (source health) and 17 (working calendars). The branch builds on the hardening port in PR 6. Reports without declared breaks keep their existing shape, and the saved demo bundles and OpenAPI-derived artifacts stay byte-identical apart from the new request field and endpoint.
+
+Verification ran on macOS against local PostgreSQL with pgvector. It used disposable databases ending in `_test`, `PGTZ=UTC` and `TZ=UTC`, and an empty provider key. No paid calls were made.
+
+| Check | Result |
+| --- | --- |
+| Ruff, mypy (50 source files) | Passed |
+| Fresh migration, two seeds, dataset verification | Passed on a new database |
+| Backend tests | 274 passed |
+| OpenAPI, generated client and saved-report exports | Unchanged after regeneration |
+| `uv audit --frozen`, `pnpm audit --audit-level high` | No known vulnerabilities |
+| Frontend lint, Prettier, Vercel-mode production build | Passed |
+| Playwright against a real local API | 70 of 70 passed in one run, including cumulative import, aliased line, source health and 390-pixel phone layouts |
+
+The suite now signs in 9 times against the shared limit of 10 sign-ins per client every 15 minutes. A new live sign-in test must reuse an existing sign-in or the CI run will be rate limited.
+
+During development, one full browser run failed 11 unrelated scenarios. Their mocks answer every `/revisions/` path with a revision, so the new source-health request got a revision back and crashed the panel. The client now rejects a body that is not a source-health report, and those 11 scenarios pass. The local Postgres server runs in IST, so three timestamp assertions also fail unless `PGTZ=UTC` is set; CI's database runs in UTC.
+
+These checks do not verify the hosted release or authenticated hosted flows, and they do not show that supervisors find source health or calendars useful.

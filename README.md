@@ -23,8 +23,8 @@ See [the demo guide](DEMO.md) and [the technical case study](docs/technical-case
 
 | Capability | Behavior |
 | --- | --- |
-| Evidence and revisions | Original source bytes, explicit CSV mappings, immutable revisions, knowledge cutoffs and saved report identities |
-| Deterministic investigation | Source-linked production metrics, conflicting observations, missing-data handling and explicit uncertainty |
+| Evidence and revisions | Original source bytes, explicit CSV mappings, cumulative counter readings, reviewed identifier aliases, immutable revisions, knowledge cutoffs and saved report identities |
+| Deterministic investigation | Source-linked production metrics, conflicting observations, source health that separates missing records from lost output, declared working calendars and explicit uncertainty |
 | Follow-up workflow | Assigned checks, deadlines, source responses, recorded outcomes, separate resolution and shift handover |
 | Private workspaces | Server-side membership scope, owner-controlled import destinations, revocable accounts and memory-only browser sessions |
 | Optional AI and retrieval | Structured drafts, citation and numeric checks, pinned historical corpora and exact-output human review |

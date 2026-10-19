@@ -31,11 +31,11 @@ The number maps to the original review. "Now" means a bounded deliverable in the
 | 10. Refine next checks | Now | Questions depend on supported and unresolved findings | Confirmed interval removes the redundant confirmation question |
 | 11. Shift handover | Verified locally | Printable summary with open checks, owners and latest evidence time | Next supervisor can continue from the report |
 | 12. Spreadsheet ingestion | Verified locally; overall browser runtime limitation recorded | Downloadable examples and explicit CSV column mapping/defaults with previews | Unfamiliar CSV imports without code changes; saved mappings, cumulative conversion and XLSX remain follow-up work |
-| 13. Cumulative output | Next | Explicit delta/cumulative interpretation and preserved readings | Resets, duplicates and gaps remain traceable or unresolved |
-| 14. Identifier reconciliation | Next | Reviewed alias map with original identity and version | Ambiguous matches stop for review |
-| 15. Source health | Next | Latest import/observation, expected frequency, gaps, rejections and conflicts | User distinguishes delayed records from actual production loss |
+| 13. Cumulative output | Verified locally October 19, 2026 | Explicit delta/cumulative interpretation and preserved readings | Resets, duplicates and gaps remain traceable or unresolved |
+| 14. Identifier reconciliation | Verified locally October 19, 2026 | Reviewed alias map with original identity and version | Ambiguous matches stop for review |
+| 15. Source health | Verified locally October 19, 2026; rejected rows not recorded | Latest import/observation, expected frequency, gaps, rejections and conflicts | User distinguishes delayed records from actual production loss |
 | 16. One integration | External | Permitted incremental connector or clearly labeled simulator | Checkpoints, deduplication and interruption recovery against an accessible source |
-| 17. Working calendars | Next | Breaks, shifts and planned downtime in production-time calculation | Break changes available-time calculation with visible assumptions |
+| 17. Working calendars | Verified locally October 19, 2026; shift patterns not modeled | Breaks, shifts and planned downtime in production-time calculation | Break changes available-time calculation with visible assumptions |
 | 18. Revised baselines | External | Interview-driven effective-time plan revisions | Original and approved revised commitments remain comparable |
 | 19. Independent claim review | Human review pending | Actual five-run smoke packet and separate preliminary AI audit; shared review/report workflow | Four structured factual claims packaged, zero human-reviewed claims; qualifications, disagreements and limitations remain explicit |
 | 20. Claim-review interface | Verified locally | Deliberately shared inbox, side-by-side citations, three judgments, flags, qualifications, whole-draft assessment and report export | Exact output identity, cross-user access controls, immutable retries and disagreement history |
@@ -55,6 +55,24 @@ The number maps to the original review. "Now" means a bounded deliverable in the
 | 34. Recovery drill | Local restore and compatible API rollback recorded | Restore isolated database and compatible rollback | Revisions, accounts, annotations, embeddings and ledger verified; elapsed recovery recorded |
 | 35. Private factory data | Local boundary verified; hosted pilot acceptance pending | Demo/private workspace separation with read/export/search enforcement | Cross-workspace denial tests pass before confidential data ingestion |
 | 36. Technical case study | Evidence-based case study prepared for publication; human/pilot outcomes absent | Problem, decisions, failures, outcomes and contribution with artifact links | Publish actual findings after interviews, acceptance and pilot |
+
+## Seventh pass: remaining software ledger
+
+The October 19, 2026 pass implements ideas 13, 14, 15 and 17.
+
+- **Cumulative output:** count_mode `cumulative` converts consecutive counter readings into interval deltas. A first reading, a gap or a reset leaves its interval uncounted, and the preview shows and binds every reading's outcome.
+- **Identifier reconciliation:** a per-import reviewed alias map reconciles factory, line, order and style identifiers. Records keep `original_identity` and the map version, and unmatched identifiers block the preview.
+- **Source health:** a separate endpoint and workbench section mark each due interval as reported, awaiting, skipped by the feed or conflicting.
+- **Working calendars:** `planned_break` and `planned_downtime` records change the remaining-target rate to working time, with named assumptions.
+
+Limits remain:
+
+- Blocked previews are not stored, so source health cannot count rejected rows.
+- Alias maps are per import, not saved for reuse.
+- Readings from earlier imports are not carried forward.
+- Recurring shift patterns must be imported as explicit intervals.
+
+XLSX, saved mapping presets and automatic notifications remain follow-up work. Verification is recorded in [RELEASE_STATUS.md](RELEASE_STATUS.md).
 
 ## Evidence rules
 
