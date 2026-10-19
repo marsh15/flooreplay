@@ -594,8 +594,15 @@ export const incidentApi = {
       return savedIncident
     }
   },
-  sourceHealth: (id: string, revision: number) =>
-    request<SourceHealth>(`/incidents/${pathId(id)}/revisions/${revision}/source-health`),
+  sourceHealth: async (id: string, revision: number): Promise<SourceHealth> => {
+    const health = await request<Partial<SourceHealth> | null>(
+      `/incidents/${pathId(id)}/revisions/${revision}/source-health`,
+    )
+    // Render nothing from a body that is not a source-health report.
+    if (!health || !Array.isArray(health.production_feed?.intervals) || !health.summary)
+      throw new ApiError('INVALID_RESPONSE', 'Source health returned an unexpected response.', 502)
+    return health as SourceHealth
+  },
   analyze: async (id: string, revision: number): Promise<AnalysisReport> => {
     try {
       return await request<AnalysisReport>(`/incidents/${pathId(id)}/analyses`, {
