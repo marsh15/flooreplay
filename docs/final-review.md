@@ -2,7 +2,7 @@
 
 This review records application improvements, portfolio copy changes and their verification limits. It does not certify production acceptance. The work preserved existing workspace and operations changes and initiated no deployment or paid provider call.
 
-The code changes listed below exist only on the unmerged branch `codex/portfolio-upgrade`. `main` received this document and the guide updates in `acb62ba` without that code. See [status on main](#status-on-main-october-19-2026) for what `main` actually contains and what its CI verifies.
+The code changes listed below were first committed only to the unmerged branch `codex/portfolio-upgrade`. `main` received this document and the guide updates in `acb62ba` without that code. They were later ported onto the redesigned `main`; see [status on main](#status-on-main-october-19-2026) for what was ported, what was left out and how the port was verified.
 
 ## Changes
 
@@ -50,24 +50,37 @@ Dependency controls follow [pnpm settings](https://pnpm.io/settings) and [uv ins
 
 ## Status on main, October 19, 2026
 
-The hardening above was committed to `codex/portfolio-upgrade` from `e610169`. That branch diverged at `e9eb3de` and was never merged. `main` then gained the production-board redesign (PR 4). At `main` commit `6325812`, these listed changes are absent:
+The hardening above was committed to `codex/portfolio-upgrade` from `e610169`. That branch diverged at `e9eb3de` and was never merged. `main` then gained the production-board redesign (PR 4). At `main` commit `6325812` none of the listed code changes were present.
 
-- `http_security.py`: the 16 MiB JSON envelope cap, the 30-second body-delivery limit and security headers on API error responses
-- Rejection of mixed-workspace replay review input
-- The bounded, synchronized public replay limiter. The limiter on `main` keeps one entry per client key with no upper bound
-- nginx body cap and static security headers; Vercel CSP, Permissions-Policy and HSTS
-- The CI and Vercel install policy: CI on `main` uses uv 0.10.4, `uv sync --frozen` without `--no-build` and `pnpm install --frozen-lockfile` without `--ignore-scripts`, and runs only `pnpm audit`
-- The regressions in `test_final_hardening.py`, `test_http_security.py` and `final-hardening.spec.ts`
+On October 19 the hardening was ported onto `6325812` without merging the branch. The branch's pages, lockfile, data bundles and documents predate the redesign and would have reverted it, so the port carries only the hardening:
 
-The redesign separately added a not-found page and a rendering error boundary to `main`.
+- Backend, taken as written because `main` had not changed backend source since the merge-base: `http_security.py` (16 MiB JSON envelope cap, 30-second body-delivery limit, security and exact-origin CORS headers on early and unhandled error responses, no exception names in public errors), the bounded and synchronized limiter in `ratelimit.py`, mixed-workspace rejection and workspace inheritance for replay reviews, the timezone check on hybrid-search cutoffs, whole-ledger allowance totals, batched library-review and capability queries, and typed configuration limits
+- Frontend, re-applied to the redesigned components: one request path in `src/lib/api.ts` with deadlines, typed network, timeout and invalid-response errors, used by the incident, workflow, workspace and operations clients; session expiry on 401, ordered sign-in with account validation and immediate local sign-out in `Auth.tsx`; retries that reuse the original idempotency key for AI drafts and hybrid search; note drafts bound to the submitted text; a recovery screen for invalid revision links; replay export through an authenticated download; debounced, cancellable searches; and 15-second query freshness with one retry for non-4xx failures
+- Page recovery: the branch's `PageRecovery.tsx` was not added. The redesign's `ErrorBoundary` and `NotFoundPage` stay. The boundary now resets on navigation and on every sign-in, sign-out or session expiry, and a full-page instance covers failures in the shell. A small `NavigationEffects` component sets the page title and, after the first load, scrolls to the top and moves focus to the main content on route changes
+- Delivery: nginx body cap and static security headers; Vercel CSP, Permissions-Policy, HSTS and `--ignore-scripts` install; `frontend/.npmrc` disables lifecycle scripts; CI, the backend Dockerfile and Render use uv 0.12.19 with `--no-build` syncs; CI runs `pnpm install --ignore-scripts` and `uv audit --frozen` and stops the browser API after the browser suite
+- Regressions: `test_final_hardening.py`, `test_http_security.py` and `final-hardening.spec.ts`, the last adapted to the redesign's wording
 
-CI run `38723895367` passed on `6325812` on October 15, 2026. It ran Ruff, mypy, frontend lint, the Vercel-mode production build and `pnpm audit --audit-level high`; a fresh migration, two seeds and dataset verification; 241 backend tests; OpenAPI, generated-client and saved-report consistency; 62 Playwright scenarios against a real API with no provider key; and Compose configuration validation. This supersedes the "Pending" production build and the unexecuted existing suites in the table above for `main`.
+Left out on purpose: the branch's copy and README rewrites, regenerated demo bundles, favicon set, `component-variants.css`, mobile control sizing and contrast class changes. The redesign replaced those screens and styles. The bundle regeneration and offline-fallback test updates in `65c73ae`, `e43b30f` and `9b5b73c` were not carried over; `main`'s own bundles and consistency check stay authoritative.
+
+Local verification of the port, run after the final edit against a disposable PostgreSQL database ending in `_test`, with no provider key:
+
+| Check | Result |
+| --- | --- |
+| Ruff and mypy | Passed |
+| Fresh migration, seed and dataset verification | Passed |
+| Backend tests | 249 passed (241 existing, 8 new) with `TZ=UTC`, as in CI |
+| OpenAPI, generated client and saved-report exports | No diff |
+| `uv audit --frozen` | No known vulnerabilities in 61 packages |
+| Frontend lint, Prettier check, Vercel-mode production build | Passed, after a `--ignore-scripts` install |
+| Playwright against a local API | 65 passed, including the 3 new scenarios |
+| Backend image build with `--no-build`; Compose configuration | Passed |
+
+One existing backend test, `test_recorded_provider_metrics_and_append_only_claim_review`, fails when the host timezone is not UTC because it compares timestamps rendered in different offsets. It passes under `TZ=UTC` and is not affected by the port. Repeated local Playwright runs within 15 minutes also hit the existing 10-per-client sign-in limit; a single run, as in CI, does not.
 
 Still open for `main`:
 
-1. Port the `codex/portfolio-upgrade` hardening onto the redesigned frontend and run its regressions.
-2. Exercise the clean policy install. CI does not use lifecycle-script or source-build restrictions.
-3. Run mobile browser acceptance. The CI browser suite uses only a 1440×900 viewport.
-4. Complete authenticated hosted acceptance. On October 19 the hosted API reported build `acb62ba` and schema `20261001_operations`, and no backend source has changed between that build and `6325812`.
+1. Merge the port and confirm the CI run on the merge commit, including `uv audit` and the `--no-build` install on Linux runners.
+2. Run mobile browser acceptance. The CI browser suite uses only a 1440×900 viewport.
+3. Complete authenticated hosted acceptance with the ported build. Render will pick up the uv 0.12.19 `--no-build` build command on its next deploy.
 
 Items 2 to 4 of "Before production sign-off" are unchanged.

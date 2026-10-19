@@ -41,7 +41,7 @@ Calculating a shortfall does not prove a cause. A retrieved historical incident 
 
 The browser uses React, TypeScript, Vite and TanStack Query. FastAPI validates requests with Pydantic and accesses PostgreSQL through SQLAlchemy. PostgreSQL stores evidence, workflow and request receipts; pgvector supports hybrid retrieval. AI keys stay on the server.
 
-The API establishes workspace scope before accessing resources. Derived records retain their source workspace. Provider operations reserve a shared allowance before dispatch and retain that reservation when the charge is uncertain. The public replay limiter is process-local, so a replicated deployment needs a shared execution limiter.
+The API establishes workspace scope before accessing resources. Derived records retain their source workspace. Provider operations reserve a shared allowance before dispatch and retain that reservation when the charge is uncertain. The public replay limiter is bounded and process-local, so a replicated deployment needs a shared execution limiter.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md), [the workflow contract](docs/incident-workflow.md), [CSV import mapping](docs/csv-import-mapping.md), and [the AI review protocol](docs/ai-claim-review-protocol.md).
 
@@ -81,7 +81,7 @@ Sessions expire after eight hours. Browser reloads require signing in again. Dis
 
 ## Verification and release evidence
 
-CI checks backend lint, types and database behavior. It also checks frontend lint, the build, dependencies and browser behavior, along with migrations, seed data, generated contracts and deployment configuration. Tests must use an isolated, disposable database whose name ends in `_test`.
+CI checks backend lint, types, database behavior and dependencies. It also checks frontend lint, the build, dependencies and browser behavior, along with migrations, seed data, generated contracts and deployment configuration. Tests must use an isolated, disposable database whose name ends in `_test`.
 
 ```sh
 make verify
