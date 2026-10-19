@@ -449,6 +449,20 @@ export interface IncidentImportPreview {
   plan_buckets: unknown[]
   output_buckets: unknown[]
   events: unknown[]
+  cumulative_readings?: CumulativeReading[]
+}
+
+export interface CumulativeReading {
+  row: number
+  id: string
+  start: string
+  end: string
+  reading: number
+  available_at: string
+  previous_id: string | null
+  disposition: 'ANCHOR' | 'DERIVED' | 'GAP' | 'RESET'
+  delta: number | null
+  reason: string | null
 }
 
 export type NewIncidentBody = Omit<

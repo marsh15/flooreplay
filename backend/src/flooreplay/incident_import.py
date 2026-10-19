@@ -42,6 +42,8 @@ def preview_identity(preview: dict[str, Any]) -> str:
     fields: tuple[str, ...] = ("raw_digest", "profile", "source_system", "timezone", "filename", "requested_unit", "scope", "interpretation_version", "plan_buckets", "output_buckets", "events", "issues", "status")
     if "column_mapping" in preview or "field_defaults" in preview:
         fields += ("column_mapping", "field_defaults")
+    if "cumulative_readings" in preview:
+        fields += ("cumulative_readings",)
     encoded = json.dumps({field: preview.get(field) for field in fields}, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
@@ -75,9 +77,9 @@ FIELD_DESCRIPTIONS = {
     "order_id": "Order scope ID.", "style_id": "Style scope ID.", "stage": "Production stage; launch supports sewing.",
     "start": "ISO start timestamp; production needs a 15-minute boundary, block intervals need start and end.",
     "end": "ISO end timestamp; production must be exactly 15 minutes after start.",
-    "quantity": "Nonnegative integer good-unit delta for this interval; never cumulative.",
+    "quantity": "Nonnegative integer good units: the interval delta, or the counter reading at interval end when count_mode is cumulative.",
     "unit": "Explicit good_units declaration, or the separately declared import unit.",
-    "count_mode": "Mapped production must explicitly declare delta, through a column or constant; cumulative counts are unsupported.",
+    "count_mode": "Mapped production must declare delta or cumulative, through a column or constant. Cumulative applies to final_good_delta readings only.",
     "summary": "Source observation text, 1–2000 characters; text is an alternative.",
     "text": "Alternative source observation text when summary is absent.",
     "occurred_at": "ISO observation timestamp; provide occurred_at or start for each event.",
@@ -169,7 +171,7 @@ def _mapped_records(raw: bytes, filename: str, profile: str, column_mapping: dic
     if set(mapping) & set(defaults):
         raise ValueError("A field cannot have both a mapped column and a default")
     if profile == "production-v1" and "count_mode" not in mapping and "count_mode" not in defaults:
-        raise ValueError("Mapped production requires explicit count_mode: map a delta column or declare a delta default")
+        raise ValueError("Mapped production requires explicit count_mode: map a count_mode column or declare delta or cumulative")
     if len(set(mapping.values())) != len(mapping):
         raise ValueError("A source header cannot map to more than one canonical field")
     if any(header not in headers for header in mapping.values()):
@@ -201,8 +203,13 @@ def _normalize(row: dict[str, Any], profile: str, source_system: str, timezone: 
         declared_unit = str(row.get("unit") or unit or "")
         if declared_unit != "good_units":
             raise ValueError("Production unit must be explicitly declared as good_units")
-        if row.get("count_mode", "delta") != "delta":
-            raise ValueError("Cumulative counts are unsupported; supply 15-minute deltas")
+        count_mode = str(row.get("count_mode") or "delta").strip()
+        if count_mode not in {"delta", "cumulative"}:
+            raise ValueError("count_mode must be delta or cumulative")
+        if count_mode == "cumulative" and kind != "final_good_delta":
+            raise ValueError("Baseline plans must be per-interval quantities; cumulative applies to output readings")
+        if count_mode == "cumulative" and common.get("supersedes_id"):
+            raise ValueError("Correct cumulative readings with delta corrections; a reading cannot supersede a record")
         quantity = row.get("quantity")
         quantity_text = str(quantity)
         if isinstance(quantity, bool) or not quantity_text.isdigit():
@@ -214,10 +221,13 @@ def _normalize(row: dict[str, Any], profile: str, source_system: str, timezone: 
             raise ValueError("Production buckets must start on a 15-minute boundary")
         if datetime.fromisoformat(end) - datetime.fromisoformat(start) != timedelta(minutes=15):
             raise ValueError("Production buckets must span exactly 15 minutes")
-        return ("plan_buckets" if kind == "baseline_plan" else "output_buckets"), {
+        record = {
             **common, "kind": kind, "quantity": int(quantity_text), "unit": declared_unit,
             "start": start, "end": end,
         }
+        if count_mode == "cumulative":
+            return "cumulative_readings", record
+        return ("plan_buckets" if kind == "baseline_plan" else "output_buckets"), record
     if profile == "operations-v1":
         if kind not in EVENT_TYPES:
             raise ValueError("Unsupported operations record_type")
@@ -274,6 +284,51 @@ def _normalize(row: dict[str, Any], profile: str, source_system: str, timezone: 
     return "events", event
 
 
+_SCOPE_FIELDS = ("factory", "line_id", "order_id", "style_id", "stage")
+
+
+def _convert_cumulative(readings: list[tuple[int, dict[str, Any]]], deltas: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Derive interval deltas from consecutive counter readings without guessing.
+
+    A reading is the counter value at interval end. Only a reading whose interval
+    starts exactly where the previous reading ended, with a counter that did not go
+    down, yields a delta. The first reading, a reading after a gap and a reading
+    after a counter reset each become a new anchor and leave their own interval
+    uncounted, so the engine reports it as missing output rather than inventing it.
+    """
+    issues: list[dict[str, Any]] = []
+    delta_scopes = {tuple(row[field] for field in _SCOPE_FIELDS) for row in deltas}
+    groups: dict[tuple[str, ...], list[tuple[int, dict[str, Any]]]] = {}
+    for number, reading in readings:
+        key = tuple(reading[field] for field in _SCOPE_FIELDS)
+        if key in delta_scopes:
+            issues.append(_issue(number, "count_mode", "MIXED_COUNT_MODE", "Do not mix delta and cumulative output for the same scope"))
+            continue
+        groups.setdefault(key, []).append((number, reading))
+    buckets: list[dict[str, Any]] = []
+    dispositions: list[dict[str, Any]] = []
+    for group in groups.values():
+        previous: dict[str, Any] | None = None
+        for number, reading in sorted(group, key=lambda item: datetime.fromisoformat(item[1]["start"])):
+            entry = {"row": number, "id": reading["id"], "start": reading["start"], "end": reading["end"], "reading": reading["quantity"], "available_at": reading["available_at"], "previous_id": previous["id"] if previous else None}
+            if previous is None:
+                entry.update(disposition="ANCHOR", delta=None, reason="First reading for this scope; its interval has no earlier reading.")
+            elif datetime.fromisoformat(reading["start"]) != datetime.fromisoformat(previous["end"]):
+                entry.update(disposition="GAP", delta=None, reason=f"No reading ends at {reading['start']}; the change since {previous['end']} spans uncounted intervals.")
+            elif reading["quantity"] < previous["quantity"]:
+                entry.update(disposition="RESET", delta=None, reason=f"Counter fell from {previous['quantity']} to {reading['quantity']}; output since the reset is unknown.")
+            else:
+                delta = reading["quantity"] - previous["quantity"]
+                # The derived delta is known only once both readings are available.
+                available = max(reading["available_at"], previous["available_at"], key=datetime.fromisoformat)
+                entry.update(disposition="DERIVED", delta=delta, reason=None)
+                buckets.append({**reading, "quantity": delta, "available_at": available, "count_mode": "cumulative", "cumulative_reading": reading["quantity"], "previous_reading": {"id": previous["id"], "quantity": previous["quantity"], "end": previous["end"]}})
+            dispositions.append(entry)
+            previous = reading
+    dispositions.sort(key=lambda entry: entry["row"])
+    return buckets, dispositions, issues
+
+
 def preview_incident_import(
     raw: bytes, *, profile: str, source_system: str, timezone: str,
     filename: str, unit: str | None = None, scope: dict[str, str] | None = None,
@@ -297,6 +352,7 @@ def preview_incident_import(
     if not rows:
         raise ValueError("File has no records")
     normalized: dict[str, list[dict[str, Any]]] = {"plan_buckets": [], "output_buckets": [], "events": []}
+    readings: list[tuple[int, dict[str, Any]]] = []
     issues: list[dict[str, Any]] = []
     seen: set[str] = set()
     seen_buckets: set[tuple[str, str, str, str, str, str, str, str]] = set()
@@ -305,15 +361,24 @@ def preview_incident_import(
             section, value = _normalize(row, profile, source_system, zone, unit)
             if value["id"] in seen:
                 raise ValueError("Duplicate record id")
-            if section in {"plan_buckets", "output_buckets"}:
+            if section in {"plan_buckets", "output_buckets", "cumulative_readings"}:
                 natural = (value["kind"], value["factory"], value["line_id"], value["order_id"], value["style_id"], value["stage"], value["start"], value["end"])
                 if natural in seen_buckets and not value.get("supersedes_id"):
                     raise ValueError("Duplicate production bucket for the same scope and interval")
                 seen_buckets.add(natural)
             seen.add(value["id"])
-            normalized[section].append(value)
+            if section == "cumulative_readings":
+                readings.append((number, value))
+            else:
+                normalized[section].append(value)
         except ValueError as exc:
             issues.append(_issue(number, "record", "INVALID_RECORD", str(exc)))
+    conversions: list[dict[str, Any]] | None = None
+    if readings:
+        derived, conversions, conversion_issues = _convert_cumulative(readings, normalized["output_buckets"])
+        normalized["output_buckets"].extend(derived)
+        issues.extend(conversion_issues)
+        issues.sort(key=lambda issue: issue["row"])
     preview = {
         "requested_unit": unit, "scope": scope, "interpretation_version": "incident-import-v2",
         "status": "READY" if not issues else "BLOCKED", "profile": profile,
@@ -323,6 +388,8 @@ def preview_incident_import(
     }
     if column_mapping is not None or field_defaults is not None:
         preview.update(column_mapping=column_mapping, field_defaults=field_defaults, interpretation_version="incident-import-v3")
+    if conversions is not None:
+        preview.update(cumulative_readings=conversions, interpretation_version="incident-import-v4")
     preview["preview_digest"] = preview_identity(preview)
     return preview
 

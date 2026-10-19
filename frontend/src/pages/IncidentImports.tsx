@@ -10,6 +10,7 @@ import {
   type IncidentImportBody,
   type IncidentImportPreview,
   type IncidentCsvInspection,
+  type CumulativeReading,
   type NewIncidentBody,
 } from '@/lib/incidents'
 import { Button } from '@/components/ui/button'
@@ -112,8 +113,9 @@ function CsvColumnMapping({
           )}
           {field.name === 'count_mode' && (
             <p className="text-sm leading-6 text-limit-foreground">
-              Production imports require an explicit count_mode of delta. Cumulative readings must
-              not be labeled as deltas.
+              Production imports need an explicit count_mode. Use delta for per-interval counts and
+              cumulative for counter readings taken at each interval end. Never label cumulative
+              readings as deltas.
             </p>
           )}
         </div>
@@ -132,7 +134,8 @@ function CsvColumnMapping({
         <p className="mt-1 text-sm leading-6 text-muted-foreground">
           {inspection.row_count} original rows. Only identical canonical headers are preselected.
           Choose each source column or enter an explicit constant; unmapped columns are ignored. No
-          dates, identifiers, units, or cumulative counts are inferred or converted.
+          dates, identifiers or units are inferred. Counter readings are converted only when
+          count_mode is cumulative.
         </p>
       </div>
       <div className="max-w-full overflow-x-auto rounded-sm border border-border">
@@ -210,6 +213,78 @@ function CsvColumnMapping({
           {inspection.fields.filter((field) => !field.required).map(renderField)}
         </div>
       </details>
+    </section>
+  )
+}
+
+const READING_RESULT: Record<CumulativeReading['disposition'], string> = {
+  ANCHOR: 'Anchor',
+  DERIVED: 'Delta',
+  GAP: 'Gap',
+  RESET: 'Reset',
+}
+
+function intervalLabel(start: string, end: string) {
+  return `${start.slice(11, 16)}–${end.slice(11, 16)}`
+}
+
+function CumulativeReadings({ readings }: { readings: CumulativeReading[] }) {
+  const uncounted = readings.filter((entry) => entry.disposition !== 'DERIVED').length
+  return (
+    <section aria-labelledby="cumulative-heading" className="space-y-2">
+      <h3 id="cumulative-heading" className="text-base font-semibold">
+        Counter readings converted to deltas
+      </h3>
+      <p className="text-sm leading-6 text-muted-foreground">
+        Each delta is the change from the reading that ends where its interval starts. {uncounted}{' '}
+        {uncounted === 1 ? 'reading leaves its interval' : 'readings leave their intervals'}{' '}
+        uncounted: a first reading, a gap or a counter reset gives no earlier value to subtract
+        from. Include the reading that ends at the window start to count the first interval.
+      </p>
+      <div className="overflow-x-auto rounded-sm border border-border">
+        <table className="w-full min-w-[640px] text-left text-sm">
+          <thead className="bg-muted text-xs uppercase text-muted-foreground">
+            <tr>
+              <th scope="col" className="px-3 py-2">
+                Row
+              </th>
+              <th scope="col" className="px-3 py-2">
+                Record
+              </th>
+              <th scope="col" className="px-3 py-2">
+                Interval
+              </th>
+              <th scope="col" className="px-3 py-2 text-right">
+                Reading
+              </th>
+              <th scope="col" className="px-3 py-2">
+                Result
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {readings.map((entry) => (
+              <tr key={entry.row}>
+                <td className="px-3 py-2 tabular-nums">{entry.row}</td>
+                <td className="px-3 py-2 font-mono text-xs">{entry.id}</td>
+                <td className="px-3 py-2 tabular-nums">{intervalLabel(entry.start, entry.end)}</td>
+                <td className="px-3 py-2 text-right tabular-nums">{entry.reading}</td>
+                <td className="px-3 py-2">
+                  <span className="font-medium">{READING_RESULT[entry.disposition]}</span>
+                  {entry.delta !== null ? (
+                    <span className="tabular-nums">
+                      {' '}
+                      {entry.delta} since {entry.previous_id}
+                    </span>
+                  ) : (
+                    <span className="block text-xs text-muted-foreground">{entry.reason}</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   )
 }
@@ -943,7 +1018,8 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                           </label>
                           <Input id="import-unit" required readOnly value={unit} />
                           <p className="mt-1 text-xs text-muted-foreground">
-                            Use good_units. Counts must be 15-minute deltas.
+                            Use good_units. Counts are 15-minute deltas, or counter readings with
+                            count_mode cumulative.
                           </p>
                         </div>
                       )}
@@ -962,6 +1038,13 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                         download
                       >
                         Download output CSV example
+                      </a>
+                      <a
+                        className="underline underline-offset-4"
+                        href="/import-examples/production-counter-readings-v1.csv"
+                        download
+                      >
+                        Download counter readings CSV example
                       </a>
                       <a
                         className="underline underline-offset-4"
@@ -1117,6 +1200,9 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                     <p className="text-sm text-foreground">
                       All rows passed validation. Publication is all or nothing.
                     </p>
+                  )}
+                  {preview.result.cumulative_readings && (
+                    <CumulativeReadings readings={preview.result.cumulative_readings} />
                   )}
                   <NormalizedSample preview={preview.result} />
                   {preview.newIncident

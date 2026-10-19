@@ -178,3 +178,87 @@ def test_mapped_operations_and_notes_preserve_typed_links(profile, kind, extra):
     event = result['events'][0]
     assert event['hypothesis_links'] == [{'category': 'machine', 'relation': 'SUPPORTS', 'source_id': 'shift-log:N1'}]
     assert (event.get('assertion') is True) == (profile == 'notes-v1')
+
+
+def _readings(*rows: tuple[str, str, str, str, int]) -> bytes:
+    """rows: (id, available_at, start, end, counter reading)."""
+    lines = [f"{rid},final_good_delta,2026-09-28T{known},2026-09-28T{start},2026-09-28T{end},{reading},good_units,{SCOPE}" for rid, known, start, end, reading in rows]
+    return (HEADERS + "\n".join(lines) + "\n").encode()
+
+
+CUMULATIVE = {"column_mapping": {field: field for field in HEADERS.strip().split(",")}, "field_defaults": {"count_mode": "cumulative"}}
+
+
+def test_cumulative_readings_derive_deltas_and_preserve_each_reading():
+    raw = _readings(
+        ("c0", "09:01:00", "08:45:00", "09:00:00", 100),
+        ("c1", "09:16:00", "09:00:00", "09:15:00", 112),
+        ("c2", "09:40:00", "09:15:00", "09:30:00", 130),
+    )
+    preview = preview_incident_import(raw, **META, **CUMULATIVE)
+    assert preview["status"] == "READY"
+    assert preview["interpretation_version"] == "incident-import-v4"
+    assert [(row["id"], row["quantity"]) for row in preview["output_buckets"]] == [("c1", 12), ("c2", 18)]
+    second = preview["output_buckets"][1]
+    assert second["cumulative_reading"] == 130 and second["previous_reading"] == {"id": "c1", "quantity": 112, "end": "2026-09-28T09:15:00+05:30"}
+    # A derived delta is known only once both of its readings are available.
+    assert second["available_at"] == "2026-09-28T09:40:00+05:30"
+    assert [entry["disposition"] for entry in preview["cumulative_readings"]] == ["ANCHOR", "DERIVED", "DERIVED"]
+    assert preview["cumulative_readings"][0]["reading"] == 100 and preview["cumulative_readings"][0]["delta"] is None
+
+
+def test_derived_delta_waits_for_the_later_of_its_two_readings():
+    raw = _readings(("c0", "09:20:00", "08:45:00", "09:00:00", 100), ("c1", "09:16:00", "09:00:00", "09:15:00", 112))
+    bucket = preview_incident_import(raw, **META, **CUMULATIVE)["output_buckets"][0]
+    assert bucket["available_at"] == "2026-09-28T09:20:00+05:30"
+
+
+def test_cumulative_gaps_and_resets_leave_intervals_uncounted_instead_of_guessing():
+    raw = _readings(
+        ("c0", "09:01:00", "08:45:00", "09:00:00", 100),
+        ("c1", "09:16:00", "09:00:00", "09:15:00", 110),
+        ("c3", "09:46:00", "09:30:00", "09:45:00", 140),
+        ("c4", "10:01:00", "09:45:00", "10:00:00", 5),
+        ("c5", "10:16:00", "10:00:00", "10:15:00", 20),
+    )
+    preview = preview_incident_import(raw, **META, **CUMULATIVE)
+    assert preview["status"] == "READY"
+    assert [(row["id"], row["quantity"]) for row in preview["output_buckets"]] == [("c1", 10), ("c5", 15)]
+    dispositions = {entry["id"]: entry["disposition"] for entry in preview["cumulative_readings"]}
+    assert dispositions == {"c0": "ANCHOR", "c1": "DERIVED", "c3": "GAP", "c4": "RESET", "c5": "DERIVED"}
+
+
+def test_cumulative_order_follows_intervals_not_file_rows():
+    raw = _readings(("c1", "09:16:00", "09:00:00", "09:15:00", 112), ("c0", "09:01:00", "08:45:00", "09:00:00", 100))
+    preview = preview_incident_import(raw, **META, **CUMULATIVE)
+    assert [(row["id"], row["quantity"]) for row in preview["output_buckets"]] == [("c1", 12)]
+    assert [entry["row"] for entry in preview["cumulative_readings"]] == [1, 2]
+
+
+def test_cumulative_rejects_plans_corrections_mixing_and_duplicate_intervals():
+    mapping = CUMULATIVE["column_mapping"]
+    plan = HEADERS + f"p1,baseline_plan,2026-09-28T08:00:00,2026-09-28T09:00:00,2026-09-28T09:15:00,20,good_units,{SCOPE}\n"
+    assert "Baseline plans" in preview_incident_import(plan.encode(), **META, **CUMULATIVE)["issues"][0]["message"]
+    duplicate = _readings(("c0", "09:01:00", "08:45:00", "09:00:00", 100), ("c0b", "09:02:00", "08:45:00", "09:00:00", 101))
+    assert "Duplicate production bucket" in preview_incident_import(duplicate, **META, **CUMULATIVE)["issues"][0]["message"]
+    mixed = (HEADERS + "count_mode\n").replace("stage\ncount_mode", "stage,count_mode")
+    mixed += f"d1,final_good_delta,2026-09-28T09:16:00,2026-09-28T09:00:00,2026-09-28T09:15:00,12,good_units,{SCOPE},delta\n"
+    mixed += f"c2,final_good_delta,2026-09-28T09:31:00,2026-09-28T09:15:00,2026-09-28T09:30:00,40,good_units,{SCOPE},cumulative\n"
+    result = preview_incident_import(mixed.encode(), **META, column_mapping={**mapping, "count_mode": "count_mode"}, field_defaults={})
+    assert result["status"] == "BLOCKED" and result["issues"][0]["code"] == "MIXED_COUNT_MODE" and result["issues"][0]["row"] == 2
+    with pytest.raises(ValueError, match="delta or cumulative"):
+        preview_incident_import(_production(), **META, column_mapping=mapping, field_defaults={})
+    unknown = preview_incident_import(_production(), **META, column_mapping=mapping, field_defaults={"count_mode": "running_total"})
+    assert "delta or cumulative" in unknown["issues"][0]["message"]
+    correction = HEADERS.replace("stage\n", "stage,supersedes_id\n") + f"c9,final_good_delta,2026-09-28T09:16:00,2026-09-28T09:00:00,2026-09-28T09:15:00,12,good_units,{SCOPE},c1\n"
+    blocked = preview_incident_import(correction.encode(), **META, column_mapping={**mapping, "supersedes_id": "supersedes_id"}, field_defaults={"count_mode": "cumulative"})
+    assert "delta corrections" in blocked["issues"][0]["message"]
+
+
+def test_cumulative_interpretation_is_bound_into_preview_identity():
+    raw = _readings(("c0", "09:01:00", "08:45:00", "09:00:00", 100), ("c1", "09:16:00", "09:00:00", "09:15:00", 112))
+    cumulative = preview_incident_import(raw, **META, **CUMULATIVE)
+    delta = preview_incident_import(raw, **META, column_mapping=CUMULATIVE["column_mapping"], field_defaults={"count_mode": "delta"})
+    assert delta["status"] == "READY" and [row["quantity"] for row in delta["output_buckets"]] == [100, 112]
+    assert cumulative["raw_digest"] == delta["raw_digest"] and cumulative["preview_digest"] != delta["preview_digest"]
+    assert "cumulative_readings" not in delta and delta["interpretation_version"] == "incident-import-v3"
