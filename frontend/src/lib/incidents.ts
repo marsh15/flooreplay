@@ -108,6 +108,55 @@ export interface IncidentMetric {
   } | null
 }
 
+export type FeedStatus = 'REPORTED' | 'AWAITING' | 'GAP' | 'CONFLICTING' | 'NOT_DUE'
+
+export interface SourceHealth {
+  incident_id: string
+  revision: number
+  as_of: string
+  production_feed: {
+    expected_interval_minutes: number
+    latest_reported_interval_end: string | null
+    latest_available_at: string | null
+    minutes_since_latest_record: number | null
+    typical_delay_minutes: number | null
+    counts: Record<FeedStatus, number>
+    intervals: {
+      start: string
+      end: string
+      plan_id: string
+      planned: number
+      status: FeedStatus
+      output_id?: string
+      output_ids?: string[]
+      reported?: number
+      minutes_since_due?: number
+      overdue?: boolean
+    }[]
+    intervals_reported_below_plan: string[]
+  }
+  operations_feed: {
+    records: number
+    latest_available_at: string | null
+    late_threshold_minutes: number
+    late_record_ids: string[]
+  }
+  conflicts: {
+    correction_conflicts: { record_id: string; replacement_ids: string[] }[]
+    conflicting_intervals: string[]
+  }
+  imports: {
+    revision: number
+    source_system: string
+    profile: string
+    filename: string
+    rows: number | null
+    published_at: string
+  }[]
+  rejections: { recorded: boolean; reason: string }
+  summary: string
+}
+
 export interface CalendarSegment {
   start: string
   end: string
@@ -545,6 +594,8 @@ export const incidentApi = {
       return savedIncident
     }
   },
+  sourceHealth: (id: string, revision: number) =>
+    request<SourceHealth>(`/incidents/${pathId(id)}/revisions/${revision}/source-health`),
   analyze: async (id: string, revision: number): Promise<AnalysisReport> => {
     try {
       return await request<AnalysisReport>(`/incidents/${pathId(id)}/analyses`, {

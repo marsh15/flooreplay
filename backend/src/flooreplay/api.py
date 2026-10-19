@@ -47,6 +47,7 @@ from .incident_service import (
     create_incident_from_source,
     incident_detail,
     incident_list,
+    incident_source_health,
     publish_source,
     review_proposal,
     search_incidents,
@@ -580,6 +581,11 @@ def create_app(mode: str | None = None) -> FastAPI:
     def get_incident(incident_id: str, revision: int) -> dict[str, Any]:
         with session_scope() as session:
             return incident_detail(session, incident_id, revision)
+
+    @app.get("/api/v1/incidents/{incident_id}/revisions/{revision}/source-health")
+    def get_incident_source_health(incident_id: str, revision: int) -> dict[str, Any]:
+        with session_scope() as session:
+            return incident_source_health(session, incident_id, revision)
 
     @app.post("/api/v1/incidents/{incident_id}/analyses")
     def run_incident_analysis(incident_id: str, body: IncidentAnalysisRequest, _limits: None = Depends(limit_public_execution)) -> dict[str, Any]:

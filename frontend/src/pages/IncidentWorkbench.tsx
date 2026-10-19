@@ -33,6 +33,7 @@ import {
 } from '@/components/board'
 import { SectionRail } from '@/components/SectionRail'
 import { BucketStrip } from '@/components/BucketStrip'
+import { SourceHealthPanel } from '@/components/SourceHealth'
 import {
   Sheet,
   SheetContent,
@@ -282,6 +283,7 @@ function SavedAiPanel({ onEvidence }: { onEvidence: (id: string) => void }) {
 
 const RAIL_TITLES = [
   'Observed situation',
+  'Source health',
   'Evidence timeline',
   'Explanations and open questions',
   'Recovery options',
@@ -344,6 +346,12 @@ export function IncidentWorkbenchPage() {
       setParams({ revision: String(revision), analysis: report.id }, { replace: true })
     }
   }, [report, analysisId, id, revision, params, pathname, user?.id, queryClient, setParams])
+  const sourceHealth = useQuery({
+    queryKey: ['incident-source-health', id, revision, user?.id ?? 'public'],
+    queryFn: () => incidentApi.sourceHealth(id, revision),
+    enabled: !!id && !!incident.data,
+    retry: false,
+  })
   const evidence = useQuery({
     queryKey: ['incident-evidence', report?.id, evidenceId],
     queryFn: () => incidentApi.evidence(report!.id, evidenceId!),
@@ -673,8 +681,7 @@ export function IncidentWorkbenchPage() {
                               {report.metrics.target_pressure.planned_non_working.remaining_segments.map(
                                 (segment) => (
                                   <li key={segment.start}>
-                                    {formatInstant(segment.start)} to {formatInstant(segment.end)}{' '}
-                                    ·{' '}
+                                    {formatInstant(segment.start)} to {formatInstant(segment.end)} ·{' '}
                                     {segment.evidence.map((id) => (
                                       <EvidenceLink key={id} id={id} onOpen={setEvidenceId} />
                                     ))}
@@ -704,6 +711,20 @@ export function IncidentWorkbenchPage() {
                         {report.metrics.target_pressure.assumptions.join(' ')}
                       </p>
                     </div>
+                  )}
+                </Section>
+                <Section
+                  title="Source health"
+                  detail="Whether each due interval has an output record yet. A missing record is missing data, not lost production."
+                >
+                  {sourceHealth.data ? (
+                    <SourceHealthPanel health={sourceHealth.data} onOpen={setEvidenceId} />
+                  ) : sourceHealth.isError ? (
+                    <p className="rounded-sm border border-dashed p-5 text-sm text-muted-foreground">
+                      Source health needs the live API and is unavailable for this saved report.
+                    </p>
+                  ) : (
+                    <Skeleton className="h-24 w-full" />
                   )}
                 </Section>
                 <Section

@@ -79,6 +79,14 @@ def incident_detail(session: Session, incident_id: str, revision: int) -> dict[s
     return {**row.payload, "workspace_id": row.workspace_id, "available_revisions": revisions, "content_digest": row.content_digest}
 
 
+def incident_source_health(session: Session, incident_id: str, revision: int) -> dict[str, Any]:
+    from .source_health import source_health
+    row = _revision(session, incident_id, revision)
+    artifacts = session.execute(select(IncidentSourceArtifact).where(IncidentSourceArtifact.incident_id == incident_id, IncidentSourceArtifact.revision <= revision).order_by(IncidentSourceArtifact.revision)).scalars().all()
+    imports = [{"revision": artifact.revision, "source_system": artifact.source_system, "profile": artifact.profile, "filename": artifact.filename, "rows": artifact.preview.get("row_count"), "published_at": artifact.created_at.isoformat()} for artifact in artifacts]
+    return {"incident_id": incident_id, "revision": revision, **source_health(row.payload, imports)}
+
+
 def search_incidents(
     session: Session, query: str, *, cutoff: datetime | None = None,
     exclude_incident_id: str | None = None, stage: str | None = None,
