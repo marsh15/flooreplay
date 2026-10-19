@@ -240,7 +240,7 @@ def test_cumulative_rejects_plans_corrections_mixing_and_duplicate_intervals():
     plan = HEADERS + f"p1,baseline_plan,2026-09-28T08:00:00,2026-09-28T09:00:00,2026-09-28T09:15:00,20,good_units,{SCOPE}\n"
     assert "Baseline plans" in preview_incident_import(plan.encode(), **META, **CUMULATIVE)["issues"][0]["message"]
     duplicate = _readings(("c0", "09:01:00", "08:45:00", "09:00:00", 100), ("c0b", "09:02:00", "08:45:00", "09:00:00", 101))
-    assert "Duplicate production bucket" in preview_incident_import(duplicate, **META, **CUMULATIVE)["issues"][0]["message"]
+    assert any("Duplicate production bucket" in issue["message"] for issue in preview_incident_import(duplicate, **META, **CUMULATIVE)["issues"])
     mixed = (HEADERS + "count_mode\n").replace("stage\ncount_mode", "stage,count_mode")
     mixed += f"d1,final_good_delta,2026-09-28T09:16:00,2026-09-28T09:00:00,2026-09-28T09:15:00,12,good_units,{SCOPE},delta\n"
     mixed += f"c2,final_good_delta,2026-09-28T09:31:00,2026-09-28T09:15:00,2026-09-28T09:30:00,40,good_units,{SCOPE},cumulative\n"
@@ -271,3 +271,9 @@ def test_planned_breaks_import_as_calendar_records_with_intervals():
     assert preview["status"] == "READY" and preview["events"][0]["type"] == "planned_break"
     open_ended = preview_incident_import(json.dumps([{**row, "end": ""}]).encode(), **meta)
     assert "need start and end" in open_ended["issues"][0]["message"]
+
+
+def test_cumulative_file_that_derives_nothing_is_blocked():
+    lone = preview_incident_import(_readings(("c0", "09:16:00", "09:00:00", "09:15:00", 340)), **META, **CUMULATIVE)
+    assert lone["status"] == "BLOCKED" and lone["issues"][0]["code"] == "NO_DERIVED_DELTA"
+    assert lone["cumulative_readings"][0]["disposition"] == "ANCHOR"

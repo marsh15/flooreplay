@@ -330,6 +330,8 @@ def _convert_cumulative(readings: list[tuple[int, dict[str, Any]]], deltas: list
             dispositions.append(entry)
             previous = reading
     dispositions.sort(key=lambda entry: entry["row"])
+    if dispositions and not buckets:
+        issues.append(_issue(dispositions[0]["row"], "quantity", "NO_DERIVED_DELTA", "No reading follows an earlier reading for the same scope, so no interval output can be derived. Include the reading that ends where the first interval starts."))
     return buckets, dispositions, issues
 
 
