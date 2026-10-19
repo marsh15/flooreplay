@@ -5,7 +5,7 @@ from datetime import timedelta
 from math import isfinite
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from .config import settings
@@ -20,11 +20,15 @@ def lock(session: Session) -> None:
     session.execute(select(func.pg_advisory_xact_lock(947362)))
 
 
-def usage_view(session: Session) -> dict[str, Any]:
+def usage_view(session: Session, *, include_entries: bool = True) -> dict[str, Any]:
     allocations = {row.purpose: row.ceiling_inr for row in session.scalars(select(SpendingAllocation))} or ALLOCATIONS
-    entries = session.scalars(select(SpendEntry).order_by(SpendEntry.created_at.desc())).all()
-    used = {purpose: sum(e.charged_inr if e.status == "SETTLED" else e.reserved_inr for e in entries if e.purpose == purpose) for purpose in ALLOCATIONS}
-    return {"total_ceiling_inr": 500, "allocations_inr": allocations, "committed_inr": sum(used.values()), "available_inr": max(0, 500 - sum(used.values())), "purpose_available_inr": {p: max(0, cap - used[p]) for p, cap in allocations.items()}, "active_operations": sum(e.status == "RESERVED" and e.expires_at > now() for e in entries), "price_table": PRICE_TABLE, "entries": [{"id": e.id, "purpose": e.purpose, "operation": e.operation, "status": e.status, "reserved_inr": e.reserved_inr, "charged_inr": e.charged_inr, "charged_usd": e.charged_usd, "details": e.details} for e in entries[:100]]}
+    committed = case((SpendEntry.status == "SETTLED", SpendEntry.charged_inr), else_=SpendEntry.reserved_inr)
+    used = dict.fromkeys(ALLOCATIONS, 0.0)
+    for purpose, total in session.execute(select(SpendEntry.purpose, func.sum(committed)).group_by(SpendEntry.purpose)):
+        used[purpose] = float(total)
+    active = session.execute(select(func.count()).select_from(SpendEntry).where(SpendEntry.status == "RESERVED", SpendEntry.expires_at > now())).scalar_one()
+    entries = session.scalars(select(SpendEntry).order_by(SpendEntry.created_at.desc(), SpendEntry.id).limit(100)).all() if include_entries else []
+    return {"total_ceiling_inr": 500, "allocations_inr": allocations, "committed_inr": sum(used.values()), "available_inr": max(0, 500 - sum(used.values())), "purpose_available_inr": {p: max(0, cap - used[p]) for p, cap in allocations.items()}, "active_operations": active, "price_table": PRICE_TABLE, "entries": [{"id": e.id, "purpose": e.purpose, "operation": e.operation, "status": e.status, "reserved_inr": e.reserved_inr, "charged_inr": e.charged_inr, "charged_usd": e.charged_usd, "details": e.details} for e in entries]}
 
 
 def reserve(session: Session, user_id: str, purpose: str, operation: str, maximum_usd: float) -> SpendEntry:
@@ -35,7 +39,7 @@ def reserve(session: Session, user_id: str, purpose: str, operation: str, maximu
     for entry in session.scalars(select(SpendEntry).where(SpendEntry.status == "RESERVED", SpendEntry.expires_at <= now())):
         entry.status = "UNCERTAIN"
     session.flush()
-    usage = usage_view(session)
+    usage = usage_view(session, include_entries=False)
     amount = maximum_usd * settings.openai_inr_per_usd
     if usage["active_operations"] >= 2:
         raise ServiceError("EXECUTION_CAPACITY_FULL", "Two provider operations are already active", 429)
@@ -70,7 +74,7 @@ def move_allowance(session: Session, source: str, destination: str, amount_inr: 
         if session.get(SpendingAllocation, purpose) is None:
             session.add(SpendingAllocation(purpose=purpose, ceiling_inr=ceiling))
     session.flush()
-    usage = usage_view(session)
+    usage = usage_view(session, include_entries=False)
     if amount_inr > usage["purpose_available_inr"][source]:
         raise ServiceError("ALLOWANCE_COMMITTED", "Source allowance already reserved or spent", 409)
     origin = session.get(SpendingAllocation, source)

@@ -166,6 +166,9 @@ test('library filters evidence and authenticated open actions without exposing a
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
   await page.getByRole('combobox', { name: 'Assignee (open actions)' }).selectOption('person')
   unavailable = true
+  // A focus refresh applies after the production cache's 15-second freshness window.
+  await page.clock.install()
+  await page.clock.fastForward(15_001)
   await page.evaluate(() => window.dispatchEvent(new Event('visibilitychange')))
   await expect(page.getByText(/Showing bundled saved demo cases/)).toBeVisible()
   await expect(page.getByRole('combobox', { name: 'Assignee (open actions)' })).toHaveValue('')

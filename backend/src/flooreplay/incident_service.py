@@ -34,16 +34,20 @@ def incident_list(session: Session, *, include_workflow: bool = False) -> list[d
 
     checks = session.scalars(select(IncidentCheck)).all() if include_workflow else []
     resolutions = {row.incident_id: row for row in session.scalars(select(IncidentResolution)).all()} if include_workflow else {}
-    assignees = {row.id: row.display_name for row in session.scalars(select(Account)).all()} if include_workflow else {}
+    assignee_ids = {check.assignee_id for check in checks}
+    assignees = {row.id: row.display_name for row in session.scalars(select(Account).where(Account.id.in_(assignee_ids))).all()} if assignee_ids else {}
+    reviewed_revisions = {
+        incident_id: revision for incident_id, revision in session.execute(
+            select(IncidentAnalysis.incident_id, func.max(IncidentAnalysis.revision))
+            .join(IncidentReview, IncidentReview.analysis_id == IncidentAnalysis.id)
+            .group_by(IncidentAnalysis.incident_id)
+        )
+    }
     items = []
     for row in latest.values():
         report = analyze_incident(row.payload)
         metric = report["metrics"]
-        reviewed = session.execute(
-            select(func.max(IncidentAnalysis.revision))
-            .join(IncidentReview, IncidentReview.analysis_id == IncidentAnalysis.id)
-            .where(IncidentAnalysis.incident_id == row.incident_id)
-        ).scalar_one()
+        reviewed = reviewed_revisions.get(row.incident_id)
         available = sum(bool(value) for value in row.payload.get("coverage", {}).values())
         total = len(row.payload.get("coverage", {}))
         incident_checks = [check for check in checks if check.incident_id == row.incident_id]

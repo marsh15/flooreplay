@@ -11,6 +11,7 @@ import { formatInstant } from '@/lib/status'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useDebouncedValue } from '@/lib/useDebouncedValue'
 import { PageHeader } from '@/components/board'
 
 const PAGE_SIZE = 12
@@ -54,6 +55,7 @@ export function IncidentLibraryPage() {
   })
   const [workspace, setWorkspace] = useState('')
   const [query, setQuery] = useState('')
+  const settledQuery = useDebouncedValue(query.trim())
   const [view, setView] = useState<'cases' | 'engineering'>('cases')
   const [line, setLine] = useState('')
   const [calculation, setCalculation] = useState('')
@@ -73,9 +75,9 @@ export function IncidentLibraryPage() {
   })
   const saved = incidents.data?.execution_kind === 'saved_deterministic'
   const search = useQuery({
-    queryKey: ['incident-search', query, view],
-    queryFn: () => incidentApi.search(query.trim(), view),
-    enabled: !!query.trim() && !saved && !!incidents.data,
+    queryKey: ['incident-search', user?.id ?? 'public', settledQuery, view],
+    queryFn: ({ signal }) => incidentApi.search(settledQuery, view, signal),
+    enabled: !!settledQuery && !saved && !!incidents.data,
     retry: false,
   })
   const items = incidents.data?.items ?? []
@@ -206,6 +208,7 @@ export function IncidentLibraryPage() {
               className="pl-9"
               id="incident-search"
               type="search"
+              maxLength={200}
               placeholder="Search live incident evidence"
               value={query}
               onChange={(event) => setQuery(event.target.value)}

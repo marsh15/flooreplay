@@ -1,6 +1,5 @@
 import type { components } from '@/lib/generated-api'
-import { session } from '@/lib/session'
-import { API_BASE, ApiError } from '@/lib/api'
+import { apiRequest, apiDownload, ApiError } from '@/lib/api'
 import savedLibrary from '@/data/incident-library.json'
 import savedRevision from '@/data/hero-revision.json'
 import savedReport from '@/data/hero-report.json'
@@ -467,28 +466,10 @@ export type NewIncidentBody = Omit<
   window: { start: string; end: string }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...session.headers(), ...init?.headers },
-  })
-  if (!response.ok) {
-    let message = `Request failed with status ${response.status}`
-    let code = 'REQUEST_FAILED'
-    try {
-      const body = await response.json()
-      message = body.message ?? body.detail ?? message
-      code = body.code ?? code
-    } catch {
-      /* non-JSON response */
-    }
-    throw new ApiError(code, String(message), response.status)
-  }
-  return response.json() as Promise<T>
-}
+const request = apiRequest
 
 function unavailable(error: unknown): boolean {
-  return !(error instanceof ApiError) || error.status >= 500
+  return error instanceof ApiError && (error.status === 0 || error.status >= 500)
 }
 
 const savedId = savedReport.id
@@ -596,9 +577,10 @@ export const incidentApi = {
       }
     }
   },
-  search: (query: string, libraryView?: 'cases' | 'engineering') =>
+  search: (query: string, libraryView?: 'cases' | 'engineering', signal?: AbortSignal) =>
     request<{ items: IncidentSearchResult[]; execution_kind: string }>(
       `/incidents/search?q=${encodeURIComponent(query)}${libraryView ? `&library_view=${libraryView}` : ''}`,
+      { signal },
     ),
   submitProposal: (analysisId: string, proposalId: string) =>
     request<{ id: string; state: string }>(
@@ -629,18 +611,7 @@ export const incidentApi = {
         } satisfies IncidentReviewRequest),
       },
     ),
-  exportReport: async (analysisId: string) => {
-    const response = await fetch(`${API_BASE}/analyses/${pathId(analysisId)}/export`, {
-      headers: session.headers(),
-    })
-    if (!response.ok)
-      throw new ApiError(
-        'EXPORT_FAILED',
-        'Report export unavailable. Sign in as a reviewer.',
-        response.status,
-      )
-    return response.blob()
-  },
+  exportReport: (analysisId: string) => apiDownload(`/analyses/${pathId(analysisId)}/export`),
   createAiRun: (analysisId: string, body: AiRunRequest) =>
     request<AiRun>(`/analyses/${pathId(analysisId)}/ai-runs`, {
       method: 'POST',

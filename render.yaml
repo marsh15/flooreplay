@@ -5,7 +5,7 @@ services:
     runtime: python
     plan: free
     rootDir: backend
-    buildCommand: pip install uv==0.10.4 && uv sync --frozen --no-dev
+    buildCommand: pip install --only-binary=:all: uv==0.12.19 && uv sync --frozen --no-dev --no-install-project --no-build && uv sync --frozen --no-dev --no-build
     startCommand: >-
       sh -c 'export FLOORREPLAY_BUILD_ID="$RENDER_GIT_COMMIT";
       uv run --no-dev alembic upgrade head &&

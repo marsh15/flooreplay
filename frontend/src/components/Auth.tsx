@@ -1,7 +1,7 @@
 import type { components } from '@/lib/generated-api'
-import { Fragment, createContext, useContext, useRef, useState } from 'react'
+import { Fragment, createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { API_BASE, ApiError } from '@/lib/api'
+import { apiRequest, ApiError } from '@/lib/api'
 import { session } from '@/lib/session'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,43 +16,124 @@ export interface AuthUser {
 }
 interface AuthContextValue {
   user: AuthUser | null
+  /** Increments on every sign-in, sign-out and session expiry, so screens can reset. */
+  epoch: number
+  notice: string
   signIn: (username: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }
 const AuthContext = createContext<AuthContextValue | null>(null)
+
+function readAccount(body: unknown): { token: string; user: AuthUser } {
+  if (
+    typeof body !== 'object' ||
+    body === null ||
+    !('token' in body) ||
+    typeof body.token !== 'string' ||
+    !body.token ||
+    !('user' in body) ||
+    typeof body.user !== 'object' ||
+    body.user === null
+  )
+    throw new ApiError(
+      'INVALID_RESPONSE',
+      'The sign-in response was unreadable. Please try again.',
+      502,
+    )
+  const account = body.user
+  if (
+    !('id' in account) ||
+    typeof account.id !== 'string' ||
+    !('username' in account) ||
+    typeof account.username !== 'string' ||
+    !('display_name' in account) ||
+    typeof account.display_name !== 'string' ||
+    !('role' in account) ||
+    (account.role !== 'owner' && account.role !== 'reviewer')
+  )
+    throw new ApiError(
+      'INVALID_RESPONSE',
+      'The account response was unreadable. Please try again.',
+      502,
+    )
+  return {
+    token: body.token,
+    user: {
+      id: account.id,
+      username: account.username,
+      display_name: account.display_name,
+      role: account.role,
+    },
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [epoch, setEpoch] = useState(0)
+  const [notice, setNotice] = useState('')
+  // A sign-in that resolves after a newer sign-in or sign-out must not win.
+  const authGeneration = useRef(0)
   const client = useQueryClient()
+  useEffect(
+    () =>
+      session.onExpire(() => {
+        authGeneration.current += 1
+        client.clear()
+        setUser(null)
+        setEpoch((value) => value + 1)
+        setNotice('Your session ended. Sign in again to continue.')
+      }),
+    [client],
+  )
   async function signIn(username: string, password: string) {
-    const response = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password } satisfies components['schemas']['LoginRequest']),
-    })
-    const body = await response.json()
-    if (!response.ok)
-      throw new ApiError(
-        body.code ?? 'LOGIN_FAILED',
-        body.message ?? body.detail ?? 'Sign-in failed.',
-        response.status,
-      )
+    const generation = ++authGeneration.current
+    const body = await apiRequest<unknown>(
+      '/auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          username,
+          password,
+        } satisfies components['schemas']['LoginRequest']),
+      },
+      { anonymous: true },
+    )
+    if (generation !== authGeneration.current)
+      throw new ApiError('SESSION_CHANGED', 'A newer sign-in attempt replaced this request.', 401)
+    const account = readAccount(body)
     client.clear()
-    session.set(body.token)
-    setUser(body.user)
+    session.set(account.token)
+    setUser(account.user)
+    setEpoch((value) => value + 1)
+    setNotice('')
     await client.invalidateQueries()
   }
   async function signOut() {
+    authGeneration.current += 1
+    const revocation = apiRequest(
+      '/auth/logout',
+      { method: 'POST' },
+      { allowSessionChange: true, timeoutMs: 10_000 },
+    )
+    // Clear local state immediately; a slow or failed revocation must not keep data on screen.
+    session.set(null)
+    client.clear()
+    setUser(null)
+    setEpoch((value) => value + 1)
+    setNotice('')
     try {
-      await fetch(`${API_BASE}/auth/logout`, { method: 'POST', headers: session.headers() })
-    } finally {
-      session.set(null)
-      client.clear()
-      setUser(null)
-      await client.invalidateQueries()
+      await revocation
+    } catch (error) {
+      if (!session.token())
+        setNotice(
+          error instanceof ApiError && error.status === 401
+            ? 'Your session ended.'
+            : 'Signed out on this device. Server revocation could not be confirmed; the session expires within eight hours.',
+        )
     }
   }
   return (
-    <AuthContext value={{ user, signIn, signOut }}>
+    <AuthContext value={{ user, epoch, notice, signIn, signOut }}>
       <Fragment key={user?.id ?? 'public'}>{children}</Fragment>
     </AuthContext>
   )
@@ -63,7 +144,7 @@ export function useAuth() {
   return context
 }
 export function SignInControl() {
-  const { user, signIn, signOut } = useAuth()
+  const { user, notice, signIn, signOut } = useAuth()
   const [open, setOpen] = useState(false)
   const usernameInput = useRef<HTMLInputElement>(null)
   const [username, setUsername] = useState('')
@@ -160,6 +241,8 @@ export function SignInControl() {
               <Input
                 ref={usernameInput}
                 autoComplete="username"
+                minLength={3}
+                maxLength={120}
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
                 required
@@ -171,18 +254,19 @@ export function SignInControl() {
               <Input
                 type="password"
                 autoComplete="current-password"
+                maxLength={256}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 required
                 disabled={pending}
               />
             </label>
-            {error && (
+            {(error || notice) && (
               <p
                 role="alert"
                 className="rounded-md bg-danger p-3 text-sm leading-relaxed text-danger-foreground"
               >
-                {error}
+                {error || notice}
               </p>
             )}
             <Button className="w-full" size="sm" disabled={pending}>

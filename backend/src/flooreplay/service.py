@@ -704,6 +704,8 @@ def review_check(
     target_scenario = session.get(ScenarioRevision, (target_scenario_id, target_revision))
     if original_scenario is None or target_scenario is None:
         raise ServiceError("SCENARIO_UNKNOWN", "Unknown scenario revision", 404)
+    if original.workspace_id != original_scenario.workspace_id or original.workspace_id != target_scenario.workspace_id:
+        raise ServiceError("REVIEW_INCOMPATIBLE", "Review inputs must belong to the same workspace.", 422)
     if (
         original_scenario.target.get("slot_id") != target_scenario.target.get("slot_id")
         or original_scenario.target.get("line_id") != target_scenario.target.get("line_id")
@@ -760,6 +762,7 @@ def review_check(
         paths, reason_codes = [], []
 
     check = ReviewCheck(
+        workspace_id=original.workspace_id,
         original_replay_id=original_replay_id,
         target_scenario_id=target_scenario_id,
         target_scenario_revision=target_revision,

@@ -68,7 +68,10 @@ def capabilities(user_id: str) -> dict[str, Any]:
         evaluation = provider_evaluation(session)
         from .retrieval import embedding_identity
         corpora = session.scalars(select(CorpusRelease)).all()
-        indexed = [corpus.id for corpus in corpora if corpus.cards and all(session.get(EmbeddingArtifact, embedding_identity(card["content"], settings.openai_embedding_model)[0]) is not None for card in corpus.cards)]
+        corpus_artifacts = {corpus.id: {embedding_identity(card["content"], settings.openai_embedding_model)[0] for card in corpus.cards} for corpus in corpora}
+        requested = {identity for identities in corpus_artifacts.values() for identity in identities}
+        present = set(session.scalars(select(EmbeddingArtifact.id).where(EmbeddingArtifact.id.in_(requested)))) if requested else set()
+        indexed = [corpus.id for corpus in corpora if corpus_artifacts[corpus.id] and corpus_artifacts[corpus.id] <= present]
     reasons = []
     if not user_id:
         reasons.append("NOT_SIGNED_IN")

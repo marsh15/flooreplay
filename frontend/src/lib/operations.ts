@@ -1,5 +1,4 @@
-import { API_BASE } from '@/lib/api'
-import { session } from '@/lib/session'
+import { apiRequest } from '@/lib/api'
 
 export interface OperationsReport {
   events: {
@@ -42,17 +41,6 @@ export interface OperationsReport {
   limitations: string[]
 }
 
-export async function getOperations(query: string): Promise<OperationsReport> {
-  const response = await fetch(`${API_BASE}/operations?q=${encodeURIComponent(query)}`, {
-    headers: session.headers(),
-  })
-  if (!response.ok)
-    throw new Error(
-      response.status === 403
-        ? 'Owner access is required.'
-        : response.status === 401
-          ? 'Sign in as an owner to inspect your operations.'
-          : 'Operational evidence is unavailable. Check host logs and readiness.',
-    )
-  return response.json()
+export function getOperations(query: string, signal?: AbortSignal): Promise<OperationsReport> {
+  return apiRequest(`/operations?q=${encodeURIComponent(query)}`, { signal })
 }

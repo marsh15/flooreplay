@@ -9,7 +9,8 @@ execution endpoints use it; reads stay open.
 from __future__ import annotations
 
 import time
-from collections import defaultdict, deque
+from collections import deque
+from threading import Lock
 
 from fastapi import Request
 
@@ -21,20 +22,34 @@ class SlidingWindowLimiter:
     def __init__(self, max_events: int, window_seconds: float) -> None:
         self.max_events = max_events
         self.window_seconds = window_seconds
-        self._events: dict[str, deque[float]] = defaultdict(deque)
+        if max_events < 1 or window_seconds <= 0:
+            raise ValueError("Rate limits must be positive")
+        self._events: dict[str, deque[float]] = {}
+        self._lock = Lock()
+        self._max_keys = 10_000
+        self._next_cleanup = 0.0
 
     def allow(self, key: str) -> tuple[bool, int]:
         """Return (allowed, retry_after_seconds)."""
-        now = time.monotonic()
-        window = self._events[key]
-        cutoff = now - self.window_seconds
-        while window and window[0] <= cutoff:
-            window.popleft()
-        if len(window) >= self.max_events:
-            retry_after = max(1, int(window[0] + self.window_seconds - now) + 1)
-            return False, retry_after
-        window.append(now)
-        return True, 0
+        with self._lock:
+            now = time.monotonic()
+            cutoff = now - self.window_seconds
+            if now >= self._next_cleanup:
+                self._events = {identity: events for identity, events in self._events.items() if events and events[-1] > cutoff}
+                self._next_cleanup = now + min(60.0, self.window_seconds)
+            window = self._events.get(key)
+            if window is None:
+                if len(self._events) >= self._max_keys:
+                    return False, max(1, int(self._next_cleanup - now) + 1)
+                window = deque()
+                self._events[key] = window
+            while window and window[0] <= cutoff:
+                window.popleft()
+            if len(window) >= self.max_events:
+                retry_after = max(1, int(window[0] + self.window_seconds - now) + 1)
+                return False, retry_after
+            window.append(now)
+            return True, 0
 
 
 def client_key(request: Request) -> str:

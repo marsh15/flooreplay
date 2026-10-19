@@ -1,6 +1,5 @@
 import type { components } from '@/lib/generated-api'
-import { API_BASE, ApiError } from '@/lib/api'
-import { session } from '@/lib/session'
+import { apiRequest } from '@/lib/api'
 
 export interface WorkflowAssignee {
   id: string
@@ -70,52 +69,11 @@ export type RespondCheckRequest = components['schemas']['CheckResponseRequest']
 export type CompleteCheckRequest = components['schemas']['CheckCompleteRequest']
 export type ResolveIncidentRequest = components['schemas']['IncidentResolutionRequest']
 
-async function request<T>(path: string, body?: object): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
+function request<T>(path: string, body?: object): Promise<T> {
+  return apiRequest<T>(path, {
     method: body ? 'POST' : 'GET',
-    headers: { 'Content-Type': 'application/json', ...session.headers() },
     body: body ? JSON.stringify(body) : undefined,
   })
-  if (!response.ok) {
-    let message = `Workflow request failed (${response.status}).`
-    try {
-      const failure: unknown = await response.json()
-      if (
-        typeof failure === 'object' &&
-        failure !== null &&
-        'message' in failure &&
-        typeof failure.message === 'string'
-      )
-        message = failure.message
-      else if (
-        typeof failure === 'object' &&
-        failure !== null &&
-        'detail' in failure &&
-        typeof failure.detail === 'string'
-      )
-        message = failure.detail
-      else if (
-        typeof failure === 'object' &&
-        failure !== null &&
-        'detail' in failure &&
-        Array.isArray(failure.detail)
-      ) {
-        const messages = failure.detail.flatMap((entry: unknown) =>
-          typeof entry === 'object' &&
-          entry !== null &&
-          'msg' in entry &&
-          typeof entry.msg === 'string'
-            ? [entry.msg]
-            : [],
-        )
-        if (messages.length) message = messages.join('; ')
-      }
-    } catch {
-      /* Keep the HTTP error when the server returns no JSON. */
-    }
-    throw new ApiError('WORKFLOW_REQUEST_FAILED', message, response.status)
-  }
-  return response.json()
 }
 const encoded = encodeURIComponent
 export const workflowApi = {

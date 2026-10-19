@@ -17,7 +17,7 @@ from typing import Annotated, Any, Literal
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, StrictBool, StrictInt
+from pydantic import BaseModel, Field, StrictBool, StrictInt, field_validator
 from sqlalchemy import select, text
 
 from .ai_evaluation import review_claim
@@ -36,6 +36,7 @@ from .auth import (
 from .config import settings
 from .db import session_scope
 from .fixtures import CATALOG, CONFIGURATIONS
+from .http_security import HttpSecurityMiddleware, error_response_headers
 from .importing import ImportStructuralError, preview_import
 from .incident_evaluation import evaluation_report
 from .incident_import import inspect_incident_csv, preview_incident_import
@@ -315,23 +316,30 @@ class HybridRequest(BaseModel):
     exclude_id: str | None = None
     idempotency_key: str = Field(min_length=8, max_length=120)
 
+    @field_validator("cutoff")
+    @classmethod
+    def validate_cutoff(cls, value: str) -> str:
+        try:
+            parsed = datetime.fromisoformat(value)
+        except ValueError:
+            raise ValueError("Use an ISO 8601 cutoff with a timezone") from None
+        if parsed.tzinfo is None or parsed.utcoffset() is None:
+            raise ValueError("The cutoff must include a timezone")
+        return value
+
 
 def ai_capabilities(user: Account | None) -> dict[str, Any]:
-    from .paid_models import CorpusRelease, EmbeddingArtifact
-    from .retrieval import embedding_identity
     try:
         result = provider_capabilities(user.id if user else "")
-        with session_scope() as session:
-            corpora = session.scalars(select(CorpusRelease)).all()
-            index_ready = any(row.cards and all(session.get(EmbeddingArtifact, embedding_identity(card["content"], settings.openai_embedding_model)[0]) is not None for card in row.cards) for row in corpora)
         reasons = result.get("reasons", [])
-        return {**result, "generation_available": result["ready"], "reason": reasons[0] if reasons else None, "index_ready": index_ready}
+        return {**result, "generation_available": result["ready"], "reason": reasons[0] if reasons else None}
     except Exception:
         return {"provider": "openai", "model": settings.openai_generation_model, "generation_available": False, "reason": "DATABASE_UNAVAILABLE", "index_ready": False, "evaluation_status": "OPENAI_NOT_EVALUATED"}
 
 
 def create_app(mode: str | None = None) -> FastAPI:
     effective_mode = mode or settings.mode
+    cors_origins = tuple(settings.cors_origins)
     limiter = make_execution_limiter()
 
     @asynccontextmanager
@@ -365,14 +373,15 @@ def create_app(mode: str | None = None) -> FastAPI:
         response.headers["X-Content-Type-Options"] = "nosniff"
         return response
 
-    if settings.cors_origins:
+    if cors_origins:
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=list(settings.cors_origins),
+            allow_origins=list(cors_origins),
             allow_methods=["*"],
             allow_headers=["*"],
             expose_headers=["X-Request-ID"],
         )
+    app.add_middleware(HttpSecurityMiddleware, allowed_origins=cors_origins)
 
     def limit_public_execution(request: Request) -> None:
         if effective_mode == "public":
@@ -412,12 +421,13 @@ def create_app(mode: str | None = None) -> FastAPI:
 
     @app.exception_handler(Exception)
     async def unhandled_error_handler(request: Request, exc: Exception) -> JSONResponse:
+        logger.error("Request %s failed (%s)", getattr(request.state, "request_id", "unrecorded"), type(exc).__name__)
         return JSONResponse(
             status_code=503,
+            headers=error_response_headers(request.scope, cors_origins),
             content=ErrorEnvelope(
                 code="UNAVAILABLE",
                 message="The request could not be completed.",
-                details={"error": type(exc).__name__},
                 trace_id=getattr(request.state, "request_id", str(uuid.uuid4())),
             ).model_dump(),
         )

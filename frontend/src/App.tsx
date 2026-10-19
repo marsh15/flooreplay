@@ -2,6 +2,8 @@ import { lazy, Suspense } from 'react'
 import { Route, Routes, useLocation } from 'react-router'
 
 import { AppShell } from '@/components/AppShell'
+import { useAuth } from '@/components/Auth'
+import { NavigationEffects } from '@/components/NavigationEffects'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { NotFoundPage } from '@/pages/NotFound'
 const IncidentDemoPage = lazy(() =>
@@ -46,9 +48,12 @@ const WorkspacesPage = lazy(() =>
 
 function App() {
   const { pathname } = useLocation()
+  const { user, epoch } = useAuth()
   return (
     <AppShell>
-      <ErrorBoundary key={pathname}>
+      <NavigationEffects />
+      {/* Reset a failed screen on navigation and on every sign-in, sign-out or expiry. */}
+      <ErrorBoundary key={`${user?.id ?? 'public'}:${epoch}:${pathname}`}>
         <Suspense
           fallback={
             <p role="status" className="text-sm text-muted-foreground">

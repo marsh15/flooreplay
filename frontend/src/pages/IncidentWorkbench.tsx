@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { ArrowLeft, FileText } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useParams, useSearchParams } from 'react-router'
+import { Link, useLocation, useParams, useSearchParams } from 'react-router'
 import {
   incidentApi,
   type AnalysisReport,
@@ -293,6 +293,7 @@ const RAIL_TITLES = [
 export function IncidentWorkbenchPage() {
   const { user } = useAuth()
   const { id = '' } = useParams()
+  const { pathname } = useLocation()
   const [params, setParams] = useSearchParams()
   const queryClient = useQueryClient()
   const capabilities = useQuery({
@@ -305,13 +306,19 @@ export function IncidentWorkbenchPage() {
     queryFn: incidentApi.list,
   })
   const summary = library.data?.items.find((item) => item.id === id)
-  const revision = Number(params.get('revision') || summary?.revision || 1)
+  const requestedRevision = params.get('revision')
+  const revision = requestedRevision === null ? (summary?.revision ?? 1) : Number(requestedRevision)
+  // Reject 0, fractions, NaN and padded forms instead of requesting a revision that cannot exist.
+  const validRevision =
+    Number.isSafeInteger(revision) &&
+    revision > 0 &&
+    (requestedRevision === null || /^[1-9]\d*$/.test(requestedRevision))
   const analysisId = params.get('analysis')
   const [evidenceId, setEvidenceId] = useState<string | null>(null)
   const incident = useQuery({
     queryKey: ['incident', id, revision, user?.id ?? 'public'],
     queryFn: () => incidentApi.revision(id, revision),
-    enabled: !!id && (!!params.get('revision') || !!summary || library.isError),
+    enabled: validRevision && !!id && (!!params.get('revision') || !!summary || library.isError),
   })
   const reportQuery = useQuery({
     queryKey: ['incident-analysis', id, revision, analysisId, user?.id ?? 'public'],
@@ -326,7 +333,7 @@ export function IncidentWorkbenchPage() {
     if (
       report &&
       !analysisId &&
-      decodeURIComponent(window.location.pathname) === `/incidents/${id}` &&
+      window.location.pathname === pathname &&
       currentParams.get('revision') === params.get('revision') &&
       currentParams.get('analysis') === analysisId
     ) {
@@ -336,7 +343,7 @@ export function IncidentWorkbenchPage() {
       )
       setParams({ revision: String(revision), analysis: report.id }, { replace: true })
     }
-  }, [report, analysisId, id, revision, params, user?.id, queryClient, setParams])
+  }, [report, analysisId, id, revision, params, pathname, user?.id, queryClient, setParams])
   const evidence = useQuery({
     queryKey: ['incident-evidence', report?.id, evidenceId],
     queryFn: () => incidentApi.evidence(report!.id, evidenceId!),
@@ -348,6 +355,20 @@ export function IncidentWorkbenchPage() {
     setEvidenceId(null)
     setParams({ revision: String(value) })
   }
+
+  if (!validRevision)
+    return (
+      <div role="alert" className="space-y-6">
+        <PageHeader title="Invalid evidence revision">
+          <p className="mt-2 max-w-2xl text-base text-muted-foreground">
+            Choose a positive whole-number revision, or open the latest investigation.
+          </p>
+        </PageHeader>
+        <Button asChild>
+          <Link to={`/incidents/${encodeURIComponent(id)}`}>Open latest investigation</Link>
+        </Button>
+      </div>
+    )
 
   return (
     <div className="investigation-workbench space-y-10">
@@ -731,6 +752,7 @@ export function IncidentWorkbenchPage() {
                   )}
                 </Section>
                 <HybridPanel
+                  key={`hybrid:${report.id}:${user?.id ?? 'public'}`}
                   report={report}
                   enabled={
                     capabilities.data?.ai?.index_ready === true &&

@@ -64,14 +64,15 @@ export function NotesPage() {
   const draftIsCurrent = parse !== null && parsedText === noteText
 
   const parseMutation = useMutation({
-    mutationFn: () => api.parseNote(noteText),
-    onSuccess: (data) => {
+    // Bind the draft to the text that was sent, not to whatever is typed while it runs.
+    mutationFn: (submittedText: string) => api.parseNote(submittedText),
+    onSuccess: (data, submittedText) => {
       setParse(data)
-      setParsedText(noteText)
+      setParsedText(submittedText)
       setConfirmed(null)
       const resolved = data.resolution.operators.find((o) => o.status === 'RESOLVED')
       if (resolved?.resolved_id) setOperatorId(resolved.resolved_id)
-      setSummary(noteText.slice(0, 200))
+      setSummary(submittedText.slice(0, 200))
     },
   })
 
@@ -122,7 +123,7 @@ export function NotesPage() {
             disabled={
               !canAuthor || !noteText.trim() || noteText.length > 2000 || parseMutation.isPending
             }
-            onClick={() => parseMutation.mutate()}
+            onClick={() => parseMutation.mutate(noteText)}
           >
             {parseMutation.isPending ? 'Extracting draft…' : 'Extract draft'}
           </Button>
@@ -135,6 +136,7 @@ export function NotesPage() {
           <Button
             size="sm"
             variant="outline"
+            disabled={parseMutation.isPending}
             onClick={() => {
               setParse(null)
               setSourceKind('manual')

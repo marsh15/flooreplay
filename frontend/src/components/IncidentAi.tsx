@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import {
   incidentApi,
   type AiReviewPublicationRequest,
+  type AiRunRequest,
   type IncidentSearchResult,
   type AiRun,
   type AiTask,
@@ -13,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/Auth'
 import { SemanticRunReview } from '@/components/IncidentSemanticReview'
+import { ApiError } from '@/lib/api'
 
 const selectClass =
   'mt-1.5 h-9 w-full rounded-md border border-input bg-background px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 disabled:opacity-50'
@@ -42,16 +44,12 @@ export function OpenAiPanel({
   const selectedCorpus = corpusId || corpora.data?.items[0]?.id || ''
   const [requestKey, setRequestKey] = useState('')
   const [run, setRun] = useState<AiRun | null>(null)
+  // A failed paid request is retried with its original body and idempotency key, so a
+  // request that actually reached the provider is never started twice.
   const create = useMutation({
-    mutationFn: (key: string) =>
-      incidentApi.createAiRun(report.id, {
-        idempotency_key: key,
-        task,
-        question: question.trim(),
-        retrieval_mode: retrievalMode,
-        ...(retrievalMode !== 'evidence_only' ? { corpus_id: selectedCorpus } : {}),
-      }),
+    mutationFn: (body: AiRunRequest) => incidentApi.createAiRun(report.id, body),
     onSuccess: setRun,
+    retry: false,
   })
   const recover = useMutation({
     mutationFn: () => incidentApi.aiRunByRequest(requestKey),
@@ -64,6 +62,15 @@ export function OpenAiPanel({
     refetchInterval: (query) => (query.state.data?.status === 'RUNNING' ? 2000 : false),
   })
   const current = status.data ?? run
+  // Starting over is safe only when the server definitively refused, or the run has finished.
+  const canStartFresh =
+    create.isError &&
+    ((create.error instanceof ApiError &&
+      create.error.status >= 400 &&
+      create.error.status < 500 &&
+      ![408, 409].includes(create.error.status)) ||
+      (current != null &&
+        ['COMPLETED', 'INVALID', 'UNAVAILABLE', 'INCOMPLETE', 'REFUSED'].includes(current.status)))
   const output = current?.status === 'COMPLETED' ? current.result?.output : undefined
   const claims = [
     ...(output?.claims?.map((claim, index) => ({ claim, path: `claims.${index}` })) ?? []),
@@ -189,18 +196,50 @@ export function OpenAiPanel({
           (retrievalMode !== 'evidence_only' && !selectedCorpus)
         }
         onClick={() => {
-          const key = crypto.randomUUID()
-          setRequestKey(key)
+          const body: AiRunRequest =
+            create.isError && create.variables
+              ? create.variables
+              : {
+                  idempotency_key: crypto.randomUUID(),
+                  task,
+                  question: question.trim(),
+                  retrieval_mode: retrievalMode,
+                  ...(retrievalMode !== 'evidence_only' ? { corpus_id: selectedCorpus } : {}),
+                }
+          setRequestKey(body.idempotency_key)
           setRun(null)
-          create.mutate(key)
+          create.mutate(body)
         }}
       >
         {create.isPending
           ? 'Request in progress…'
           : current?.status === 'RUNNING'
             ? 'Draft running…'
-            : 'Generate draft'}
+            : create.isError
+              ? 'Retry same draft request'
+              : 'Generate draft'}
       </Button>
+      {create.isError && (
+        <div className="space-y-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!canStartFresh}
+            onClick={() => {
+              create.reset()
+              recover.reset()
+              setRun(null)
+              setRequestKey('')
+            }}
+          >
+            Start a new draft
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Retry keeps the original inputs and request identity. Recover an interrupted request
+            before starting a different draft; it may still complete.
+          </p>
+        </div>
+      )}
       <details className="border-t pt-4">
         <summary className="cursor-pointer text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
           Recover an interrupted request
@@ -467,15 +506,18 @@ export function HybridPanel({ report, enabled }: { report: AnalysisReport; enabl
   const corpora = useQuery({ queryKey: ['corpora'], queryFn: incidentApi.corpora, enabled })
   const selected = corpusId || corpora.data?.items[0]?.id || ''
   const search = useMutation({
-    mutationFn: () =>
-      incidentApi.hybridSearch({
-        query,
-        corpus_id: selected,
-        cutoff: report.cutoff,
-        exclude_id: report.incident_id,
-        idempotency_key: crypto.randomUUID(),
-      }),
+    mutationFn: (body: Parameters<typeof incidentApi.hybridSearch>[0]) =>
+      incidentApi.hybridSearch(body),
+    retry: false,
   })
+  // After a failure, an unchanged search reuses its idempotency key instead of paying again.
+  const previous = search.isError ? search.variables : undefined
+  const retrySame =
+    previous !== undefined &&
+    previous.query === query.trim() &&
+    previous.corpus_id === selected &&
+    previous.cutoff === report.cutoff &&
+    previous.exclude_id === report.incident_id
   return (
     <section className="space-y-4 rounded-sm border border-border bg-card p-5">
       <h2 className="text-lg font-bold">Hybrid precedent search</h2>
@@ -503,14 +545,34 @@ export function HybridPanel({ report, enabled }: { report: AnalysisReport; enabl
           </label>
           <label className="block text-sm font-semibold">
             Search evidence
-            <Input value={query} onChange={(event) => setQuery(event.target.value)} />
+            <Input
+              maxLength={200}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
           </label>
           <Button
             size="sm"
             disabled={!selected || !query.trim() || search.isPending}
-            onClick={() => search.mutate()}
+            onClick={() =>
+              search.mutate(
+                retrySame
+                  ? previous
+                  : {
+                      query: query.trim(),
+                      corpus_id: selected,
+                      cutoff: report.cutoff,
+                      exclude_id: report.incident_id,
+                      idempotency_key: crypto.randomUUID(),
+                    },
+              )
+            }
           >
-            {search.isPending ? 'Searching precedents…' : 'Search hybrid precedents'}
+            {search.isPending
+              ? 'Searching precedents…'
+              : retrySame
+                ? 'Retry same hybrid search'
+                : 'Search hybrid precedents'}
           </Button>
         </>
       ) : (
@@ -575,7 +637,8 @@ export function ExportReport({ report, enabled }: { report: AnalysisReport; enab
       link.href = url
       link.download = `${report.incident_id}-revision-${report.revision}.json`
       link.click()
-      URL.revokeObjectURL(url)
+      // Revoking synchronously can cancel the download in some browsers.
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
     },
   })
   return (

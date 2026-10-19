@@ -148,6 +148,7 @@ def scope_new_rows(session: Session, _context: Any, _instances: Any) -> None:
                 incident_id = getattr(row, 'incident_id', None)
                 analysis_id = getattr(row, 'analysis_id', None)
                 run_id = getattr(row, 'run_id', None)
+                replay_id = getattr(row, 'original_replay_id', None)
                 parent: Any = None
                 if incident_id:
                     parent = session.scalar(select(IncidentRevision).where(IncidentRevision.incident_id == incident_id).order_by(IncidentRevision.revision.desc()))
@@ -157,6 +158,11 @@ def scope_new_rows(session: Session, _context: Any, _instances: Any) -> None:
                 elif run_id:
                     from .paid_models import AIRun
                     parent = session.get(AIRun, run_id)
+                elif replay_id:
+                    from .models import ReplayAttempt
+                    parent = session.get(ReplayAttempt, replay_id)
+                if (incident_id or analysis_id or run_id or replay_id) and parent is None:
+                    raise ServiceError('WORKSPACE_UNKNOWN', 'Source workspace not found', 404)
                 row.workspace_id = parent.workspace_id if parent else write_workspace.get() or DEMO
             if row.workspace_id not in identifiers:
                 raise ServiceError('WORKSPACE_UNKNOWN', 'Workspace not found', 404)

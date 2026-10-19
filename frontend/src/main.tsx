@@ -9,17 +9,31 @@ import './index.css'
 
 import App from './App.tsx'
 import { AuthProvider } from '@/components/Auth'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { ApiError } from '@/lib/api'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 15_000,
+      // Retry once for network and server failures; a 4xx answer will not change on retry.
+      retry: (attempt, error) =>
+        attempt < 1 && !(error instanceof ApiError && error.status >= 400 && error.status < 500),
+    },
+    mutations: { retry: false },
+  },
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </AuthProvider>
+      <BrowserRouter>
+        <ErrorBoundary fullPage>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </ErrorBoundary>
+      </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,
 )

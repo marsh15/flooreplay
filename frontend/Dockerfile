@@ -1,8 +1,8 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.30.0 --activate
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
 ARG VITE_API_BASE=/api/v1
 ENV VITE_API_BASE=$VITE_API_BASE

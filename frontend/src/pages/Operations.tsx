@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Limits, PageHeader } from '@/components/board'
 import { getOperations } from '@/lib/operations'
+import { useDebouncedValue } from '@/lib/useDebouncedValue'
 
 export function OperationsPage() {
   const { user } = useAuth()
   const [query, setQuery] = useState('')
+  const settledQuery = useDebouncedValue(query.trim())
   const report = useQuery({
-    queryKey: ['operations', user?.id, query],
-    queryFn: () => getOperations(query),
+    queryKey: ['operations', user?.id, settledQuery],
+    queryFn: ({ signal }) => getOperations(settledQuery, signal),
     enabled: user?.role === 'owner',
     retry: false,
   })
@@ -31,6 +33,7 @@ export function OperationsPage() {
             Search request, incident or operation ID
             <Input
               className="mt-1"
+              maxLength={120}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />

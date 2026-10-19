@@ -11,7 +11,7 @@ import { useSearchParams } from 'react-router'
 import {
   api,
   ApiError,
-  API_BASE,
+  apiDownload,
   CONSTRAINT_NAMES,
   type EvidenceRef,
   type ReplayAttempt,
@@ -162,6 +162,18 @@ export function WorkbenchPage() {
     [sessionAttempts, activeAttemptId],
   )
 
+  // A fetch carries the in-memory session header; a plain download link would not.
+  const exportFile = useMutation({
+    mutationFn: (id: string) => apiDownload(`/replays/${encodeURIComponent(id)}/export`),
+    onSuccess: (blob, id) => {
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `replay-${id}.json`
+      link.click()
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    },
+  })
   const runMutation = useMutation({
     mutationFn: (input: { scenarioId: string; revision: number; configId: string }) =>
       api.runReplay({
@@ -687,13 +699,21 @@ export function WorkbenchPage() {
                           ))}
                         </p>
                       ) : null}
-                      <a
-                        href={`${API_BASE}/replays/${activeAttempt.id}/export`}
-                        className="inline-block underline underline-offset-4 hover:no-underline focus-visible:outline-2"
-                        download
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={exportFile.isPending}
+                        onClick={() => exportFile.mutate(activeAttempt.id)}
                       >
-                        Download portable JSON report
-                      </a>
+                        {exportFile.isPending
+                          ? 'Preparing export…'
+                          : 'Download portable JSON report'}
+                      </Button>
+                      {exportFile.error && (
+                        <p role="alert" className="text-danger-foreground">
+                          {exportFile.error.message}
+                        </p>
+                      )}
                     </div>
                   </Section>
 
