@@ -277,3 +277,39 @@ def test_cumulative_file_that_derives_nothing_is_blocked():
     lone = preview_incident_import(_readings(("c0", "09:16:00", "09:00:00", "09:15:00", 340)), **META, **CUMULATIVE)
     assert lone["status"] == "BLOCKED" and lone["issues"][0]["code"] == "NO_DERIVED_DELTA"
     assert lone["cumulative_readings"][0]["disposition"] == "ANCHOR"
+
+
+SCOPE_PINNED = {"factory": "Synthetic A", "line_id": "S4", "order_id": "ORD-1", "style_id": "ST-42", "stage": "sewing", "unit": "good_units"}
+
+
+def test_reviewed_aliases_reconcile_identifiers_and_keep_the_original():
+    raw = _production().replace(b",S4,", b",Line 4,")
+    aliases = {"line_id": {"Line 4": "S4"}}
+    preview = preview_incident_import(raw, **META, scope=SCOPE_PINNED, identifier_aliases=aliases)
+    assert preview["status"] == "READY"
+    bucket = preview["output_buckets"][0]
+    assert bucket["line_id"] == "S4" and bucket["original_identity"] == {"line_id": "Line 4"}
+    assert bucket["alias_map_version"] == preview["alias_map_version"] and preview["alias_map_version"].startswith("sha256:")
+    # Rows already using the incident identifier are untouched.
+    plain = preview_incident_import(_production(), **META, scope=SCOPE_PINNED, identifier_aliases=aliases)
+    assert "original_identity" not in plain["output_buckets"][0]
+    assert plain["preview_digest"] != preview_incident_import(_production(), **META, scope=SCOPE_PINNED)["preview_digest"]
+
+
+def test_unmatched_identifiers_stop_for_review_instead_of_guessing():
+    raw = _production().replace(b",S4,", b",Line-4,")
+    preview = preview_incident_import(raw, **META, scope=SCOPE_PINNED, identifier_aliases={"line_id": {"Line 4": "S4"}})
+    assert preview["status"] == "BLOCKED" and "neither this incident's line_id nor a reviewed alias" in preview["issues"][0]["message"]
+
+
+@pytest.mark.parametrize("aliases,message", [
+    ({"stage": {"Sew": "sewing"}}, "apply only"),
+    ({"line_id": {}}, "at least one"),
+    ({"line_id": {"S4": "S4"}}, "maps to itself"),
+    ({"line_id": {"Line 4": "S4", "S4": "Line 4"}}, "both an alias and a target"),
+    ({"line_id": {"Line 4": "S9"}}, "not this incident's line_id"),
+    ({"line_id": {" ": "S4"}}, "1–120"),
+])
+def test_ambiguous_or_foreign_alias_maps_are_rejected(aliases, message):
+    with pytest.raises(ValueError, match=message):
+        preview_incident_import(_production(), **META, scope=SCOPE_PINNED, identifier_aliases=aliases)

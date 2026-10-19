@@ -46,6 +46,8 @@ def preview_identity(preview: dict[str, Any]) -> str:
         fields += ("column_mapping", "field_defaults")
     if "cumulative_readings" in preview:
         fields += ("cumulative_readings",)
+    if "identifier_aliases" in preview:
+        fields += ("identifier_aliases", "alias_map_version")
     encoded = json.dumps({field: preview.get(field) for field in fields}, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
@@ -289,6 +291,36 @@ def _normalize(row: dict[str, Any], profile: str, source_system: str, timezone: 
 
 
 _SCOPE_FIELDS = ("factory", "line_id", "order_id", "style_id", "stage")
+ALIAS_FIELDS = ("factory", "line_id", "order_id", "style_id")
+
+
+def _alias_map(aliases: dict[str, dict[str, str]], scope: dict[str, str] | None) -> tuple[dict[str, dict[str, str]], str]:
+    """Validate a reviewed alias map and return it with its content version.
+
+    Each source value maps straight to this incident's identifier. Chains, blank
+    values and targets other than the incident's own identity are rejected, so no
+    record is ever matched by inference.
+    """
+    if set(aliases) - set(ALIAS_FIELDS):
+        raise ValueError("Aliases apply only to factory, line_id, order_id and style_id")
+    cleaned: dict[str, dict[str, str]] = {}
+    for field, pairs in aliases.items():
+        if not isinstance(pairs, dict) or not pairs:
+            raise ValueError(f"Aliases for {field} must map at least one source value")
+        targets = {str(target).strip() for target in pairs.values()}
+        for source, target in pairs.items():
+            source, target = str(source).strip(), str(target).strip()
+            if not source or not target or len(source) > 120 or len(target) > 120:
+                raise ValueError("Alias values must contain 1–120 characters")
+            if source == target:
+                raise ValueError(f"Alias {source} maps to itself")
+            if source in targets:
+                raise ValueError(f"{source} is both an alias and a target for {field}; map each source value directly to the incident identifier")
+            if scope is not None and scope.get(field) is not None and target != scope[field]:
+                raise ValueError(f"Alias target {target} is not this incident's {field} ({scope[field]})")
+            cleaned.setdefault(field, {})[source] = target
+    encoded = json.dumps(cleaned, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return cleaned, "sha256:" + hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def _convert_cumulative(readings: list[tuple[int, dict[str, Any]]], deltas: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
@@ -339,6 +371,7 @@ def preview_incident_import(
     raw: bytes, *, profile: str, source_system: str, timezone: str,
     filename: str, unit: str | None = None, scope: dict[str, str] | None = None,
     column_mapping: dict[str, str] | None = None, field_defaults: dict[str, str] | None = None,
+    identifier_aliases: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     """Return diagnostics and normalized records; any issue blocks publication."""
     if profile not in PROFILES or not source_system.strip() or not timezone.strip():
@@ -357,6 +390,7 @@ def preview_incident_import(
         raise ValueError(f"File cannot be decoded: {type(exc).__name__}") from exc
     if not rows:
         raise ValueError("File has no records")
+    aliases, alias_version = _alias_map(identifier_aliases, scope) if identifier_aliases is not None else ({}, None)
     normalized: dict[str, list[dict[str, Any]]] = {"plan_buckets": [], "output_buckets": [], "events": []}
     readings: list[tuple[int, dict[str, Any]]] = []
     issues: list[dict[str, Any]] = []
@@ -364,7 +398,20 @@ def preview_incident_import(
     seen_buckets: set[tuple[str, str, str, str, str, str, str, str]] = set()
     for number, row in enumerate(rows, start=1):
         try:
+            original: dict[str, str] = {}
+            for field, pairs in aliases.items():
+                cell = str(row.get(field) or "").strip()
+                if cell in pairs:
+                    original[field] = cell
+                    row = {**row, field: pairs[cell]}
             section, value = _normalize(row, profile, source_system, zone, unit)
+            if original:
+                value["original_identity"] = original
+                value["alias_map_version"] = alias_version
+            if aliases and scope:
+                for field in aliases:
+                    if value.get(field) is not None and scope.get(field) is not None and value[field] != scope[field]:
+                        raise ValueError(f"{field} {value[field]} is neither this incident's {field} nor a reviewed alias; add an alias or fix the source")
             if value["id"] in seen:
                 raise ValueError("Duplicate record id")
             if section in {"plan_buckets", "output_buckets", "cumulative_readings"}:
@@ -385,7 +432,7 @@ def preview_incident_import(
         normalized["output_buckets"].extend(derived)
         issues.extend(conversion_issues)
         issues.sort(key=lambda issue: issue["row"])
-    preview = {
+    preview: dict[str, Any] = {
         "requested_unit": unit, "scope": scope, "interpretation_version": "incident-import-v2",
         "status": "READY" if not issues else "BLOCKED", "profile": profile,
         "source_system": source_system, "timezone": timezone, "filename": filename,
@@ -396,6 +443,8 @@ def preview_incident_import(
         preview.update(column_mapping=column_mapping, field_defaults=field_defaults, interpretation_version="incident-import-v3")
     if conversions is not None:
         preview.update(cumulative_readings=conversions, interpretation_version="incident-import-v4")
+    if identifier_aliases is not None:
+        preview.update(identifier_aliases=aliases, alias_map_version=alias_version)
     preview["preview_digest"] = preview_identity(preview)
     return preview
 

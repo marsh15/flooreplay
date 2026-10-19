@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from .domain.hashing import digest, incident_digest
 from .incident_engine import analyze_incident, incident_evidence_card
-from .incident_import import preview_incident_import, publish_incident_import
+from .incident_import import _alias_map, preview_incident_import, publish_incident_import
 from .models import IncidentAnalysis, IncidentReview, IncidentRevision, IncidentSourceArtifact
 from .service import ServiceError
 
@@ -287,7 +287,7 @@ def publish_source(
     raw_text: str, profile: str, source_system: str, timezone: str,
     filename: str, unit: str | None, idempotency_key: str, preview_digest: str,
     column_mapping: dict[str, str] | None = None, field_defaults: dict[str, str] | None = None,
-    workspace_id: str | None = None,
+    workspace_id: str | None = None, identifier_aliases: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     idempotency_key = _private_identity(workspace_id, idempotency_key, "import")
     try:
@@ -307,6 +307,7 @@ def publish_source(
             or existing.preview.get("requested_unit") != unit
             or existing.preview.get("column_mapping") != column_mapping
             or existing.preview.get("field_defaults") != field_defaults
+            or existing.preview.get("identifier_aliases") != (_alias_map(identifier_aliases, None)[0] if identifier_aliases is not None else None)
             or prior.cutoff != new_cutoff
         ):
             raise ServiceError("IDEMPOTENCY_CONFLICT", "Key already used for another import", 409)
@@ -315,7 +316,7 @@ def publish_source(
     if workspace_id is not None and (base.workspace_id == "public-demo" or base.workspace_id != workspace_id):
         raise ServiceError("PRIVATE_IMPORT_REQUIRED", "Import into an existing private workspace incident; public synthetic examples cannot receive factory records", 422)
     try:
-        preview = preview_incident_import(raw_text.encode("utf-8"), scope=base.payload["scope"], profile=profile, source_system=source_system, timezone=timezone, filename=filename, unit=unit, column_mapping=column_mapping, field_defaults=field_defaults)
+        preview = preview_incident_import(raw_text.encode("utf-8"), scope=base.payload["scope"], profile=profile, source_system=source_system, timezone=timezone, filename=filename, unit=unit, column_mapping=column_mapping, field_defaults=field_defaults, identifier_aliases=identifier_aliases)
     except ValueError as exc:
         raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
     if preview["preview_digest"] != preview_digest:
@@ -377,7 +378,7 @@ def create_incident_from_source(
     window: dict[str, str], cutoff: str, raw_text: str, source_system: str,
     timezone: str, filename: str, preview_digest: str, idempotency_key: str,
     column_mapping: dict[str, str] | None = None, field_defaults: dict[str, str] | None = None,
-    workspace_id: str | None = None,
+    workspace_id: str | None = None, identifier_aliases: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     external_id = incident_id
     incident_id = _private_identity(workspace_id, incident_id, "incident")
@@ -393,6 +394,7 @@ def create_incident_from_source(
             or existing.filename != filename or existing.preview.get("timezone") != timezone
             or existing.preview.get("column_mapping") != column_mapping
             or existing.preview.get("field_defaults") != field_defaults
+            or existing.preview.get("identifier_aliases") != (_alias_map(identifier_aliases, None)[0] if identifier_aliases is not None else None)
             or row.title != title or row.payload["scope"] != scope
             or row.payload["window"] != window or row.payload["cutoff"] != cutoff
         ):
@@ -413,7 +415,7 @@ def create_incident_from_source(
     if any(value.tzinfo is None for value in (start, end, cutoff_at)) or not start < end or cutoff_at < start:
         raise ServiceError("INVALID_WINDOW", "Window and cutoff are invalid", 422)
     try:
-        preview = preview_incident_import(raw_text.encode("utf-8"), profile="production-v1", source_system=source_system, timezone=timezone, filename=filename, unit="good_units", scope=scope, column_mapping=column_mapping, field_defaults=field_defaults)
+        preview = preview_incident_import(raw_text.encode("utf-8"), profile="production-v1", source_system=source_system, timezone=timezone, filename=filename, unit="good_units", scope=scope, column_mapping=column_mapping, field_defaults=field_defaults, identifier_aliases=identifier_aliases)
     except ValueError as exc:
         raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
     if preview["preview_digest"] != preview_digest:

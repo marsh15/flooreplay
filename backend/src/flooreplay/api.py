@@ -192,6 +192,7 @@ class IncidentImportRequest(BaseModel):
     unit: str | None = None
     column_mapping: dict[str, str] | None = None
     field_defaults: dict[str, str] | None = None
+    identifier_aliases: dict[str, dict[str, str]] | None = None
 
 
 class IncidentCsvInspectRequest(BaseModel):
@@ -211,6 +212,7 @@ class IncidentCreateRequest(BaseModel):
     title: str = Field(min_length=3, max_length=200)
     column_mapping: dict[str, str] | None = None
     field_defaults: dict[str, str] | None = None
+    identifier_aliases: dict[str, dict[str, str]] | None = None
     scope: dict[str, str]
     window: dict[str, str]
     cutoff: str
@@ -638,7 +640,7 @@ def create_app(mode: str | None = None) -> FastAPI:
             if body.scope is not None and body.scope != scope:
                 raise ServiceError("SCOPE_MISMATCH", "Use the scope pinned to this incident revision", 422)
         try:
-            return preview_incident_import(body.raw_text.encode("utf-8"), profile=body.profile, source_system=body.source_system, timezone=body.timezone, filename=body.filename, unit=body.unit, scope=scope, column_mapping=body.column_mapping, field_defaults=body.field_defaults)
+            return preview_incident_import(body.raw_text.encode("utf-8"), profile=body.profile, source_system=body.source_system, timezone=body.timezone, filename=body.filename, unit=body.unit, scope=scope, column_mapping=body.column_mapping, field_defaults=body.field_defaults, identifier_aliases=body.identifier_aliases)
         except ValueError as exc:
             raise ServiceError("INVALID_IMPORT", str(exc), 422) from exc
 
