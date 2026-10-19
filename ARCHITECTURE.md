@@ -41,9 +41,15 @@ The browser keeps its token in memory. Authentication changes clear cached queri
 
 `incident_import.py` validates source rows and binds the preview identity to the original bytes, interpretation, scope and normalized records. Publication retains that identity and the raw source artifact.
 
-CSV imports require an explicit mapping from canonical fields to source columns, with optional constant defaults. A mapping cannot reuse a source column, name an unknown field or assign both a column and a default to the same field. The production, operation and note profiles normalize the selected values. Canonical JSON and JSONL use their existing import path. CSV mapping does not convert cumulative totals or accept XLSX. The mapping pass was verified locally on October 1, 2026; see [CSV import mapping](docs/csv-import-mapping.md).
+CSV imports require an explicit mapping from canonical fields to source columns, with optional constant defaults. A mapping cannot reuse a source column, name an unknown field or assign both a column and a default to the same field. The production, operation and note profiles normalize the selected values. Canonical JSON and JSONL use their existing import path. XLSX is not accepted. The mapping pass was verified locally on October 1, 2026; see [CSV import mapping](docs/csv-import-mapping.md).
 
-`incident_engine.py` validates correction relationships before selecting cutoff-visible records. It combines explicit line-block intervals and calculates output from complete 15-minute final-good buckets. Typed evidence links and contradictions determine hypothesis support. Metric descriptors preserve units, formulas, intervals and source references.
+Production rows with count_mode `cumulative` carry counter readings. Only a reading that starts where the previous reading ended, with a counter that did not fall, yields a delta, and that delta becomes available when the later of its two readings does. A first reading, a gap or a reset anchors without inventing output, so its interval stays uncounted. Every reading's disposition is part of the preview identity and stays with the stored source artifact.
+
+An optional reviewed alias map reconciles source identifiers for factory, line, order and style. Each source value maps directly to the incident's own identifier; chains and foreign targets are rejected, and an unmatched identifier blocks the preview. Remapped records keep `original_identity` and the alias map version.
+
+`incident_engine.py` validates correction relationships before selecting cutoff-visible records. It combines explicit line-block intervals and calculates output from complete 15-minute final-good buckets. Typed evidence links and contradictions determine hypothesis support. Metric descriptors preserve units, formulas, intervals and source references. When the cutoff knows `planned_break` or `planned_downtime` records, the remaining-target rate uses working minutes and names those records; reports without them keep elapsed wall-clock time and their existing shape.
+
+`source_health.py` reports, as known at the cutoff, whether each due planned interval has an output record, is still awaited, was skipped by a feed that reported later intervals, or has conflicting records. It is served separately from the analysis, so saved reports do not change.
 
 `incident_service.py` pins incident and corpus identities before saving a report. Proposal review uses revision and idempotency locks and records the authenticated account ID supplied by the API. A measured shortfall does not establish its cause.
 
@@ -102,7 +108,7 @@ See [deployment](DEPLOY_VERCEL.md), [monitoring](docs/operations-monitoring.md),
 | Responsibility | Authoritative files |
 | --- | --- |
 | HTTP, authentication and workspace access | [API](backend/src/flooreplay/api.py), [authentication](backend/src/flooreplay/auth.py), [workspaces](backend/src/flooreplay/workspaces.py) |
-| Evidence and calculation | [imports](backend/src/flooreplay/incident_import.py), [engine](backend/src/flooreplay/incident_engine.py), [persistence](backend/src/flooreplay/incident_service.py) |
+| Evidence and calculation | [imports](backend/src/flooreplay/incident_import.py), [engine](backend/src/flooreplay/incident_engine.py), [source health](backend/src/flooreplay/source_health.py), [persistence](backend/src/flooreplay/incident_service.py) |
 | Follow-up checks and resolution | [workflow](backend/src/flooreplay/incident_workflow.py) |
 | Paid execution and retrieval | [AI runs](backend/src/flooreplay/ai_runs.py), [spending](backend/src/flooreplay/spending.py), [provider](backend/src/flooreplay/openai_provider.py), [retrieval](backend/src/flooreplay/retrieval.py) |
 | Exact-output review and evaluation | [semantic review](backend/src/flooreplay/semantic_review.py), [evaluation](backend/src/flooreplay/trust_evaluation.py), [live evaluation](backend/src/flooreplay/trust_live.py) |

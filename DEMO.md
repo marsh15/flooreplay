@@ -49,7 +49,7 @@ Mark the incident resolved only as a separate decision with a rationale, after a
 
 Sign in as owner and download the synthetic baseline example from incident imports. Create a new incident with its matching scope and observation window, preview the rows and publish only a READY preview. Import the output example and then its correction against the latest revision. Show the preserved original source, replacement relationship and changed metric.
 
-For an unfamiliar CSV, select explicit source columns or deliberate constant defaults. Inspect normalized dates and units, then preview again after any interpretation change. Explain why cumulative totals and unreviewed scope assumptions cannot become final-good deltas. Follow the [example sequence](frontend/public/import-examples/README.md) and [mapping guide](docs/csv-import-mapping.md).
+For an unfamiliar CSV, select explicit source columns or deliberate constant defaults. Inspect normalized dates and units, then preview again after any interpretation change. Explain why a counter reading only becomes a delta when the reading before it ends where its interval starts, and why an unreviewed identifier blocks the preview instead of being matched by similarity. Follow the [example sequence](frontend/public/import-examples/README.md) and [mapping guide](docs/csv-import-mapping.md).
 
 ## AI support review
 

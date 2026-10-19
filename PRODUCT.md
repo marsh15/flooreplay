@@ -35,7 +35,7 @@ Avoid confidence percentages without a defensible measurement, unsupported causa
 
 The [incident workflow](docs/incident-workflow.md) defines task states, assignment permissions, immutable evidence responses and outcome limitations. Task metadata requires authentication, but source responses become evidence in public synthetic demo reports. Private workspace membership now scopes evidence and task access. Public-demo source responses remain visible in synthetic reports; real deployment confidentiality still requires current acceptance evidence.
 
-Synthetic downloadable CSV examples, explicit source-column mappings and defaults were verified locally on October 1, 2026. Users preview dates, units and scope before publication. Cumulative totals, XLSX and saved mapping presets remain follow-up work.
+Synthetic downloadable CSV examples, explicit source-column mappings and defaults were verified locally on October 1, 2026. Users preview dates, units and scope before publication. Cumulative counter readings convert to interval deltas with every reading's outcome shown, and a reviewed alias map reconciles differently named lines, orders, styles and factories. XLSX and saved mapping presets remain follow-up work.
 
 Reviewers can inspect a deliberately shared AI draft beside its pinned citations, annotate support and assess omissions, abstention and usefulness. Exact output identities and disagreements remain in the report. Qualifications and independence are declarations, not verified expertise. The grounding contract and comparison harness do not establish that AI improves factory decisions; independent human review and live same-case measurements remain pending. See [AI trust evaluation](docs/ai-trust-evaluation.md).
 
