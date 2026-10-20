@@ -97,6 +97,35 @@ The checks make no paid calls. They verify database readiness, JSON API response
 
 Then open the deployed app and check: sign in as owner; investigate a seeded incident; inspect citations; submit and review a proposal using the reviewer account; download its report; refresh a deep link; sign out. If you choose to run a paid generation, inspect the usage panel first, use one request identity, and confirm its receipt and ledger entry. Retry by that identity after a network interruption.
 
+### Record authenticated and restart acceptance
+
+`scripts/hosted_acceptance.py` records a dated JSON receipt tied to the deployed commit. It always runs the public checks. With owner and reviewer credentials and a private workspace, it also checks:
+
+- the owner and reviewer roles
+- private workspace membership
+- that a reviewer cannot import
+- a private synthetic import, append, analysis and export
+- that anonymous and non-member access to that incident is hidden
+- source health
+- that a token stops working after sign-out
+
+Create a private workspace as the owner in the app first, and copy its ID. Then export the four credential variables in your own terminal. They are read from the environment and never written to the report.
+
+```sh
+export FLOORREPLAY_ACCEPTANCE_OWNER=... FLOORREPLAY_ACCEPTANCE_OWNER_PASSWORD=...
+export FLOORREPLAY_ACCEPTANCE_REVIEWER=... FLOORREPLAY_ACCEPTANCE_REVIEWER_PASSWORD=...
+python3 scripts/hosted_acceptance.py \
+  --api https://YOUR-API.onrender.com/api/v1 \
+  --frontend https://YOUR-PROJECT.vercel.app \
+  --expected-build "$(git rev-parse HEAD)" \
+  --workspace YOUR-PRIVATE-WORKSPACE-ID \
+  --output docs/evidence/hosted-authenticated-$(date +%F).json
+```
+
+Restart the Render service. When `/api/v1/health/ready` returns 200 again, rerun with `--verify-persisted` pointing at that report and a new `--output`. Only the owner variables are needed for this step. The run confirms that the private revision's content digest and its analysis read back unchanged.
+
+The authenticated run creates one synthetic incident with two revisions in the named workspace. It makes no paid calls and uses three of the ten sign-ins each client is allowed per 15 minutes. Rendered browser behaviour still needs the manual checks above.
+
 The application stores all live data in Neon. Restart Render and confirm reports, reviews, embeddings and spending persist. Take and verify a database backup before using real incident data. Hosted browser checks and restart evidence can only be recorded after you create the hosting services.
 
 ## References
