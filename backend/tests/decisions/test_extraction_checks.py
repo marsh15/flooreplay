@@ -233,9 +233,7 @@ def test_span_exact_pass_and_fail():
     s = span_of(GOOD_NOTE, "L-1042")
     wrong_text = FieldValue(value="L-1042", span=Span(start=s.start, end=s.end, text="L-1043"))
     assert not check_span_exact("lot_id", GOOD_NOTE, wrong_text).passed
-    shifted = FieldValue(
-        value="L-1042", span=Span(start=s.start + 1, end=s.end + 1, text="L-1042")
-    )
+    shifted = FieldValue(value="L-1042", span=Span(start=s.start + 1, end=s.end + 1, text="L-1042"))
     assert not check_span_exact("lot_id", GOOD_NOTE, shifted).passed
 
 

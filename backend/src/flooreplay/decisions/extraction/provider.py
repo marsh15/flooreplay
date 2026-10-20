@@ -30,8 +30,9 @@ class GenerationProvider(Protocol):
     name: str
     model: str
 
-    def extract(self, note: str, *, prompt_version: str, schema: dict[str, Any]) -> ProviderResult:
-        ...
+    def extract(
+        self, note: str, *, prompt_version: str, schema: dict[str, Any]
+    ) -> ProviderResult: ...
 
 
 class ProviderCalledError(RuntimeError):

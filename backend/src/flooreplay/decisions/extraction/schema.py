@@ -71,7 +71,9 @@ class FieldValue(_Strict):
 
 class NoteSignal(_Strict):
     lot_id: FieldValue
-    issue: FieldValue  # value: one of ISSUES (enforced by the checks, constrained in the JSON schema)
+    issue: (
+        FieldValue  # value: one of ISSUES (enforced by the checks, constrained in the JSON schema)
+    )
     qty: FieldValue  # numeric text, e.g. "1200" or "1200.5"
     unit: FieldValue  # one of UNITS
     colour: FieldValue

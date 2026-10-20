@@ -132,7 +132,9 @@ def check_lot_regex(field: str, fv: FieldValue) -> CheckResult:
         return _missing(field, check)
     # fullmatch: `$` would otherwise accept a trailing newline.
     ok = _LOT_RE.fullmatch(fv.value) is not None
-    return _res(field, check, ok, "matches lot pattern" if ok else f"does not match {LOT_ID_PATTERN}")
+    return _res(
+        field, check, ok, "matches lot pattern" if ok else f"does not match {LOT_ID_PATTERN}"
+    )
 
 
 def check_issue_enum_and_lexicon(field: str, note: str, fv: FieldValue) -> CheckResult:
