@@ -9,8 +9,8 @@ from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from .config import settings
+from .errors import ServiceError
 from .paid_models import SpendEntry, SpendingAllocation, now
-from .service import ServiceError
 
 PRICE_TABLE = {"version": "openai-2026-09-30", "effective_date": "2026-09-30", "generation_input_usd_per_million": 0.40, "generation_output_usd_per_million": 1.60, "embedding_usd_per_million": 0.02}
 ALLOCATIONS = {"development": 100.0, "evaluation": 200.0, "reviewer": 100.0, "buffer": 100.0}

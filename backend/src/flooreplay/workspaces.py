@@ -12,8 +12,8 @@ from sqlalchemy.orm import Mapped, Session, mapped_column, with_loader_criteria
 
 from .auth import Account, current_user
 from .db import session_scope
+from .errors import ServiceError
 from .models import Base, IncidentRevision
-from .service import ServiceError
 
 DEMO = 'public-demo'
 # None is reserved for offline administrative sessions. HTTP always establishes a scope.

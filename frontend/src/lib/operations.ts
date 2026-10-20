@@ -1,4 +1,4 @@
-import { apiRequest } from '@/lib/api'
+import { apiRequest } from '@/lib/http'
 
 export interface OperationsReport {
   events: {

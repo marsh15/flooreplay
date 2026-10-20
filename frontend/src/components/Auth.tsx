@@ -1,7 +1,7 @@
 import type { components } from '@/lib/generated-api'
 import { Fragment, createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { apiRequest, ApiError } from '@/lib/api'
+import { apiRequest, ApiError } from '@/lib/http'
 import { session } from '@/lib/session'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

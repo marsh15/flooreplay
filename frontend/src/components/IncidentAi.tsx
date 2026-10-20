@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/Auth'
 import { SemanticRunReview } from '@/components/IncidentSemanticReview'
-import { ApiError } from '@/lib/api'
+import { ApiError } from '@/lib/http'
 
 const selectClass =
   'mt-1.5 h-9 w-full rounded-md border border-input bg-background px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 disabled:opacity-50'

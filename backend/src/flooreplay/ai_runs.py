@@ -21,11 +21,11 @@ from . import openai_provider
 from .config import settings
 from .db import session_scope
 from .domain.hashing import digest
+from .errors import ServiceError
 from .incident_ai import TASK_SCHEMAS, validate_output
 from .incident_jobs import _packet
 from .models import IncidentAnalysis
 from .paid_models import AIRun, CorpusRelease, EmbeddingArtifact, SpendEntry, now
-from .service import ServiceError
 from .spending import cost, lock, reserve, settle, usage_view
 
 

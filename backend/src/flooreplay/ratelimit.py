@@ -15,7 +15,7 @@ from threading import Lock
 from fastapi import Request
 
 from .config import settings
-from .service import ServiceError
+from .errors import ServiceError
 
 
 class SlidingWindowLimiter:

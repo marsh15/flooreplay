@@ -14,9 +14,9 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from .auth import Account, user_view
 from .domain.hashing import digest, incident_digest
+from .errors import ServiceError
 from .incident_engine import analyze_incident, incident_evidence_card
 from .models import Base, IncidentAnalysis, IncidentRevision, IncidentSourceArtifact
-from .service import ServiceError
 
 
 class IncidentCheck(Base):

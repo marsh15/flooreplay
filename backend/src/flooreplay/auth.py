@@ -15,8 +15,8 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, select
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import session_scope
+from .errors import ServiceError
 from .models import Base
-from .service import ServiceError
 
 hasher = PasswordHasher()
 # Make unknown-account verification take the same expensive path.

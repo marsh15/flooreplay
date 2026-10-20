@@ -13,6 +13,7 @@ from flooreplay import ai_runs, openai_provider
 from flooreplay.ai_evaluation import AIClaimReview
 from flooreplay.config import settings
 from flooreplay.db import session_scope
+from flooreplay.errors import ServiceError
 from flooreplay.incident_service import create_analysis
 from flooreplay.models import IncidentRevision
 from flooreplay.paid_models import (
@@ -25,7 +26,6 @@ from flooreplay.paid_models import (
 )
 from flooreplay.retrieval import embedding_identity, hybrid_search, index_corpus, publish_corpus
 from flooreplay.semantic_review import AIReviewPublication, AIRunAssessment
-from flooreplay.service import ServiceError
 from flooreplay.spending import cost, move_allowance, reserve, usage_view
 
 

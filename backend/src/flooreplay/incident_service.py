@@ -10,10 +10,10 @@ from sqlalchemy import func, or_, select, tuple_
 from sqlalchemy.orm import Session
 
 from .domain.hashing import digest, incident_digest
+from .errors import ServiceError
 from .incident_engine import analyze_incident, incident_evidence_card
 from .incident_import import _alias_map, preview_incident_import, publish_incident_import
 from .models import IncidentAnalysis, IncidentReview, IncidentRevision, IncidentSourceArtifact
-from .service import ServiceError
 
 
 def _revision(session: Session, incident_id: str, revision: int) -> IncidentRevision:

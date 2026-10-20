@@ -30,6 +30,7 @@ from .domain.types import (
     Snapshot,
     UnavailabilityEvent,
 )
+from .errors import ServiceError as ServiceError  # re-exported for legacy importers
 from .importing import ImportPreview, build_snapshot
 from .models import (
     CatalogRevision,
@@ -43,17 +44,6 @@ from .models import (
     SourceSnapshot,
     SuiteRevision,
 )
-
-
-class ServiceError(Exception):
-    def __init__(
-        self, code: str, message: str, http_status: int = 400, retry_after: int | None = None
-    ) -> None:
-        super().__init__(message)
-        self.code = code
-        self.message = message
-        self.http_status = http_status
-        self.retry_after = retry_after
 
 
 def _load_context(session: Session, scenario: ScenarioRevision) -> ReplayRequestContext:

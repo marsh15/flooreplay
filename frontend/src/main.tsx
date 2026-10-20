@@ -10,7 +10,7 @@ import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from '@/components/Auth'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { ApiError } from '@/lib/api'
+import { ApiError } from '@/lib/http'
 
 const queryClient = new QueryClient({
   defaultOptions: {

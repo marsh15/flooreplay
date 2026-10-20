@@ -35,6 +35,7 @@ from .auth import (
 )
 from .config import settings
 from .db import session_scope
+from .errors import ServiceError
 from .fixtures import CATALOG, CONFIGURATIONS
 from .http_security import HttpSecurityMiddleware, error_response_headers
 from .importing import ImportStructuralError, preview_import
@@ -83,7 +84,6 @@ from .retrieval import hybrid_search
 from .semantic_review import assess_run, publish_review, review_packet, review_report
 from .semantic_review import queue as review_queue
 from .service import (
-    ServiceError,
     confirm_event_and_fork,
     execute_replay,
     fork_scenario,
