@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import unicodedata
 from datetime import UTC, datetime, timedelta, timezone
-from decimal import Decimal
+from decimal import Decimal, Inexact, localcontext
 
 import pytest
 from hypothesis import given
@@ -110,7 +111,7 @@ def test_tamil_nfd_and_nfc_digest_identically():
 def test_quantity_normalises_to_three_places():
     assert Quantity(value="1.5", unit=Unit.KG).value == Decimal("1.500")
     assert str(Quantity(value=2, unit=Unit.PCS).value) == "2.000"
-    assert Quantity(value=Decimal("1.2345"), unit=Unit.M).value == Decimal("1.234")
+    assert Quantity(value=Decimal("1.2340"), unit=Unit.M).value == Decimal("1.234")
 
 
 def test_quantity_rejects_float():
@@ -283,7 +284,12 @@ def test_generated_facts_are_valid(fact):
 
 
 @given(
-    st.dictionaries(st.text(max_size=6), st.integers(), min_size=1, max_size=8),
+    st.dictionaries(
+        st.text(max_size=6).filter(lambda k: unicodedata.is_normalized("NFC", k)),
+        st.integers(),
+        min_size=1,
+        max_size=8,
+    ),
     st.randoms(use_true_random=False),
 )
 def test_decision_digest_is_stable_under_key_reordering(mapping, rnd):
@@ -362,4 +368,195 @@ def test_v1_incident_digest_is_pinned():
     assert (
         incident_digest(sample)
         == "sha256:c5ca8d313b4b3487432fda0ed777572c142f4df9851247c986e7742d68febfec"
+    )
+
+
+# --- Review fixes: context-free canonical text -----------------------------
+
+
+@pytest.mark.parametrize(
+    ("raw", "text"),
+    [
+        ("1.00000000000000000000000000001", "1.00000000000000000000000000001"),
+        ("10000000000000000000000000000000000000001", "10000000000000000000000000000000000000001"),
+        ("-1.50", "-1.5"),
+        ("1E+2", "100"),
+        ("1E-30", "0." + "0" * 29 + "1"),
+        ("123456.789", "123456.789"),
+        ("-0.00", "0"),
+    ],
+)
+def test_decimal_text_ignores_the_ambient_context(raw, text):
+    assert canonical(Decimal(raw)) == text
+    with localcontext() as ctx:
+        ctx.prec = 5
+        assert canonical(Decimal(raw)) == text
+    with localcontext() as ctx:
+        ctx.traps[Inexact] = True
+        assert canonical(Decimal(raw)) == text
+
+
+# --- Review fixes: one JSON-stable rule ------------------------------------
+
+
+def test_fact_payload_is_canonicalised_at_construction():
+    fact = _fact(
+        payload={
+            "qty": Decimal("1.50"),
+            "when": T0,
+            "note": unicodedata.normalize("NFD", "கொ"),
+            "rows": [{"v": Decimal("2.000")}, 3],
+        }
+    )
+    assert fact.payload["qty"] == "1.5"
+    assert fact.payload["when"] == "2026-03-01T10:00:00Z"
+    assert fact.payload["note"] == unicodedata.normalize("NFC", "கொ")
+    assert fact.payload["rows"] == ({"v": "2"}, 3)
+
+
+def test_fact_payload_rejects_floats_and_unknown_types():
+    with pytest.raises(ValidationError):
+        _fact(payload={"x": 1.5})
+    with pytest.raises(ValidationError):
+        _fact(payload={"x": {1, 2}})
+
+
+def test_fact_survives_json_round_trip_with_identical_digest():
+    fact = _fact(payload={"qty": Decimal("1.50"), "n": 1000, "rows": [Decimal("5.000"), "x"]})
+    reloaded = Fact.model_validate_json(fact.model_dump_json())
+    assert reloaded == fact
+    assert decision_digest(reloaded) == decision_digest(fact)
+    assert Fact.model_validate(fact.model_dump(mode="json")) == fact
+
+
+def test_ints_and_decimals_are_different_values():
+    # Decimals canonicalise to text, ints stay JSON numbers; builders must pick one per field.
+    assert decision_digest({"n": 1000}) != decision_digest({"n": Decimal(1000)})
+    assert canonical({"n": 1000}) == {"n": 1000}
+    assert canonical({"n": Decimal(1000)}) == {"n": "1000"}
+
+
+def test_quantity_json_form_is_canonical_text():
+    q = Quantity(value="5", unit=Unit.KG)
+    assert q.value == Decimal("5.000")
+    assert q.model_dump(mode="json") == {"value": "5", "unit": "kg"}
+    assert q.model_dump(mode="json") == canonical(q)
+    assert Quantity.model_validate(q.model_dump(mode="json")) == q
+
+
+def test_canonical_rejects_colliding_keys():
+    with pytest.raises(ValueError):
+        canonical({1: "a", "1": "b"})
+    nfc, nfd = "\u00e9", "e\u0301"
+    with pytest.raises(ValueError):
+        canonical({nfc: 1, nfd: 2})
+
+
+# --- Review fixes: strict Quantity input -----------------------------------
+
+
+@pytest.mark.parametrize(
+    "bad",
+    ["1.2345", Decimal("1.0001"), " 1 ", "1_0", "\u0661", "1.", ".5", "+1", "1e3", "--1", ""],
+)
+def test_quantity_rejects_excess_precision_and_loose_strings(bad):
+    with pytest.raises(ValidationError):
+        Quantity(value=bad, unit=Unit.KG)
+
+
+@pytest.mark.parametrize("ok", ["-1", "0", "1.234", 7, -7, Decimal("1.2340"), Decimal("1E+2")])
+def test_quantity_accepts_exact_values(ok):
+    assert Quantity(value=ok, unit=Unit.KG).value == Decimal(str(ok)).quantize(Decimal("0.001"))
+
+
+def test_quantity_negative_zero_is_zero():
+    for raw in ("-0", "-0.000", Decimal("-0")):
+        q = Quantity(value=raw, unit=Unit.KG)
+        assert str(q.value) == "0.000"
+        assert q.model_dump(mode="json")["value"] == "0"
+
+
+def test_quantity_is_exact_for_huge_values_under_any_context():
+    big = "1" + "0" * 40 + ".001"
+    with localcontext() as ctx:
+        ctx.prec = 5
+        q = Quantity(value=big, unit=Unit.KG)
+        assert str((q + q).value) == "2" + "0" * 40 + ".002"
+
+
+# --- Review fixes: unit helpers are context-free and finite-only -----------
+
+
+@pytest.mark.parametrize("bad", [Decimal("NaN"), Decimal("Infinity"), Decimal("-Infinity")])
+def test_unit_helpers_reject_non_finite(bad):
+    for fn in (quantize_required, quantize_available):
+        with pytest.raises(ValueError):
+            fn(bad)
+    one = Decimal(1)
+    with pytest.raises(ValueError):
+        kg_to_m(bad, one, one)
+    with pytest.raises(ValueError):
+        kg_to_m(one, bad, one)
+    with pytest.raises(ValueError):
+        kg_to_m(one, one, bad)
+
+
+def test_unit_helpers_ignore_the_ambient_context():
+    big = Decimal("1" + "0" * 40 + ".0005")
+    expected = Decimal(100_000) / Decimal(270)
+    with localcontext() as ctx:
+        ctx.prec = 5
+        assert quantize_required(big) == Decimal("1" + "0" * 40 + ".001")
+        assert quantize_available(big) == Decimal("1" + "0" * 40 + ".000")
+        assert kg_to_m(Decimal("100"), Decimal("180"), Decimal("1.5")) == expected
+        ctx.traps[Inexact] = True
+        assert kg_to_m(Decimal("100"), Decimal("180"), Decimal("1.5")) == expected
+    assert quantize_available(Decimal(10**40)) == Decimal(10**40)
+
+
+# --- Review fixes: immutable, hashable facts -------------------------------
+
+
+def test_fact_payload_is_deeply_immutable():
+    fact = _fact(payload={"a": {"b": [1, 2]}, "c": 1})
+    before = decision_digest(fact)
+    with pytest.raises(TypeError):
+        fact.payload["c"] = 2
+    with pytest.raises(TypeError):
+        fact.payload["a"]["b"] = 1
+    with pytest.raises(TypeError):
+        fact.payload.update({"z": 1})
+    with pytest.raises(TypeError):
+        del fact.payload["c"]
+    assert isinstance(fact.payload["a"]["b"], tuple)
+    assert decision_digest(fact) == before
+
+
+def test_fact_is_hashable_and_equal_facts_hash_equal():
+    a = _fact(payload={"a": [1, {"b": "c"}]})
+    b = _fact(payload={"a": [1, {"b": "c"}]})
+    assert a == b
+    assert hash(a) == hash(b)
+    assert len({a, b}) == 1
+
+
+# --- Review fixes: golden vector -------------------------------------------
+
+
+def test_decision_digest_golden_vector():
+    value = {
+        "qty": Decimal("1.500"),
+        "when": datetime(2026, 3, 1, 15, 30, tzinfo=timezone(timedelta(hours=5, minutes=30))),
+        "note": unicodedata.normalize("NFD", "கொடு"),
+        "slots": ["b", "a", [Decimal("-0"), 2]],
+    }
+    expected_json = (
+        '{"note":"கொடு","qty":"1.5","slots":["b","a",["0",2]],"when":"2026-03-01T10:00:00Z"}'
+    )
+    assert canonical(value) == json.loads(expected_json)
+    # sha256 over the canonical JSON *string literal* passed through hashing.digest.
+    assert decision_digest(value) == digest(expected_json)
+    assert (
+        decision_digest(value)
+        == "sha256:ca866e332cd896d349f1e530cecb181f64a8a19f89aace95f4152743c375d73d"
     )
