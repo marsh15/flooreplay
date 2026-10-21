@@ -39,3 +39,12 @@ Rules:
 - PLAN.md section: "Constraints", "Policy document", "Decisions" #2 (reviewed, not edited).
 - Affected tasks / tests: T2 (this deliverable). T8 and `decisions/test_constraints.py` will use this list. If the freeze happens without interviews, T8 starts from the drafted list.
 - Decided by: not applicable. This is a record of document creation, not a decision on a value. The owner decides the freeze.
+
+### 2026-10-21 Working-day calendar added to the CAPACITY parameters
+
+- Date: 2026-10-21
+- Source interview id: none. No interview has happened; this is an owner decision made while building T7. It is not presented as a practitioner finding. `docs/v2/discovery.md` section 5.2 already flagged that working days (Sundays, festivals) are used by CAPACITY but are not a policy parameter, and that a calendar would be a PLAN.md change to log.
+- What changed: two parameters are added to `capacity` in the policy document. Before: `capacity{eligible_lines[], default_efficiency_pct, cut_to_ship_days, finishing_days, ot_cap_hours_per_line_day}` with no definition of a working day. After: `capacity{..., non_working_weekdays[], holidays[]}`. `non_working_weekdays` is a list of weekday codes (MON..SUN), default `["SUN"]`. `holidays` is a list of ISO dates, default `[]`. A working day for CAPACITY and for the gate's required `line_capacity` facts is a date that is neither a non-working weekday nor a holiday. Also recorded: the demo policy uses `eligible_lines = ["L1","L2","L3","L4"]` (discovery 5.2 listed no default).
+- PLAN.md section: "Policy document" (the shape line) and "Constraints" CAPACITY and "Required facts" (working day). PLAN.md has not been edited yet; this entry is the pending change until the week-1 freeze (2026-10-27).
+- Affected tasks / tests: T7 (`decisions/policy.py`, `decisions/gate.py`, `tests/decisions/test_policy.py`, `test_gate.py`), T8 (CAPACITY and OVERTIME working-day count), T9 and the demo cases (policy digests include the new fields).
+- Decided by: owner
