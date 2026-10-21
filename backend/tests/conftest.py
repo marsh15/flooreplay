@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 
 import pytest
+from hypothesis import HealthCheck, settings
 
 from flooreplay.fixtures import (
     DEFAULT_FRESHNESS,
@@ -18,6 +19,11 @@ _test_url = os.environ.get("FLOORREPLAY_TEST_DATABASE_URL", "postgresql+psycopg:
 if not _test_url.split("?", 1)[0].endswith(("_test", "/test")):
     raise RuntimeError("FLOORREPLAY_TEST_DATABASE_URL must name a database ending in _test")
 os.environ["FLOORREPLAY_DATABASE_URL"] = _test_url
+
+# Wall-clock deadlines and generation-speed health checks flake on a loaded machine; they
+# say nothing about correctness. Per-test max_examples is left alone.
+settings.register_profile("default", deadline=None, suppress_health_check=[HealthCheck.too_slow])
+settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", "default"))
 
 
 @pytest.fixture
