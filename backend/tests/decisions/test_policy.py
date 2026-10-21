@@ -19,8 +19,10 @@ from flooreplay.decisions.policy import (
     ENGINE_VERSION,
     PREDICATES,
     PolicyDocument,
+    cut_date,
     parameter_diff,
     policy_digest,
+    sewing_days,
 )
 from flooreplay.decisions.types import ConstraintId, FactKind
 
@@ -107,6 +109,32 @@ def test_json_round_trip_keeps_the_digest() -> None:
         lambda d: d["conflict_rules"][0].update(join="payload"),
         lambda d: d["conflict_rules"][0].update(valid_time="exact"),
         lambda d: d.update(engine_version="decision-v0"),
+        # bounds and relations (reviewer-found holes)
+        lambda d: d["capacity"].update(eligible_lines=[]),
+        lambda d: d.update(enabled_constraints=[]),
+        lambda d: d["capacity"].update(finishing_days=21),  # not before cut_to_ship_days
+        lambda d: d["capacity"].update(finishing_days=40),
+        lambda d: d["capacity"].update(cut_to_ship_days=366),
+        lambda d: d["capacity"].update(default_efficiency_pct="1.01"),
+        lambda d: d["capacity"].update(default_efficiency_pct="55"),
+        lambda d: d["capacity"].update(ot_cap_hours_per_line_day=25),
+        lambda d: d["capacity"].update(eligible_lines=["L:1"]),
+        lambda d: d["fabric"].update(wastage_pct="-0.1"),
+        lambda d: d["fabric"].update(wastage_pct="1"),
+        lambda d: d["fabric"].update(safety_floor_pct="-1"),
+        lambda d: d["fabric"].update(inbound_buffer_days=366),
+        lambda d: d["trims"].update(wastage_pct="-0.5"),
+        lambda d: d["trims"].update(buffer_days=10**9),
+        lambda d: d["approval"].update(max_value_inr="-1"),
+        lambda d: d["freshness_hours"].update(notes=10**12),
+        lambda d: d["freshness_hours"].update(notes=24 * 30 + 1),
+        lambda d: d["freshness_hours"].update(notes=-1),
+        lambda d: d["conflict_rules"][0].update(id="a].left_kind"),
+        lambda d: d["conflict_rules"][0].update(id=""),
+        lambda d: d["conflict_rules"][0].update(id="has space"),
+        # a predicate only makes sense for the kinds it was written for
+        lambda d: d["conflict_rules"][0].update(left_kind="trim_status", right_kind="bom"),
+        lambda d: d["conflict_rules"][1].update(left_kind="fabric_allocation"),
     ],
 )
 def test_malformed_documents_are_rejected(mutate: Callable[[dict[str, Any]], None]) -> None:
@@ -280,14 +308,26 @@ def test_diff_of_conflict_rules_is_by_id() -> None:
     changed = [dict(r) for r in rules]
     for rule in changed:
         if rule["id"] == "inbound_eta_disagrees":
-            rule["left_kind"] = "fabric_lot"
+            rule.update(
+                left_kind="fabric_lot", right_kind="fabric_qc", predicate="qc_claims_against_lot"
+            )
     changed.reverse()
     assert parameter_diff(DEFAULT_POLICY_V1, doc(conflict_rules=changed)) == [
         {
             "path": "conflict_rules[inbound_eta_disagrees].left_kind",
             "before": "fabric_inbound",
             "after": "fabric_lot",
-        }
+        },
+        {
+            "path": "conflict_rules[inbound_eta_disagrees].predicate",
+            "before": "inbound_eta_disagrees",
+            "after": "qc_claims_against_lot",
+        },
+        {
+            "path": "conflict_rules[inbound_eta_disagrees].right_kind",
+            "before": "fabric_inbound",
+            "after": "fabric_qc",
+        },
     ]
 
 
@@ -303,7 +343,30 @@ def test_diff_of_added_and_removed_conflict_rules() -> None:
 
 
 @settings(deadline=None)
-@given(st.integers(0, 400), st.integers(0, 400))
+@given(st.integers(5, 365), st.integers(5, 365))
 def test_diff_is_empty_iff_digests_match(a: int, b: int) -> None:
     left, right = with_capacity(cut_to_ship_days=a), with_capacity(cut_to_ship_days=b)
     assert (parameter_diff(left, right) == []) == (policy_digest(left) == policy_digest(right))
+
+
+def test_boundary_values_are_accepted() -> None:
+    capacity = DEFAULT_POLICY_V1.model_dump(mode="json")["capacity"]
+    edge = doc(
+        capacity={
+            **capacity,
+            "default_efficiency_pct": "1",
+            "cut_to_ship_days": 365,
+            "finishing_days": 364,
+            "ot_cap_hours_per_line_day": 24,
+        },
+        freshness_hours={**DEFAULT_POLICY_V1.model_dump(mode="json")["freshness_hours"], "notes": 720},
+        fabric={**DEFAULT_POLICY_V1.model_dump(mode="json")["fabric"], "wastage_pct": "0"},
+    )
+    assert edge.capacity.cut_to_ship_days == 365
+
+
+def test_sewing_days_follow_the_window_and_calendar() -> None:
+    days = sewing_days(DEFAULT_POLICY_V1.capacity, date(2026, 3, 30))
+    assert days[0] == date(2026, 3, 10) and days[-1] == date(2026, 3, 26)
+    assert date(2026, 3, 15) not in days  # a Sunday
+    assert cut_date(DEFAULT_POLICY_V1.capacity, date(2026, 3, 30)) == date(2026, 3, 9)

@@ -9,6 +9,7 @@ No clock, database or randomness is used here.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Mapping
 from datetime import date, timedelta
 from decimal import Decimal
@@ -93,6 +94,17 @@ PREDICATES_BY_ENGINE: Final[Mapping[str, Mapping[str, Predicate]]] = {
 
 PREDICATES: Final[dict[str, Predicate]] = dict(PREDICATES_BY_ENGINE[ENGINE_VERSION])
 
+# The (left_kind, right_kind) each predicate is written for. A rule naming a predicate with
+# other kinds could never fire (or would fire on payloads it cannot read), so it is rejected.
+PREDICATE_KINDS: Final[Mapping[str, tuple[FactKind, FactKind]]] = {
+    "qc_claims_against_lot": (FactKind.FABRIC_LOT, FactKind.FABRIC_QC),
+    "inbound_eta_disagrees": (FactKind.FABRIC_INBOUND, FactKind.FABRIC_INBOUND),
+}
+
+MAX_DAYS: Final = 365
+MAX_FRESHNESS_HOURS: Final = 24 * 30
+_RULE_ID = re.compile(r"[A-Za-z0-9_-]+")
+
 
 # ---------------------------------------------------------------------------
 # Document
@@ -102,6 +114,18 @@ PREDICATES: Final[dict[str, Predicate]] = dict(PREDICATES_BY_ENGINE[ENGINE_VERSI
 def _reject_duplicates(values: tuple[Any, ...], what: str) -> None:
     if len(set(values)) != len(values):
         raise ValueError(f"duplicate entries in {what}")
+
+
+def _days(v: int) -> int:
+    if not 0 <= v <= MAX_DAYS:
+        raise ValueError(f"must be between 0 and {MAX_DAYS} days")
+    return v
+
+
+def _fraction(v: Decimal) -> Decimal:
+    if not 0 <= v < 1:
+        raise ValueError("must be a fraction with 0 <= value < 1")
+    return v
 
 
 class FreshnessHours(FrozenModel):
@@ -114,9 +138,9 @@ class FreshnessHours(FrozenModel):
 
     @field_validator("*")
     @classmethod
-    def _non_negative(cls, v: int) -> int:
-        if v < 0:
-            raise ValueError("freshness hours must be >= 0")
+    def _bounded(cls, v: int) -> int:
+        if not 0 <= v <= MAX_FRESHNESS_HOURS:
+            raise ValueError(f"freshness hours must be between 0 and {MAX_FRESHNESS_HOURS}")
         return v
 
 
@@ -127,10 +151,13 @@ class FabricParams(FrozenModel):
 
     @field_validator("inbound_buffer_days")
     @classmethod
-    def _days(cls, v: int) -> int:
-        if v < 0:
-            raise ValueError("must be >= 0")
-        return v
+    def _buffer(cls, v: int) -> int:
+        return _days(v)
+
+    @field_validator("wastage_pct", "safety_floor_pct")
+    @classmethod
+    def _fractions(cls, v: Decimal) -> Decimal:
+        return _fraction(v)
 
 
 class TrimParams(FrozenModel):
@@ -139,10 +166,13 @@ class TrimParams(FrozenModel):
 
     @field_validator("buffer_days")
     @classmethod
-    def _days(cls, v: int) -> int:
-        if v < 0:
-            raise ValueError("must be >= 0")
-        return v
+    def _buffer(cls, v: int) -> int:
+        return _days(v)
+
+    @field_validator("wastage_pct")
+    @classmethod
+    def _wastage(cls, v: Decimal) -> Decimal:
+        return _fraction(v)
 
 
 class CapacityParams(FrozenModel):
@@ -156,18 +186,38 @@ class CapacityParams(FrozenModel):
     non_working_weekdays: tuple[Weekday, ...] = (Weekday.SUN,)
     holidays: tuple[date, ...] = ()
 
-    @field_validator("cut_to_ship_days", "finishing_days", "ot_cap_hours_per_line_day")
+    @field_validator("cut_to_ship_days", "finishing_days")
     @classmethod
-    def _non_negative(cls, v: int) -> int:
-        if v < 0:
-            raise ValueError("must be >= 0")
+    def _window_days(cls, v: int) -> int:
+        return _days(v)
+
+    @field_validator("default_efficiency_pct")
+    @classmethod
+    def _efficiency(cls, v: Decimal) -> Decimal:
+        if not 0 < v <= 1:
+            raise ValueError("efficiency must be a fraction with 0 < value <= 1")
         return v
+
+    @field_validator("ot_cap_hours_per_line_day")
+    @classmethod
+    def _ot_hours(cls, v: int) -> int:
+        if not 0 <= v <= 24:
+            raise ValueError("overtime hours per line per day must be between 0 and 24")
+        return v
+
+    @model_validator(mode="after")
+    def _window(self) -> CapacityParams:
+        if self.finishing_days >= self.cut_to_ship_days:
+            raise ValueError("finishing_days must be less than cut_to_ship_days")
+        return self
 
     @field_validator("eligible_lines")
     @classmethod
     def _lines(cls, v: tuple[str, ...]) -> tuple[str, ...]:
-        if any(not line for line in v):
-            raise ValueError("line ids must be non-empty")
+        if not v:
+            raise ValueError("eligible_lines must not be empty")
+        if any(not line or ":" in line or line != line.strip() for line in v):
+            raise ValueError("line ids must be non-empty, without ':' or surrounding spaces")
         _reject_duplicates(v, "eligible_lines")
         return tuple(sorted(v))
 
@@ -207,8 +257,8 @@ class ConflictRule(FrozenModel):
     @field_validator("id")
     @classmethod
     def _id(cls, v: str) -> str:
-        if not v:
-            raise ValueError("rule id must be non-empty")
+        if not _RULE_ID.fullmatch(v):
+            raise ValueError("rule id must match [A-Za-z0-9_-]+")
         return v
 
 
@@ -234,6 +284,8 @@ class PolicyDocument(FrozenModel):
     @field_validator("enabled_constraints")
     @classmethod
     def _constraints(cls, v: tuple[ConstraintId, ...]) -> tuple[ConstraintId, ...]:
+        if not v:
+            raise ValueError("enabled_constraints must not be empty")
         _reject_duplicates(v, "enabled_constraints")
         return tuple(sorted(v, key=lambda c: c.value))
 
@@ -247,6 +299,12 @@ class PolicyDocument(FrozenModel):
                 raise ValueError(
                     f"rule {rule.id!r}: unknown predicate {rule.predicate!r} "
                     f"for engine {self.engine_version}"
+                )
+            expected = PREDICATE_KINDS[rule.predicate]
+            if (rule.left_kind, rule.right_kind) != expected:
+                raise ValueError(
+                    f"rule {rule.id!r}: predicate {rule.predicate!r} is written for "
+                    f"{expected[0].value} / {expected[1].value}"
                 )
         return self
 

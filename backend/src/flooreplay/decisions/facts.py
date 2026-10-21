@@ -218,7 +218,7 @@ class ResolutionPayload(Payload):
     left_fact_id: str
     right_fact_id: str
     resolved_payload: dict[str, Any]
-    reviewer: str
+    reviewer: str = Field(min_length=1)
 
 
 # ---------------------------------------------------------------------------

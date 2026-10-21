@@ -17,12 +17,13 @@ Shape (all times UTC):
 
 from __future__ import annotations
 
+import calendar
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field, replace
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
-from flooreplay.decisions.gate import GateResult, evaluate_gate
+from flooreplay.decisions.gate import CoverageDecl, GateResult, evaluate_gate
 from flooreplay.decisions.policy import DEFAULT_POLICY_V1, PolicyDocument
 from flooreplay.decisions.snapshot import Snapshot, snapshot_at
 from flooreplay.decisions.types import Fact, FactKind, SourceProfile
@@ -253,18 +254,34 @@ def resolution_fact(
 
 
 def working_days(policy: PolicyDocument, ship_date: date) -> list[date]:
-    """Independent re-derivation of the sewing window, kept deliberately separate from gate.py."""
-    cut_date = ship_date - timedelta(days=policy.capacity.cut_to_ship_days)
-    last = ship_date - timedelta(days=policy.capacity.finishing_days)
-    off = {d.value for d in policy.capacity.non_working_weekdays}
-    names = ("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
-    day = cut_date + timedelta(days=1)
-    days: list[date] = []
-    while day <= last:
-        if names[day.weekday()] not in off and day not in set(policy.capacity.holidays):
-            days.append(day)
-        day += timedelta(days=1)
-    return days
+    """The sewing window, derived independently of `policy.sewing_days` (ordinals, no timedelta).
+
+    Working days in [ship - cut_to_ship + 1, ship - finishing], skipping the non-working
+    weekdays (by calendar name) and the holidays.
+    """
+    cap = policy.capacity
+    first = ship_date.toordinal() - cap.cut_to_ship_days + 1
+    last = ship_date.toordinal() - cap.finishing_days
+    off = {d.value for d in cap.non_working_weekdays}
+    holidays = {h.toordinal() for h in cap.holidays}
+    return [
+        date.fromordinal(n)
+        for n in range(first, last + 1)
+        if calendar.day_name[date.fromordinal(n).weekday()][:3].upper() not in off
+        and n not in holidays
+    ]
+
+
+def cover(
+    *qualities: str,
+    artifact_id: str = ERP_ARTIFACT,
+    as_of: datetime = AS_OF,
+    profile: SourceProfile = SourceProfile.ERP_FABRIC_STOCK,
+) -> dict[str, CoverageDecl]:
+    """A one-artifact coverage mapping."""
+    return {
+        artifact_id: CoverageDecl(profile=profile, as_of=as_of, qualities=frozenset(qualities))
+    }
 
 
 @dataclass(frozen=True)
@@ -273,9 +290,7 @@ class World:
     cutoff: datetime = CUTOFF
     order_id: str = ORDER_ID
     policy: PolicyDocument = DEFAULT_POLICY_V1
-    coverage: Mapping[str, frozenset[str]] = field(
-        default_factory=lambda: {ERP_ARTIFACT: frozenset({QUALITY})}
-    )
+    coverage: Mapping[str, CoverageDecl] = field(default_factory=lambda: cover(QUALITY))
 
     def snapshot(self, cutoff: datetime | None = None) -> Snapshot:
         return snapshot_at(self.facts, cutoff if cutoff is not None else self.cutoff)
@@ -319,23 +334,25 @@ class World:
     def with_policy(self, policy: PolicyDocument) -> World:
         return replace(self, policy=policy)
 
-    def with_coverage(self, coverage: Mapping[str, frozenset[str]]) -> World:
+    def with_coverage(self, coverage: Mapping[str, CoverageDecl]) -> World:
         return replace(self, coverage=coverage)
 
     def at(self, cutoff: datetime) -> World:
         return replace(self, cutoff=cutoff)
 
 
-def ready_world(policy: PolicyDocument = DEFAULT_POLICY_V1) -> World:
+def ready_world(
+    policy: PolicyDocument = DEFAULT_POLICY_V1, ship_date: date = SHIP_DATE
+) -> World:
     """A world the gate calls READY: nothing missing, stale or conflicting."""
     facts: list[Fact] = [
-        order_fact(),
+        order_fact(ship_date=ship_date),
         bom_fact(),
         lot_fact("w-lot-navy", "LOT-N1", "NAVY", "500"),
         lot_fact("w-lot-white", "LOT-W1", "WHITE", "300"),
     ]
     facts += [trim_fact(f"w-trim-{t}", t) for t in TRIM_IDS]
     for line in policy.capacity.eligible_lines:
-        for day in working_days(policy, SHIP_DATE):
+        for day in working_days(policy, ship_date):
             facts.append(capacity_fact(f"w-cap-{line}-{day.isoformat()}", line, day))
     return World(facts=tuple(facts), policy=policy)

@@ -24,8 +24,12 @@ from decisions.worlds import (
     World,
     bom_fact,
     capacity_fact,
+    cover,
     inbound_fact,
+    kg,
     lot_fact,
+    make_fact,
+    order_fact,
     qc_fact,
     ready_world,
     resolution_fact,
@@ -34,7 +38,13 @@ from decisions.worlds import (
 )
 from flooreplay.decisions import gate as gate_module
 from flooreplay.decisions import policy as policy_module
-from flooreplay.decisions.gate import GateFinding, GateResult, evaluate_gate
+from flooreplay.decisions.gate import (
+    CoverageDecl,
+    GateFinding,
+    GateResult,
+    evaluate_gate,
+    native_source,
+)
 from flooreplay.decisions.policy import DEFAULT_POLICY_V1, PolicyDocument
 from flooreplay.decisions.snapshot import snapshot_at
 from flooreplay.decisions.types import (
@@ -166,11 +176,78 @@ def test_each_stale_entity_gets_its_own_finding() -> None:
     assert result.state is STALE
 
 
-def test_review_queue_facts_are_exempt_from_freshness() -> None:
-    world = base().replace_fact(
-        "w-lot-navy", source=SourceProfile.REVIEW_QUEUE, valid_from=CUTOFF - 500 * HOUR
+def test_freshness_follows_the_kind_not_the_source_the_fact_claims() -> None:
+    # A reviewer's correction of a stale lot is still a stale lot.
+    old = CUTOFF - 500 * HOUR
+    stale = lot_fact("w-lot-navy", "LOT-N1", "NAVY", "500", valid_from=old)
+    world = base().without(fact_id="w-lot-navy").with_facts(stale)
+    assert world.gate().state is STALE
+    fix = lot_fact(
+        "fix",
+        "LOT-N1",
+        "NAVY",
+        "900",
+        valid_from=old,
+        known_at=CUTOFF - HOUR,
+        supersedes_id="w-lot-navy",
+        source=SourceProfile.REVIEW_QUEUE,
     )
-    assert world.gate().state is READY
+    corrected = world.with_facts(fix)
+    result = corrected.gate()
+    assert result.state is STALE
+    assert finding(result, "stale_evidence").fact_ids == ("fix",)
+
+
+@pytest.mark.parametrize("source", list(SourceProfile))
+def test_a_claimed_source_never_changes_the_limit(source: SourceProfile) -> None:
+    """Whatever source a lot claims, its 24h erp_fabric_stock limit applies."""
+    at_limit = base().replace_fact("w-lot-navy", source=source, valid_from=CUTOFF - 24 * HOUR)
+    assert at_limit.gate().state is READY
+    over = base().replace_fact(
+        "w-lot-navy", source=source, valid_from=CUTOFF - 24 * HOUR - MINUTE
+    )
+    assert over.gate().state is STALE
+
+
+def test_native_source_by_kind() -> None:
+    expected = {
+        "w-order": SourceProfile.ORDER_REQUESTS,
+        "w-bom": SourceProfile.ORDER_REQUESTS,
+        "w-lot-navy": SourceProfile.ERP_FABRIC_STOCK,
+        "w-trim-ZIP": SourceProfile.SHEET_TRIMS_STATUS,
+        "w-cap-L1-2026-03-10": SourceProfile.SHIFT_CAPACITY,
+    }
+    for fact_id, source in expected.items():
+        assert native_source(base().get(fact_id)) is source
+    assert native_source(inbound_fact("i", "I1")) is SourceProfile.SUPPLIER_UPDATES
+    allocation = make_fact(
+        "a", FactKind.FABRIC_ALLOCATION, f"alloc:O2:{QUALITY}:NAVY", {"qty": kg("1")}
+    )
+    assert native_source(allocation) is SourceProfile.ERP_FABRIC_STOCK
+    commitment = make_fact(
+        "c",
+        FactKind.LINE_COMMITMENT,
+        "commit:O2:L1:2026-03-10",
+        {"committed_minutes": {"value": "1", "unit": "minutes"}},
+    )
+    assert native_source(commitment) is SourceProfile.SHIFT_CAPACITY
+    assert native_source(qc_fact("q", "LOT-N1")) is SourceProfile.NOTES
+    supplier_qc = make_fact(
+        "q2",
+        FactKind.FABRIC_QC,
+        "lot:LOT-N1",
+        {
+            "issue": "defect",
+            "qty": kg("1"),
+            "review_state": "confirmed",
+            "origin": "supplier_updates",
+        },
+    )
+    assert native_source(supplier_qc) is SourceProfile.SUPPLIER_UPDATES
+    resolution = resolution_fact(
+        "r", "lot:LOT-N1", rule_id="x", left_fact_id="a", right_fact_id="b"
+    )
+    assert native_source(resolution) is None, "a resolution is a decision, not an observation"
 
 
 def test_an_older_observation_does_not_make_the_entity_stale() -> None:
@@ -333,7 +410,8 @@ def test_only_eligible_lines_are_required() -> None:
 
 
 def test_a_window_with_no_working_days_requires_no_capacity() -> None:
-    policy = policy_with(cut_to_ship_days=4, finishing_days=4)
+    # cut 5 / finishing 4 leaves a single sewing day, 2026-03-26; make it a holiday.
+    policy = policy_with(cut_to_ship_days=5, finishing_days=4, holidays=["2026-03-26"])
     world = base().without(kind=FactKind.LINE_CAPACITY).with_policy(policy)
     assert world.gate().state is READY
 
@@ -352,22 +430,76 @@ def test_uncovered_quality_with_no_lot_for_a_colour_is_incomplete() -> None:
 
 def test_covered_quality_with_no_lot_for_a_colour_is_a_known_zero() -> None:
     world = base().without(entity_key="lot:LOT-W1")
-    assert world.coverage[ERP_ARTIFACT] == frozenset({QUALITY})
+    assert world.coverage[ERP_ARTIFACT].qualities == frozenset({QUALITY})
     result = world.gate()
     assert result.state is READY
     assert "fabric_stock_uncovered" not in codes(result)
 
 
 def test_coverage_of_another_quality_does_not_cover_this_one() -> None:
-    world = base().without(entity_key="lot:LOT-W1").with_coverage({ERP_ARTIFACT: frozenset({"X"})})
+    world = base().without(entity_key="lot:LOT-W1").with_coverage(cover("X"))
     assert world.gate().state is INCOMPLETE
 
 
-def test_any_declared_artifact_may_cover_the_quality() -> None:
-    world = base().without(entity_key="lot:LOT-W1").with_coverage(
-        {"a": frozenset({"X"}), "b": frozenset({QUALITY, "Y"})}
-    )
-    assert world.gate().state is READY
+def test_only_the_newest_stock_export_decides_coverage() -> None:
+    no_white = base().without(entity_key="lot:LOT-W1")
+    old = cover(QUALITY, artifact_id="a-old", as_of=AS_OF - 5 * HOUR)
+    new = cover("X", artifact_id="a-new", as_of=AS_OF)
+    # The older export covers the quality, the newer one does not: not covered.
+    result = no_white.with_coverage({**old, **new}).gate()
+    assert result.state is INCOMPLETE
+    assert result.coverage_used is not None and result.coverage_used.artifact_id == "a-new"
+    # Reverse the dates and the quality is covered.
+    flipped = {
+        **cover(QUALITY, artifact_id="a-old", as_of=AS_OF),
+        **cover("X", artifact_id="a-new", as_of=AS_OF - 5 * HOUR),
+    }
+    assert no_white.with_coverage(flipped).gate().state is READY
+
+
+def test_equal_as_of_breaks_ties_by_the_greatest_artifact_id() -> None:
+    no_white = base().without(entity_key="lot:LOT-W1")
+    both = {**cover(QUALITY, artifact_id="a-1"), **cover("X", artifact_id="a-2")}
+    result = no_white.with_coverage(both).gate()
+    assert result.state is INCOMPLETE and result.coverage_used is not None
+    assert result.coverage_used.artifact_id == "a-2"
+
+
+def test_only_stock_exports_known_by_the_cutoff_count_for_coverage() -> None:
+    no_white = base().without(entity_key="lot:LOT-W1")
+    other_profile = cover(QUALITY, profile=SourceProfile.SUPPLIER_UPDATES)
+    assert no_white.with_coverage(other_profile).gate().state is INCOMPLETE
+    future = cover(QUALITY, as_of=CUTOFF + HOUR)
+    assert no_white.with_coverage(future).gate().state is INCOMPLETE
+
+
+def test_coverage_used_is_echoed_for_the_decision_digest() -> None:
+    result = base().gate()
+    assert result.coverage_used is not None
+    assert (result.coverage_used.artifact_id, result.coverage_used.as_of) == (ERP_ARTIFACT, AS_OF)
+    assert result.coverage_used.qualities == (QUALITY,)
+    assert base().with_coverage({}).gate().coverage_used is None
+
+
+def test_a_known_zero_is_aged_by_the_coverage_artifacts_as_of() -> None:
+    no_white = base().without(entity_key="lot:LOT-W1")
+    at_limit = no_white.with_coverage(cover(QUALITY, as_of=CUTOFF - 24 * HOUR))
+    assert at_limit.gate().state is READY
+    over = no_white.with_coverage(cover(QUALITY, as_of=CUTOFF - 24 * HOUR - MINUTE)).gate()
+    assert over.state is STALE
+    assert finding(over, "stale_evidence").entity_key == f"coverage:{ERP_ARTIFACT}"
+    # The artifact's age matters only when a known zero relies on it.
+    all_lots = base().with_coverage(cover(QUALITY, as_of=CUTOFF - 500 * HOUR))
+    assert all_lots.gate().state is READY
+
+
+def test_a_bare_string_is_not_a_set_of_qualities() -> None:
+    with pytest.raises(ValueError, match="not one string"):
+        CoverageDecl(
+            profile=SourceProfile.ERP_FABRIC_STOCK,
+            as_of=AS_OF,
+            qualities=QUALITY,  # type: ignore[arg-type]
+        )
 
 
 def test_lots_present_need_no_coverage_declaration() -> None:
@@ -620,6 +752,194 @@ def test_an_invalid_fact_for_an_entity_the_order_does_not_use_is_ignored() -> No
     assert world.gate().state is READY
 
 
+# --- every consumed kind: an excluded fact is missing evidence ----------------
+
+
+def junk(fact_id: str, kind: FactKind, key: str) -> Fact:
+    """A fact whose payload cannot parse, so the snapshot excludes it."""
+    return make_fact(fact_id, kind, key, {"junk": "x"})
+
+
+INVALID_CASES = [
+    # (kind, entity_key, does it make the gate INCOMPLETE?)
+    (FactKind.FABRIC_ALLOCATION, f"alloc:O2:{QUALITY}:NAVY", True),
+    (FactKind.FABRIC_ALLOCATION, "alloc:O2:OTHERQ:NAVY", False),
+    (FactKind.FABRIC_ALLOCATION, f"alloc:O2:{QUALITY}:RED", False),
+    (FactKind.FABRIC_ALLOCATION, "alloc:weird", True),  # bad entity_key: cannot be placed
+    (FactKind.LINE_COMMITMENT, "commit:O2:L1:2026-03-12", True),
+    (FactKind.LINE_COMMITMENT, "commit:O2:L9:2026-03-12", False),
+    (FactKind.LINE_COMMITMENT, "commit:O2:L1:2026-04-30", False),
+    (FactKind.FABRIC_INBOUND, "inbound:R1", True),
+    (FactKind.FABRIC_QC, "lot:LOT-N1", True),
+    (FactKind.FABRIC_QC, "lot:LOT-R9", False),
+    (FactKind.TRIM_STATUS, "trim:S1:ZIP", True),
+    (FactKind.TRIM_STATUS, "trim:S9:ZIP", False),
+    (FactKind.TRIM_STATUS, "trim:S1:BUTTON", False),
+    (FactKind.LINE_CAPACITY, "line:L2:2026-03-12", True),
+    (FactKind.LINE_CAPACITY, "line:L9:2026-03-12", False),
+    (FactKind.LINE_CAPACITY, "line:L2:2026-04-30", False),
+    (FactKind.BOM, "bom:S1", True),
+    (FactKind.BOM, "bom:S9", False),
+    (FactKind.ORDER_REQUEST, "order:O1", True),
+    (FactKind.ORDER_REQUEST, "order:O9", False),
+    (FactKind.FABRIC_LOT, "lot:ANY", True),
+    (FactKind.RESOLUTION, "lot:LOT-N1", False),  # a bad resolution simply clears nothing
+]
+
+
+@pytest.mark.parametrize(("kind", "key", "blocks"), INVALID_CASES)
+def test_an_excluded_fact_blocks_only_when_this_order_could_use_it(
+    kind: FactKind, key: str, blocks: bool
+) -> None:
+    world = base().with_facts(junk("bad", kind, key))
+    assert [f.code for f in world.snapshot().findings] == ["invalid_payload"]
+    result = world.gate()
+    assert (result.state is INCOMPLETE) is blocks
+    if blocks:
+        assert finding(result, "invalid_payload").fact_ids == ("bad",)
+
+
+def test_negative_or_malformed_values_are_excluded_not_summed() -> None:
+    negative = make_fact(
+        "neg", FactKind.FABRIC_ALLOCATION, f"alloc:O2:{QUALITY}:NAVY", {"qty": kg("-5")}
+    )
+    commit = make_fact(
+        "commit-bad",
+        FactKind.LINE_COMMITMENT,
+        "commit:O2:L1:2026-03-12",
+        {"committed_minutes": {"value": "abc", "unit": "minutes"}},
+    )
+    incomplete_inbound = make_fact(
+        "in-bad", FactKind.FABRIC_INBOUND, "inbound:R1", {"fabric_quality": QUALITY}
+    )
+    for bad in (negative, commit, incomplete_inbound):
+        result = base().with_facts(bad).gate()
+        assert result.state is INCOMPLETE, bad.id
+
+
+def test_a_valid_allocation_corrected_by_an_invalid_one_is_incomplete() -> None:
+    good = make_fact("alloc-ok", FactKind.FABRIC_ALLOCATION, f"alloc:O2:{QUALITY}:NAVY", {"qty": kg("400")})
+    fix = make_fact(
+        "alloc-fix",
+        FactKind.FABRIC_ALLOCATION,
+        f"alloc:O2:{QUALITY}:NAVY",
+        {"qty": {"value": "x", "unit": "kg"}},
+        supersedes_id="alloc-ok",
+        known_at=AS_OF + 30 * MINUTE,
+    )
+    assert base().with_facts(good).gate().state is READY
+    assert base().with_facts(good, fix).gate().state is INCOMPLETE
+
+
+# --- units on everything the FABRIC arithmetic reads ---------------------------
+
+
+def metres(kind: FactKind, key: str, fact_id: str, **payload: Any) -> Fact:
+    return make_fact(fact_id, kind, key, {"qty": {"value": "100", "unit": "m"}, **payload})
+
+
+def inbound_in_metres() -> Fact:
+    return metres(
+        FactKind.FABRIC_INBOUND,
+        "inbound:R2",
+        "in-m",
+        fabric_quality=QUALITY,
+        colour="NAVY",
+        eta=date(2026, 3, 6),
+        supplier="S",
+    )
+
+
+def qc_in_metres() -> Fact:
+    return metres(
+        FactKind.FABRIC_QC, "lot:LOT-N1", "qc-m", issue="defect", review_state="rejected", origin="notes"
+    )
+
+
+def allocation_in_metres() -> Fact:
+    return metres(FactKind.FABRIC_ALLOCATION, f"alloc:O2:{QUALITY}:NAVY", "al-m")
+
+
+@pytest.mark.parametrize("build", [inbound_in_metres, qc_in_metres, allocation_in_metres])
+def test_other_quantities_in_another_unit_need_gsm_and_width_too(build: Any) -> None:
+    fact: Fact = build()
+    result = base().with_facts(fact).gate()
+    assert result.state is INCOMPLETE
+    assert finding(result, "gsm_width_missing").fact_ids == (fact.id,)
+    # GSM and width on a current lot of the same quality and colour settle it.
+    navy = base().get("w-lot-navy")
+    with_factors = base().replace_fact(
+        "w-lot-navy", payload={**navy.payload, "gsm": "180", "width_m": "1.5"}
+    )
+    assert with_factors.with_facts(fact).gate().state is READY
+    # ...but only for that colour.
+    white = base().get("w-lot-white")
+    wrong_colour = base().replace_fact(
+        "w-lot-white", payload={**white.payload, "gsm": "180", "width_m": "1.5"}
+    )
+    assert wrong_colour.with_facts(fact).gate().state is INCOMPLETE
+
+
+def test_a_matching_unit_needs_no_factors_and_other_colours_are_ignored() -> None:
+    same_unit = inbound_fact("in-kg", "R3")
+    red = metres(
+        FactKind.FABRIC_INBOUND,
+        "inbound:R4",
+        "in-red",
+        fabric_quality=QUALITY,
+        colour="RED",
+        eta=date(2026, 3, 6),
+        supplier="S",
+    )
+    assert base().with_facts(same_unit, red).gate().state is READY
+
+
+# --- reviewed resolutions only ------------------------------------------------
+
+
+def test_a_resolution_must_come_from_the_review_queue_and_name_a_reviewer() -> None:
+    world = qc_world()
+    from_notes = resolution_fact(
+        "res-n",
+        "lot:LOT-N1",
+        rule_id="qc_claims_against_lot",
+        left_fact_id="w-lot-navy",
+        right_fact_id="qc-1",
+        source=SourceProfile.NOTES,
+        known_at=CUTOFF - MINUTE,
+        valid_from=CUTOFF - MINUTE,
+    )
+    assert world.with_facts(from_notes).gate().state is CONFLICTING
+    blank = from_notes.model_copy(
+        update={
+            "id": "res-b",
+            "source": SourceProfile.REVIEW_QUEUE,
+            "payload": {**from_notes.payload, "reviewer": "   "},
+        }
+    )
+    assert world.with_facts(blank).gate().state is CONFLICTING
+    empty = blank.model_copy(update={"id": "res-e", "payload": {**blank.payload, "reviewer": ""}})
+    assert world.with_facts(empty).snapshot().findings, "an empty reviewer is not a valid payload"
+    assert world.with_facts(empty).gate().state is CONFLICTING
+    reviewed = blank.model_copy(
+        update={"id": "res-ok", "payload": {**blank.payload, "reviewer": "owner"}}
+    )
+    assert world.with_facts(reviewed).gate().state is READY
+
+
+# --- dates the calendar cannot hold --------------------------------------------
+
+
+@pytest.mark.parametrize("ship_date", [date(1, 1, 5), date(1, 1, 1), date(9999, 12, 31)])
+def test_dates_outside_the_calendar_are_a_finding_not_an_exception(ship_date: date) -> None:
+    order = order_fact(ship_date=ship_date, valid_from=CUTOFF - 12 * HOUR)
+    world = base().replace_fact("w-order", payload=order.payload)
+    result = world.gate()
+    assert result.state is INCOMPLETE
+    if ship_date.year == 1:
+        assert finding(result, "bad_dates").entity_key == ORDER_KEY
+
+
 # --- declarative conflict rules ---------------------------------------------
 
 
@@ -750,77 +1070,108 @@ def test_a_superseded_resolution_no_longer_clears() -> None:
 # --- inbound ETA disagreements ---------------------------------------------
 
 
-def inbound_pair(
-    *,
-    first_to: datetime | None = None,
-    second_from: datetime = AS_OF,
-    second_eta: date = date(2026, 3, 9),
-) -> World:
-    first = inbound_fact("ib-1", "I1", eta=date(2026, 3, 6), valid_from=AS_OF - 5 * HOUR, valid_to=first_to)
-    second = inbound_fact("ib-2", "I1", eta=second_eta, valid_from=second_from)
+def tied_inbound(second_eta: date = date(2026, 3, 9)) -> World:
+    """Two inbound facts for one delivery that start together and name different ETAs."""
+    first = inbound_fact("ib-1", "I1", eta=date(2026, 3, 6))
+    second = inbound_fact("ib-2", "I1", eta=second_eta)
     return base().with_facts(first, second)
 
 
-def test_a_newer_observation_ends_the_older_one_so_it_is_not_a_disagreement() -> None:
+def inbound_resolution(left: str, right: str) -> Fact:
+    return resolution_fact(
+        "res-ib",
+        "inbound:I1",
+        rule_id="inbound_eta_disagrees",
+        left_fact_id=left,
+        right_fact_id=right,
+        known_at=CUTOFF - MINUTE,
+        valid_from=CUTOFF - MINUTE,
+    )
+
+
+def test_a_newer_observation_replaces_the_older_so_it_is_not_a_disagreement() -> None:
     # Two exports, ETA moved from 6 Mar to 9 Mar: the second replaces the first.
-    assert inbound_pair().gate().state is READY
+    first = inbound_fact("ib-1", "I1", eta=date(2026, 3, 6), valid_from=AS_OF - 5 * HOUR)
+    second = inbound_fact("ib-2", "I1", eta=date(2026, 3, 9))
+    assert base().with_facts(first, second).gate().state is READY
 
 
-def test_inbound_etas_disagreeing_over_overlapping_valid_time_conflict() -> None:
-    world = inbound_pair(first_to=AS_OF + 2 * HOUR)  # the first promise outlives the second's start
+def test_valid_to_on_an_older_observation_is_ignored() -> None:
+    first = inbound_fact(
+        "ib-1", "I1", eta=date(2026, 3, 6), valid_from=AS_OF - 5 * HOUR, valid_to=CUTOFF + 99 * HOUR
+    )
+    second = inbound_fact("ib-2", "I1", eta=date(2026, 3, 9))
+    assert base().with_facts(first, second).gate().state is READY
+
+
+def test_a_lots_valid_to_does_not_end_the_observation() -> None:
+    # The lot export says valid_to is half an hour in; the observation is still the current one.
+    lot = lot_fact("w-lot-navy", "LOT-N1", "NAVY", "500", valid_to=AS_OF + 30 * MINUTE)
+    world = base().without(fact_id="w-lot-navy").with_facts(lot)
+    late_claim = qc_fact(
+        "qc-late", "LOT-N1", "50", valid_from=AS_OF + 45 * MINUTE, known_at=AS_OF + 55 * MINUTE
+    )
+    assert world.with_facts(late_claim).gate().state is CONFLICTING
+
+
+def test_rules_pair_only_the_current_observation() -> None:
+    # An old lot observation overlapped by a QC claim, but a newer observation has replaced it.
+    old = lot_fact("lot-old", "LOT-N1", "NAVY", "500", valid_from=CUTOFF - 30 * HOUR)
+    world = (
+        base()
+        .without(fact_id="w-lot-navy")
+        .with_facts(
+            old,
+            lot_fact("lot-new", "LOT-N1", "NAVY", "500", valid_from=CUTOFF - 2 * HOUR),
+            qc_fact("qc-1", "LOT-N1", "50", valid_from=CUTOFF - 20 * HOUR),
+        )
+    )
     result = world.gate()
+    assert finding(result, "conflict_rule").fact_ids == ("lot-new", "qc-1")
+    # Resolving the pair with the superseded observation does not clear the real one.
+    stale_pair = resolution_fact(
+        "res-old",
+        "lot:LOT-N1",
+        rule_id="qc_claims_against_lot",
+        left_fact_id="lot-old",
+        right_fact_id="qc-1",
+        known_at=CUTOFF - MINUTE,
+        valid_from=CUTOFF - MINUTE,
+    )
+    assert world.with_facts(stale_pair).gate().state is CONFLICTING
+
+
+def test_inbound_etas_disagreeing_with_the_same_start_conflict() -> None:
+    result = tied_inbound().gate()
     assert result.state is CONFLICTING
     conflict = finding(result, "conflict_rule")
     assert conflict.rule_id == "inbound_eta_disagrees"
     assert conflict.entity_key == "inbound:I1"
     assert set(conflict.fact_ids) == {"ib-1", "ib-2"}
+    assert "tie_conflict" not in codes(result), "the rule owns this disagreement"
 
 
 def test_inbound_etas_that_agree_do_not_conflict() -> None:
-    world = inbound_pair(first_to=AS_OF + 2 * HOUR, second_eta=date(2026, 3, 6))
-    assert world.gate().state is READY
+    assert tied_inbound(second_eta=date(2026, 3, 6)).gate().state is READY
+
+
+def test_inbound_facts_that_tie_for_another_reason_are_a_tie_conflict() -> None:
+    first = inbound_fact("ib-1", "I1", qty="200")
+    second = inbound_fact("ib-2", "I1", qty="300")
+    result = base().with_facts(first, second).gate()
+    assert result.state is CONFLICTING
+    assert codes(result, CONFLICTING) == {"tie_conflict"}
 
 
 def test_inbound_conflict_is_cleared_by_a_resolution_for_that_pair() -> None:
-    world = inbound_pair(first_to=AS_OF + 2 * HOUR)
-    cleared = world.with_facts(
-        resolution_fact(
-            "res-ib",
-            "inbound:I1",
-            rule_id="inbound_eta_disagrees",
-            left_fact_id="ib-1",
-            right_fact_id="ib-2",
-            known_at=CUTOFF - MINUTE,
-            valid_from=CUTOFF - MINUTE,
-        )
-    )
-    assert cleared.gate().state is READY
-    # The resolution names the pair either way round: the rule is symmetric.
-    swapped = world.with_facts(
-        resolution_fact(
-            "res-ib",
-            "inbound:I1",
-            rule_id="inbound_eta_disagrees",
-            left_fact_id="ib-2",
-            right_fact_id="ib-1",
-            known_at=CUTOFF - MINUTE,
-            valid_from=CUTOFF - MINUTE,
-        )
-    )
-    assert swapped.gate().state is READY
-
-
-def test_same_start_inbound_disagreement_is_a_rule_conflict_a_resolution_can_clear() -> None:
-    first = inbound_fact("ib-1", "I1", eta=date(2026, 3, 6))
-    second = inbound_fact("ib-2", "I1", eta=date(2026, 3, 9))
-    world = base().with_facts(first, second)
-    result = world.gate()
-    assert result.state is CONFLICTING and "conflict_rule" in codes(result)
-    assert "tie_conflict" not in codes(result), "inbound is not a required entity"
+    world = tied_inbound()
+    assert world.with_facts(inbound_resolution("ib-1", "ib-2")).gate().state is READY
+    # The rule is symmetric, so the resolution may name the pair either way round.
+    assert world.with_facts(inbound_resolution("ib-2", "ib-1")).gate().state is READY
 
 
 def test_inbound_for_another_colour_or_quality_is_not_this_orders_business() -> None:
-    first = inbound_fact("ib-1", "I1", "RED", eta=date(2026, 3, 6), valid_to=AS_OF + HOUR)
+    first = inbound_fact("ib-1", "I1", "RED", eta=date(2026, 3, 6))
     second = inbound_fact("ib-2", "I1", "RED", eta=date(2026, 3, 9))
     assert base().with_facts(first, second).gate().state is READY
 
@@ -960,3 +1311,183 @@ def test_snapshot_digest_independent_of_gate() -> None:
     before = snapshot_at(world.facts, CUTOFF)
     world.gate()
     assert snapshot_at(world.facts, CUTOFF) == before
+
+
+# ---------------------------------------------------------------------------
+# One defect at a time: never READY, and the state is the right one
+# ---------------------------------------------------------------------------
+
+WORKING = working_days(DEFAULT_POLICY_V1, SHIP_DATE)
+REQUIRED_FACT_IDS = (
+    ["w-order", "w-bom", "w-lot-navy", "w-lot-white", "w-trim-LABEL", "w-trim-ZIP"]
+    + [f"w-cap-{ln}-{d.isoformat()}" for ln in ("L1", "L2", "L3", "L4") for d in WORKING]
+)
+LIMIT_HOURS = {"w-order": 168, "w-bom": 168, "w-lot-navy": 24, "w-lot-white": 24}
+LIMIT_HOURS |= {"w-trim-LABEL": 48, "w-trim-ZIP": 48}
+
+
+def limit_for(fact_id: str) -> int:
+    return LIMIT_HOURS.get(fact_id, 24)
+
+
+def twin_of(fact: Fact) -> Fact:
+    """Same valid_from, different semantic payload."""
+    changes: dict[FactKind, dict[str, Any]] = {
+        FactKind.ORDER_REQUEST: {"order_value_inr": "1"},
+        FactKind.BOM: {"sam_minutes": "99"},
+        FactKind.FABRIC_LOT: {"qty": kg("1")},
+        FactKind.TRIM_STATUS: {"supplier": "SUP-X"},
+        FactKind.LINE_CAPACITY: {"available_minutes": {"value": "1", "unit": "minutes"}},
+    }
+    return fact.model_copy(
+        update={"id": f"twin-{fact.id}", "payload": {**fact.payload, **changes[fact.kind]}}
+    )
+
+
+def replacement(fact: Fact, suffix: str, minutes: int) -> Fact:
+    """A correction: same kind, entity and valid time, known later."""
+    return fact.model_copy(
+        update={
+            "id": f"{fact.id}-{suffix}",
+            "supersedes_id": fact.id,
+            "known_at": fact.known_at + minutes * MINUTE,
+        }
+    )
+
+
+def only(world: World, fact_id: str) -> Fact:
+    return world.get(fact_id)
+
+
+Defect = tuple[World, GateState]
+
+
+@st.composite
+def one_defect(draw: st.DrawFn) -> tuple[str, Defect]:
+    world = BASE_WORLD
+    name = draw(
+        st.sampled_from(
+            [
+                "missing_required",
+                "stale",
+                "tie",
+                "competing",
+                "invalid_required",
+                "invalid_other_kind",
+                "qc_claim",
+                "inbound_disagreement",
+                "unit_mismatch",
+                "uncovered",
+                "old_coverage",
+                "older_artifact_covers",
+            ]
+        )
+    )
+    fact_id = draw(st.sampled_from(REQUIRED_FACT_IDS))
+    target = world.get(fact_id)
+    match name:
+        case "missing_required":
+            required = [i for i in REQUIRED_FACT_IDS if not i.startswith("w-lot")]
+            gone = draw(st.sampled_from(required))
+            return name, (world.without(fact_id=gone), INCOMPLETE)
+        case "stale":
+            extra = draw(st.integers(1, 5000))
+            old = CUTOFF - limit_for(fact_id) * HOUR - extra * MINUTE
+            return name, (world.replace_fact(fact_id, valid_from=old), STALE)
+        case "tie":
+            return name, (world.with_facts(twin_of(target)), CONFLICTING)
+        case "competing":
+            both = [replacement(target, "a", 1), replacement(target, "b", 2)]
+            return name, (world.with_facts(*both), CONFLICTING)
+        case "invalid_required":
+            return name, (world.replace_fact(fact_id, payload={"junk": "x"}), INCOMPLETE)
+        case "invalid_other_kind":
+            kind, key, _ = draw(
+                st.sampled_from([c for c in INVALID_CASES if c[2] and c[0] != FactKind.FABRIC_LOT])
+            )
+            return name, (world.with_facts(junk("bad", kind, key)), INCOMPLETE)
+        case "qc_claim":
+            state = draw(st.sampled_from(["checks_passed", "confirmed", "needs_review"]))
+            lot_id = draw(st.sampled_from(["LOT-N1", "LOT-W1"]))
+            claim = qc_fact("qc-x", lot_id, "5", review_state=state, valid_from=AS_OF - HOUR)
+            return name, (world.with_facts(claim), CONFLICTING)
+        case "inbound_disagreement":
+            colour = draw(st.sampled_from(["NAVY", "WHITE"]))
+            pair = (
+                inbound_fact("ib-1", "I1", colour, eta=date(2026, 3, 6)),
+                inbound_fact("ib-2", "I1", colour, eta=date(2026, 3, 7)),
+            )
+            return name, (world.with_facts(*pair), CONFLICTING)
+        case "unit_mismatch":
+            return name, (world.replace_fact("w-bom", payload=bom_fact(unit="m").payload), INCOMPLETE)
+        case "uncovered":
+            lot = draw(st.sampled_from(["LOT-N1", "LOT-W1"]))
+            wrong = draw(st.sampled_from([{}, cover("X")]))
+            return name, (world.without(entity_key=f"lot:{lot}").with_coverage(wrong), INCOMPLETE)
+        case "old_coverage":
+            lot = draw(st.sampled_from(["LOT-N1", "LOT-W1"]))
+            age = draw(st.integers(24 * 60 + 1, 20_000))
+            stale = cover(QUALITY, as_of=CUTOFF - age * MINUTE)
+            return name, (world.without(entity_key=f"lot:{lot}").with_coverage(stale), STALE)
+        case _:  # older_artifact_covers
+            lot = draw(st.sampled_from(["LOT-N1", "LOT-W1"]))
+            mixed = {
+                **cover(QUALITY, artifact_id="a-old", as_of=AS_OF - 3 * HOUR),
+                **cover("X", artifact_id="a-new", as_of=AS_OF),
+            }
+            return name, (world.without(entity_key=f"lot:{lot}").with_coverage(mixed), INCOMPLETE)
+
+
+@settings(max_examples=250, deadline=None)
+@given(one_defect())
+def test_exactly_one_defect_is_never_ready(drawn: tuple[str, Defect]) -> None:
+    name, (world, expected) = drawn
+    result = world.gate()
+    assert result.state is not READY, name
+    assert result.state is expected, (name, [(f.code, f.state) for f in result.findings])
+
+
+@st.composite
+def ready_variants(draw: st.DrawFn) -> tuple[World, datetime]:
+    """Policies, ship dates and extra irrelevant facts, with every required fact fresh."""
+    cut = draw(st.integers(5, 40))
+    data = DEFAULT_POLICY_V1.model_dump(mode="json")
+    ship = date(2026, 4, 1) + timedelta(days=draw(st.integers(0, 120)))
+    window = [ship - timedelta(days=n) for n in range(0, cut + 2)]
+    data["capacity"].update(
+        cut_to_ship_days=cut,
+        finishing_days=draw(st.integers(0, cut - 1)),
+        eligible_lines=draw(
+            st.lists(st.sampled_from(["L1", "L2", "L3", "L4", "L5", "L6"]), min_size=1, unique=True)
+        ),
+        non_working_weekdays=draw(
+            st.lists(
+                st.sampled_from(["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]), unique=True
+            )
+        ),
+        holidays=[d.isoformat() for d in draw(st.lists(st.sampled_from(window), unique=True, max_size=5))],
+    )
+    policy = PolicyDocument.model_validate(data)
+    world = ready_world(policy, ship)
+    extras: list[Fact] = []
+    if draw(st.booleans()):
+        extras.append(lot_fact("x-red", "LOT-R1", "RED", "10"))
+    if draw(st.booleans()):
+        extras.append(trim_fact("x-trim", "ZIP", style_id="S9"))
+    if draw(st.booleans()):
+        extras.append(capacity_fact("x-cap", "L1", ship + timedelta(days=3)))
+    if draw(st.booleans()):
+        extras.append(
+            make_fact("x-alloc", FactKind.FABRIC_ALLOCATION, "alloc:O2:OTHERQ:NAVY", {"qty": kg("5")})
+        )
+    shift = draw(st.integers(0, 23 * 60))  # minutes later than CUTOFF; lots stay inside 24 h
+    return world.with_facts(*extras), CUTOFF + shift * MINUTE
+
+
+@settings(max_examples=120, deadline=None)
+@given(ready_variants())
+def test_worlds_with_every_required_fact_fresh_are_ready(drawn: tuple[World, datetime]) -> None:
+    world, cutoff = drawn
+    result = world.gate(cutoff)
+    assert result.state is READY, [(f.code, f.entity_key) for f in result.findings]
+    assert all(f.state is READY for f in result.findings)
