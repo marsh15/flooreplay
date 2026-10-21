@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import os
+import warnings
 
 import pytest
 from hypothesis import HealthCheck, settings
+from hypothesis.errors import InvalidArgument
 
 from flooreplay.fixtures import (
     DEFAULT_FRESHNESS,
@@ -23,7 +25,12 @@ os.environ["FLOORREPLAY_DATABASE_URL"] = _test_url
 # Wall-clock deadlines and generation-speed health checks flake on a loaded machine; they
 # say nothing about correctness. Per-test max_examples is left alone.
 settings.register_profile("default", deadline=None, suppress_health_check=[HealthCheck.too_slow])
-settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", "default"))
+_profile = os.environ.get("HYPOTHESIS_PROFILE", "default")
+try:
+    settings.load_profile(_profile)
+except InvalidArgument:
+    warnings.warn(f"unknown HYPOTHESIS_PROFILE {_profile!r}; using 'default'", stacklevel=1)
+    settings.load_profile("default")
 
 
 @pytest.fixture

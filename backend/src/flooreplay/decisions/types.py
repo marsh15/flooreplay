@@ -379,6 +379,8 @@ def canonical(value: Any) -> Any:
     if isinstance(value, float):
         raise ValueError("floats are not canonicalizable; use Decimal")
     if isinstance(value, str):
+        if "\x00" in value:
+            raise ValueError("NUL characters are not allowed in text")  # Postgres cannot store them
         return unicodedata.normalize("NFC", value)
     if isinstance(value, datetime):
         if value.tzinfo is None or value.utcoffset() is None:

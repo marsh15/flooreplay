@@ -285,7 +285,9 @@ def test_generated_facts_are_valid(fact):
 
 @given(
     st.dictionaries(
-        st.text(max_size=6).filter(lambda k: unicodedata.is_normalized("NFC", k)),
+        st.text(st.characters(blacklist_characters="\x00"), max_size=6).filter(
+            lambda k: unicodedata.is_normalized("NFC", k)
+        ),
         st.integers(),
         min_size=1,
         max_size=8,

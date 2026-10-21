@@ -6,25 +6,32 @@ workspace with uuid ids and keys, and the session fixture rolls its transaction 
 
 from __future__ import annotations
 
+import re
+import threading
 import uuid
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
+import psycopg.errors
 import pytest
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from sqlalchemy import text
-from sqlalchemy.exc import DBAPIError, IntegrityError
+from sqlalchemy import event, text
+from sqlalchemy.exc import DataError, DBAPIError, IntegrityError
 from sqlalchemy.orm import Session
 
-from decisions.strategies import fact_histories
+from decisions.strategies import chain_histories, fact_histories, tied_lot_histories
 from flooreplay.db import SessionLocal
 from flooreplay.decisions import service, snapshot
-from flooreplay.decisions.facts import validate_fact
+from flooreplay.decisions.facts import semantic_digest, validate_fact
 from flooreplay.decisions.models import DecisionSourceArtifact, FactRow
-from flooreplay.decisions.types import Fact, FactKind, SourceProfile
+from flooreplay.decisions.types import Fact, FactKind, SourceProfile, canonical
 from flooreplay.errors import ServiceError
+from flooreplay.schema_head import SCHEMA_HEAD
 from flooreplay.workspaces import allowed_workspaces, write_workspace
 
 T0 = datetime(2026, 3, 1, 8, 0, tzinfo=UTC)
@@ -78,6 +85,13 @@ def lot_fact(
 
 def append(session: Session, workspace: str, fact: Fact) -> FactRow:
     return service.append_fact(session, fact, workspace_id=workspace, trusted_known_at=fact.known_at)
+
+
+def fresh_fact(key: str | None = None, **kw: Any) -> Fact:
+    """A fact stamped with the caller's "now", as an untrusted (server-clock) append expects."""
+    now = datetime.now(UTC)
+    kw.setdefault("valid_from", now - timedelta(hours=1))
+    return lot_fact(key, known_at=now, **kw)
 
 
 def artifact_row(workspace: str, *, key: str | None = None) -> DecisionSourceArtifact:
@@ -243,15 +257,39 @@ def test_duplicate_id_is_rejected(session: Session, workspace: str) -> None:
     assert caught.value.code == "FACT_ID_TAKEN"
 
 
-def test_id_owned_by_another_workspace_is_rejected_without_poisoning_the_session(
+def test_the_same_fact_id_may_exist_in_two_workspaces(session: Session, workspace: str) -> None:
+    shared = lot_fact()
+    other = "ws-" + uid()
+    append(session, workspace, shared)
+    append(session, other, shared)
+    assert [f.id for f in service.load_facts(session, workspace)] == [shared.id]
+    assert [f.id for f in service.load_facts(session, other)] == [shared.id]
+
+
+def test_an_id_taken_by_another_entity_of_the_workspace_is_rejected(
     session: Session, workspace: str
 ) -> None:
-    shared = lot_fact()
-    append(session, "ws-" + uid(), shared)
+    first = lot_fact()
+    append(session, workspace, first)
     with pytest.raises(ServiceError) as caught:
-        append(session, workspace, shared.model_copy(update={"entity_key": "lot:" + uid()}))
-    assert caught.value.code == "FACT_REJECTED"
+        append(session, workspace, lot_fact(id=first.id))  # different entity, same id
+    assert caught.value.code == "FACT_ID_TAKEN"
     assert append(session, workspace, lot_fact()) is not None  # the session is still usable
+
+
+def test_artifact_must_exist_in_the_same_workspace(session: Session, workspace: str) -> None:
+    foreign = artifact_row("ws-" + uid())
+    mine = artifact_row(workspace)
+    session.add_all([foreign, mine])
+    session.flush()
+    with pytest.raises(ServiceError) as caught:
+        append(session, workspace, lot_fact().model_copy(update={"artifact_id": foreign.id}))
+    assert caught.value.code == "ARTIFACT_UNKNOWN"
+    with pytest.raises(ServiceError) as caught:
+        append(session, workspace, lot_fact().model_copy(update={"artifact_id": "A-" + uid()}))
+    assert caught.value.code == "ARTIFACT_UNKNOWN"
+    row = append(session, workspace, lot_fact().model_copy(update={"artifact_id": mine.id}))
+    assert row.artifact_id == mine.id
 
 
 def test_valid_correction_chain_is_accepted(session: Session, workspace: str) -> None:
@@ -343,14 +381,41 @@ def test_client_supplied_known_at_is_rejected_without_the_trusted_flag(
     assert service.load_facts(session, workspace) == []
 
 
-def test_untrusted_append_stores_the_server_clock(
-    session: Session, workspace: str, monkeypatch: pytest.MonkeyPatch
+def test_untrusted_append_stores_the_database_clock(session: Session, workspace: str) -> None:
+    before = service.db_now(session)
+    row = service.append_fact(session, fresh_fact(), workspace_id=workspace)
+    after = service.db_now(session)
+    assert before <= row.known_at <= after
+
+
+def test_a_batch_shares_one_database_stamp(session: Session, workspace: str) -> None:
+    rows = service.append_facts(
+        session, [fresh_fact(), fresh_fact(), fresh_fact()], workspace_id=workspace
+    )
+    assert len({row.known_at for row in rows}) == 1
+
+
+def test_trusted_known_at_is_refused_inside_a_workspace_scope(
+    session: Session, workspace: str
 ) -> None:
-    server_time = datetime.now(UTC) + timedelta(seconds=7)
-    monkeypatch.setattr(service, "utc_now", lambda: server_time)
-    fact = lot_fact(valid_from=server_time - timedelta(hours=1), known_at=server_time)
-    row = service.append_fact(session, fact, workspace_id=workspace)
-    assert row.known_at == server_time
+    token = allowed_workspaces.set((workspace,))
+    try:
+        with pytest.raises(ServiceError) as caught:
+            service.append_fact(session, lot_fact(), workspace_id=workspace, trusted_known_at=T0)
+        assert (caught.value.code, caught.value.http_status) == ("TRUSTED_TIME_FORBIDDEN", 403)
+        # The untrusted path still works inside the scope.
+        assert service.append_fact(session, fresh_fact(), workspace_id=workspace) is not None
+    finally:
+        allowed_workspaces.reset(token)
+
+
+def test_is_settled_uses_the_settle_horizon(session: Session) -> None:
+    now = service.db_now(session)
+    assert not service.is_settled(session, now)
+    assert not service.is_settled(session, now - service.SETTLE_HORIZON + timedelta(seconds=5))
+    assert service.is_settled(session, now - service.SETTLE_HORIZON - timedelta(seconds=5))
+    with pytest.raises(ServiceError):
+        service.is_settled(session, datetime(2026, 3, 1))
 
 
 def test_trusted_known_at_overrides_the_fact(session: Session, workspace: str) -> None:
@@ -415,7 +480,7 @@ def test_workspace_scope_hides_other_workspaces_even_by_explicit_id(session: Ses
         assert service.load_facts(session, ws_b) == []
         assert session.query(DecisionSourceArtifact).count() == 0
         with pytest.raises(ServiceError) as caught:
-            append(session, ws_b, lot_fact())
+            service.append_fact(session, fresh_fact(), workspace_id=ws_b)
         assert caught.value.code == "WORKSPACE_UNKNOWN"
     finally:
         allowed_workspaces.reset(token)
@@ -455,35 +520,35 @@ def test_new_rows_default_to_the_write_workspace(session: Session) -> None:
 
 
 @settings(
-    max_examples=25,
+    max_examples=40,
     deadline=None,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture],
 )
-@given(history=fact_histories(), picks=st.lists(st.integers(0, 10**6), min_size=1, max_size=4))
+@given(
+    history=st.one_of(fact_histories(), chain_histories(), tied_lot_histories()),
+    picks=st.lists(st.integers(0, 10**6), min_size=1, max_size=4),
+)
 def test_db_snapshot_equals_the_pure_snapshot(
     session: Session, history: list[Fact], picks: list[int]
 ) -> None:
-    workspace = "ws-" + uid()
-    prefix = uid()[:12] + "-"
+    workspace = "ws-" + uid()  # ids are workspace-scoped, so generated ids can be used as is
     artifact = artifact_row(workspace)
     session.add(artifact)
     session.flush()
-
-    def remap(fact: Fact) -> Fact:
-        return fact.model_copy(
-            update={
-                "id": prefix + fact.id,
-                "supersedes_id": prefix + fact.supersedes_id if fact.supersedes_id else None,
-                "artifact_id": artifact.id if fact.artifact_id else None,
-            }
-        )
-
     # The store persists the validated, normalised form of each fact (for example payload
     # decimals lose trailing zeros), so the pure side is fed the same normalised facts.
-    mapped = [validate_fact(remap(f)) for f in history]
+    mapped = [
+        validate_fact(f.model_copy(update={"artifact_id": artifact.id if f.artifact_id else None}))
+        for f in history
+    ]
     try:
-        for fact in mapped:
-            service.append_fact(session, fact, workspace_id=workspace, trusted_known_at=fact.known_at)
+        rows = [
+            service.append_fact(session, f, workspace_id=workspace, trusted_known_at=f.known_at)
+            for f in mapped
+        ]
+        loaded = {f.id: f for f in service.load_facts(session, workspace)}
+        for row in rows:  # the stored digest is the digest of what comes back out
+            assert row.semantic_digest == semantic_digest(loaded[row.id])
         cutoffs = {
             max(f.known_at for f in mapped) + timedelta(days=1),
             min(f.known_at for f in mapped) - timedelta(seconds=1),
@@ -496,3 +561,223 @@ def test_db_snapshot_equals_the_pure_snapshot(
             assert from_db == pure
     finally:
         session.rollback()
+
+
+# ---------------------------------------------------------------------------
+# Schema and constraints that guard the store
+# ---------------------------------------------------------------------------
+
+
+def test_schema_head_is_the_alembic_head() -> None:
+    backend = Path(__file__).resolve().parents[2]
+    config = Config(str(backend / "alembic.ini"))
+    config.set_main_option("script_location", str(backend / "alembic"))
+    assert ScriptDirectory.from_config(config).get_current_head() == SCHEMA_HEAD
+
+
+def _constraint_literals(session: Session, name: str) -> set[str]:
+    definition = session.execute(
+        text("SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname = :n"), {"n": name}
+    ).scalar_one()
+    return set(re.findall(r"'([^']+)'", definition))
+
+
+def test_kind_and_source_checks_match_the_enums(session: Session) -> None:
+    assert _constraint_literals(session, "ck_facts_kind") == {k.value for k in FactKind}
+    assert _constraint_literals(session, "ck_facts_source") == {s.value for s in SourceProfile}
+
+
+@pytest.mark.parametrize(
+    ("override", "constraint"),
+    [({"kind": "nonsense"}, "ck_facts_kind"), ({"source": "nonsense"}, "ck_facts_source")],
+)
+def test_unknown_kind_and_source_are_rejected(
+    session: Session, workspace: str, override: dict[str, str], constraint: str
+) -> None:
+    statement = _FACT_INSERT.replace("'fabric_lot'", ":kind").replace("'erp_fabric_stock'", ":source")
+    params = {"kind": "fabric_lot", "source": "erp_fabric_stock"} | override
+    with pytest.raises(IntegrityError) as caught, session.begin_nested():
+        session.execute(text(statement), _insert_params(workspace) | params)
+    assert constraint in str(caught.value)
+
+
+def test_a_fact_cannot_supersede_itself(session: Session, workspace: str) -> None:
+    statement = _FACT_INSERT.replace("source,", "source, supersedes_id,").replace(
+        "'erp_fabric_stock',", "'erp_fabric_stock', :id,"
+    )
+    with pytest.raises(IntegrityError) as caught, session.begin_nested():
+        session.execute(text(statement), _insert_params(workspace))
+    assert "ck_facts_not_self_superseding" in str(caught.value)
+
+
+def test_database_rejects_a_cross_workspace_reference(session: Session, workspace: str) -> None:
+    foreign = lot_fact()
+    append(session, "ws-" + uid(), foreign)
+    statement = _FACT_INSERT.replace("source,", "source, supersedes_id,").replace(
+        "'erp_fabric_stock',", "'erp_fabric_stock', :target,"
+    )
+    with pytest.raises(IntegrityError) as caught, session.begin_nested():
+        session.execute(text(statement), _insert_params(workspace) | {"target": foreign.id})
+    assert "foreign key" in str(caught.value).lower()
+
+
+# ---------------------------------------------------------------------------
+# Text the database cannot hold
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("bad", ["a\x00b", "\x00"])
+def test_canonical_rejects_nul(bad: str) -> None:
+    with pytest.raises(ValueError, match="NUL"):
+        canonical(bad)
+    with pytest.raises(ValueError, match="NUL"):
+        canonical({"k": [bad]})
+    with pytest.raises(ValueError, match="NUL"):
+        canonical({bad: 1})
+    with pytest.raises(ValueError):  # so a Fact cannot be built around it
+        Fact.model_validate({**lot_fact().model_dump(), "payload": {"raw_text": bad}})
+
+
+def test_nul_in_keys_and_ids_is_fact_invalid(session: Session, workspace: str) -> None:
+    for fact in (lot_fact("lot:a\x00b"), lot_fact(id="F-\x00")):
+        with pytest.raises(ServiceError) as caught:
+            append(session, workspace, fact)
+        assert caught.value.code == "FACT_INVALID"
+
+
+def test_database_data_errors_become_fact_invalid() -> None:
+    error = DataError("INSERT", {}, psycopg.errors.DataError("unsupported escape"))
+    translated = service.translate_db_error(error)
+    assert translated is not None and translated.code == "FACT_INVALID"
+
+
+def test_unencodable_text_is_fact_invalid(session: Session, workspace: str) -> None:
+    payload = {
+        "qty": {"value": "1", "unit": "kg"},
+        "fabric_quality": "SJ180",
+        "colour": "\ud800",  # a lone surrogate: not encodable as UTF-8
+    }
+    broken = Fact.model_validate({**lot_fact().model_dump(), "payload": payload})
+    with pytest.raises(ServiceError) as caught:
+        append(session, workspace, broken)
+    assert caught.value.code == "FACT_INVALID"
+
+
+# ---------------------------------------------------------------------------
+# Locking, batches and concurrency
+# ---------------------------------------------------------------------------
+
+
+def test_batch_is_all_or_nothing(session: Session, workspace: str) -> None:
+    good, bad = lot_fact(), lot_fact(supersedes_id="F-" + uid())
+    with pytest.raises(ServiceError) as caught:
+        service.append_facts(session, [good, bad], workspace_id=workspace, trusted_known_at=T0)
+    assert caught.value.code == "CORRECTION_INVALID"
+    assert service.load_facts(session, workspace) == []
+    assert service.append_facts(session, [], workspace_id=workspace) == []
+
+
+def test_locks_are_taken_in_ascending_hash_order(workspace: str) -> None:
+    facts_ = [lot_fact("lot:" + uid()) for _ in range(8)]
+    seen: list[int] = []
+
+    def capture(_conn: Any, _cursor: Any, statement: str, parameters: Any, *_: Any) -> None:
+        if "pg_advisory_xact_lock" in statement:
+            seen.append(
+                next(iter(parameters.values())) if isinstance(parameters, dict) else parameters[0]
+            )
+
+    engine = SessionLocal.kw["bind"]
+    event.listen(engine, "before_cursor_execute", capture)
+    try:
+        with SessionLocal() as db:
+            service.append_facts(db, facts_, workspace_id=workspace, trusted_known_at=T0)
+            db.rollback()
+    finally:
+        event.remove(engine, "before_cursor_execute", capture)
+    assert len(seen) == len(facts_)
+    assert seen == sorted(seen)
+
+
+def test_opposite_order_batches_do_not_deadlock() -> None:
+    ws = "ws-" + uid()
+    failures: list[str] = []
+
+    def worker(order: list[str], barrier: threading.Barrier) -> None:
+        try:
+            with SessionLocal() as db:
+                batch = [fresh_fact(key) for key in order]
+                barrier.wait()
+                service.append_facts(db, batch, workspace_id=ws)
+                db.commit()
+        except Exception as exc:  # report, do not hang the join
+            failures.append(f"{type(exc).__name__}: {exc}")
+
+    for _ in range(15):
+        first, second = "lot:" + uid(), "lot:" + uid()
+        barrier = threading.Barrier(2)
+        threads = [
+            threading.Thread(target=worker, args=([first, second], barrier)),
+            threading.Thread(target=worker, args=([second, first], barrier)),
+        ]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=60)
+    assert failures == []
+
+
+def test_concurrent_corrections_of_one_target_serialise() -> None:
+    ws = "ws-" + uid()
+    key = "lot:" + uid()
+    base = lot_fact(key, valid_from=T0 - timedelta(days=1))
+    with SessionLocal() as db:
+        service.append_fact(db, base, workspace_id=ws, trusted_known_at=T0)
+        db.commit()
+    barrier = threading.Barrier(2)
+    outcomes: list[str] = []
+
+    def correct(kg: str) -> None:
+        with SessionLocal() as db:
+            fact = fresh_fact(key, kg=kg, supersedes_id=base.id, valid_from=base.valid_from)
+            barrier.wait()
+            try:
+                service.append_fact(db, fact, workspace_id=ws)
+                db.commit()
+                outcomes.append("ok")
+            except ServiceError as exc:
+                db.rollback()
+                outcomes.append(exc.code)
+
+    threads = [threading.Thread(target=correct, args=(kg,)) for kg in ("1", "2")]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=60)
+    # Both corrections are valid (a competing-replacement finding, not an error), and the
+    # stamps are ordered by lock acquisition, so the strict-after rule holds for both.
+    assert outcomes == ["ok", "ok"]
+    with SessionLocal() as db:
+        assert len(service.load_facts(db, ws)) == 3
+
+
+def test_deadlock_and_serialization_failures_ask_for_a_retry() -> None:
+    for orig in (psycopg.errors.DeadlockDetected("x"), psycopg.errors.SerializationFailure("x")):
+        translated = service.translate_db_error(DBAPIError("SELECT 1", {}, orig))
+        assert translated is not None
+        assert (translated.code, translated.http_status, translated.retry_after) == (
+            "RETRY",
+            409,
+            1,
+        )
+    other = DBAPIError("SELECT 1", {}, psycopg.errors.UndefinedTable("x"))
+    assert service.translate_db_error(other) is None
+
+
+def test_append_requires_read_committed() -> None:
+    with SessionLocal() as db:
+        db.connection(execution_options={"isolation_level": "REPEATABLE READ"})
+        with pytest.raises(ServiceError) as caught:
+            service.append_fact(db, fresh_fact(), workspace_id="ws-" + uid())
+        assert caught.value.code == "ISOLATION_UNSUPPORTED"
+        db.rollback()
