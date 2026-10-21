@@ -25,6 +25,7 @@ jobs:
       FLOORREPLAY_TEST_DATABASE_URL: postgresql+psycopg://flooreplay_test@localhost:5432/flooreplay_release_test
       FLOORREPLAY_BUILD_ID: ${{ github.sha }}
       FLOORREPLAY_OPENAI_API_KEY: ''
+      FLOORREPLAY_ANTHROPIC_API_KEY: ''
       E2E_USERNAME: browser-owner
       E2E_PASSWORD: disposable-browser-test-password
     steps:

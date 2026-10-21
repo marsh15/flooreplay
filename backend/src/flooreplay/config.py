@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     openai_generation_model: str = "gpt-4.1-mini-2025-04-14"
     openai_embedding_model: str = "text-embedding-3-small"
     openai_embedding_dimensions: int = 512
+    anthropic_api_key: str = ""
     openai_inr_per_usd: float = Field(default=90.0, gt=0)
     # Public-demo execution limits. The comparison suite executes 64 replays,
     # so it stays a local-owner action; single replays are rate limited per

@@ -1,6 +1,7 @@
 """Atomic shared allowance and execution slots; uncertain calls stay charged."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import timedelta
 from math import isfinite
 from typing import Any
@@ -13,6 +14,46 @@ from .errors import ServiceError
 from .paid_models import SpendEntry, SpendingAllocation, now
 
 PRICE_TABLE = {"version": "openai-2026-09-30", "effective_date": "2026-09-30", "generation_input_usd_per_million": 0.40, "generation_output_usd_per_million": 1.60, "embedding_usd_per_million": 0.02}
+# Per-model price table (USD per million tokens), added for the v2 provider Protocol.
+# Sources (official pricing pages, read 2026-10-20):
+#   Anthropic: https://platform.claude.com/docs/en/about-claude/pricing
+#   OpenAI:    https://platform.openai.com/docs/pricing
+# PRICE_TABLE above is the persisted v1 ledger snapshot and stays unchanged; this table
+# only prices calls that name a model. Bump PRICE_TABLE_VERSION and the effective date
+# whenever any row changes.
+PRICE_TABLE_VERSION = "models-2026-10-20"
+PRICE_TABLE_EFFECTIVE_DATE = "2026-10-20"
+
+
+@dataclass(frozen=True)
+class ModelPrice:
+    input_usd_per_million: float
+    output_usd_per_million: float
+    # Claude Haiku 5.5 is billed at a higher rate card when the prompt exceeds 100K tokens.
+    long_prompt_threshold: int | None = None
+    long_input_usd_per_million: float | None = None
+    long_output_usd_per_million: float | None = None
+
+
+MODEL_PRICES: dict[str, ModelPrice] = {
+    "gpt-4.1-mini-2025-04-14": ModelPrice(0.40, 1.60),
+    "text-embedding-3-small": ModelPrice(0.02, 0.0),
+    "claude-haiku-5-5": ModelPrice(0.10, 0.50, 100_000, 0.50, 2.50),
+    "claude-sonnet-5-5": ModelPrice(2.00, 10.00),
+}
+
+
+class UnknownModelPriceError(ValueError):
+    """A model has no row in the price table; pricing it as zero would hide spend."""
+
+
+def model_price(model: str) -> ModelPrice:
+    try:
+        return MODEL_PRICES[model]
+    except KeyError:
+        raise UnknownModelPriceError(f"No price table entry for model {model!r}; add one before using it") from None
+
+
 ALLOCATIONS = {"development": 100.0, "evaluation": 200.0, "reviewer": 100.0, "buffer": 100.0}
 
 
@@ -62,8 +103,17 @@ def settle(session: Session, entry_id: str, usd: float, details: dict[str, Any],
     entry.details = details
 
 
-def cost(input_tokens: int, output_tokens: int = 0, *, embedding: bool = False) -> float:
-    return (input_tokens * (0.02 if embedding else 0.40) + output_tokens * 1.60) / 1_000_000
+def cost(input_tokens: int, output_tokens: int = 0, *, embedding: bool = False, model: str | None = None) -> float:
+    if model is None:
+        return (input_tokens * (0.02 if embedding else 0.40) + output_tokens * 1.60) / 1_000_000
+    if embedding:
+        raise ValueError("Name the embedding model instead of passing embedding=True with model=")
+    price = model_price(model)
+    rate_in, rate_out = price.input_usd_per_million, price.output_usd_per_million
+    if price.long_prompt_threshold is not None and input_tokens > price.long_prompt_threshold:
+        assert price.long_input_usd_per_million is not None and price.long_output_usd_per_million is not None
+        rate_in, rate_out = price.long_input_usd_per_million, price.long_output_usd_per_million
+    return (input_tokens * rate_in + output_tokens * rate_out) / 1_000_000
 
 
 def move_allowance(session: Session, source: str, destination: str, amount_inr: float) -> dict[str, Any]:
