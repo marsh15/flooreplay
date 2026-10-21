@@ -381,6 +381,8 @@ def canonical(value: Any) -> Any:
     if isinstance(value, str):
         if "\x00" in value:
             raise ValueError("NUL characters are not allowed in text")  # Postgres cannot store them
+        if any("\ud800" <= ch <= "\udfff" for ch in value):
+            raise ValueError("lone surrogates are not allowed in text")  # not encodable as UTF-8
         return unicodedata.normalize("NFC", value)
     if isinstance(value, datetime):
         if value.tzinfo is None or value.utcoffset() is None:

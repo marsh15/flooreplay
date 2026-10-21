@@ -285,7 +285,7 @@ def test_generated_facts_are_valid(fact):
 
 @given(
     st.dictionaries(
-        st.text(st.characters(blacklist_characters="\x00"), max_size=6).filter(
+        st.text(st.characters(blacklist_characters="\x00", blacklist_categories=("Cs",)), max_size=6).filter(
             lambda k: unicodedata.is_normalized("NFC", k)
         ),
         st.integers(),
@@ -562,3 +562,9 @@ def test_decision_digest_golden_vector():
         decision_digest(value)
         == "sha256:ca866e332cd896d349f1e530cecb181f64a8a19f89aace95f4152743c375d73d"
     )
+
+
+@pytest.mark.parametrize("text", ["a\x00b", "lot\ud800", "\udfff"])
+def test_canonical_rejects_text_that_cannot_be_stored_or_hashed(text):
+    with pytest.raises(ValueError):
+        canonical({"note": text})

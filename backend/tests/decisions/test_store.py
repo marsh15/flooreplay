@@ -20,6 +20,7 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+from pydantic import ValidationError
 from sqlalchemy import event, text
 from sqlalchemy.exc import DataError, DBAPIError, IntegrityError
 from sqlalchemy.orm import Session
@@ -657,10 +658,9 @@ def test_unencodable_text_is_fact_invalid(session: Session, workspace: str) -> N
         "fabric_quality": "SJ180",
         "colour": "\ud800",  # a lone surrogate: not encodable as UTF-8
     }
-    broken = Fact.model_validate({**lot_fact().model_dump(), "payload": payload})
-    with pytest.raises(ServiceError) as caught:
-        append(session, workspace, broken)
-    assert caught.value.code == "FACT_INVALID"
+    # Unencodable text is refused when the fact is built, so it can never reach the store.
+    with pytest.raises(ValidationError):
+        Fact.model_validate({**lot_fact().model_dump(), "payload": payload})
 
 
 # ---------------------------------------------------------------------------
