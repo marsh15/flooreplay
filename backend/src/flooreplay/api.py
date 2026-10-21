@@ -81,6 +81,7 @@ from .parsing import (
 )
 from .ratelimit import enforce, make_execution_limiter
 from .retrieval import hybrid_search
+from .schema_head import SCHEMA_HEAD
 from .semantic_review import assess_run, publish_review, review_packet, review_report
 from .semantic_review import queue as review_queue
 from .service import (
@@ -501,7 +502,7 @@ def create_app(mode: str | None = None) -> FastAPI:
         try:
             with session_scope() as session:
                 revision = session.scalar(text("SELECT version_num FROM alembic_version"))
-                if revision != "20261001_operations":
+                if revision != SCHEMA_HEAD:
                     raise ServiceError("MIGRATION_REQUIRED", "Database migration must finish before serving traffic", 503)
         except ServiceError:
             raise

@@ -106,6 +106,7 @@ def scope_queries(state: Any) -> None:
         return
     # All incident-linked tables carry the same immutable factory boundary.
     from .ai_evaluation import AIClaimReview
+    from .decisions.models import DecisionSourceArtifact, FactRow
     from .incident_workflow import (
         IncidentCheck,
         IncidentResolution,
@@ -129,7 +130,7 @@ def scope_queries(state: Any) -> None:
     )
     from .paid_models import AIRun, CorpusRelease, RetrievalRun
     from .semantic_review import AIReviewPublication, AIRunAssessment
-    classes = (SourceSnapshot, ScenarioRevision, ExpectationRevision, ReplayAttempt, ImportAudit, SuiteRevision, ComparisonReport, ParserCall, ReviewCheck, IncidentRevision, IncidentAnalysis, IncidentModelJob, IncidentReview, IncidentSourceArtifact, AIRun, CorpusRelease, RetrievalRun, IncidentCheck, IncidentResolution, WorkflowActivity, WorkflowReceipt, AIReviewPublication, AIRunAssessment, AIClaimReview)
+    classes = (SourceSnapshot, ScenarioRevision, ExpectationRevision, ReplayAttempt, ImportAudit, SuiteRevision, ComparisonReport, ParserCall, ReviewCheck, IncidentRevision, IncidentAnalysis, IncidentModelJob, IncidentReview, IncidentSourceArtifact, AIRun, CorpusRelease, RetrievalRun, IncidentCheck, IncidentResolution, WorkflowActivity, WorkflowReceipt, AIReviewPublication, AIRunAssessment, AIClaimReview, FactRow, DecisionSourceArtifact)
     statement = state.statement
     for model in classes:
         statement = statement.options(with_loader_criteria(model, model.workspace_id.in_(identifiers), include_aliases=True))
