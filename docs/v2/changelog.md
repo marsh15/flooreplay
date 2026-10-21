@@ -48,3 +48,12 @@ Rules:
 - PLAN.md section: "Policy document" (the shape line) and "Constraints" CAPACITY and "Required facts" (working day). PLAN.md has not been edited yet; this entry is the pending change until the week-1 freeze (2026-10-27).
 - Affected tasks / tests: T7 (`decisions/policy.py`, `decisions/gate.py`, `tests/decisions/test_policy.py`, `test_gate.py`), T8 (CAPACITY and OVERTIME working-day count), T9 and the demo cases (policy digests include the new fields).
 - Decided by: owner
+
+### 2026-10-21 CAPACITY efficiency rule made precise (T8)
+
+- Date: 2026-10-21
+- Source interview id: none. No interview has happened; this is a T8 implementation decision that makes an ambiguous PLAN.md sentence exact. It is not a practitioner finding and the owner has not yet reviewed it.
+- What changed: before, PLAN.md said "efficiency is taken from the line fact or falls back to `default_efficiency_pct`", which does not say what to do when only some line-day facts carry `efficiency_pct`, or how several are combined. After: if EVERY eligible line-day fact in the sewing window gives `efficiency_pct`, efficiency is the weighted average `Σ(free × eff) / Σ free`, where `free = max(0, available_minutes − committed_minutes of other orders)` for that line-day, and `required = total_sam × Σ free / Σ(free × eff)`. If any line-day fact lacks `efficiency_pct` (or the free minutes are all zero) the single `default_efficiency_pct` is used for the whole order. A fact efficiency outside (0, 1] makes CAPACITY NOT_EVALUATED. The weights are free minutes, not raw available minutes, so that PASS holds exactly when `Σ(free × eff) >= total_sam`; that is monotone in every line's minutes, which the plan's monotonicity property needs.
+- PLAN.md section: "Constraints", CAPACITY (not edited; this entry is the pending change until the week-1 freeze).
+- Affected tasks / tests: T8 (`decisions/constraints.py`, `tests/decisions/test_constraints.py`: `test_efficiency_is_the_free_minute_weighted_average_when_every_line_day_gives_it`, `test_efficiency_weights_are_free_minutes_after_commitments`, the CAPACITY monotonicity property); T9 and the demo cases if a case supplies `efficiency_pct`.
+- Decided by: owner to confirm (implemented provisionally in T8).

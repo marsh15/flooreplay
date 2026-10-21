@@ -95,6 +95,7 @@ def order_fact(
     colours: Iterable[tuple[str, int]] = (("NAVY", 600), ("WHITE", 400)),
     ship_date: date = SHIP_DATE,
     style_id: str = STYLE_ID,
+    order_value: str = "2500000",
     **kwargs: Any,
 ) -> Fact:
     kwargs.setdefault("valid_from", CUTOFF - timedelta(hours=12))
@@ -107,7 +108,7 @@ def order_fact(
             "style_id": style_id,
             "colours": [{"colour": c, "qty_pcs": q} for c, q in colours],
             "ship_date": ship_date,
-            "order_value_inr": "2500000",
+            "order_value_inr": order_value,
             "partial_shipment_allowed": True,
         },
         **kwargs,
@@ -121,6 +122,7 @@ def bom_fact(
     unit: str = "kg",
     consumption: str = "0.35",
     trim_ids: Iterable[str] = TRIM_IDS,
+    sam_minutes: str = "12.5",
     **kwargs: Any,
 ) -> Fact:
     kwargs.setdefault("valid_from", CUTOFF - timedelta(hours=12))
@@ -132,7 +134,7 @@ def bom_fact(
             "fabric_quality": QUALITY,
             "consumption_per_pc": {"value": consumption, "unit": unit},
             "trims": [{"trim_id": t, "qty_per_pc": "1"} for t in trim_ids],
-            "sam_minutes": "12.5",
+            "sam_minutes": sam_minutes,
         },
         **kwargs,
     )
@@ -170,13 +172,19 @@ def qc_fact(
     *,
     review_state: str = "checks_passed",
     issue: str = "shade_fail",
+    unit: str = "kg",
     **kwargs: Any,
 ) -> Fact:
     return make_fact(
         fact_id,
         FactKind.FABRIC_QC,
         f"lot:{lot_id}",
-        {"issue": issue, "qty": kg(qty), "review_state": review_state, "origin": "notes"},
+        {
+            "issue": issue,
+            "qty": {"value": qty, "unit": unit},
+            "review_state": review_state,
+            "origin": "notes",
+        },
         **kwargs,
     )
 
@@ -188,6 +196,7 @@ def inbound_fact(
     qty: str = "200",
     *,
     eta: date = date(2026, 3, 6),
+    unit: str = "kg",
     **kwargs: Any,
 ) -> Fact:
     return make_fact(
@@ -197,7 +206,7 @@ def inbound_fact(
         {
             "fabric_quality": QUALITY,
             "colour": colour,
-            "qty": kg(qty),
+            "qty": {"value": qty, "unit": unit},
             "eta": eta,
             "supplier": "SUP-1",
         },
@@ -206,25 +215,71 @@ def inbound_fact(
 
 
 def trim_fact(
-    fact_id: str, trim_id: str, on_hand: str = "100000", *, style_id: str = STYLE_ID, **kwargs: Any
+    fact_id: str,
+    trim_id: str,
+    on_hand: str = "100000",
+    *,
+    style_id: str = STYLE_ID,
+    inbound_qty: str | None = None,
+    eta: date | None = None,
+    **kwargs: Any,
 ) -> Fact:
+    payload: dict[str, Any] = {"on_hand": {"value": on_hand, "unit": "pcs"}, "supplier": "SUP-2"}
+    if inbound_qty is not None:
+        payload["inbound_qty"] = {"value": inbound_qty, "unit": "pcs"}
+    if eta is not None:
+        payload["eta"] = eta
     return make_fact(
-        fact_id,
-        FactKind.TRIM_STATUS,
-        f"trim:{style_id}:{trim_id}",
-        {"on_hand": {"value": on_hand, "unit": "pcs"}, "supplier": "SUP-2"},
-        **kwargs,
+        fact_id, FactKind.TRIM_STATUS, f"trim:{style_id}:{trim_id}", payload, **kwargs
     )
 
 
 def capacity_fact(
-    fact_id: str, line_id: str, day: date, minutes: str = "3000", **kwargs: Any
+    fact_id: str,
+    line_id: str,
+    day: date,
+    minutes: str = "3000",
+    *,
+    efficiency: str | None = None,
+    **kwargs: Any,
+) -> Fact:
+    payload: dict[str, Any] = {"available_minutes": {"value": minutes, "unit": "minutes"}}
+    if efficiency is not None:
+        payload["efficiency_pct"] = efficiency
+    return make_fact(
+        fact_id, FactKind.LINE_CAPACITY, f"line:{line_id}:{day.isoformat()}", payload, **kwargs
+    )
+
+
+def commitment_fact(
+    fact_id: str, order_id: str, line_id: str, day: date, minutes: str = "100", **kwargs: Any
 ) -> Fact:
     return make_fact(
         fact_id,
-        FactKind.LINE_CAPACITY,
-        f"line:{line_id}:{day.isoformat()}",
-        {"available_minutes": {"value": minutes, "unit": "minutes"}},
+        FactKind.LINE_COMMITMENT,
+        f"commit:{order_id}:{line_id}:{day.isoformat()}",
+        {"committed_minutes": {"value": minutes, "unit": "minutes"}},
+        **kwargs,
+    )
+
+
+def allocation_fact(
+    fact_id: str,
+    order_id: str,
+    colour: str,
+    qty: str = "100",
+    *,
+    quality: str = QUALITY,
+    unit: str = "kg",
+    **kwargs: Any,
+) -> Fact:
+    """Stock allocated to the committed order `order_id`."""
+    kwargs.setdefault("artifact_id", ERP_ARTIFACT)
+    return make_fact(
+        fact_id,
+        FactKind.FABRIC_ALLOCATION,
+        f"alloc:{order_id}:{quality}:{colour}",
+        {"qty": {"value": qty, "unit": unit}},
         **kwargs,
     )
 
@@ -236,6 +291,7 @@ def resolution_fact(
     rule_id: str,
     left_fact_id: str,
     right_fact_id: str,
+    usable_qty: Mapping[str, str] | None = None,
     **kwargs: Any,
 ) -> Fact:
     return make_fact(
@@ -246,7 +302,7 @@ def resolution_fact(
             "rule_id": rule_id,
             "left_fact_id": left_fact_id,
             "right_fact_id": right_fact_id,
-            "resolved_payload": {"usable_qty": kg("450")},
+            "resolved_payload": {"usable_qty": dict(usable_qty) if usable_qty else kg("450")},
             "reviewer": "owner",
         },
         **kwargs,
