@@ -13,6 +13,7 @@ from typing import Any, Protocol, runtime_checkable
 from flooreplay.decisions.extraction.schema import (
     LANGUAGES,
     SIGNAL_FIELDS,
+    normalize_note,
     note_digest,
 )
 from flooreplay.decisions.types import FrozenModel
@@ -27,6 +28,15 @@ class ProviderResult(FrozenModel):
 
 @runtime_checkable
 class GenerationProvider(Protocol):
+    """Turns one note into a raw `note-signal-v2` payload (`value` + `evidence` per field).
+
+    Contract: the caller passes `normalize_note(note)` (NFC), and the provider sends exactly
+    that text to the model. Evidence is located in the NFC note by `checks.locate_evidence`;
+    a provider that sent NFD text would have its evidence rejected as `span_not_found`.
+    Providers return the model's JSON untouched: offsets are never asked for, and nothing is
+    trusted until the deterministic checks have run.
+    """
+
     name: str
     model: str
 
@@ -40,8 +50,8 @@ class ProviderCalledError(RuntimeError):
 
 
 def empty_signal_raw(language: str = LANGUAGES[0]) -> dict[str, Any]:
-    """A schema-valid signal with every field null."""
-    raw: dict[str, Any] = {f: {"value": None, "span": None} for f in SIGNAL_FIELDS}
+    """A schema-valid signal with every field null (the provider schema's nullable fields)."""
+    raw: dict[str, Any] = {f: None for f in SIGNAL_FIELDS}
     raw["language"] = language
     return raw
 
@@ -70,7 +80,7 @@ class MockProvider:
         out_len = len(json.dumps(raw, sort_keys=True, ensure_ascii=False))
         return ProviderResult(
             raw=raw,
-            input_tokens=max(1, len(note) // 4),
+            input_tokens=max(1, len(normalize_note(note)) // 4),
             output_tokens=max(1, out_len // 4),
             model=self.model,
         )
