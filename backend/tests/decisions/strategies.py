@@ -205,5 +205,79 @@ def fact_histories(draw: DrawFn, max_size: int = 8) -> list[Fact]:
             if f.known_at < fact.known_at and (f.kind, f.entity_key) == (fact.kind, fact.entity_key)
         ]
         target = draw(st.sampled_from(earlier)).id if earlier and draw(st.booleans()) else None
-        history.append(fact.model_copy(update={"id": f"F{index}", "supersedes_id": target}))
+        update: dict[str, Any] = {"id": f"F{index}", "supersedes_id": target}
+        if target is not None:  # a correction fixes the same observation: same valid time
+            original = next(f for f in history if f.id == target)
+            update |= {"valid_from": original.valid_from, "valid_to": original.valid_to}
+        history.append(fact.model_copy(update=update))
+    return history
+
+
+_T0 = datetime(2026, 3, 1, 8, 0, tzinfo=UTC)
+
+
+def _lot(
+    fid: str,
+    valid_from: datetime,
+    valid_to: datetime | None,
+    known_at: datetime,
+    kg: str,
+    supersedes_id: str | None,
+    key: str = "lot:L1",
+) -> Fact:
+    return Fact(
+        id=fid,
+        kind=FactKind.FABRIC_LOT,
+        entity_key=key,
+        payload={"fabric_quality": "SJ180", "colour": "NAVY", "qty": {"value": kg, "unit": "kg"}},
+        valid_from=valid_from,
+        valid_to=valid_to,
+        known_at=known_at,
+        supersedes_id=supersedes_id,
+        source=SourceProfile.ERP_FABRIC_STOCK,
+        artifact_id=None,
+    )
+
+
+@st.composite
+def chain_histories(draw: DrawFn, max_depth: int = 5) -> list[Fact]:
+    """One lot observation corrected repeatedly (A <- B <- C ...), sometimes forking.
+
+    Biased towards deep chains: each correction usually targets the latest fact, sometimes an
+    earlier one (a fork, so two replacements compete). Corrections keep the original's valid
+    time and become known strictly later.
+    """
+    depth = draw(st.integers(2, max_depth))
+    root_known = _T0 + timedelta(minutes=draw(st.integers(0, 600)))
+    history = [_lot("C0", _T0, None, root_known, str(draw(st.sampled_from((100, 200)))), None)]
+    for index in range(1, depth):
+        latest = history[-1]
+        target = draw(st.sampled_from([latest, latest, *history]))
+        known = max(f.known_at for f in history) + timedelta(minutes=draw(st.integers(1, 600)))
+        kg = str(draw(st.sampled_from((100, 200, 300))))
+        history.append(_lot(f"C{index}", _T0, None, known, kg, target.id))
+    return history
+
+
+@st.composite
+def tied_lot_histories(draw: DrawFn, max_size: int = 6) -> list[Fact]:
+    """Lot observations for two entities with `valid_from` drawn from two values, so facts of
+    one entity often share a valid_from (ties) with equal or different payloads."""
+    history: list[Fact] = []
+    for index in range(draw(st.integers(1, max_size))):
+        key = draw(st.sampled_from(("lot:L1", "lot:L2")))
+        kg = str(draw(st.sampled_from((100, 200))))
+        target = None
+        same_entity = [f for f in history if f.entity_key == key]
+        if same_entity and draw(st.booleans()):
+            target = draw(st.sampled_from(same_entity))
+        if target is None:
+            valid_from = _T0 + timedelta(days=draw(st.integers(0, 1)))
+            known = valid_from + timedelta(minutes=draw(st.integers(0, 600)))
+            history.append(_lot(f"T{index}", valid_from, None, known, kg, None, key))
+        else:
+            known = target.known_at + timedelta(minutes=draw(st.integers(1, 600)))
+            history.append(
+                _lot(f"T{index}", target.valid_from, target.valid_to, known, kg, target.id, key)
+            )
     return history
