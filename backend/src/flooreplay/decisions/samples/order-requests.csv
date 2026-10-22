@@ -1,0 +1,2 @@
+order_id,buyer,style_id,colours,ship_date,order_value_inr,partial_shipment_allowed,fabric_quality,consumption_per_pc,consumption_unit,sam_minutes,trims
+PO-221,Buyer A (synthetic),POLO-221,"[{""colour"":""NAVY"",""qty_pcs"":8000},{""colour"":""WHITE"",""qty_pcs"":4000}]",2026-11-30,4200000,true,SJ180,0.72,m,18,"[{""trim_id"":""BUTTON-4H"",""qty_per_pc"":4},{""trim_id"":""LABEL-CARE"",""qty_per_pc"":1}]"

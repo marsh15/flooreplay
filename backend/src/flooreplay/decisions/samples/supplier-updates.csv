@@ -1,0 +1,3 @@
+ref,qty,unit,quality,colour,eta,supplier,qc_issue,qc_qty,lot_id
+SUP-221-A,900,m,SJ180,NAVY,2026-10-25,Supplier A (synthetic),,,L-221
+SUP-QC-221,0,m,SJ180,NAVY,2026-10-23,Supplier A (synthetic),shade_fail,120,L-221

@@ -1,0 +1,5 @@
+line_id,date,available_minutes,unit,efficiency_pct,commitment_order_id,committed_minutes
+L1,2026-10-21,24000,minutes,0.62,PO-EXISTING-1,8000
+L2,2026-10-21,22500,minutes,0.58,,
+L3,2026-10-21,21000,minutes,0.6,,
+L4,2026-10-21,20000,minutes,0.55,,
