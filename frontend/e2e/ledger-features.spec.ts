@@ -66,7 +66,7 @@ test('cumulative readings and a reviewed alias import with every source value ac
   await page.getByRole('link', { name: 'Open the new investigation' }).click()
   const incidentId = decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1) ?? '')
 
-  await page.getByRole('link', { name: 'Incident library', exact: true }).click()
+  await page.getByRole('link', { name: 'Shortfall investigations (v1)', exact: true }).click()
   await page.getByRole('link', { name: 'Import incident evidence', exact: true }).click()
   await page.getByLabel('Incident', { exact: true }).selectOption(incidentId)
   await page.getByLabel('Source profile').selectOption('production-v1')
@@ -95,7 +95,7 @@ test('cumulative readings and a reviewed alias import with every source value ac
   await expect(health.getByText('2 due intervals reported; 2 below plan.')).toBeVisible()
 
   // The MES names the line differently; a reviewed alias reconciles it and keeps the original.
-  await page.getByRole('link', { name: 'Incident library', exact: true }).click()
+  await page.getByRole('link', { name: 'Shortfall investigations (v1)', exact: true }).click()
   await page.getByRole('link', { name: 'Import incident evidence', exact: true }).click()
   await page.getByLabel('Incident', { exact: true }).selectOption(incidentId)
   await page.getByLabel('Source profile').selectOption('production-v1')

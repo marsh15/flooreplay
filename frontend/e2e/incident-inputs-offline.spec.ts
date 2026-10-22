@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 test('saved calculation inputs open their source records offline', async ({ page }) => {
   await page.route('**/api/v1/**', (route) => route.abort())
-  await page.goto('/')
+  await page.goto('/investigations')
   await page.getByRole('link', { name: 'Delayed start on sewing line S4' }).click()
   await expect(page.getByRole('heading', { name: 'Calculation inputs' })).toBeVisible()
   await expect(

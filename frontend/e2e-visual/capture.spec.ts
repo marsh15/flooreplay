@@ -9,7 +9,8 @@ const viewports = [
   { name: 'mobile', width: 390, height: 844 },
 ]
 const routes = [
-  { name: 'library', path: '/' },
+  { name: 'decisions-home', path: '/' },
+  { name: 'incident-library', path: '/investigations' },
   { name: 'incident', path: '/incidents/INC-001' },
   { name: 'demo', path: '/demo' },
   { name: 'imports', path: '/incidents/imports' },

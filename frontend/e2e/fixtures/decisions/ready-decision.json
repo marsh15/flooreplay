@@ -1,0 +1,258 @@
+{
+  "order_id": "POLO-221",
+  "cutoff": "2026-10-22T05:30:00Z",
+  "settled": true,
+  "policy": {
+    "digest": "policy-v1-abc",
+    "label": "Tiruppur default",
+    "engine_version": "decision-v1"
+  },
+  "snapshot_digest": "snapshot-ready-221",
+  "decision_digest": "decision-ready-221",
+  "gate": {
+    "state": "READY",
+    "findings": [],
+    "coverage_used": {
+      "artifact_id": "artifact-erp-221",
+      "as_of": "2026-10-22T04:00:00Z",
+      "qualities": ["SJ180"]
+    }
+  },
+  "constraints": [
+    {
+      "constraint": "FABRIC",
+      "subject": "NAVY",
+      "status": "PASS",
+      "fact_ids": ["fact-lot-221", "fact-allocation-221", "fact-bom-221"],
+      "steps": [
+        {
+          "label": "Required fabric",
+          "expression": "5,000 pcs × 0.82 m/pc × (1 + 0.05)",
+          "value": "4,305 m"
+        },
+        {
+          "label": "Available after commitments",
+          "expression": "5,200 m − 300 m",
+          "value": "4,900 m"
+        }
+      ],
+      "detail": "Fabric requirement is covered.",
+      "consumed_by": ["POLO-219"],
+      "pending_review_fact_ids": []
+    },
+    {
+      "constraint": "SAFETY",
+      "subject": "NAVY",
+      "status": "PASS",
+      "fact_ids": ["fact-lot-221", "fact-allocation-221", "fact-bom-221"],
+      "steps": [
+        { "label": "Free after order", "expression": "4,900 m − 4,305 m", "value": "595 m" },
+        { "label": "Safety floor", "expression": "5,200 m × 0.10", "value": "520 m" }
+      ],
+      "detail": "Remaining stock meets the safety floor.",
+      "consumed_by": ["POLO-219"],
+      "pending_review_fact_ids": []
+    },
+    {
+      "constraint": "TRIMS",
+      "subject": "BTN-01",
+      "status": "PASS",
+      "fact_ids": ["fact-trim-221", "fact-bom-221", "fact-order-221"],
+      "steps": [
+        {
+          "label": "Required buttons",
+          "expression": "5,000 pcs × 5 buttons/pc × (1 + 0.02)",
+          "value": "25,500 pcs"
+        },
+        { "label": "On hand", "expression": "30,000 pcs", "value": "30,000 pcs" }
+      ],
+      "detail": "Trim stock is sufficient.",
+      "consumed_by": [],
+      "pending_review_fact_ids": []
+    },
+    {
+      "constraint": "CAPACITY",
+      "subject": "Eligible lines",
+      "status": "PASS",
+      "fact_ids": ["fact-capacity-221", "fact-commitment-221", "fact-order-221", "fact-bom-221"],
+      "steps": [
+        {
+          "label": "Required minutes",
+          "expression": "5,000 pcs × 2.4 min/pc ÷ 0.8",
+          "value": "15,000 min"
+        },
+        {
+          "label": "Available minutes",
+          "expression": "18,000 min − 1,000 min",
+          "value": "17,000 min"
+        }
+      ],
+      "detail": "Capacity is sufficient.",
+      "consumed_by": ["POLO-219"],
+      "pending_review_fact_ids": []
+    },
+    {
+      "constraint": "OVERTIME",
+      "subject": "Eligible lines",
+      "status": "NOT_EVALUATED",
+      "fact_ids": ["fact-capacity-221"],
+      "steps": [],
+      "detail": "Overtime is evaluated only when capacity fails.",
+      "consumed_by": [],
+      "pending_review_fact_ids": []
+    },
+    {
+      "constraint": "APPROVAL",
+      "subject": "Order value and quantity",
+      "status": "PASS",
+      "fact_ids": ["fact-order-221"],
+      "steps": [
+        {
+          "label": "Order value",
+          "expression": "₹125,000 ≤ ₹500,000",
+          "value": "Within threshold"
+        },
+        {
+          "label": "Order quantity",
+          "expression": "5,000 pcs ≤ 20,000 pcs",
+          "value": "Within threshold"
+        }
+      ],
+      "detail": "Order is within approval thresholds.",
+      "consumed_by": [],
+      "pending_review_fact_ids": []
+    }
+  ],
+  "recommendation": {
+    "outcome": "ACCEPT",
+    "candidate_outcome": null,
+    "conditions": [],
+    "reasons": ["Evidence is ready and required constraints pass."]
+  },
+  "facts": [
+    {
+      "id": "fact-order-221",
+      "kind": "order_request",
+      "entity_key": "order:POLO-221",
+      "payload": {
+        "buyer": "Buyer A",
+        "style_id": "POLO-221",
+        "ship_date": "2026-11-12",
+        "order_value_inr": "125000",
+        "partial_shipment_allowed": true,
+        "colours": [{ "colour": "NAVY", "qty_pcs": 5000 }]
+      },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:05:00Z",
+      "supersedes_id": null,
+      "source": "order_requests",
+      "artifact_id": "artifact-order-221"
+    },
+    {
+      "id": "fact-lot-221",
+      "kind": "fabric_lot",
+      "entity_key": "lot:L-221",
+      "payload": {
+        "fabric_quality": "SJ180",
+        "colour": "NAVY",
+        "qty": { "value": "5200", "unit": "m" },
+        "gsm": "180",
+        "width_m": "1.5"
+      },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:06:00Z",
+      "supersedes_id": "fact-lot-220",
+      "source": "erp_fabric_stock",
+      "artifact_id": "artifact-erp-221"
+    },
+    {
+      "id": "fact-lot-220",
+      "kind": "fabric_lot",
+      "entity_key": "lot:L-221",
+      "payload": {
+        "fabric_quality": "SJ180",
+        "colour": "NAVY",
+        "qty": { "value": "5000", "unit": "m" },
+        "gsm": "180",
+        "width_m": "1.5"
+      },
+      "valid_from": "2026-10-21T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-21T04:06:00Z",
+      "supersedes_id": null,
+      "source": "erp_fabric_stock",
+      "artifact_id": "artifact-erp-220"
+    },
+    {
+      "id": "fact-allocation-221",
+      "kind": "fabric_allocation",
+      "entity_key": "alloc:POLO-219:SJ180:NAVY",
+      "payload": { "qty": { "value": "300", "unit": "m" } },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:06:00Z",
+      "supersedes_id": null,
+      "source": "erp_fabric_stock",
+      "artifact_id": "artifact-erp-221"
+    },
+    {
+      "id": "fact-bom-221",
+      "kind": "bom",
+      "entity_key": "bom:POLO-221",
+      "payload": {
+        "fabric_quality": "SJ180",
+        "consumption_per_pc": { "value": "0.82", "unit": "m" },
+        "trims": [{ "trim_id": "BTN-01", "qty_per_pc": "5" }],
+        "sam_minutes": "2.4"
+      },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:04:00Z",
+      "supersedes_id": null,
+      "source": "order_requests",
+      "artifact_id": "artifact-order-221"
+    },
+    {
+      "id": "fact-capacity-221",
+      "kind": "line_capacity",
+      "entity_key": "line:L1:2026-11-03",
+      "payload": {
+        "available_minutes": { "value": "18000", "unit": "minutes" },
+        "efficiency_pct": "0.8"
+      },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:07:00Z",
+      "supersedes_id": null,
+      "source": "shift_capacity",
+      "artifact_id": "artifact-capacity-221"
+    },
+    {
+      "id": "fact-commitment-221",
+      "kind": "line_commitment",
+      "entity_key": "commit:POLO-219:L1:2026-11-03",
+      "payload": { "committed_minutes": { "value": "1000", "unit": "minutes" } },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:07:00Z",
+      "supersedes_id": null,
+      "source": "shift_capacity",
+      "artifact_id": "artifact-capacity-221"
+    },
+    {
+      "id": "fact-trim-221",
+      "kind": "trim_status",
+      "entity_key": "trim:POLO-221:BTN-01",
+      "payload": { "on_hand": { "value": "30000", "unit": "pcs" }, "supplier": "Button supplier" },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:06:00Z",
+      "supersedes_id": null,
+      "source": "sheet_trims_status",
+      "artifact_id": "artifact-trims-221"
+    }
+  ],
+  "records": []
+}

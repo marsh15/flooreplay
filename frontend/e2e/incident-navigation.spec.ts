@@ -42,7 +42,7 @@ for (const destination of ['library', 'earlier revision']) {
     await page.goto('/incidents/INC-001?revision=2')
     await expect(page.getByLabel('Building analysis')).toBeVisible()
     if (destination === 'library')
-      await page.getByRole('link', { name: 'Incident library', exact: true }).click()
+      await page.getByRole('link', { name: 'Shortfall investigations (v1)', exact: true }).click()
     else await page.getByRole('combobox', { name: 'Evidence revision' }).selectOption('1')
     const completed = page.waitForResponse(
       (response) =>
@@ -52,7 +52,7 @@ for (const destination of ['library', 'earlier revision']) {
     release()
     await completed
     if (destination === 'library') {
-      await expect(page).toHaveURL('/')
+      await expect(page).toHaveURL('/investigations')
       await expect(
         page.getByRole('heading', { name: 'Incident library', exact: true }),
       ).toBeVisible()

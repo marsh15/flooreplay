@@ -28,7 +28,8 @@ async function performRequest<T>(
   const signal = init?.signal ? AbortSignal.any([init.signal, deadline]) : deadline
   const token = options?.anonymous ? null : session.token()
   const headers = new Headers(init?.headers)
-  if (!headers.has('Content-Type') && init?.body) headers.set('Content-Type', 'application/json')
+  if (!headers.has('Content-Type') && init?.body && !(init.body instanceof FormData))
+    headers.set('Content-Type', 'application/json')
   if (token) headers.set('Authorization', `Bearer ${token}`)
   try {
     const response = await fetch(`${API_BASE}${path}`, {
@@ -113,6 +114,11 @@ export function apiRequest<T>(
 
 export function apiDownload(path: string): Promise<Blob> {
   return performRequest(path, undefined, (response) => response.blob())
+}
+
+/** Successful commands such as adoption have no response document. */
+export function apiNoContent(path: string, init?: RequestInit): Promise<void> {
+  return performRequest(path, init, async () => undefined)
 }
 
 export class ApiError extends Error {

@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode; fullPage?: b
         <div className="flex flex-wrap gap-3">
           <Button onClick={() => window.location.reload()}>Reload page</Button>
           <Button asChild variant="outline">
-            <Link to="/">Back to incidents</Link>
+            <Link to="/">Back to order decisions</Link>
           </Button>
         </div>
       </div>

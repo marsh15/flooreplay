@@ -83,7 +83,7 @@ test('unfamiliar CSV creates baseline, mapped output and explicit correction whi
   const incidentId = decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1) ?? '')
   expect(incidentId).not.toBe(externalId)
 
-  await page.getByRole('link', { name: 'Incident library', exact: true }).click()
+  await page.getByRole('link', { name: 'Shortfall investigations (v1)', exact: true }).click()
   await page.getByRole('link', { name: 'Import incident evidence', exact: true }).click()
   await page.getByLabel('Incident', { exact: true }).selectOption(incidentId)
   await page.getByLabel('Source profile').selectOption('production-v1')
@@ -128,7 +128,7 @@ test('unfamiliar CSV creates baseline, mapped output and explicit correction whi
     Object.entries(before).filter(([name]) => name !== 'stale'),
   )
 
-  await page.getByRole('link', { name: 'Incident library', exact: true }).click()
+  await page.getByRole('link', { name: 'Shortfall investigations (v1)', exact: true }).click()
   await page.getByRole('link', { name: 'Import incident evidence', exact: true }).click()
   await page.getByLabel('Incident', { exact: true }).selectOption(incidentId)
   await page.getByLabel('Source profile').selectOption('production-v1')

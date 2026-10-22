@@ -1,0 +1,55 @@
+{
+  "ready_preview": {
+    "profile": "erp_fabric_stock",
+    "filename": "fabric-stock.csv",
+    "raw_digest": "raw-001",
+    "as_of": "2026-10-22T04:30:00Z",
+    "facts": [
+      {
+        "id": "erp-fabric-stock:raw-001:2",
+        "kind": "fabric_lot",
+        "entity_key": "lot:L-221",
+        "payload": {
+          "fabric_quality": "SJ180",
+          "colour": "NAVY",
+          "qty": { "value": "4000", "unit": "m" }
+        },
+        "valid_from": "2026-10-22T04:30:00Z",
+        "valid_to": null,
+        "known_at": "2026-10-22T04:30:00Z",
+        "supersedes_id": null,
+        "source": "erp_fabric_stock",
+        "artifact_id": null
+      }
+    ],
+    "notes": [],
+    "problems": [],
+    "coverage": {
+      "profile": "erp_fabric_stock",
+      "as_of": "2026-10-22T04:30:00Z",
+      "qualities": ["SJ180"]
+    },
+    "status": "READY",
+    "preview_digest": "preview-ready-001"
+  },
+  "blocked_preview": {
+    "profile": "erp_fabric_stock",
+    "filename": "fabric-stock.csv",
+    "raw_digest": "raw-blocked",
+    "as_of": "2026-10-22T04:30:00Z",
+    "facts": [],
+    "notes": [],
+    "problems": [
+      {
+        "row": 2,
+        "field": "qty",
+        "code": "thousands_separator",
+        "message": "Thousands separators are ambiguous; enter digits without grouping."
+      }
+    ],
+    "coverage": null,
+    "status": "BLOCKED",
+    "preview_digest": "preview-blocked-001"
+  },
+  "published": { "artifact_id": "artifact-001", "facts_created": 1 }
+}

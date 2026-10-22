@@ -37,7 +37,7 @@ for (const width of [1440, 390]) {
       }
       return route.fulfill({ status: 503, json: { message: 'Unavailable' } })
     })
-    await page.goto('/')
+    await page.goto('/investigations')
     await expect(
       page.getByRole('link', { name: 'Start the example investigation' }),
     ).toHaveAttribute('href', '/incidents/INC-001?revision=2')
@@ -74,7 +74,7 @@ test('offline first visit opens the saved example and explains unavailable searc
   page,
 }) => {
   await page.route('**/api/v1/**', (route) => route.abort())
-  await page.goto('/')
+  await page.goto('/investigations')
   await expect(page.getByText(/Showing bundled saved demo cases/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Engineering fixtures (0)' })).toBeVisible()
   await page.getByRole('searchbox', { name: 'Search incident evidence' }).fill('fabric')
@@ -140,7 +140,7 @@ test('library filters evidence and authenticated open actions without exposing a
     }
     return route.fulfill({ status: 503, json: { message: 'Unavailable' } })
   })
-  await page.goto('/')
+  await page.goto('/investigations')
   await expect(page.getByRole('combobox', { name: 'Assignee (open actions)' })).toBeDisabled()
   await expect(page.getByRole('link', { name: 'Try the safe action demo' })).toHaveAttribute(
     'href',
@@ -206,7 +206,7 @@ test('default library search excludes engineering fixtures', async ({ page }) =>
       })
     return route.fulfill({ status: 503, json: { message: 'Unavailable' } })
   })
-  await page.goto('/')
+  await page.goto('/investigations')
   await page.getByRole('searchbox', { name: 'Search incident evidence' }).fill('fabric')
   await expect(page.getByRole('link', { name: 'Case INC-001', exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Case FIXTURE-1', exact: true })).toHaveCount(0)
