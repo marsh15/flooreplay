@@ -1,6 +1,6 @@
 # FloorReplay 2.0 outer layer handoff
 
-Work branch: `codex/v2-outer-layer`, based on `origin/feat/v2-order-decisions` (`cd28b27`). No deployment, provider calls, shared-branch commits, or pull requests. The pre-existing, untracked `docs/v2/CODEX_HANDOFF.md` is preserved.
+Work branch: `codex/v2-outer-layer`, based on `origin/feat/v2-order-decisions` (`cd28b27`). No deployment, real provider calls, shared-branch commits, or pull requests. The pre-existing, untracked `docs/v2/CODEX_HANDOFF.md` is preserved.
 
 ## Package A — CSV preview imports
 
@@ -98,3 +98,58 @@ Needs from lead:
 - Adopt/review-resolve tolerate successful bodyless 200 or 204. Publish must enforce private workspace access, bind all preview identity inputs and remain idempotent on retry.
 - Owner-only adoption, complete-suite verification, and correction/supersession persistence stay authoritative on the backend.
 - Tamil/Tanglish examples and labels remain synthetic and need the owner's language review.
+
+## Package C — draft corpus and offline scoring
+
+Built:
+- `backend/evaluation/note-benchmark-v1/{notes.jsonl,gold.jsonl,pilot.jsonl,manifest.json,README.md,verify.py}`.
+- `backend/src/flooreplay/decisions/extraction/benchmark.py`.
+- `backend/tests/decisions/{test_benchmark,test_note_corpus}.py`.
+
+The corpus contains 100 individually drafted synthetic messages: 40/100 English, 30/100 Tamil script and 30/100 Tanglish. The 30-ID pilot is stratified 12/30 English, 9/30 Tamil and 9/30 Tanglish. Every note has `synthetic: true` and `drafted_by: "codex"`. Every gold row is `draft_unreviewed`; `manifest.frozen` is false. The manifest records exact-byte SHA-256 and row counts for all three JSONL files. Its verifier checks hashes, IDs, language counts, pairing, provenance, NFC and exact evidence membership without changing labels.
+
+Annotation choices awaiting owner review:
+- Gold uses the six direct `note-signal-v2` fields (null or `{value,evidence}`), plus note ID, language, source text and draft status. Duplicated text makes the scorer independent of filesystem reads.
+- Routine arrivals, questions, negated-only issues and explicit releases propose all-null QC signals. Mixed positive/negated messages label the live issue. Missing units and ambiguous lot attribution stay null.
+- Quantity values are plain decimal text, while evidence preserves source grouping and multipliers (`k`, `lakh`, `லட்சம்`). Two-lot and multi-quantity examples are intentional hard cases. The existing deterministic checks were not loosened to fit these labels.
+- `pilot.jsonl` contains only note ID objects, spread through the language groups. No real notes, company claims, or human review are asserted.
+
+`score_benchmark(gold_rows, predictions_by_note_id, checks_by_note_id)` is pure and never calls a provider. It reports field accuracy, missing-field recall, exact-once span validity and checks-passed precision, each with numerator/denominator and a Decimal ratio, overall, by language, and by field within language. Zero denominators yield `None`. Missing predictions are incorrect rather than successful null predictions. Text compares in NFC, quantities use the checks' Decimal parser, overlapping evidence occurrences are ambiguous, and trusted precision requires both the PASSED check value and its paired prediction to match gold. Check outcomes must belong to the same note digest. Ratios use an explicit 28-digit half-even Decimal context independent of caller rounding/traps.
+
+Test-first evidence and focused verification:
+- `cd backend && uv run --python 3.12 pytest tests/decisions/test_benchmark.py -q` — initial RED exit 2 (module absent before implementation); worker GREEN exit 0, 10 tests.
+- `cd backend && uv run --python 3.12 pytest tests/decisions/test_note_corpus.py -q` — RED exit 1, three missing-corpus/verifier failures before writing the files.
+- `cd backend && uv run --python 3.12 pytest tests/decisions/test_benchmark.py::test_ratios_ignore_ambient_rounding_and_inexact_traps -q` — RED exit 1 (inherited Inexact trap), then fixed by using a complete local context.
+- `cd backend && uv run --python 3.12 pytest tests/decisions/test_benchmark.py::test_quantities_canonicalized_by_the_checks_match_gold_for_accuracy_and_precision -q` — RED exit 1 (5/6 rather than 6/6), then fixed by sharing the checks' grouping-aware quantity parser.
+- `cd backend && uv run --python 3.12 pytest tests/decisions/test_note_corpus.py::test_manifest_verifier_reports_malformed_record_ids_without_crashing -q` — RED exit 1 (unhashable malformed ID), then fixed to return problems.
+- `cd backend && uv run --python 3.12 pytest tests/decisions/test_note_corpus.py tests/decisions/test_benchmark.py -q` — final exit 0, 16 tests. All provider use in scoring tests is `MockProvider`.
+- `cd backend && uv run --python 3.12 ruff check src/flooreplay/decisions/extraction/benchmark.py tests/decisions/test_benchmark.py tests/decisions/test_note_corpus.py evaluation/note-benchmark-v1/verify.py` — exit 0.
+- `cd backend && uv run --python 3.12 python evaluation/note-benchmark-v1/verify.py` — exit 0, no problems; confirmed 40/30/30 notes, 12/9/9 pilot, frozen=false.
+- `cd backend && uv run --python 3.12 ruff check evaluation/note-benchmark-v1/verify.py` — exit 0.
+
+Full verification after the final C code edits:
+
+| Directory | Command | Exit |
+|---|---|---|
+| `backend` | `uv run --python 3.12 pytest -q` | 0 |
+| `backend` | `uv run --python 3.12 ruff check src tests` | 0 |
+| `backend` | `uv run --python 3.12 mypy` | 0 |
+| `backend` | `uv run --python 3.12 python -m flooreplay dataset-verify` | 0 |
+| `frontend` | `pnpm lint` | 0 |
+| `frontend` | `pnpm build` | 0 |
+| `frontend` | `pnpm exec playwright test 'e2e/decisions-.*.spec.ts' e2e/incident-navigation.spec.ts` | 0 |
+| `backend` | `uv run --python 3.12 python -m flooreplay export-openapi` | 0 |
+| `.` | `git diff --exit-code -- backend/openapi.json frontend/src/lib/generated-api.ts frontend/src/data` | 0 |
+
+Needs from lead / owner:
+- A Tamil-speaking owner must correct all 100 draft gold rows and review Tamil/Tanglish wording and the annotation conventions before any model-quality comparison. No row has been marked reviewed.
+- Refresh hashes after approved edits and freeze only through the later owner-reviewed T34 workflow. Integrity verification does not certify semantic labels.
+- Actual Haiku/Sonnet runs, model/prompt/check-version receipts, benchmark comparisons, and release-CLI integration remain in the lead's later work. This package contains no real-model predictions, API calls or credentials.
+
+All requested preparation in C is implemented. Human gold review and model evaluation remain intentionally unfinished because this handoff explicitly asks for unreviewed, unfrozen drafts.
+
+## Final scope and verification notes
+
+The three packages were completed in order, with a full green gate before each package commit. Full checks used the dedicated `flooreplay_codex_test` database, Python 3.12, and empty OpenAI/Anthropic keys. Backend, frontend, and drift lanes ran independently; every listed exit code was captured directly. No existing test was skipped, deleted or weakened. New test failures during development were resolved in the implementation or by correcting provisional fixture/selector mismatches; final full runs are recorded above.
+
+The protected engine/store/extraction files and tests, migrations, backend API, generated contracts, committed demo data, CI and deployment configuration are unchanged from the base. No deployment, real extraction call, policy adoption, shared-branch push or PR was performed. The pre-existing untracked `docs/v2/CODEX_HANDOFF.md` remains untouched.
