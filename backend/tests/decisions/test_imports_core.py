@@ -228,3 +228,9 @@ def test_unknown_mappings_and_preview_digest_inputs_are_explicit():
     changed_coverage = preview(coverage_qualities=["SJ180", "SJ200"])
     assert len({base.preview_digest, changed_mapping.preview_digest, changed_as_of.preview_digest,
                 changed_unit.preview_digest, changed_coverage.preview_digest}) == 5
+
+
+def test_mapped_unit_column_takes_precedence_over_import_unit_defaults():
+    result = preview(units={"qty": "kg"})
+    assert result.status == "READY", result.problems
+    assert result.facts[0].payload["qty"] == {"value": "1200", "unit": "m"}

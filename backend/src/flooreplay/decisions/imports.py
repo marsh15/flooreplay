@@ -2,8 +2,10 @@
 
 Column mappings always point from a canonical field name to one exact CSV header,
 for example ``{"lot_id": "ERP lot"}``. No header aliases or column guessing are
-applied. Quantity units come from the mapped ``unit`` column or the ``units``
-argument keyed by quantity field. ``order-requests`` combines one order and its
+applied. A quantity-specific unit column (including ``qc_unit`` and
+``consumption_unit``) takes precedence over a shared ``unit`` column; the
+``units`` argument supplies defaults only when no column supplies a unit.
+``order-requests`` combines one order and its
 style BOM on each row; colours and trims are JSON arrays. ERP allocation columns
 are optional (``allocation_order_id`` and ``allocation_qty``); supplier QC is
 optional and becomes a fact only when an explicit ``qc_issue`` and ``qc_qty``
@@ -164,8 +166,10 @@ def _decimal(row: dict[str, str], mapping: dict[str, str], units: dict[str, str]
     unit_field = f"{field}_unit"
     if field == "consumption_per_pc":
         unit_field = "consumption_unit" if "consumption_unit" in mapping else unit_field
+    elif field == "qc_qty":
+        unit_field = "qc_unit" if "qc_unit" in mapping else unit_field
     unit_text = _value(row, mapping, unit_field)
-    unit_text = unit_text or units.get(field) or _value(row, mapping, "unit")
+    unit_text = unit_text or _value(row, mapping, "unit") or units.get(field)
     if unit_text is None:
         raise _RowProblem(field, "unit_required", f"Declare a unit for {field!r} in a mapped unit column or units argument.")
     try:
@@ -314,8 +318,8 @@ def _facts_for_row(profile_name: str, profile: SourceProfile, row: dict[str, str
         style_id = _text(row, mapping, "style_id")
         colours = _json_objects(row, mapping, "colours")
         for colour in colours:
-            if isinstance(colour, dict):
-                colour["colour"] = unicodedata.normalize("NFC", str(colour.get("colour", "")))
+            if not isinstance(colour.get("colour"), str):
+                raise _RowProblem("colours", "invalid_colour", "Every order colour must be text.")
         order_payload = {"buyer": _text(row, mapping, "buyer"), "style_id": style_id, "colours": colours, "ship_date": _date(row, mapping, "ship_date"), "order_value_inr": _plain_number(row, mapping, "order_value_inr"), "partial_shipment_allowed": _boolean(row, mapping, "partial_shipment_allowed")}
         made.append(_fact(profile_name, profile, raw_digest, row_number, ":order", FactKind.ORDER_REQUEST, f"order:{order_id}", order_payload, as_of))
         consumption = _decimal(row, mapping, units, "consumption_per_pc")

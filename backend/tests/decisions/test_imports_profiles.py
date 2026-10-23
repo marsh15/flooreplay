@@ -50,3 +50,40 @@ def test_erp_sample_emits_fabric_allocations_and_supplier_qc_sample_emits_qc_fac
     qc = next(fact for fact in supplier.facts if fact.kind.value == "fabric_qc")
     assert qc.payload["origin"] == "supplier_updates"
     assert qc.payload["review_state"] == "checks_passed"
+
+
+def test_supplier_qc_unit_column_is_used_instead_of_the_inbound_unit():
+    raw = (
+        b"ref,qty,unit,quality,colour,eta,supplier,qc_issue,qc_qty,qc_unit,lot_id\n"
+        b"SUP-221,900,m,SJ180,NAVY,2026-10-25,Supplier A (synthetic),shade_fail,120,kg,L-221\n"
+    )
+    result = preview_import(
+        raw, filename="supplier.csv", profile="supplier-updates",
+        column_mapping={**CASES[3][2], "qc_unit": "qc_unit"}, as_of=AS_OF,
+    )
+    assert result.status == "READY", result.problems
+    inbound = next(fact for fact in result.facts if fact.kind.value == "fabric_inbound")
+    qc = next(fact for fact in result.facts if fact.kind.value == "fabric_qc")
+    assert inbound.payload["qty"] == {"value": "900", "unit": "m"}
+    assert qc.payload["qty"] == {"value": "120", "unit": "kg"}
+
+
+@pytest.mark.parametrize("colour_json", ["null", "123", "1.5", '{"name":"NAVY"}', "true", '["NAVY"]'])
+def test_order_colour_must_be_text_instead_of_coercing_other_json_values(colour_json):
+    import csv
+    import io
+
+    source = csv.DictReader(io.StringIO((SAMPLES / "order-requests.csv").read_text()))
+    row = next(source)
+    row["colours"] = '[{"colour":' + colour_json + ',"qty_pcs":8}]'
+    csv_text = io.StringIO(newline="")
+    writer = csv.DictWriter(csv_text, fieldnames=list(row))
+    writer.writeheader()
+    writer.writerow(row)
+    result = preview_import(
+        csv_text.getvalue().encode(), filename="order.csv", profile="order-requests",
+        column_mapping=CASES[4][2], as_of=AS_OF,
+    )
+    assert result.status == "BLOCKED"
+    assert result.facts == ()
+    assert any(problem.row == 2 and problem.field == "colours" for problem in result.problems)
