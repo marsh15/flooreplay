@@ -173,6 +173,7 @@ export function DecisionImports() {
   const [idempotencyKey, setIdempotencyKey] = useState('')
   const [message, setMessage] = useState('')
   const generation = useRef(0)
+  const fileReadGeneration = useRef(0)
   const previewGeneration = useRef(-1)
   const previewMutation = useMutation({ mutationFn: previewImport })
   const publishMutation = useMutation({ mutationFn: publishImport })
@@ -258,17 +259,23 @@ export function DecisionImports() {
   }
 
   function onFileChange(selected: File | null) {
+    const fileGeneration = ++fileReadGeneration.current
     invalidatePreview()
     setFile(selected)
     setHeaders([])
     setMapping({})
     if (selected) {
-      const fileGeneration = generation.current
-      void selected.text().then((text) => {
-        if (generation.current === fileGeneration) {
-          setHeaders(firstCsvRecord(text).filter((header) => header.length > 0))
-        }
-      })
+      void selected
+        .text()
+        .then((text) => {
+          if (fileReadGeneration.current === fileGeneration) {
+            setHeaders(firstCsvRecord(text).filter((header) => header.length > 0))
+          }
+        })
+        .catch(() => {
+          if (fileReadGeneration.current === fileGeneration)
+            setMessage('The CSV file could not be read. Select it again.')
+        })
     }
   }
 

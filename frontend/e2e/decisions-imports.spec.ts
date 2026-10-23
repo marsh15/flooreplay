@@ -273,3 +273,100 @@ test('a public workspace explains why imports require private access', async ({ 
   await expect(page.getByText(/private workspace/i)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Publish import' })).toBeDisabled()
 })
+
+test('editing metadata keeps pending headers while selecting a new file discards old headers', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const originalText = File.prototype.text
+    const pending = new Map<string, () => Promise<void>>()
+    Object.assign(window, {
+      releaseFileText: (name: string) => pending.get(name)?.(),
+    })
+    File.prototype.text = function (this: File) {
+      if (!this.name.startsWith('slow-')) return originalText.call(this)
+      return new Promise<string>((resolve, reject) => {
+        pending.set(this.name, () => originalText.call(this).then(resolve, reject))
+      })
+    }
+  })
+  await page.route('**/api/v1/**', (route) =>
+    route.fulfill({ status: 503, json: { message: 'Unavailable in header-read test' } }),
+  )
+  await page.goto('/imports')
+  const file = page.getByLabel('CSV file')
+  const columns = page.getByLabel('Lot ID column', { exact: true }).locator('option')
+  await file.setInputFiles({
+    name: 'slow-stock.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(erpCsv),
+  })
+  await expect(columns).toHaveCount(1)
+  await page.getByLabel('As of (IST)').fill('2026-10-23T10:00')
+  await page.getByLabel('Quantity unit').selectOption('m')
+  await page.getByLabel('Covered fabric qualities').fill('SJ180')
+  await page.evaluate(async () => {
+    const controls = window as typeof window & {
+      releaseFileText: (name: string) => Promise<void> | undefined
+    }
+    await controls.releaseFileText('slow-stock.csv')
+  })
+  await expect(columns).toHaveText([
+    'Not mapped',
+    'lot_id',
+    'fabric_quality',
+    'colour',
+    'Stock, metres',
+    'unused',
+  ])
+
+  await file.setInputFiles({
+    name: 'slow-old.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from('old_lot,old_qty\nL-221,1\n'),
+  })
+  await file.setInputFiles({
+    name: 'fresh-stock.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from('new_lot,new_qty\nL-222,2\n'),
+  })
+  await expect(columns).toHaveText(['Not mapped', 'new_lot', 'new_qty'])
+  await page.evaluate(async () => {
+    const controls = window as typeof window & {
+      releaseFileText: (name: string) => Promise<void> | undefined
+    }
+    await controls.releaseFileText('slow-old.csv')
+  })
+  await expect(columns).toHaveText(['Not mapped', 'new_lot', 'new_qty'])
+})
+
+test('an unreadable CSV explains the failure and a replacement file can still load', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const originalText = File.prototype.text
+    File.prototype.text = function (this: File) {
+      if (this.name === 'unreadable.csv') return Promise.reject(new Error('Synthetic read failure'))
+      return originalText.call(this)
+    }
+  })
+  await page.route('**/api/v1/**', (route) =>
+    route.fulfill({ status: 503, json: { message: 'Unavailable in header-read test' } }),
+  )
+  await page.goto('/imports')
+  const file = page.getByLabel('CSV file')
+  await file.setInputFiles({
+    name: 'unreadable.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(erpCsv),
+  })
+  await expect(page.getByText('The CSV file could not be read. Select it again.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Preview import' })).toBeDisabled()
+  await file.setInputFiles({
+    name: 'replacement.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(erpCsv),
+  })
+  await expect(page.getByLabel('Lot ID column', { exact: true }).locator('option')).toHaveCount(6)
+  await expect(page.getByText('The CSV file could not be read. Select it again.')).toHaveCount(0)
+})
