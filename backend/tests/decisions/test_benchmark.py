@@ -206,3 +206,13 @@ def test_quantities_canonicalized_by_the_checks_match_gold_for_accuracy_and_prec
     report = score_benchmark(gold, predictions, checks)
     assert ratio_tuple(report.overall.field_accuracy) == (6, 6, Decimal(1))
     assert ratio_tuple(report.overall.checks_passed_precision) == (6, 6, Decimal(1))
+
+
+def test_precision_does_not_trust_a_check_when_only_the_evidence_changed():
+    checks = outcomes_for({"good": GOOD_RAW}, {"good": NOTE})
+    prediction = {**GOOD_RAW, "lot_id": field("L-1042", "missing evidence")}
+    report = score_benchmark(
+        [gold_record("good", "en", NOTE, GOOD_RAW)], {"good": prediction}, checks
+    )
+    assert ratio_tuple(report.overall.span_validity_rate) == (5, 6, Decimal(5) / Decimal(6))
+    assert ratio_tuple(report.overall.checks_passed_precision) == (5, 6, Decimal(5) / Decimal(6))

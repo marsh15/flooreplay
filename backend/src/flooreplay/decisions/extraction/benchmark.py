@@ -162,8 +162,9 @@ def score_benchmark(
     each signal field is null or ``{value, evidence}``. Predictions and checks are keyed by
     note id. Missing prediction notes/fields are incorrect, while explicit null fields mean
     no claim. Field accuracy and trusted-value precision compare canonical values; quantity
-    values compare numerically with Decimal. Predicted evidence is valid only when it occurs
-    exactly once in the NFC note (including overlapping occurrences).
+    values compare numerically with Decimal. Trusted precision also requires the current
+    evidence span to match the stored check's span. Predicted evidence is valid only when it
+    occurs exactly once in the NFC note (including overlapping occurrences).
     """
     if not isinstance(gold, Sequence) or isinstance(gold, (str, bytes)):
         raise ValueError("gold must be a sequence of records")
@@ -242,16 +243,20 @@ def score_benchmark(
                 gold_value is not None or absent_prediction
             )
 
-            span_valid = False
-            if isinstance(evidence, str) and evidence:
-                span_valid = locate_evidence(note, evidence).span is not None
+            located_span = (
+                locate_evidence(note, evidence).span if isinstance(evidence, str) and evidence else None
+            )
+            span_valid = located_span is not None
 
             checked = checked_fields.get(field)
             checks_passed = checked is not None and checked.status is FieldStatus.PASSED
             checks_match_gold = False
             if checks_passed and checked is not None:
-                checks_match_gold = _values_match(field, checked.value, gold_value) and (
-                    _values_match(field, checked.value, predicted_value)
+                checks_match_gold = (
+                    _values_match(field, checked.value, gold_value)
+                    and _values_match(field, checked.value, predicted_value)
+                    and located_span is not None
+                    and checked.span == located_span
                 )
 
             args = {

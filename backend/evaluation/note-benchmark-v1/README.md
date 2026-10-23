@@ -8,6 +8,8 @@ All 100 messages are synthetic Codex drafts, written as short store, dyeing-hous
 - `manifest.json`: SHA-256 over the exact bytes of the three JSONL files, record/language counts, and `frozen: false`. The manifest does not hash itself.
 - `verify.py`: local byte/structure/provenance verifier; it never edits data, marks labels reviewed, calls a provider or freezes the corpus.
 
+Draft verification requires an explicit boolean `frozen: false`. Freezing after owner review belongs to the later T34 verification workflow.
+
 Run from `backend/`:
 
 ```sh

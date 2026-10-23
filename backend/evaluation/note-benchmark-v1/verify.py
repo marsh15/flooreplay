@@ -30,6 +30,8 @@ def verify_manifest(root: Path) -> dict[str, Any]:
         }
     if set(manifest["files"]) != set(FILES):
         problems.append("manifest must track notes.jsonl, gold.jsonl and pilot.jsonl")
+    if manifest.get("frozen") is not False:
+        problems.append("draft corpus must declare frozen: false")
     rows: dict[str, list[dict[str, Any]]] = {}
     for filename in FILES:
         records: list[dict[str, Any]] = []

@@ -153,3 +153,38 @@ All requested preparation in C is implemented. Human gold review and model evalu
 The three packages were completed in order, with a full green gate before each package commit. Full checks used the dedicated `flooreplay_codex_test` database, Python 3.12, and empty OpenAI/Anthropic keys. Backend, frontend, and drift lanes ran independently; every listed exit code was captured directly. No existing test was skipped, deleted or weakened. New test failures during development were resolved in the implementation or by correcting provisional fixture/selector mismatches; final full runs are recorded above.
 
 The protected engine/store/extraction files and tests, migrations, backend API, generated contracts, committed demo data, CI and deployment configuration are unchanged from the base. No deployment, real extraction call, policy adoption, shared-branch push or PR was performed. The pre-existing untracked `docs/v2/CODEX_HANDOFF.md` remains untouched.
+
+## Follow-up review — 2026-10-23
+
+A bounded review with Luna subagents checked A–C against the original handoff. The follow-up stays in the original ownership boundary; no lead-owned backend or deployment work is added.
+
+Confirmed corrections:
+- A: supplier `qc_unit` was accepted but ignored, making a declared kilogram QC amount inherit metres from inbound stock. Quantity-specific columns now win, followed by the shared unit column, then import defaults. A mapped unit column also wins over a conflicting default in `units`.
+- A: order colours from JSON were coerced with `str`, so null, numeric, boolean, object and array values became invented colour labels in READY facts. Non-text colour values now block the row without producing facts.
+- B: any form edit could cancel a pending CSV header read, leaving the column selectors empty. File reads now have their own selection identity; preview invalidation remains separate. Read failures display an explanation, and selecting another file can recover.
+- C: a PASSED check for an earlier evidence claim could still count as correct trusted precision after the evidence changed. The current located span must now equal the stored check span as well as matching values.
+- C: draft verification now requires the exact boolean `frozen: false`, rejecting true, null, numeric, string or missing declarations. No corpus labels or source note bytes are changed.
+
+Tests were written and run before each correction. Initial profile regression run exited 1 with seven failures (QC unit and six malformed-colour cases); the mapped-unit/default regression exited 1; the changed-evidence and draft-freeze regressions exited 1 with two failures. The first browser attempt exited 1 because its cached Chromium executable was missing; `pnpm exec playwright install chromium` restored the test runtime before the UI red/green runs.
+
+The review also mutated the new QC unit condition, ran its focused regression test (exit 1 as required), and restored the original source byte-for-byte. This confirms the regression detects the wrong-unit behavior. The full targeted backend command is `cd backend && uv run --python 3.12 pytest tests/decisions/test_imports_core.py tests/decisions/test_imports_profiles.py tests/decisions/test_benchmark.py tests/decisions/test_note_corpus.py -q` (64 passed, exit 0). Targeted Ruff checking of the changed backend files and verifier exited 0.
+
+The delayed/read-error UI regressions were run with a temporary config using the installed full Chromium binary while its headless-shell download completed: `cd frontend && pnpm exec playwright test -c .playwright-review.config.ts e2e/decisions-imports.spec.ts --grep "editing metadata|unreadable CSV"` exited 1 before the fix (two observed failures), then 0 after the fix (two passed). The temporary config was removed. `cd frontend && pnpm install --frozen-lockfile` exited 0, and the final full Playwright run below used the normal checked-in config (32 passed).
+
+`cd backend && uv run --python 3.12 python evaluation/note-benchmark-v1/verify.py` exited 0, preserving the 100-note draft, 30-note pilot and frozen=false.
+
+Full required verification after the review corrections:
+
+| Directory | Command | Exit |
+|---|---|---|
+| `backend` | `uv run --python 3.12 pytest -q` | 0 |
+| `backend` | `uv run --python 3.12 ruff check src tests` | 0 |
+| `backend` | `uv run --python 3.12 mypy` | 0 |
+| `backend` | `uv run --python 3.12 python -m flooreplay dataset-verify` | 0 |
+| `frontend` | `pnpm lint` | 0 |
+| `frontend` | `pnpm build` | 0 |
+| `frontend` | `pnpm exec playwright test 'e2e/decisions-.*.spec.ts' e2e/incident-navigation.spec.ts` | 0 |
+| `backend` | `uv run --python 3.12 python -m flooreplay export-openapi` | 0 |
+| `.` | `git diff --exit-code -- backend/openapi.json frontend/src/lib/generated-api.ts frontend/src/data` | 0 |
+
+All nine full-gate commands exited 0. This review changed only the A–C implementation, its own tests, and this report. The earlier lead/owner handoff requirements remain; gold labels are still unreviewed, and no original notes or gold bytes were changed.

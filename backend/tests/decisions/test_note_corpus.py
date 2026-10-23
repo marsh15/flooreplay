@@ -81,3 +81,16 @@ def test_manifest_verifier_reports_malformed_record_ids_without_crashing(tmp_pat
     report = _verify(copied)
     assert "duplicate or invalid note_id: gold.jsonl" in report["problems"]
     assert "duplicate or invalid note_id: pilot.jsonl" in report["problems"]
+
+
+def test_manifest_verifier_requires_an_explicit_unfrozen_draft(tmp_path):
+    copied = tmp_path / "corpus"
+    shutil.copytree(CORPUS, copied)
+    path = copied / "manifest.json"
+    original = json.loads(path.read_text())
+    for invalid in (True, "false", None, 0):
+        path.write_text(json.dumps({**original, "frozen": invalid}))
+        assert "draft corpus must declare frozen: false" in _verify(copied)["problems"]
+    del original["frozen"]
+    path.write_text(json.dumps(original))
+    assert "draft corpus must declare frozen: false" in _verify(copied)["problems"]
