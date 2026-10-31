@@ -83,7 +83,7 @@ def incident_source_health(session: Session, incident_id: str, revision: int) ->
     from .source_health import source_health
     row = _revision(session, incident_id, revision)
     artifacts = session.execute(select(IncidentSourceArtifact).where(IncidentSourceArtifact.incident_id == incident_id, IncidentSourceArtifact.revision <= revision).order_by(IncidentSourceArtifact.revision)).scalars().all()
-    imports = [{"revision": artifact.revision, "source_system": artifact.source_system, "profile": artifact.profile, "filename": artifact.filename, "rows": artifact.preview.get("row_count"), "published_at": artifact.created_at.isoformat()} for artifact in artifacts]
+    imports = [{"revision": artifact.revision, "source_system": artifact.source_system, "profile": artifact.profile, "filename": artifact.filename, "rows": artifact.preview.get("row_count"), "published_at": artifact.created_at.astimezone(UTC).isoformat()} for artifact in artifacts]
     return {"incident_id": incident_id, "revision": revision, **source_health(row.payload, imports)}
 
 
@@ -188,11 +188,11 @@ def analysis_view(session: Session, analysis: IncidentAnalysis) -> dict[str, Any
     latest = session.execute(select(func.max(IncidentRevision.revision)).where(IncidentRevision.incident_id == analysis.incident_id)).scalar_one()
     return {
         "id": analysis.id, "workspace_id": analysis.workspace_id, "incident_id": analysis.incident_id, "revision": analysis.revision,
-        "cutoff": _revision(session, analysis.incident_id, analysis.revision).cutoff.isoformat(),
+        "cutoff": _revision(session, analysis.incident_id, analysis.revision).cutoff.astimezone(UTC).isoformat(),
         "manifest_digest": analysis.manifest_digest, "execution_kind": analysis.execution_kind,
-        "created_at": analysis.created_at.isoformat(), "completed_at": analysis.completed_at.isoformat(),
+        "created_at": analysis.created_at.astimezone(UTC).isoformat(), "completed_at": analysis.completed_at.astimezone(UTC).isoformat(),
         "stale": analysis.revision != latest,
-        "reviews": [{"id": r.id, "proposal_id": r.proposal_id, "state": r.state, "actor": r.actor, "rationale": r.rationale, "created_at": r.created_at.isoformat()} for r in reviews],
+        "reviews": [{"id": r.id, "proposal_id": r.proposal_id, "state": r.state, "actor": r.actor, "rationale": r.rationale, "created_at": r.created_at.astimezone(UTC).isoformat()} for r in reviews],
         **analysis.report,
     }
 

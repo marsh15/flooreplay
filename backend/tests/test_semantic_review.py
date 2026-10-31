@@ -43,8 +43,10 @@ def test_private_run_deliberate_publication_and_exact_digest(draft, reviewer_hea
     publication = owner.post(prefix + '/publish-review', json=body)
     assert publication.status_code == 200, publication.text
     assert owner.post(prefix + '/publish-review', json=body).json() == publication.json()
-    assert any(item['id'] == run_id for item in reviewer.get('/api/v1/ai-runs/review-queue').json()['items'])
+    queued = next(item for item in reviewer.get('/api/v1/ai-runs/review-queue').json()['items'] if item['id'] == run_id)
+    assert queued['created_at'] == publication.json()['created_at']
     packet = reviewer.get(prefix + '/review-packet').json()
+    assert packet['created_at'] == owner.get(prefix).json()['created_at']
     assert packet['output_digest'] == fingerprint and packet['packet']['revision'] == 1
     assert 'question' not in packet and 'request_key' not in packet and 'private_request' not in packet['packet']
     assert reviewer.get(prefix).status_code == 404

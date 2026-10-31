@@ -203,7 +203,7 @@ def _activity_view(row: WorkflowActivity) -> dict[str, str]:
         "actor": row.actor,
         "kind": row.kind,
         "text": row.text,
-        "created_at": row.created_at.isoformat(),
+        "created_at": row.created_at.astimezone(UTC).isoformat(),
     }
 
 
@@ -224,11 +224,11 @@ def task_view(session: Session, task: IncidentCheck) -> dict[str, Any]:
         "requested_fields": task.requested_fields,
         "assignee_id": task.assignee_id,
         "assignee_name": account.display_name if account else task.assignee_id,
-        "due_at": task.due_at.isoformat(),
+        "due_at": task.due_at.astimezone(UTC).isoformat(),
         "status": task.status,
         "created_by": task.created_by,
-        "created_at": task.created_at.isoformat(),
-        "updated_at": task.updated_at.isoformat(),
+        "created_at": task.created_at.astimezone(UTC).isoformat(),
+        "updated_at": task.updated_at.astimezone(UTC).isoformat(),
         "overdue": task.status not in TERMINAL and task.due_at < datetime.now(UTC),
         "activities": [_activity_view(row) for row in activities],
         "response": task.response,
@@ -276,7 +276,7 @@ def workflow_view(session: Session, incident_id: str) -> dict[str, Any]:
         "tasks": tasks,
         "handover": {
             "summary": analysis["summary"],
-            "cutoff": revision.cutoff.isoformat(),
+            "cutoff": revision.cutoff.astimezone(UTC).isoformat(),
             "uncertainties": [hypothesis["next_check"] for hypothesis in analysis["hypotheses"]],
             "outstanding_checks": [task for task in tasks if task["status"] not in TERMINAL],
             "completed_checks": [task for task in tasks if task["status"] == "COMPLETED"],
@@ -425,7 +425,7 @@ def update_check(
             if due <= datetime.now(UTC):
                 raise ServiceError("INVALID_DEADLINE", "Choose a future deadline", 422)
             task.due_at = due
-        comment = f"{comment} Assigned to {task.assignee_id}; due {task.due_at.isoformat()}."
+        comment = f"{comment} Assigned to {task.assignee_id}; due {task.due_at.astimezone(UTC).isoformat()}."
     if status == "IN_PROGRESS":
         _assigned(user, task)
         if task.status != "OPEN":

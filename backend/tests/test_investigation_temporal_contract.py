@@ -211,9 +211,21 @@ def test_a_proposal_cannot_be_queued_for_review_twice():
     with Session(engine) as session:
         incident_id = _seed(session)
         analysis = create_analysis(session, incident_id, 1, uuid4().hex)
-        review_proposal(session, analysis, "verify-machine", "PENDING_REVIEW", "Production lead", "Checked the cited records", uuid4().hex)
+        key = uuid4().hex
+        pending = review_proposal(session, analysis, "verify-machine", "PENDING_REVIEW", "Production lead", "Checked the cited records", key)
+        assert review_proposal(session, analysis, "verify-machine", "PENDING_REVIEW", "Production lead", "Checked the cited records", key).id == pending.id
         with pytest.raises(ServiceError) as duplicate:
             review_proposal(session, analysis, "verify-machine", "PENDING_REVIEW", "Production lead", "Checked the cited records", uuid4().hex)
         assert duplicate.value.code == "ALREADY_PENDING"
         approved = review_proposal(session, analysis, "verify-machine", "APPROVED", "Production lead", "Checked the cited records", uuid4().hex)
         assert approved.state == "APPROVED"
+
+
+def test_analysis_and_review_response_survive_database_reload():
+    with Session(engine) as session:
+        incident_id = _seed(session)
+        analysis = create_analysis(session, incident_id, 1, uuid4().hex)
+        review_proposal(session, analysis, "verify-machine", "PENDING_REVIEW", "Production lead", "Checked the cited records", uuid4().hex)
+        before = analysis_view(session, analysis)
+        session.expire_all()
+        assert analysis_view(session, analysis) == before
