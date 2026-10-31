@@ -45,6 +45,7 @@ import savedAi from '@/data/hero-ai.json'
 import { RevisionComparison } from '@/components/RevisionComparison'
 import { IncidentWorkflow } from '@/components/IncidentWorkflow'
 import { SupervisorReport } from '@/components/SupervisorReport'
+import { InvestigationGuide } from '@/components/InvestigationGuide'
 
 function hypothesisTone(status: string): Tone {
   const value = status.toUpperCase()
@@ -364,6 +365,13 @@ export function IncidentWorkbenchPage() {
     setParams({ revision: String(value) })
   }
 
+  // Same gating as RevisionComparison: an earlier revision and a live analysis.
+  const earlierRevision = incident.data?.available_revisions
+    .filter((value) => value < revision)
+    .at(-1)
+  const compareAvailable =
+    earlierRevision !== undefined && report?.execution_kind !== 'saved_deterministic'
+
   if (!validRevision)
     return (
       <div role="alert" className="space-y-6">
@@ -478,65 +486,27 @@ export function IncidentWorkbenchPage() {
                     ? 'Private workspace records'
                     : 'Synthetic data'}
                 </p>
-                <RevisionComparison
-                  key={`${id}:${revision}`}
-                  incident={incident.data}
+                <InvestigationGuide
                   report={report}
+                  viewedRevision={revision}
+                  latestRevision={summary?.revision ?? revision}
+                  earlierRevision={earlierRevision}
+                  compareAvailable={compareAvailable}
+                  exportAvailable={capabilities.data?.reviews_enabled === true}
                 />
+                <div id="compare-revisions" className="scroll-mt-16" hidden={!compareAvailable}>
+                  <RevisionComparison
+                    key={`${id}:${revision}`}
+                    incident={incident.data}
+                    report={report}
+                  />
+                </div>
                 <SupervisorReport
                   key={`${report.id}:${user?.id ?? 'anonymous'}`}
                   report={report}
                   incident={incident.data}
                   currentRevision={summary?.revision ?? revision}
                 />
-                <aside
-                  className="rounded-sm border border-border bg-card p-4 print:hidden"
-                  aria-label="Investigation guide"
-                >
-                  <h2 className="text-base font-bold">Follow the investigation</h2>
-                  <ol className="mt-2 grid gap-3 text-sm sm:grid-cols-3">
-                    <li>
-                      <a
-                        className="font-semibold text-primary underline"
-                        href="#observed-situation"
-                      >
-                        1. Measure the difference
-                      </a>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Compare planned and recorded output, then check missing intervals.
-                      </p>
-                    </li>
-                    <li>
-                      <a
-                        className="font-semibold text-primary underline"
-                        href="#explanations-and-open-questions"
-                      >
-                        2. Check the explanation
-                      </a>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Read supporting and contradicting records before choosing a cause.
-                      </p>
-                    </li>
-                    <li>
-                      <a className="font-semibold text-primary underline" href="#recovery-options">
-                        3. Choose the next check
-                      </a>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Read the prerequisites and responsible role. Share the supervisor report or
-                        assign a check with reviewer access.
-                      </p>
-                    </li>
-                  </ol>
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    “Knowledge cutoff” means the time by which evidence had reached the system. A
-                    late-arriving record may describe an earlier event, but appears only in a later
-                    evidence revision.
-                  </p>
-                </aside>
-                <p className="text-sm text-muted-foreground">
-                  Calculation coverage: {report.metrics.status.toLowerCase()}. Proposal approval,
-                  check completion, and incident resolution are separate decisions.
-                </p>
                 <SectionRail titles={RAIL_TITLES} />
                 <Section
                   title="Observed situation"
