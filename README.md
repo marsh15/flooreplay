@@ -17,7 +17,7 @@ A 20-second walkthrough of the incident workbench on the bundled synthetic data.
 3. Use "Practice investigation" to walk through assignment, source response, outcome and resolution in the browser. It requires no account and makes no paid requests.
 4. Sign in as an owner or reviewer to work in your authorized workspaces, record proposal decisions, assign checks and export the supervisor report.
 
-See [the demo guide](DEMO.md) and [the technical case study](docs/technical-case-study.md) for a portfolio walkthrough and the engineering decisions behind it.
+See [the operator guide](docs/operator-guide.md) for the import-to-handover workflow, [the demo guide](DEMO.md) for a walkthrough, and [the technical case study](docs/technical-case-study.md) for the engineering decisions behind it. The [pilot measurement template and tool](docs/pilot/README.md) prepare an actual practitioner comparison; they contain no measured results.
 
 ## What is implemented
 
@@ -92,6 +92,8 @@ cd frontend && pnpm audit --audit-level high
 ```
 
 [Release status](RELEASE_STATUS.md) preserves historical results. [The final review](docs/final-review.md) records the current changes and separates static and advisory checks from pending runtime acceptance. Earlier public hosted checks do not verify the current working tree or authenticated production flows.
+
+The [October 31 implementation report](docs/completion-2026-10-31.md) records the latest shortfall-workflow changes, database and browser checks, dependency-audit limits and remaining practitioner acceptance.
 
 The synthetic dataset, frozen challenge cases and saved provider receipts let reviewers inspect the software. Qualified independent human review of AI claims, factory validation and measurements of usefulness remain pending. A valid output schema or passing software test does not establish operational accuracy.
 

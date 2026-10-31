@@ -72,7 +72,7 @@ Limits remain:
 - Readings from earlier imports are not carried forward.
 - Recurring shift patterns must be imported as explicit intervals.
 
-XLSX, saved mapping presets and automatic notifications remain follow-up work. Verification is recorded in [RELEASE_STATUS.md](RELEASE_STATUS.md).
+XLSX and automatic notifications remain follow-up work. Explicit column mappings can now be downloaded and loaded for later CSVs; constants and aliases are reviewed again for each import. Mappings are not stored automatically on the server or in browser storage. Verification is recorded in [RELEASE_STATUS.md](RELEASE_STATUS.md).
 
 ## Evidence rules
 

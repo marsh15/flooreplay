@@ -1,5 +1,7 @@
 # Release evidence, September 30, 2026
 
+Latest local verification: [October 31 shortfall workflow implementation and checks](docs/completion-2026-10-31.md). The dated results below preserve earlier releases and their limitations.
+
 The implementation has completed offline software verification. Acceptance of the complete release remains pending. Actual OpenAI generation and embedding indexing now have provider receipts. Smoke and pilot passed; locked evaluation stopped at a validation failure. Human semantic review is still pending. The supplied improvement review reports a public deployment that loaded 191 incidents and ran deterministic analysis. That observation was not independently repeated in this documentation pass. Actual hosted acceptance still needs a dated report tied to a commit and URLs, including authenticated flows.
 
 | Gate | Evidence | Status |
