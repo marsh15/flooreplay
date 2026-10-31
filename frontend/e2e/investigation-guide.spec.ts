@@ -143,3 +143,58 @@ test('earlier evidence revision is labelled as historical, not the latest state'
   await expect(guide.getByText('No earlier revision', { exact: true })).toBeVisible()
   await expect(page.locator('#compare-revisions')).toBeHidden()
 })
+
+test('an earlier deep link uses the revision inventory when the incident library has no summary', async ({
+  page,
+}) => {
+  await mockLiveAnalysis(page)
+  await page.route('**/api/v1/incidents', (route) => route.fulfill({ json: { items: [] } }))
+  await page.goto('/incidents/INC-001?revision=1')
+  const guide = page.getByRole('complementary', { name: 'Investigation guide' })
+  await expect(
+    guide.getByText(/You are reading revision 1; the latest is revision 2/),
+  ).toBeVisible()
+})
+
+test('a pending-review conflict refreshes the stale proposal card', async ({ page }) => {
+  await mockLiveAnalysis(page)
+  const proposal = heroReport.proposals[0]
+  let pending = false
+  await page.route('**/api/v1/analyses/guide-2', (route) =>
+    route.fulfill({
+      json: {
+        ...heroReport,
+        id: 'guide-2',
+        execution_kind: 'live_deterministic',
+        reviews: pending
+          ? [
+              {
+                id: 'existing-review',
+                proposal_id: proposal.id,
+                state: 'PENDING_REVIEW',
+                actor: 'reviewer',
+                rationale: 'Already submitted',
+                created_at: '2026-10-31T09:00:00Z',
+              },
+            ]
+          : [],
+      },
+    }),
+  )
+  await page.route(`**/api/v1/analyses/guide-2/proposals/${proposal.id}/submit`, (route) => {
+    pending = true
+    return route.fulfill({
+      status: 409,
+      json: { code: 'ALREADY_PENDING', message: 'This proposal is already awaiting review' },
+    })
+  })
+  await page.goto('/incidents/INC-001')
+  const card = page
+    .locator('article')
+    .filter({
+      has: page.getByRole('heading', { name: proposal.type.replaceAll('_', ' '), exact: true }),
+    })
+  await card.getByRole('button', { name: 'Submit for review', exact: true }).click()
+  await expect(card.getByRole('button', { name: 'Record review', exact: true })).toBeVisible()
+  await expect(card.getByRole('button', { name: 'Submit for review', exact: true })).toHaveCount(0)
+})

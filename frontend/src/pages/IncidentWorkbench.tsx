@@ -117,7 +117,10 @@ function ProposalCard({
       setMessage('Submitted for human review.')
       onChanged()
     },
-    onError: (error) => setMessage(error.message),
+    onError: (error) => {
+      setMessage(error.message)
+      onChanged()
+    },
   })
   const review = useMutation({
     mutationFn: (decision: 'APPROVED' | 'REJECTED') =>
@@ -127,7 +130,10 @@ function ProposalCard({
       setReviewOpen(false)
       onChanged()
     },
-    onError: (error) => setMessage(error.message),
+    onError: (error) => {
+      setMessage(error.message)
+      onChanged()
+    },
   })
   return (
     <article className="rounded-sm border border-border bg-card p-4">
@@ -371,6 +377,11 @@ export function IncidentWorkbenchPage() {
     .at(-1)
   const compareAvailable =
     earlierRevision !== undefined && report?.execution_kind !== 'saved_deterministic'
+  const latestRevision = Math.max(
+    revision,
+    summary?.revision ?? revision,
+    ...(incident.data?.available_revisions ?? []),
+  )
 
   if (!validRevision)
     return (
@@ -489,7 +500,7 @@ export function IncidentWorkbenchPage() {
                 <InvestigationGuide
                   report={report}
                   viewedRevision={revision}
-                  latestRevision={summary?.revision ?? revision}
+                  latestRevision={latestRevision}
                   earlierRevision={earlierRevision}
                   compareAvailable={compareAvailable}
                   exportAvailable={capabilities.data?.reviews_enabled === true}
@@ -505,7 +516,7 @@ export function IncidentWorkbenchPage() {
                   key={`${report.id}:${user?.id ?? 'anonymous'}`}
                   report={report}
                   incident={incident.data}
-                  currentRevision={summary?.revision ?? revision}
+                  currentRevision={latestRevision}
                 />
                 <SectionRail titles={RAIL_TITLES} />
                 <Section
@@ -837,7 +848,7 @@ export function IncidentWorkbenchPage() {
                           key={`${report.id}-${item.id}-${item.state}`}
                           item={item}
                           report={report}
-                          currentRevision={summary?.revision ?? revision}
+                          currentRevision={latestRevision}
                           canReview={
                             capabilities.data?.reviews_enabled === true &&
                             report.execution_kind !== 'saved_deterministic'
@@ -856,7 +867,7 @@ export function IncidentWorkbenchPage() {
                 <IncidentWorkflow
                   key={`${id}:${user?.id ?? 'anonymous'}`}
                   report={report}
-                  currentRevision={summary?.revision ?? revision}
+                  currentRevision={latestRevision}
                   onRevisionPublished={changeRevision}
                 />
                 <Section title="Shift update" detail="Evidence-linked report summary">
