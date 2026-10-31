@@ -71,6 +71,7 @@ DISCLAIMER = (
 )
 
 _WHOLE = re.compile(r"[0-9]+")
+_SECONDS = re.compile(r"[0-9]+(?:\.[0-9]+)?")
 
 
 @dataclass(frozen=True)
@@ -124,7 +125,7 @@ def _seconds(name: str, text: str, line: int, problems: list[str]) -> float | No
     if not text:
         return None
     try:
-        value = float(text)
+        value = float(text) if _SECONDS.fullmatch(text) else math.nan
     except ValueError:
         value = math.nan
     if not math.isfinite(value) or value < 0:
@@ -363,11 +364,18 @@ def _paired_summary(pairs: list[Pair]) -> dict[str, Any]:
     statuses = Counter(_pair_status(pair) for pair in pairs)
     timed = [times for times in (_completed(pair) for pair in pairs) if times is not None]
     differences = [flooreplay - baseline for baseline, flooreplay in timed]
+    repeated = sum(pair.baseline.case_id == pair.flooreplay.case_id for pair in pairs)
     return {
         "pairs": len(pairs),
         "outcome_pairs": {status: statuses[status] for status in PAIR_STATUSES},
         "comparable_pairs": len(timed),
         "comparable_definition": "both rows succeeded and recorded completion_seconds",
+        "same_case_pairs": repeated,
+        "learning_effect_warning": (
+            "The same case was repeated across methods. Timing differences may reflect prior exposure; method order does not remove that effect."
+            if repeated else None
+        ),
+        "method_order_pairs": {order: sum(pair.baseline.method_order == order for pair in pairs) for order in METHOD_ORDERS},
         "baseline_completion_seconds": _stat([baseline for baseline, _ in timed]),
         "flooreplay_completion_seconds": _stat([flooreplay for _, flooreplay in timed]),
         "per_pair_difference_seconds_flooreplay_minus_baseline": _stat(differences),
@@ -398,6 +406,7 @@ def _pair_detail(pair: Pair) -> dict[str, Any]:
         "participant_id": pair.baseline.participant_id,
         "case_complexity": pair.baseline.case_complexity,
         "method_order": pair.baseline.method_order,
+        "same_case_repeated": pair.baseline.case_id == pair.flooreplay.case_id,
         "baseline": {"case_id": pair.baseline.case_id, "outcome": pair.baseline.outcome},
         "flooreplay": {"case_id": pair.flooreplay.case_id, "outcome": pair.flooreplay.outcome},
         "difference_seconds_flooreplay_minus_baseline": None if completed is None else completed[1] - completed[0],

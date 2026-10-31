@@ -27,8 +27,10 @@ Use participant codes, not names, and no customer or confidential production ide
 
 - **One row per method attempt.** A baseline row and a FloorReplay row with the same `pair_id`
   form one pair. Both rows of a pair must share participant, cohort, complexity and method order.
-- **Comparable, different cases.** Each method gets its own `case_id`, of the same complexity,
-  so the first method does not teach the second. Different participants can use the same cases;
+- **Comparable evidence.** Prefer different cases of the same complexity to reduce learning
+  from the first attempt. To compare the same incident, use the same `case_id` in both rows and
+  retain identical evidence. The summary flags these pairs and warns that timing differences
+  may reflect prior exposure. Record previous exposure in `notes`. Different participants can use the same cases;
   do not count the same participant, case and method twice within a cohort.
 - **Counterbalance the order.** Alternate `baseline_first` and `flooreplay_first` across participants.
 - **Keep the same evidence available to both methods**, or note the difference in `notes`.
@@ -72,7 +74,8 @@ Use participant codes, not names, and no customer or confidential production ide
 
 ## Reading the summary
 
-The summary separates the two cohorts. For each method it reports outcome counts and success
+The summary separates the two cohorts and reports method order and repeated-case counts.
+For each method it reports outcome counts and success
 rate over all attempts. Times are summarised over the rows that recorded them. Paired medians and
 per-pair differences use only comparable completed pairs, where both rows succeeded. The
 `outcome_pairs` counts show every pair, including those where FloorReplay failed or timed out.

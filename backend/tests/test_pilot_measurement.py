@@ -203,6 +203,7 @@ def test_first_missing_evidence_cannot_come_after_completion() -> None:
         ("completion_seconds", "-5", "completion_seconds must be a non-negative number"),
         ("completion_seconds", "nan", "completion_seconds must be a non-negative number"),
         ("completion_seconds", "soon", "completion_seconds must be a non-negative number"),
+        ("completion_seconds", "1_000", "completion_seconds must be a non-negative number"),
         ("cohort", "pilot", "cohort must be one of"),
         ("method", "manual", "method must be one of"),
         ("outcome", "done", "outcome must be one of"),
@@ -320,6 +321,16 @@ def test_paired_medians_use_only_comparable_completed_pairs() -> None:
     assert paired["flooreplay_slower_pairs"] == 1
     assert paired["flooreplay_faster_pairs"] == 1
     assert paired["same_time_pairs"] == 0
+
+
+def test_same_incident_comparison_discloses_prior_exposure_and_method_order() -> None:
+    summary, problems = measure_csv(_csv(_baseline(), _flooreplay(case_id="S-A")))
+    assert problems == [] and summary is not None
+    paired = summary["cohorts"]["synthetic"]["paired"]
+    assert paired["same_case_pairs"] == 1
+    assert "prior exposure" in paired["learning_effect_warning"]
+    assert paired["method_order_pairs"] == {"baseline_first": 1, "flooreplay_first": 0}
+    assert summary["pair_details"][0]["same_case_repeated"] is True
 
 
 def test_outcome_pairs_keep_failures_out_of_timing_but_in_counts() -> None:

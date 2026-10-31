@@ -45,6 +45,6 @@ Retain the consented anonymized case records, rating definitions, exclusions and
 
 `backend/src/flooreplay/pilot_measurement.py` validates a per-attempt CSV and writes a descriptive JSON summary. It runs offline. The blank record and the collection steps are in [`pilot/README.md`](pilot/README.md), with the header in [`pilot/comparative-pilot-template.csv`](pilot/comparative-pilot-template.csv).
 
-What the tool does: it refuses blank, unpaired or inconsistent rows; keeps blank cells distinct from zero; keeps failed and timed-out attempts in completion-rate denominators; computes paired medians and differences only for comparable completed pairs; and reports the synthetic and practitioner cohorts separately.
+What the tool does: it refuses blank, unpaired or inconsistent rows; keeps blank cells distinct from zero; keeps failed and timed-out attempts in success-rate denominators; computes paired medians and differences only for comparable completed pairs; flags same-case repetition and its learning effects; reports method order; and reports the synthetic and practitioner cohorts separately.
 
 What the tool does not capture yet: time to the first actionable next check, useful next checks, missed-record lists, and the AI-condition fields. Record those on the design sheet, or do not report them. The tool makes no claim about benefit.
