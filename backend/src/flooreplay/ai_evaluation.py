@@ -39,7 +39,7 @@ def claim_review_view(review: AIClaimReview) -> dict[str, Any]:
         "id": review.id, "run_id": review.run_id, "claim_path": review.claim_path,
         "supported": review.supported, "actor": review.user_id,
         "rationale": review.rationale, "output_digest": review.output_digest,
-        "created_at": review.created_at.isoformat(),
+        "created_at": review.created_at.astimezone(UTC).isoformat(),
         "judgment": review.judgment, "flags": review.flags, "reviewer_kind": review.reviewer_kind,
         "qualifications": review.qualifications, "independent": review.independent,
     }

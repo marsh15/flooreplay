@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+from datetime import UTC
 from typing import Any
 
 from openai import (
@@ -30,7 +31,7 @@ from .spending import cost, lock, reserve, settle, usage_view
 
 
 def view(run: AIRun) -> dict[str, Any]:
-    return {"output_digest": digest(run.result["output"]) if run.status == "COMPLETED" and run.result and run.result.get("output") else None, "id": run.id, "request_key": run.request_key, "analysis_id": run.analysis_id, "task": run.task, "status": run.status, "provider": "openai", "configuration": run.configuration, "packet": run.packet, "attempts": run.attempts, "result": run.result, "created_at": run.created_at.isoformat(), "completed_at": run.completed_at.isoformat() if run.completed_at else None}
+    return {"output_digest": digest(run.result["output"]) if run.status == "COMPLETED" and run.result and run.result.get("output") else None, "id": run.id, "request_key": run.request_key, "analysis_id": run.analysis_id, "task": run.task, "status": run.status, "provider": "openai", "configuration": run.configuration, "packet": run.packet, "attempts": run.attempts, "result": run.result, "created_at": run.created_at.astimezone(UTC).isoformat(), "completed_at": run.completed_at.astimezone(UTC).isoformat() if run.completed_at else None}
 
 
 def lookup_run(run_id: str, user_id: str, owner: bool = False) -> dict[str, Any]:
