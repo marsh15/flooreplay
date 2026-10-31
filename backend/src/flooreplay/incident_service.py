@@ -259,6 +259,8 @@ def review_proposal(
         raise ServiceError("ALREADY_REVIEWED", "This proposal already has a final review", 409)
     if state in ("APPROVED", "REJECTED") and (not prior or prior[-1].state != "PENDING_REVIEW"):
         raise ServiceError("REVIEW_STATE", "Submit the proposal for review first", 409)
+    if state == "PENDING_REVIEW" and prior and prior[-1].state == "PENDING_REVIEW":
+        raise ServiceError("ALREADY_PENDING", "This proposal is already awaiting review", 409)
     decision = IncidentReview(
         workspace_id=analysis.workspace_id, idempotency_key=key, analysis_id=analysis.id, proposal_id=proposal_id,
         state=state, actor=actor, rationale=rationale,
