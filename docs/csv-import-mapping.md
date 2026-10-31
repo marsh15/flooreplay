@@ -1,6 +1,6 @@
 # CSV column mapping
 
-CSV imports support downloadable synthetic examples and explicit column mapping. Local acceptance was recorded on October 1, 2026, during the third improvement pass. RELEASE_STATUS.md describes the local database interruption that limits the overall browser suite. Cumulative counter readings and reviewed identifier aliases were added on October 19, 2026. XLSX files and saved mapping presets are not supported.
+CSV imports support downloadable synthetic examples and explicit column mapping. Local acceptance was recorded on October 1, 2026, during the third improvement pass. RELEASE_STATUS.md describes the local database interruption that limits that earlier browser suite. Cumulative counter readings and reviewed identifier aliases were added on October 19, 2026. Column mappings can now be downloaded and loaded for later CSV files. XLSX files are not supported.
 
 ## Choose and inspect the file
 
@@ -16,7 +16,15 @@ A field default supplies the same value for every row in the file. For example, 
 
 A source column can map to only one canonical field. Unknown canonical fields and references to nonexistent source headers are rejected. Inspect unmapped source columns before deciding to omit them, particularly correction IDs and relationship fields. source_id can be omitted when the generated source-system-plus-record-ID identity is suitable.
 
-Production requires an explicit good_units unit, a nonnegative integer quantity and delta counts. A new incident requires baseline plan records. Existing incident imports append observations or corrections; they cannot replace the baseline plan. Corrections have a new id and a supersedes_id pointing to the original record.
+Production requires an explicit good_units unit, a nonnegative integer quantity and an explicit delta or cumulative count mode. A new incident requires baseline plan records. Existing incident imports append observations or corrections; they cannot replace the baseline plan. Corrections have a new id and a supersedes_id pointing to the original record.
+
+## Reuse column names for the next file
+
+After inspecting and mapping a CSV, select **Download column mapping**. The JSON file contains only its version, source profile and selected source-column names. It excludes source rows, constants, destination identifiers and identifier aliases. Header names themselves may still be private; store the file with the same care as the source export.
+
+For the next CSV, choose its destination and profile, inspect the columns, then select **Load column mapping**. The file must match the selected profile and reference only fields and columns present in the inspected CSV. Invalid files leave the current mapping intact and clear any previous preview. A column cannot supply two fields.
+
+Loading replaces the field mapping and clears constants; supply them again after checking this file's scope, units and count mode. Review ignored columns and correction relationships, then run a fresh preview before publication. Changing the source or form while the mapping file is being read discards that pending load. No mapping is retained automatically in browser storage or on the server.
 
 Notes require author_role and a summary or text. Relationship cells contain JSON arrays. `[]` means no relationship claim. CSV quoting must preserve embedded JSON quotes. A typed SUPPORTS link records the source's assertion. It does not independently prove a cause. Explicit line blocks require the line_block record type, true line_blocking and a valid interval.
 
