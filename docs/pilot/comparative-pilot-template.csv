@@ -1,0 +1,1 @@
+pair_id,cohort,participant_id,case_id,case_complexity,method,method_order,release,outcome,completion_seconds,first_missing_evidence_seconds,report_seconds,evidence_expected,evidence_found,unsupported_conclusions,conclusions_assessed,errors,source_omissions,clarification_rounds,assistance_count,reviewer_confidence,usefulness_rating,notes
