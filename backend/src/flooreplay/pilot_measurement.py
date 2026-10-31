@@ -71,7 +71,7 @@ DISCLAIMER = (
 )
 
 _WHOLE = re.compile(r"[0-9]+")
-_SECONDS = re.compile(r"[0-9]+(?:\.[0-9]+)?")
+_SECONDS = re.compile(r"(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)")
 
 
 @dataclass(frozen=True)

@@ -8,7 +8,7 @@ Compare the participant's existing spreadsheet-and-phone process with FloorRepla
 
 Record participant roles and experience, case selection, case complexity and available source records. Define what counts as an actionable next check and relevant evidence before timing sessions. Have an independent practitioner assess conclusions if available. Record who authored the cases and who rates them.
 
-Use different but comparable cases for each method to reduce memory effects. Counterbalance the order when there are multiple participants. Keep the same evidence available to both methods, or explicitly report the difference. Record training, interruptions and every instance of author assistance. Choose the analysis and all case exclusions before collecting results. Retain unsuccessful and timed-out cases.
+Prefer different but comparable cases for each method to reduce memory effects. A same-incident comparison is supported; retain identical evidence and disclose prior exposure and its possible learning effects. Counterbalance the order when there are multiple participants. Keep the same evidence available to both methods, or explicitly report the difference. Record training, interruptions and every instance of author assistance. Choose the analysis and all case exclusions before collecting results. Retain unsuccessful and timed-out cases.
 
 Compare deterministic output with AI only in a separately identified condition. Record provider, model, prompt/configuration identity, retrieval mode and actual cost if AI is used. No paid request is required for a deterministic pilot.
 

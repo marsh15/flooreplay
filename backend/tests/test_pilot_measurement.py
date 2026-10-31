@@ -229,6 +229,13 @@ def test_blank_optional_cells_are_accepted_as_not_recorded() -> None:
     assert pairs[0].baseline.report_seconds is None
 
 
+@pytest.mark.parametrize("value", [".5", "5.", "0.5"])
+def test_seconds_accept_plain_decimal_spellings(value: str) -> None:
+    pairs, problems = load_pairs(_csv(_baseline(completion_seconds=value, first_missing_evidence_seconds=""), _flooreplay()))
+    assert problems == []
+    assert pairs[0].baseline.completion_seconds == float(value)
+
+
 def test_measure_csv_returns_no_summary_when_refused() -> None:
     summary, problems = measure_csv(_csv(_baseline()))
 

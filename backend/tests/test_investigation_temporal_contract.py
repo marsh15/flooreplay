@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from flooreplay.auth import Account, create_account
@@ -223,9 +224,11 @@ def test_a_proposal_cannot_be_queued_for_review_twice():
 
 def test_analysis_and_review_response_survive_database_reload():
     with Session(engine) as session:
+        session.execute(text("SET LOCAL TIME ZONE 'Asia/Kolkata'"))
         incident_id = _seed(session)
         analysis = create_analysis(session, incident_id, 1, uuid4().hex)
         review_proposal(session, analysis, "verify-machine", "PENDING_REVIEW", "Production lead", "Checked the cited records", uuid4().hex)
         before = analysis_view(session, analysis)
         session.expire_all()
         assert analysis_view(session, analysis) == before
+        assert before["created_at"].endswith("+00:00")
