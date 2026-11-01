@@ -30,6 +30,8 @@ const taskFixture = (): WorkflowTask => ({
   activities: [],
   response: null,
   outcome: null,
+  can_act: false,
+  can_manage: false,
 })
 
 async function signIn(page: Page) {
@@ -48,10 +50,16 @@ async function setup(
     completedTask?: boolean
     currentRevision?: number
     failFirstCreate?: boolean
+    ownerIsMember?: boolean
   } = {},
 ) {
   let revision = options.currentRevision ?? 2
   let task: WorkflowTask | null = options.existingTask ? taskFixture() : null
+  if (task && options.ownerIsMember) {
+    task.assignee_id = other.id
+    task.assignee_name = other.display_name
+    task.created_by = other.id
+  }
   if (task && options.completedTask) {
     task.status = 'COMPLETED'
     task.overdue = false
@@ -65,25 +73,38 @@ async function setup(
     }
   }
   let resolution: IncidentWorkflowData['resolution'] = 'OPEN'
+  const viewer = options.role === 'reviewer' ? other : owner
+  // Authority comes from this workspace, independently of the account's global role.
+  const override = viewer.role === 'owner' && !options.ownerIsMember
+  const withAuthority = (value: WorkflowTask): WorkflowTask => ({
+    ...value,
+    can_act: override || value.assignee_id === viewer.id,
+    can_manage: override || value.created_by === viewer.id,
+  })
   const payloads: { path: string; body: unknown }[] = []
   let createAttempts = 0
   let privateReads = 0
-  const getWorkflow = (): IncidentWorkflowData => ({
-    incident_id: 'INC-001',
-    current_revision: revision,
-    resolution,
-    resolution_rationale:
-      resolution === 'RESOLVED' ? 'Supervisor checked measured output and uncertainty.' : null,
-    resolution_activities: [],
-    tasks: task ? [task] : [],
-    handover: {
-      summary: 'S4 output needs a material-readiness check.',
-      cutoff: savedReport.cutoff,
-      uncertainties: ['No claim of confirmed cause.'],
-      outstanding_checks:
-        task && task.status !== 'COMPLETED' && task.status !== 'CANCELLED' ? [task] : [],
-    },
-  })
+  const getWorkflow = (): IncidentWorkflowData => {
+    const current = task ? withAuthority(task) : null
+    return {
+      incident_id: 'INC-001',
+      current_revision: revision,
+      resolution,
+      resolution_rationale:
+        resolution === 'RESOLVED' ? 'Supervisor checked measured output and uncertainty.' : null,
+      resolution_activities: [],
+      tasks: current ? [current] : [],
+      handover: {
+        summary: 'S4 output needs a material-readiness check.',
+        cutoff: savedReport.cutoff,
+        uncertainties: ['No claim of confirmed cause.'],
+        outstanding_checks:
+          current && current.status !== 'COMPLETED' && current.status !== 'CANCELLED'
+            ? [current]
+            : [],
+      },
+    }
+  }
   await page.route('**/api/v1/**', async (route) => {
     const path = new URL(route.request().url()).pathname.replace('/api/v1', '')
     if (path === '/auth/login')
@@ -208,7 +229,9 @@ async function setup(
         }
       } else if (path.endsWith('/resolution'))
         resolution = body.state === 'RESOLVED' ? 'RESOLVED' : 'OPEN'
-      return route.fulfill({ json: path.endsWith('/resolution') ? getWorkflow() : task })
+      return route.fulfill({
+        json: path.endsWith('/resolution') ? getWorkflow() : task && withAuthority(task),
+      })
     }
     return route.fulfill({ status: 503, json: { message: 'Unsupported local fixture endpoint' } })
   })
@@ -418,4 +441,31 @@ test('switching report revision refreshes the workflow after an external evidenc
   await workflow.getByRole('article').getByText('Record source response', { exact: true }).click()
   await expect(workflow.getByText(/Saving appends structured evidence to revision 4/)).toBeVisible()
   await expect(workflow.getByText(/This report is revision 3. Open revision 2/)).toHaveCount(0)
+})
+
+test('owner account invited as a member follows server task permissions', async ({ page }) => {
+  const fixture = await setup(page, { existingTask: true, ownerIsMember: true })
+  await page.goto('/incidents/INC-001?revision=2')
+  await signIn(page)
+  const check = page.locator('#assigned-checks').getByRole('article')
+  await expect(check).toContainText('Confirm fabric readiness on S4')
+  await check.getByText('Comments and assignment history', { exact: true }).click()
+  await expect(check.getByRole('button', { name: 'Start check', exact: true })).toHaveCount(0)
+  await expect(
+    check.getByRole('button', { name: 'Cancel check with reason', exact: true }),
+  ).toHaveCount(0)
+  await expect(check.getByLabel('Reassign to')).toHaveCount(0)
+  await expect(check.getByText('Record source response', { exact: true })).toHaveCount(0)
+  await expect(check.getByText('Record action and measured outcome', { exact: true })).toHaveCount(
+    0,
+  )
+  await check
+    .getByLabel('Comment or reassignment reason')
+    .fill('Workspace member records a comment.')
+  await check.getByRole('button', { name: 'Save comment or assignment' }).click()
+  await expect
+    .poll(() => fixture.payloads.filter((item) => item.path.endsWith('/update')).length)
+    .toBe(1)
+  const update = fixture.payloads.find((item) => item.path.endsWith('/update'))
+  expect(update?.body).toMatchObject({ status: null, assignee_id: null, due_at: null })
 })

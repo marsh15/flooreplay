@@ -59,6 +59,8 @@ from .incident_workflow import (
     resolve_incident,
     respond_check,
     update_check,
+    with_task_authority,
+    with_workflow_authority,
     workflow_view,
 )
 from .models import (
@@ -552,32 +554,32 @@ def create_app(mode: str | None = None) -> FastAPI:
     @app.get("/api/v1/incidents/{incident_id}/workflow")
     def incident_workflow(incident_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         with session_scope() as session:
-            return workflow_view(session, incident_id)
+            return with_workflow_authority(session, workflow_view(session, incident_id), user)
 
     @app.post("/api/v1/analyses/{analysis_id}/checks")
     def assign_incident_check(analysis_id: str, body: CheckCreateRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         with session_scope() as session:
-            return create_check(session, analysis_id, user, body.model_dump())
+            return with_task_authority(session, create_check(session, analysis_id, user, body.model_dump()), user)
 
     @app.post("/api/v1/checks/{task_id}/update")
     def update_incident_check(task_id: str, body: CheckUpdateRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         with session_scope() as session:
-            return update_check(session, task_id, user, body.model_dump())
+            return with_task_authority(session, update_check(session, task_id, user, body.model_dump()), user)
 
     @app.post("/api/v1/checks/{task_id}/respond")
     def respond_incident_check(task_id: str, body: CheckResponseRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         with session_scope() as session:
-            return respond_check(session, task_id, user, body.model_dump())
+            return with_task_authority(session, respond_check(session, task_id, user, body.model_dump()), user)
 
     @app.post("/api/v1/checks/{task_id}/complete")
     def complete_incident_check(task_id: str, body: CheckCompleteRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         with session_scope() as session:
-            return complete_check(session, task_id, user, body.model_dump())
+            return with_task_authority(session, complete_check(session, task_id, user, body.model_dump()), user)
 
     @app.post("/api/v1/incidents/{incident_id}/resolution")
     def resolve_incident_workflow(incident_id: str, body: IncidentResolutionRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         with session_scope() as session:
-            return resolve_incident(session, incident_id, user, body.model_dump())
+            return with_workflow_authority(session, resolve_incident(session, incident_id, user, body.model_dump()), user)
 
     @app.get("/api/v1/incidents/{incident_id}/revisions/{revision}")
     def get_incident(incident_id: str, revision: int) -> dict[str, Any]:
