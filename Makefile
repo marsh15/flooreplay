@@ -19,6 +19,7 @@ migrate:
 
 test:
 	cd backend && uv run pytest
+	backend/.venv/bin/python -m unittest discover -s scripts -p test_hosted_acceptance.py
 
 lint:
 	cd backend && uv run ruff check src tests

@@ -12,6 +12,17 @@ backend/.venv/
 .env.*
 !.env.example
 
+# Private keys and certificate bundles
+*.pem
+*.key
+*.p12
+*.pfx
+*.ppk
+*.jks
+*.keystore
+id_rsa
+id_ed25519
+
 # Misc
 .DS_Store
 *.log

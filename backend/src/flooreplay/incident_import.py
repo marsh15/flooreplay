@@ -151,7 +151,10 @@ def _records(raw: bytes, filename: str) -> list[dict[str, Any]]:
         payload = json.loads(text)
         rows = payload.get("records") if isinstance(payload, dict) else payload
     elif suffix == ".jsonl":
-        rows = [json.loads(line) for line in text.splitlines() if line.strip()]
+        lines = [line for line in text.splitlines() if line.strip()]
+        if len(lines) > MAX_ROWS:
+            raise ValueError("More than 10,000 rows")
+        rows = [json.loads(line) for line in lines]
     else:
         raise ValueError("Expected a local .csv, .json, or .jsonl file")
     if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):

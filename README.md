@@ -105,6 +105,8 @@ See [AI trust evaluation](docs/ai-trust-evaluation.md) for existing measurements
 
 ## Deployment
 
+See the [1 November hardening record](docs/security-hardening-2026-11-01.md) for workspace permissions, validation and the incomplete audit status.
+
 Follow [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md) for Vercel, Render and Neon, or [DEPLOY.md](DEPLOY.md) for container verification, backups and recovery. Before deploying with real data, complete authenticated acceptance checks, confirm TLS and proxy settings, define backup ownership and retention, and assign an operational owner. This synthetic demonstration has not been validated for factory decisions.
 
 ## Engineering evidence
