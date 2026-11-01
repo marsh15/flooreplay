@@ -65,7 +65,7 @@ def lookup_request(key: str, user_id: str) -> dict[str, Any]:
 def capabilities(user_id: str) -> dict[str, Any]:
     from .ai_evaluation import provider_evaluation
     with session_scope() as session:
-        usage = usage_view(session)
+        usage = usage_view(session, include_entries=False)
         evaluation = provider_evaluation(session)
         from .retrieval import embedding_identity
         corpora = session.scalars(select(CorpusRelease)).all()

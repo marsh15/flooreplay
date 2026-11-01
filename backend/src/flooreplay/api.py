@@ -98,7 +98,14 @@ from .service import (
     run_comparison,
 )
 from .spending import usage_view
-from .workspaces import add_member, create_workspace, destination, list_workspaces, request_scope
+from .workspaces import (
+    add_member,
+    create_workspace,
+    destination,
+    is_workspace_owner,
+    list_workspaces,
+    request_scope,
+)
 
 logger = logging.getLogger("flooreplay.api")
 
@@ -684,34 +691,42 @@ def create_app(mode: str | None = None) -> FastAPI:
     def get_review_queue(user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
         return review_queue()
 
+    def owns_ai_workspace(run_id: str, user: Account) -> bool:
+        from .paid_models import AIRun
+        with session_scope() as session:
+            run = session.get(AIRun, run_id)
+            if run is None:
+                raise ServiceError("NOT_FOUND", "AI draft not found", 404)
+            return is_workspace_owner(session, run.workspace_id, user)
+
     @app.get("/api/v1/ai-runs/{run_id}/review-packet")
     def get_review_packet(run_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
-        return review_packet(run_id, user.id, owner=user.role == "owner")
+        return review_packet(run_id, user.id, owner=owns_ai_workspace(run_id, user))
 
     @app.get("/api/v1/ai-runs/{run_id}/review-report")
     def get_review_report(run_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
-        return review_report(run_id, user.id, owner=user.role == "owner")
+        return review_report(run_id, user.id, owner=owns_ai_workspace(run_id, user))
 
     @app.post("/api/v1/ai-runs/{run_id}/publish-review")
     def publish_ai_review(run_id: str, body: AIReviewPublishRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
-        return publish_review(run_id, user.id, body.idempotency_key, body.output_digest, owner=user.role == "owner")
+        return publish_review(run_id, user.id, body.idempotency_key, body.output_digest, owner=owns_ai_workspace(run_id, user))
 
     @app.post("/api/v1/ai-runs/{run_id}/assessment")
     def assess_ai_run(run_id: str, body: AIRunAssessmentRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
-        return assess_run(run_id, user.id, body.idempotency_key, body.output_digest, body.model_dump(exclude={"output_digest", "idempotency_key"}), owner=user.role == "owner")
+        return assess_run(run_id, user.id, body.idempotency_key, body.output_digest, body.model_dump(exclude={"output_digest", "idempotency_key"}), owner=owns_ai_workspace(run_id, user))
 
     @app.get("/api/v1/ai-runs/{run_id}")
     def get_ai_run(run_id: str, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
-        return lookup_run(run_id, user.id, owner=user.role == "owner")
+        return lookup_run(run_id, user.id, owner=owns_ai_workspace(run_id, user))
 
     @app.post("/api/v1/ai-runs/{run_id}/claim-review")
     def annotate_ai_claim(run_id: str, body: AIClaimReviewRequest, user: Annotated[Account, Depends(require_reviewer)]) -> dict[str, Any]:
-        return review_claim(run_id, user.id, body.idempotency_key, body.claim_path, body.supported, body.rationale, owner=user.role == "owner", **body.model_dump(exclude={"supported", "rationale", "claim_path", "idempotency_key"}))
+        return review_claim(run_id, user.id, body.idempotency_key, body.claim_path, body.supported, body.rationale, owner=owns_ai_workspace(run_id, user), **body.model_dump(exclude={"supported", "rationale", "claim_path", "idempotency_key"}))
 
     @app.get("/api/v1/usage")
     def get_usage(user: Annotated[Account, Depends(require_owner)]) -> dict[str, Any]:
         with session_scope() as session:
-            return usage_view(session)
+            return usage_view(session, actor_id=user.id)
 
     @app.get("/api/v1/corpora")
     def corpora() -> dict[str, Any]:

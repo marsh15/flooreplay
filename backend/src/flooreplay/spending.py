@@ -20,15 +20,18 @@ def lock(session: Session) -> None:
     session.execute(select(func.pg_advisory_xact_lock(947362)))
 
 
-def usage_view(session: Session, *, include_entries: bool = True) -> dict[str, Any]:
+def usage_view(session: Session, *, include_entries: bool = True, actor_id: str | None = None) -> dict[str, Any]:
     allocations = {row.purpose: row.ceiling_inr for row in session.scalars(select(SpendingAllocation))} or ALLOCATIONS
     committed = case((SpendEntry.status == "SETTLED", SpendEntry.charged_inr), else_=SpendEntry.reserved_inr)
     used = dict.fromkeys(ALLOCATIONS, 0.0)
     for purpose, total in session.execute(select(SpendEntry.purpose, func.sum(committed)).group_by(SpendEntry.purpose)):
         used[purpose] = float(total)
     active = session.execute(select(func.count()).select_from(SpendEntry).where(SpendEntry.status == "RESERVED", SpendEntry.expires_at > now())).scalar_one()
-    entries = session.scalars(select(SpendEntry).order_by(SpendEntry.created_at.desc(), SpendEntry.id).limit(100)).all() if include_entries else []
-    return {"total_ceiling_inr": 500, "allocations_inr": allocations, "committed_inr": sum(used.values()), "available_inr": max(0, 500 - sum(used.values())), "purpose_available_inr": {p: max(0, cap - used[p]) for p, cap in allocations.items()}, "active_operations": active, "price_table": PRICE_TABLE, "entries": [{"id": e.id, "purpose": e.purpose, "operation": e.operation, "status": e.status, "reserved_inr": e.reserved_inr, "charged_inr": e.charged_inr, "charged_usd": e.charged_usd, "details": e.details} for e in entries]}
+    entry_query = select(SpendEntry).order_by(SpendEntry.created_at.desc(), SpendEntry.id).limit(100)
+    if actor_id is not None:
+        entry_query = entry_query.where(SpendEntry.user_id == actor_id)
+    entries = session.scalars(entry_query).all() if include_entries else []
+    return {"total_ceiling_inr": 500, "allocations_inr": allocations, "committed_inr": sum(used.values()), "available_inr": max(0, 500 - sum(used.values())), "purpose_available_inr": {p: max(0, cap - used[p]) for p, cap in allocations.items()}, "active_operations": active, "price_table": PRICE_TABLE, "entries": [{"id": e.id, "purpose": e.purpose, "operation": e.operation, "status": e.status, "reserved_inr": e.reserved_inr, "charged_inr": e.charged_inr, "charged_usd": e.charged_usd, "details": e.details if actor_id is None else {}} for e in entries]}
 
 
 def reserve(session: Session, user_id: str, purpose: str, operation: str, maximum_usd: float) -> SpendEntry:
