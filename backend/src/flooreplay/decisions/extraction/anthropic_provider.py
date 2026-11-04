@@ -127,14 +127,16 @@ class AnthropicProvider:
             self._client = anthropic.Anthropic(api_key=key, max_retries=0, timeout=self._timeout, **extra)
         return self._client
 
-    def extract(self, note: str, *, prompt_version: str, schema: dict[str, Any]) -> ProviderResult:
+    def extract(
+        self, note: str, *, prompt_version: str, schema: dict[str, Any], max_tokens: int | None = None
+    ) -> ProviderResult:
         if prompt_version != PROMPT_VERSION:
             raise ValueError(f"This provider sends prompt {PROMPT_VERSION!r}, not {prompt_version!r}")
         client = self.client()
         text = normalize_note(note)
         response = client.messages.create(
             model=self.model,
-            max_tokens=self._max_tokens,
+            max_tokens=max_tokens if max_tokens is not None else self._max_tokens,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": f"<note>\n{text}\n</note>"}],
             output_config={

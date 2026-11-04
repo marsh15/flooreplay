@@ -56,7 +56,9 @@ class OpenAIProvider:
             self._client = OpenAI(api_key=key, max_retries=0, timeout=self._timeout)
         return self._client
 
-    def extract(self, note: str, *, prompt_version: str, schema: dict[str, Any]) -> ProviderResult:
+    def extract(
+        self, note: str, *, prompt_version: str, schema: dict[str, Any], max_tokens: int | None = None
+    ) -> ProviderResult:
         if prompt_version != PROMPT_VERSION:
             raise ValueError(f"This provider sends prompt {PROMPT_VERSION!r}, not {prompt_version!r}")
         client = self.client()
@@ -65,7 +67,7 @@ class OpenAIProvider:
             instructions=SYSTEM_PROMPT,
             input=f"<note>\n{normalize_note(note)}\n</note>",
             text={"format": {"type": "json_schema", "name": SCHEMA_VERSION.replace("-", "_"), "schema": schema, "strict": True}},
-            max_output_tokens=self._max_output_tokens,
+            max_output_tokens=max_tokens if max_tokens is not None else self._max_output_tokens,
             store=False,
         )
         if getattr(response, "status", "completed") != "completed":

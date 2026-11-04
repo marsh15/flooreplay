@@ -6,4 +6,4 @@ Every migration in the v2 lane bumps this constant in the same commit.
 
 from __future__ import annotations
 
-SCHEMA_HEAD = "20261021_decisions_facts"
+SCHEMA_HEAD = "20261024_decisions_review"

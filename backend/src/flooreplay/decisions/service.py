@@ -7,8 +7,8 @@ the full correction graph at write time, and the database clock.
 
 from __future__ import annotations
 
-from collections.abc import Collection, Sequence
-from datetime import datetime, timedelta
+from collections.abc import Collection, Mapping, Sequence
+from datetime import UTC, datetime, timedelta
 
 import psycopg.errors
 from sqlalchemy import func, select, text
@@ -17,8 +17,32 @@ from sqlalchemy.orm import Session
 
 from flooreplay.decisions import facts as fact_rules
 from flooreplay.decisions import snapshot as snapshots
-from flooreplay.decisions.models import DecisionSourceArtifact, FactRow
-from flooreplay.decisions.types import Fact, FactKind, SourceProfile
+from flooreplay.decisions.compare import compare_cases
+from flooreplay.decisions.expectations import Expectation, evaluate_expectation
+from flooreplay.decisions.gate import CoverageDecl
+from flooreplay.decisions.models import (
+    CaseExpectation,
+    DecisionCase,
+    DecisionEvaluation,
+    DecisionRecord,
+    DecisionSourceArtifact,
+    FactRow,
+    PolicyAdoption,
+    RegressionRun,
+    StoredPolicy,
+)
+from flooreplay.decisions.policy import ENGINE_VERSION, PolicyDocument, policy_digest
+from flooreplay.decisions.replay import ReplayResult, replay
+from flooreplay.decisions.types import (
+    Classification,
+    Fact,
+    FactKind,
+    FrozenModel,
+    Recommendation,
+    SourceProfile,
+    Verdict,
+    decision_digest,
+)
 from flooreplay.errors import ServiceError
 from flooreplay.workspaces import allowed_workspaces
 
@@ -71,6 +95,12 @@ def _take_locks(session: Session, workspace_id: str, facts: Sequence[Fact]) -> N
     hashes: list[int] = sorted({session.scalar(select(func.hashtext(key))) or 0 for key in keys})
     for value in hashes:
         session.execute(select(func.pg_advisory_xact_lock(value)))
+
+
+def _lock_suite(session: Session, workspace_id: str) -> None:
+    """Serialise suite changes, regression runs and adoptions within one workspace."""
+    key = f"decision-suite:{workspace_id}"
+    session.execute(select(func.pg_advisory_xact_lock(func.hashtext(key))))
 
 
 def _check_nul(fact: Fact) -> None:
@@ -273,3 +303,577 @@ def snapshot_at(session: Session, workspace_id: str, cutoff: datetime) -> snapsh
     the result as final: a cutoff inside `SETTLE_HORIZON` of now is provisional.
     """
     return snapshots.snapshot_at(load_facts(session, workspace_id, known_by=cutoff), cutoff)
+
+
+# ---------------------------------------------------------------------------
+# Decision evaluations and human decision records
+# ---------------------------------------------------------------------------
+
+
+class Reconstruction(FrozenModel):
+    """Outcome of replaying a stored evaluation. A mismatch is data, never an exception."""
+
+    evaluation_id: str
+    stored_decision_digest: str
+    recomputed_decision_digest: str
+    snapshot_matches: bool
+    policy_matches: bool
+    matches: bool
+    result: ReplayResult
+
+
+def _find_evaluation(
+    session: Session, workspace_id: str, result: ReplayResult, order_id: str, cutoff: datetime
+) -> DecisionEvaluation | None:
+    return session.scalar(
+        select(DecisionEvaluation).where(
+            DecisionEvaluation.workspace_id == workspace_id,
+            DecisionEvaluation.order_id == order_id,
+            DecisionEvaluation.cutoff == cutoff,
+            DecisionEvaluation.policy_digest == result.policy_digest,
+            DecisionEvaluation.engine_version == result.engine_version,
+            DecisionEvaluation.snapshot_digest == result.snapshot_digest,
+        )
+    )
+
+
+def _load_evaluation(session: Session, workspace_id: str, evaluation_id: str) -> DecisionEvaluation:
+    row = session.scalar(
+        select(DecisionEvaluation).where(
+            DecisionEvaluation.workspace_id == workspace_id,
+            DecisionEvaluation.id == evaluation_id,
+        )
+    )
+    if row is None:
+        raise ServiceError("EVALUATION_NOT_FOUND", "evaluation not found in this workspace", 404)
+    return row
+
+
+def evaluate_order(
+    session: Session,
+    workspace_id: str,
+    order_id: str,
+    cutoff: datetime,
+    policy: PolicyDocument,
+) -> DecisionEvaluation:
+    """Replay one order as known at `cutoff` and store the result once per replay key.
+
+    Pure replay only: no model provider is called. An unsettled cutoff is refused, because a
+    late commit could still change the snapshot under a stored evaluation.
+    """
+    if policy.engine_version != ENGINE_VERSION:
+        raise ServiceError("ENGINE_UNSUPPORTED", f"engine {policy.engine_version} is not supported", 422)
+    if not is_settled(session, cutoff):  # also refuses a naive cutoff
+        raise ServiceError("CUTOFF_NOT_SETTLED", "cutoff is too recent to store an evaluation", 422)
+    snapshot = snapshot_at(session, workspace_id, cutoff)
+    result = replay(snapshot, order_id, policy)
+
+    existing = _find_evaluation(session, workspace_id, result, order_id, cutoff)
+    if existing is not None:
+        return existing
+    row = DecisionEvaluation(
+        workspace_id=workspace_id,
+        order_id=order_id,
+        cutoff=cutoff,
+        policy_digest=result.policy_digest,
+        policy=policy.model_dump(mode="json"),
+        engine_version=result.engine_version,
+        snapshot_digest=result.snapshot_digest,
+        decision_digest=result.decision_digest,
+        outcome=result.recommendation.outcome.value,
+        result=result.model_dump(mode="json"),
+        created_at=db_now(session),
+    )
+    try:
+        with session.begin_nested():
+            session.add(row)
+            session.flush()
+    except IntegrityError as exc:
+        # A concurrent writer stored the same replay key first; return that row.
+        winner = _find_evaluation(session, workspace_id, result, order_id, cutoff)
+        if winner is None:
+            raise ServiceError("EVALUATION_REJECTED", "evaluation violates a stored-data constraint", 409) from exc
+        return winner
+    return row
+
+
+def record_decision(
+    session: Session,
+    workspace_id: str,
+    evaluation_id: str,
+    decision: Recommendation,
+    reason: str,
+    actor: str,
+) -> DecisionRecord:
+    """Append a human final decision against a stored evaluation.
+
+    Nothing is auto-accepted: a decision that differs from the engine outcome is an override,
+    and an override needs a reason (the same text is stored as `override_reason`). An ACCEPT
+    over a NEEDS_REVIEW recommendation is such an override.
+    """
+    evaluation = _load_evaluation(session, workspace_id, evaluation_id)
+    recommended = Recommendation(evaluation.outcome)
+    try:
+        chosen = Recommendation(decision)
+    except ValueError as exc:
+        raise ServiceError("DECISION_INVALID", f"unknown decision {decision!r}", 422) from exc
+    if not actor.strip():
+        raise ServiceError("ACTOR_REQUIRED", "a decision needs an actor", 422)
+    if len(actor) > 200:
+        raise ServiceError("ACTOR_TOO_LONG", "actor must be 200 characters or fewer", 422)
+    override = chosen is not recommended
+    if not reason.strip():
+        code = "OVERRIDE_REASON_REQUIRED" if override else "DECISION_REASON_REQUIRED"
+        message = (
+            f"deciding {chosen.value} against the engine's {recommended.value} needs a reason"
+            if override
+            else "a decision needs a reason"
+        )
+        raise ServiceError(code, message, 422)
+    row = DecisionRecord(
+        workspace_id=workspace_id,
+        evaluation_id=evaluation.id,
+        decision=chosen.value,
+        recommended_outcome=recommended.value,
+        override=override,
+        reason=reason,
+        override_reason=reason if override else None,
+        actor=actor,
+        created_at=db_now(session),
+    )
+    try:
+        with session.begin_nested():
+            session.add(row)
+            session.flush()
+    except IntegrityError as exc:
+        raise ServiceError("DECISION_REJECTED", "decision violates a stored-data constraint", 409) from exc
+    return row
+
+
+def reconstruct(session: Session, workspace_id: str, evaluation_id: str) -> Reconstruction:
+    """Reload the snapshot at the stored cutoff, replay with the stored policy, and compare.
+
+    Returns a result for every stored evaluation; a digest mismatch is reported in the
+    returned object and never raised.
+    """
+    evaluation = _load_evaluation(session, workspace_id, evaluation_id)
+    policy = PolicyDocument.model_validate(evaluation.policy)
+    policy_matches = policy_digest(policy) == evaluation.policy_digest
+    snapshot = snapshot_at(session, workspace_id, evaluation.cutoff)
+    result = replay(snapshot, evaluation.order_id, policy)
+    snapshot_matches = result.snapshot_digest == evaluation.snapshot_digest
+    decision_matches = result.decision_digest == evaluation.decision_digest
+    return Reconstruction(
+        evaluation_id=evaluation.id,
+        stored_decision_digest=evaluation.decision_digest,
+        recomputed_decision_digest=result.decision_digest,
+        snapshot_matches=snapshot_matches,
+        policy_matches=policy_matches,
+        matches=policy_matches and snapshot_matches and decision_matches,
+        result=result,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Regression cases, policy runs and owner adoption (T12)
+# ---------------------------------------------------------------------------
+
+ADOPTION_OWNER_ROLE = "owner"
+"""The only workspace role that may adopt a policy (`WorkspaceMember.role`)."""
+
+
+def _require_aware(cutoff: datetime) -> None:
+    if cutoff.tzinfo is None or cutoff.utcoffset() is None:
+        raise ServiceError("CUTOFF_INVALID", "cutoff must carry a UTC offset", 422)
+
+
+def create_case(
+    session: Session,
+    workspace_id: str,
+    case_id: str,
+    name: str,
+    cutoff: datetime,
+    order_id: str,
+    facts: Sequence[Fact],
+    coverage: Mapping[str, CoverageDecl],
+    *,
+    synthetic: bool,
+) -> DecisionCase:
+    """Freeze one order's facts and coverage as a regression case. Cases are never edited."""
+    _require_aware(cutoff)
+    _lock_suite(session, workspace_id)
+    if not name.strip():
+        raise ServiceError("CASE_NAME_REQUIRED", "a case needs a name", 422)
+    if session.scalar(
+        select(DecisionCase.id).where(DecisionCase.workspace_id == workspace_id, DecisionCase.id == case_id)
+    ):
+        raise ServiceError("CASE_EXISTS", f"case {case_id} already exists", 409)
+    row = DecisionCase(
+        workspace_id=workspace_id,
+        id=case_id,
+        name=name,
+        cutoff=cutoff,
+        order_id=order_id,
+        facts=[fact.model_dump(mode="json") for fact in facts],
+        coverage={key: decl.model_dump(mode="json") for key, decl in coverage.items()},
+        synthetic=synthetic,
+        created_at=db_now(session),
+    )
+    try:
+        with session.begin_nested():
+            session.add(row)
+            session.flush()
+    except IntegrityError as exc:
+        raise ServiceError("CASE_REJECTED", "case violates a stored-data constraint", 409) from exc
+    return row
+
+
+def add_expectation(
+    session: Session, workspace_id: str, case_id: str, expectation: Expectation
+) -> CaseExpectation:
+    """Append the next expectation revision for a case; earlier revisions are kept."""
+    _lock_suite(session, workspace_id)
+    if session.scalar(
+        select(DecisionCase.id).where(DecisionCase.workspace_id == workspace_id, DecisionCase.id == case_id)
+    ) is None:
+        raise ServiceError("CASE_NOT_FOUND", "case not found in this workspace", 404)
+    latest = session.scalar(
+        select(func.max(CaseExpectation.revision)).where(
+            CaseExpectation.workspace_id == workspace_id, CaseExpectation.case_id == case_id
+        )
+    )
+    row = CaseExpectation(
+        workspace_id=workspace_id,
+        case_id=case_id,
+        revision=(latest or 0) + 1,
+        expectation=expectation.model_dump(mode="json"),
+        created_at=db_now(session),
+    )
+    try:
+        with session.begin_nested():
+            session.add(row)
+            session.flush()
+    except IntegrityError as exc:
+        raise ServiceError("EXPECTATION_RACE", "expectation revision written concurrently; retry", 409, retry_after=1) from exc
+    return row
+
+
+def _latest_expectation(session: Session, workspace_id: str, case_id: str) -> CaseExpectation | None:
+    return session.scalar(
+        select(CaseExpectation)
+        .where(CaseExpectation.workspace_id == workspace_id, CaseExpectation.case_id == case_id)
+        .order_by(CaseExpectation.revision.desc())
+        .limit(1)
+    )
+
+
+def _suite(session: Session, workspace_id: str) -> list[tuple[DecisionCase, CaseExpectation | None]]:
+    cases = session.scalars(
+        select(DecisionCase).where(DecisionCase.workspace_id == workspace_id).order_by(DecisionCase.id)
+    ).all()
+    return [(case, _latest_expectation(session, workspace_id, case.id)) for case in cases]
+
+
+def _suite_digest(suite: Sequence[tuple[DecisionCase, CaseExpectation | None]]) -> str:
+    """Digest of every case, its frozen inputs and its latest expectation revision."""
+    return decision_digest(
+        {
+            "cases": [
+                {
+                    "id": case.id,
+                    "order_id": case.order_id,
+                    "cutoff": case.cutoff.astimezone(UTC).isoformat(),
+                    "facts": case.facts,
+                    "coverage": case.coverage,
+                    "expectation_revision": exp.revision if exp else None,
+                    "expectation": exp.expectation if exp else None,
+                }
+                for case, exp in suite
+            ]
+        }
+    )
+
+
+def _store_policy(session: Session, workspace_id: str, policy: PolicyDocument) -> str:
+    """Store a policy under its digest once; an existing digest is reused, never rewritten."""
+    digest = policy_digest(policy)
+    if session.scalar(
+        select(StoredPolicy.id).where(StoredPolicy.workspace_id == workspace_id, StoredPolicy.policy_digest == digest)
+    ) is not None:
+        return digest
+    if not policy.label.strip():
+        raise ServiceError("POLICY_LABEL_REQUIRED", "a policy needs a label", 422)
+    row = StoredPolicy(
+        workspace_id=workspace_id,
+        policy_digest=digest,
+        label=policy.label,
+        engine_version=policy.engine_version,
+        policy=policy.model_dump(mode="json"),
+        created_at=db_now(session),
+    )
+    try:
+        with session.begin_nested():
+            session.add(row)
+            session.flush()
+    except IntegrityError as exc:
+        # A concurrent writer may have stored the same digest first; anything else is refused.
+        if session.scalar(
+            select(StoredPolicy.id).where(StoredPolicy.workspace_id == workspace_id, StoredPolicy.policy_digest == digest)
+        ) is None:
+            raise ServiceError("POLICY_REJECTED", "policy violates a stored-data constraint", 409) from exc
+    return digest
+
+
+class CaseRun(FrozenModel):
+    """One case replayed under one policy. `verdict` is None when the case could not be judged."""
+
+    verdict: Verdict | None
+    outcome: str | None
+    failures: tuple[str, ...]
+    decision_digest: str | None
+    error: str | None
+
+
+def _run_case(case: DecisionCase, expectation: CaseExpectation | None, policy: PolicyDocument) -> CaseRun:
+    if expectation is None:
+        return CaseRun(verdict=None, outcome=None, failures=(), decision_digest=None, error="NO_EXPECTATION")
+    try:
+        snapshot = snapshots.snapshot_at(
+            [Fact.model_validate(item) for item in case.facts], case.cutoff
+        )
+        coverage = {key: CoverageDecl.model_validate(value) for key, value in case.coverage.items()}
+        result = replay(snapshot, case.order_id, policy, coverage)
+        judged = evaluate_expectation(
+            Expectation.model_validate(expectation.expectation),
+            result.recommendation.outcome,
+            tuple(finding.code for finding in result.gate.findings),
+        )
+    except Exception as exc:  # any failure to judge a case makes the whole run incomplete
+        return CaseRun(
+            verdict=None,
+            outcome=None,
+            failures=(),
+            decision_digest=None,
+            error=f"{type(exc).__name__}: {exc}",
+        )
+    return CaseRun(
+        verdict=judged.verdict,
+        outcome=result.recommendation.outcome.value,
+        failures=judged.failures,
+        decision_digest=result.decision_digest,
+        error=None,
+    )
+
+
+def run_regression(
+    session: Session,
+    workspace_id: str,
+    baseline: PolicyDocument,
+    candidate: PolicyDocument,
+) -> RegressionRun:
+    """Evaluate EVERY case in the workspace suite under both policies and store the comparison.
+
+    A case with no expectation, a replay error or a missing verdict makes the run INCOMPLETE:
+    it is still stored (so the attempt is on record) but it can never be adopted.
+    """
+    _lock_suite(session, workspace_id)
+    baseline_digest = _store_policy(session, workspace_id, baseline)
+    candidate_digest = _store_policy(session, workspace_id, candidate)
+    suite = _suite(session, workspace_id)
+    suite_digest = _suite_digest(suite)
+
+    baseline_runs = {case.id: _run_case(case, exp, baseline) for case, exp in suite}
+    candidate_runs = {case.id: _run_case(case, exp, candidate) for case, exp in suite}
+    comparisons = {
+        item.case_id: item.classification
+        for item in compare_cases(
+            {cid: run.verdict for cid, run in baseline_runs.items()},
+            {cid: run.verdict for cid, run in candidate_runs.items()},
+            baseline_suite_digest=suite_digest,
+            candidate_suite_digest=suite_digest,
+        )
+    }
+    results = [
+        {
+            "case_id": case.id,
+            "classification": comparisons[case.id].value,
+            "baseline": baseline_runs[case.id].model_dump(mode="json"),
+            "candidate": candidate_runs[case.id].model_dump(mode="json"),
+        }
+        for case, _ in suite
+    ]
+    complete = bool(results) and all(
+        item["classification"] != Classification.NOT_COMPARABLE.value for item in results
+    )
+    row = RegressionRun(
+        workspace_id=workspace_id,
+        baseline_policy_digest=baseline_digest,
+        candidate_policy_digest=candidate_digest,
+        suite_digest=suite_digest,
+        results=results,
+        status="COMPLETE" if complete else "INCOMPLETE",
+        complete=complete,
+        created_at=db_now(session),
+    )
+    session.add(row)
+    session.flush()
+    return row
+
+
+def _written(text: object) -> bool:
+    return isinstance(text, str) and bool(text.strip())
+
+
+def adopt_policy(
+    session: Session,
+    workspace_id: str,
+    regression_run_id: str,
+    actor_role: str,
+    acknowledgements: Mapping[str, str],
+    actor: str,
+) -> PolicyAdoption:
+    """Adopt the run's candidate policy. Owner only; never mutates any stored policy.
+
+    Refused unless the run is COMPLETE, the suite is unchanged since the run, the candidate
+    policy stored under the run's digest still hashes to it, no case is NOT_COMPARABLE, and every
+    REGRESSION case has a non-blank written acknowledgement keyed by its case id.
+    """
+    if actor_role != ADOPTION_OWNER_ROLE:
+        raise ServiceError("ADOPTION_FORBIDDEN", "only the workspace owner can adopt a policy", 403)
+    if not actor.strip():
+        raise ServiceError("ACTOR_REQUIRED", "an adoption needs an actor", 422)
+    if len(actor) > 200:
+        raise ServiceError("ACTOR_TOO_LONG", "actor must be 200 characters or fewer", 422)
+    _lock_suite(session, workspace_id)
+    run = session.scalar(
+        select(RegressionRun).where(
+            RegressionRun.workspace_id == workspace_id, RegressionRun.id == regression_run_id
+        )
+    )
+    if run is None:
+        raise ServiceError("RUN_NOT_FOUND", "regression run not found in this workspace", 404)
+    if session.scalar(
+        select(PolicyAdoption.id).where(
+            PolicyAdoption.workspace_id == workspace_id, PolicyAdoption.regression_run_id == run.id
+        )
+    ):
+        raise ServiceError("RUN_ALREADY_ADOPTED", "this regression run was already adopted", 409)
+    if not run.complete or run.status != "COMPLETE":
+        raise ServiceError("RUN_INCOMPLETE", "an incomplete regression run cannot be adopted", 409)
+    if _suite_digest(_suite(session, workspace_id)) != run.suite_digest:
+        raise ServiceError("SUITE_CHANGED", "the suite changed after this run; run it again", 409)
+    stored = session.scalar(
+        select(StoredPolicy).where(
+            StoredPolicy.workspace_id == workspace_id,
+            StoredPolicy.policy_digest == run.candidate_policy_digest,
+        )
+    )
+    if stored is None or policy_digest(PolicyDocument.model_validate(stored.policy)) != run.candidate_policy_digest:
+        raise ServiceError("POLICY_DIGEST_MISMATCH", "the candidate policy does not match the run", 409)
+
+    regression_ids: list[str] = []
+    for item in run.results:
+        if item["classification"] == Classification.NOT_COMPARABLE.value:
+            raise ServiceError(
+                "NOT_COMPARABLE_BLOCKS_ADOPTION",
+                f"case {item['case_id']} is not comparable; the run cannot be adopted",
+                409,
+            )
+        if item["classification"] == Classification.REGRESSION.value:
+            regression_ids.append(item["case_id"])
+    unexpected = sorted(set(acknowledgements) - set(regression_ids))
+    if unexpected:
+        raise ServiceError(
+            "ACKNOWLEDGEMENT_UNEXPECTED",
+            f"acknowledgements given for cases that did not regress: {', '.join(unexpected)}",
+            422,
+        )
+    missing = [cid for cid in sorted(regression_ids) if not _written(acknowledgements.get(cid))]
+    if missing:
+        raise ServiceError(
+            "ACKNOWLEDGEMENT_REQUIRED",
+            f"regressed cases need a written acknowledgement: {', '.join(missing)}",
+            409,
+        )
+
+    row = PolicyAdoption(
+        workspace_id=workspace_id,
+        regression_run_id=run.id,
+        run_complete=True,
+        policy_digest=run.candidate_policy_digest,
+        adopted_by=actor,
+        acknowledgements={cid: acknowledgements[cid] for cid in regression_ids},
+        created_at=db_now(session),
+    )
+    try:
+        with session.begin_nested():
+            session.add(row)
+            session.flush()
+    except IntegrityError as exc:
+        raise ServiceError("ADOPTION_REJECTED", "adoption violates a stored-data constraint", 409) from exc
+    return row
+
+
+# ---------------------------------------------------------------------------
+# Read and store helpers for the HTTP layer (T13). Read-only except `store_policy`.
+# ---------------------------------------------------------------------------
+
+ORDER_KEY_PREFIX = "order:"
+
+
+def list_order_ids(session: Session, workspace_id: str) -> list[str]:
+    """Every order id that has an order_request fact in this workspace, sorted."""
+    keys = session.scalars(
+        select(FactRow.entity_key)
+        .where(
+            FactRow.workspace_id == workspace_id,
+            FactRow.kind == FactKind.ORDER_REQUEST.value,
+        )
+        .distinct()
+        .order_by(FactRow.entity_key)
+    ).all()
+    return [key.removeprefix(ORDER_KEY_PREFIX) for key in keys]
+
+
+def order_facts(snapshot: snapshots.Snapshot, order_id: str) -> list[Fact]:
+    """The order's own visible facts in a snapshot (its order_request entity)."""
+    return [fact for fact in snapshot.facts if fact.entity_key == ORDER_KEY_PREFIX + order_id]
+
+
+def load_evaluation(session: Session, workspace_id: str, evaluation_id: str) -> DecisionEvaluation:
+    return _load_evaluation(session, workspace_id, evaluation_id)
+
+
+def load_regression_run(session: Session, workspace_id: str, run_id: str) -> RegressionRun:
+    row = session.scalar(
+        select(RegressionRun).where(RegressionRun.workspace_id == workspace_id, RegressionRun.id == run_id)
+    )
+    if row is None:
+        raise ServiceError("RUN_NOT_FOUND", "regression run not found in this workspace", 404)
+    return row
+
+
+def list_stored_policies(session: Session, workspace_id: str) -> list[StoredPolicy]:
+    return list(
+        session.scalars(
+            select(StoredPolicy)
+            .where(StoredPolicy.workspace_id == workspace_id)
+            .order_by(StoredPolicy.created_at, StoredPolicy.policy_digest)
+        ).all()
+    )
+
+
+def load_policy(session: Session, workspace_id: str, digest: str) -> PolicyDocument:
+    row = session.scalar(
+        select(StoredPolicy).where(
+            StoredPolicy.workspace_id == workspace_id, StoredPolicy.policy_digest == digest
+        )
+    )
+    if row is None:
+        raise ServiceError("POLICY_UNKNOWN", "policy not found in this workspace", 404)
+    return PolicyDocument.model_validate(row.policy)
+
+
+def store_policy(session: Session, workspace_id: str, policy: PolicyDocument) -> str:
+    """Store a policy under its digest (idempotent) and return the digest."""
+    return _store_policy(session, workspace_id, policy)

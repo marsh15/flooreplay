@@ -41,7 +41,12 @@ class GenerationProvider(Protocol):
     model: str
 
     def extract(
-        self, note: str, *, prompt_version: str, schema: dict[str, Any]
+        self,
+        note: str,
+        *,
+        prompt_version: str,
+        schema: dict[str, Any],
+        max_tokens: int | None = None,
     ) -> ProviderResult: ...
 
 
@@ -74,7 +79,9 @@ class MockProvider:
         self.model = model
         self._table = {k: copy.deepcopy(v) for k, v in table.items()}
 
-    def extract(self, note: str, *, prompt_version: str, schema: dict[str, Any]) -> ProviderResult:
+    def extract(
+        self, note: str, *, prompt_version: str, schema: dict[str, Any], max_tokens: int | None = None
+    ) -> ProviderResult:
         canned = self._table.get(note_digest(note))
         raw = copy.deepcopy(canned) if canned is not None else empty_signal_raw()
         out_len = len(json.dumps(raw, sort_keys=True, ensure_ascii=False))
@@ -92,5 +99,7 @@ class RaisingProvider:
     name = "raising"
     model = "raising-1"
 
-    def extract(self, note: str, *, prompt_version: str, schema: dict[str, Any]) -> ProviderResult:
+    def extract(
+        self, note: str, *, prompt_version: str, schema: dict[str, Any], max_tokens: int | None = None
+    ) -> ProviderResult:
         raise ProviderCalledError("a provider must not be called on this path")

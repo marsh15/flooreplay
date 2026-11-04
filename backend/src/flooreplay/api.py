@@ -35,6 +35,9 @@ from .auth import (
 )
 from .config import settings
 from .db import session_scope
+from .decisions_api import install_decisions_routes
+from .decisions_imports_api import install_decisions_import_routes
+from .decisions_review_api import install_review_routes
 from .errors import ServiceError
 from .fixtures import CATALOG, CONFIGURATIONS
 from .http_security import HttpSecurityMiddleware, error_response_headers
@@ -1097,6 +1100,10 @@ def create_app(mode: str | None = None) -> FastAPI:
             "elapsed_ms": attempt.elapsed_ms,
             "execution_kind": "live",  # this endpoint always reports a persisted attempt
         }
+
+    install_decisions_routes(app, limit_public_execution)
+    install_decisions_import_routes(app)
+    install_review_routes(app)
 
     return app
 
