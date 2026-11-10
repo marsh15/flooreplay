@@ -19,7 +19,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 CREDENTIALS = {
     'owner': ('FLOORREPLAY_ACCEPTANCE_OWNER', 'FLOORREPLAY_ACCEPTANCE_OWNER_PASSWORD'),
@@ -27,6 +27,16 @@ CREDENTIALS = {
 }
 PUBLIC_PENDING = ['authenticated owner/reviewer login', 'workspace permissions on the deployed build', 'private synthetic imports/reviews/exports', 'hosted restart persistence', 'browser fallback/deep-link rendering']
 Fetch = Callable[..., 'dict | None']
+
+
+class NoRedirects(HTTPRedirectHandler):
+    """Surface every 3xx as HTTPError so neither the bearer token nor a login body reaches a redirect target."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+OPENER = build_opener(NoRedirects)
 
 
 def check_url(value: str) -> str:
@@ -52,13 +62,18 @@ def make_fetch(api: str, checks: list[dict]) -> Fetch:
         request = Request(url, data=json.dumps(body).encode() if body is not None else None, headers=headers)
         try:
             try:
-                response = urlopen(request, timeout=90)
+                response = OPENER.open(request, timeout=90)
             except HTTPError as error:
                 response = error
             with response:
                 raw = response.read()
                 status = response.status
             item = {'check': label, 'status': status, 'passed': status in expected, 'elapsed_ms': round((time.perf_counter() - start) * 1000, 2)}
+            if 300 <= status < 400:
+                item['passed'] = False
+                item['failure_category'] = 'REDIRECT_REFUSED'
+                checks.append(item)
+                return None
             result = json.loads(raw) if url.startswith(api) and raw else None
             if isinstance(result, dict) and 'code' in result:
                 item['failure_category'] = result['code']

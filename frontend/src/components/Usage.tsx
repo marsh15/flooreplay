@@ -43,8 +43,9 @@ export function UsagePanel() {
             ))}
           </dl>
           <p className="leading-relaxed text-muted-foreground">
-            Uncertain calls keep their allowance reserved. The ledger uses the configured accounting
-            conversion.
+            Allowance totals are shared across users; the operation list contains only your
+            operations. Uncertain calls keep their allowance reserved. The ledger uses the configured
+            accounting conversion.
           </p>
           {usage.data.entries.length ? (
             <ul className="divide-y border-t">

@@ -556,9 +556,8 @@ function TaskCard({
   refresh: () => Promise<void>
   onPublished: (revision: number) => Promise<void>
 }) {
-  const { user } = useAuth()
-  const canAct = user?.role === 'owner' || user?.id === task.assignee_id
-  const canManage = user?.role === 'owner' || user?.id === task.created_by
+  const canAct = task.can_act
+  const canManage = task.can_manage
   return (
     <article
       aria-label={`Evidence check: ${task.question}`}

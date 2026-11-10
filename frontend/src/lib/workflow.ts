@@ -30,6 +30,9 @@ export interface WorkflowTask {
   created_at: string
   updated_at: string
   overdue: boolean
+  // Computed by the server for the signed-in actor on every response; never derived from the global role.
+  can_act: boolean
+  can_manage: boolean
   activities: WorkflowActivity[]
   response: {
     evidence_id: string

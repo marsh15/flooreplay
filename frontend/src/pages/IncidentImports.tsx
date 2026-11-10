@@ -17,12 +17,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/board'
+import { columnMappingFile, readColumnMapping } from '@/lib/column-mapping'
+import type { ColumnChoice, ColumnChoices } from '@/lib/column-mapping'
 
 const MAX_BYTES = 2 * 1024 * 1024
 
-type ColumnChoice =
-  { kind: 'unmapped' } | { kind: 'column'; header: string } | { kind: 'constant'; value: string }
-type ColumnChoices = Record<string, ColumnChoice>
 interface ImportPreviewState {
   body: IncidentImportBody
   result: IncidentImportPreview
@@ -473,6 +472,8 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
   const [preview, setPreview] = useState<ImportPreviewState | null>(null)
   const [inspection, setInspection] = useState<IncidentCsvInspection | null>(null)
   const [choices, setChoices] = useState<ColumnChoices>({})
+  const [mappingNotice, setMappingNotice] = useState('')
+  const [mappingError, setMappingError] = useState('')
   const [aliasRows, setAliasRows] = useState<AliasRow[]>([])
   const version = useRef(0)
   const fileVersion = useRef(0)
@@ -621,6 +622,8 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
   })
   const changed = () => {
     version.current++
+    setMappingNotice('')
+    setMappingError('')
     setPreview(null)
     previewMutation.reset()
     publish.reset()
@@ -631,6 +634,37 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
     setChoices({})
     inspect.reset()
     changed()
+  }
+  const loadMapping = async (mappingFile: File | undefined) => {
+    if (!mappingFile || !inspection) return
+    changed()
+    const requestedVersion = version.current
+    try {
+      if (mappingFile.size > 64 * 1024) throw new Error('Mapping files must be at most 64 KiB.')
+      const text = await mappingFile.text()
+      if (requestedVersion !== version.current) return
+      setChoices(readColumnMapping(text, effectiveProfile, inspection))
+      setMappingNotice(
+        'Column mapping loaded. Review all fields and constants, then preview this source again.',
+      )
+    } catch (error) {
+      if (requestedVersion !== version.current) return
+      setMappingError(
+        `Could not load column mapping: ${error instanceof Error ? error.message : 'Unreadable mapping file.'}`,
+      )
+    }
+  }
+  const downloadMapping = () => {
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(columnMappingFile(effectiveProfile, choices), null, 2) + '\n'], {
+        type: 'application/json',
+      }),
+    )
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `flooreplay-${effectiveProfile}-columns.json`
+    anchor.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
   const previewSource = () => {
     if (!file) return
@@ -1197,8 +1231,8 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                         </Button>
                         <p className="text-sm leading-6 text-muted-foreground">
                           Inspect before previewing. Match unfamiliar headers explicitly and check
-                          the original sample. Production quantities must already be 15-minute
-                          deltas.
+                          the original sample. Production records need 15-minute intervals and an
+                          explicit delta or cumulative count mode.
                         </p>
                         {inspect.isError && (
                           <p role="alert" className="text-xs text-danger-foreground">
@@ -1207,6 +1241,45 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
                           </p>
                         )}
                       </div>
+                    )}
+                    {csv && inspection && (
+                      <section
+                        aria-label="Reusable column mapping"
+                        className="space-y-3 rounded-sm border border-border p-4"
+                      >
+                        <h2 className="text-base font-semibold">Reuse a column mapping</h2>
+                        <p className="text-sm leading-6 text-muted-foreground">
+                          Save column names for the next file from this source. The download
+                          includes header names and the source profile. Constants, identifiers,
+                          aliases and source rows are excluded. Review destination details and
+                          constants each time.
+                        </p>
+                        <Button type="button" variant="outline" size="sm" onClick={downloadMapping}>
+                          Download column mapping
+                        </Button>
+                        <label className="block text-sm font-semibold">
+                          Load column mapping
+                          <Input
+                            type="file"
+                            accept=".json,application/json"
+                            className="mt-1"
+                            onChange={(event) => {
+                              void loadMapping(event.target.files?.[0])
+                              event.target.value = ''
+                            }}
+                          />
+                        </label>
+                        {mappingError && (
+                          <p role="alert" className="text-sm text-danger-foreground">
+                            {mappingError}
+                          </p>
+                        )}
+                        {mappingNotice && (
+                          <p role="status" className="text-sm">
+                            {mappingNotice}
+                          </p>
+                        )}
+                      </section>
                     )}
                     {csv && inspection && (
                       <CsvColumnMapping

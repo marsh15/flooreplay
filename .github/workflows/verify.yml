@@ -71,6 +71,8 @@ jobs:
           uv run python -m flooreplay dataset-verify
       - name: Backend integration tests
         run: cd backend && uv run pytest
+      - name: Acceptance credential-boundary tests
+        run: backend/.venv/bin/python -m unittest discover -s scripts -p test_hosted_acceptance.py
       - name: Verify schema and saved-report consistency
         run: |
           cd backend

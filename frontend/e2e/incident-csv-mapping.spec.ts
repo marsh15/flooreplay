@@ -129,6 +129,130 @@ async function inspectAndMap(page: Page) {
     .selectOption({ label: 'Text' })
 }
 
+test('mapping files reuse headers, omit constants, and require a fresh preview', async ({
+  page,
+}) => {
+  const fixture = await setup(page)
+  await page.goto('/incidents/imports')
+  await signIn(page)
+  await inspectAndMap(page)
+  await page
+    .getByRole('combobox', { name: 'Map summary (required)', exact: true })
+    .selectOption('constant')
+  await page.getByLabel('Constant for summary').fill('Private observation must not be saved')
+  const downloadEvent = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download column mapping', exact: true }).click()
+  const download = await downloadEvent
+  const stream = await download.createReadStream()
+  let downloaded = ''
+  for await (const chunk of stream!) downloaded += chunk.toString()
+  const saved = JSON.parse(downloaded)
+  expect(saved).toEqual({ version: 1, profile: 'operations-v1', column_mapping: { id: 'Row' } })
+  expect(downloaded).not.toContain('Private observation')
+  await page.getByRole('button', { name: 'Preview source', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Import preview' })).toBeVisible()
+  const mapping = { ...saved, column_mapping: { id: 'Row', summary: 'Text' } }
+  await page.getByLabel('Load column mapping').setInputFiles({
+    name: 'mapping.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(mapping)),
+  })
+  await expect(
+    page.getByRole('combobox', { name: 'Map summary (required)', exact: true }),
+  ).toHaveValue('column-1')
+  await expect(page.getByRole('region', { name: 'Import preview' })).toHaveCount(0)
+  await expect(page.getByRole('status').filter({ hasText: 'Column mapping loaded' })).toBeVisible()
+  await page.getByRole('button', { name: 'Preview source', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Import preview' })).toBeVisible()
+  expect(
+    fixture.requests.filter((entry) => entry.path.endsWith('/preview')).at(-1)?.body,
+  ).toMatchObject({ column_mapping: { id: 'Row', summary: 'Text' }, field_defaults: {} })
+})
+
+test('invalid mapping files cannot replace the current mapping or authorize publication', async ({
+  page,
+}) => {
+  await setup(page)
+  await page.goto('/incidents/imports')
+  await signIn(page)
+  await inspectAndMap(page)
+  const invalid = [
+    { version: 1, profile: 'operations-v1', column_mapping: { id: 'Row', summary: 'Row' } },
+    { version: 1, profile: 'notes-v1', column_mapping: { id: 'Row' } },
+    { version: 1, profile: 'operations-v1', column_mapping: { summary: 'Missing header' } },
+    { version: 1, profile: 'operations-v1', column_mapping: { unknown_field: 'Text' } },
+    {
+      version: 1,
+      profile: 'operations-v1',
+      column_mapping: { summary: 'Text' },
+      field_defaults: { summary: 'Unexpected constant' },
+    },
+    { version: 2, profile: 'operations-v1', column_mapping: { id: 'Row' } },
+  ]
+  for (const data of invalid) {
+    await page.getByLabel('Load column mapping').setInputFiles({
+      name: 'mapping.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(data)),
+    })
+    await expect(
+      page.getByRole('alert').filter({ hasText: 'Could not load column mapping' }),
+    ).toBeVisible()
+    await expect(
+      page.getByRole('combobox', { name: 'Map id (required)', exact: true }),
+    ).toHaveValue('column-0')
+    await expect(page.getByRole('region', { name: 'Import preview' })).toHaveCount(0)
+  }
+})
+
+test('a mapping read that finishes after source edits cannot restore a stale preview or mapping', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const read = File.prototype.text
+    File.prototype.text = async function () {
+      const text = await read.call(this)
+      if (this.name === 'slow-mapping.json') {
+        await new Promise<void>((resolve) => {
+          ;(window as unknown as { finishMappingRead: () => void }).finishMappingRead = resolve
+        })
+      }
+      return text
+    }
+  })
+  await setup(page)
+  await page.goto('/incidents/imports')
+  await signIn(page)
+  await inspectAndMap(page)
+  await page.getByLabel('Load column mapping').setInputFiles({
+    name: 'slow-mapping.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(
+      JSON.stringify({
+        version: 1,
+        profile: 'operations-v1',
+        column_mapping: { id: 'Replaces', summary: 'Text' },
+      }),
+    ),
+  })
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => typeof (window as unknown as { finishMappingRead?: () => void }).finishMappingRead,
+      ),
+    )
+    .toBe('function')
+  await page.getByLabel('Source system').fill('changed-during-read')
+  await page.evaluate(() =>
+    (window as unknown as { finishMappingRead: () => void }).finishMappingRead(),
+  )
+  await expect(page.getByRole('combobox', { name: 'Map id (required)', exact: true })).toHaveValue(
+    'column-0',
+  )
+  await expect(page.getByText(/Column mapping loaded/)).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Import preview' })).toHaveCount(0)
+})
+
 test('explicit mapping preserves BOM and quoted multiline source; retry publishes identical mapping and key', async ({
   page,
 }) => {

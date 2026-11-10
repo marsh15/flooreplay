@@ -94,7 +94,7 @@ def publish_review(run_id: str, actor: str, request_key: str, output_digest: str
             publication = AIReviewPublication(run_id=run_id, user_id=actor, request_key=request_key, output_digest=output_digest)
             session.add(publication)
             session.flush()
-        return {'run_id': run_id, 'output_digest': publication.output_digest, 'published_by': publication.user_id, 'created_at': publication.created_at.isoformat()}
+        return {'run_id': run_id, 'output_digest': publication.output_digest, 'published_by': publication.user_id, 'created_at': publication.created_at.astimezone(UTC).isoformat()}
 
 
 def queue() -> dict[str, Any]:
@@ -104,12 +104,12 @@ def queue() -> dict[str, Any]:
             run = session.get(AIRun, publication.run_id)
             if run and run.status == 'COMPLETED' and run.result and digest(run.result.get('output')) == publication.output_digest:
                 reviews = session.scalars(select(AIClaimReview).where(AIClaimReview.run_id == run.id)).all()
-                items.append({'id': run.id, 'analysis_id': run.analysis_id, 'task': run.task, 'provider': 'openai', 'model': run.configuration.get('generation_model'), 'output_digest': publication.output_digest, 'claim_count': len(claim_items(run.result['output'])), 'created_at': publication.created_at.isoformat(), 'reviewed_claims': len({r.claim_path for r in reviews})})
+                items.append({'id': run.id, 'analysis_id': run.analysis_id, 'task': run.task, 'provider': 'openai', 'model': run.configuration.get('generation_model'), 'output_digest': publication.output_digest, 'claim_count': len(claim_items(run.result['output'])), 'created_at': publication.created_at.astimezone(UTC).isoformat(), 'reviewed_claims': len({r.claim_path for r in reviews})})
         return {'items': items}
 
 
 def _assessment_view(row: AIRunAssessment) -> dict[str, Any]:
-    return {'id': row.id, 'run_id': row.run_id, 'actor': row.user_id, 'output_digest': row.output_digest, 'created_at': row.created_at.isoformat(), **row.details}
+    return {'id': row.id, 'run_id': row.run_id, 'actor': row.user_id, 'output_digest': row.output_digest, 'created_at': row.created_at.astimezone(UTC).isoformat(), **row.details}
 
 
 def review_packet(run_id: str, actor: str, owner: bool = False) -> dict[str, Any]:
@@ -119,7 +119,7 @@ def review_packet(run_id: str, actor: str, owner: bool = False) -> dict[str, Any
         assert run.result is not None
         reviews = session.scalars(select(AIClaimReview).where(AIClaimReview.run_id == run_id).order_by(AIClaimReview.created_at, AIClaimReview.id)).all()
         assessments = session.scalars(select(AIRunAssessment).where(AIRunAssessment.run_id == run_id).order_by(AIRunAssessment.created_at, AIRunAssessment.id)).all()
-        return {'id': run.id, 'requested_by': run.user_id, 'analysis_id': run.analysis_id, 'task': run.task, 'provider': 'openai', 'model': run.configuration.get('generation_model'), 'output_digest': digest(run.result['output']), 'output': run.result['output'], 'packet': {**{key: run.packet.get(key, []) for key in ('evidence', 'metrics', 'historical_evidence')}, **{key: run.packet[key] for key in ('incident_id', 'revision', 'cutoff', 'analysis_digest') if key in run.packet}}, 'published_by': publication.user_id if publication else None, 'created_at': run.created_at.isoformat(), 'claim_reviews': [claim_review_view(r) for r in reviews], 'assessments': [_assessment_view(a) for a in assessments]}
+        return {'id': run.id, 'requested_by': run.user_id, 'analysis_id': run.analysis_id, 'task': run.task, 'provider': 'openai', 'model': run.configuration.get('generation_model'), 'output_digest': digest(run.result['output']), 'output': run.result['output'], 'packet': {**{key: run.packet.get(key, []) for key in ('evidence', 'metrics', 'historical_evidence')}, **{key: run.packet[key] for key in ('incident_id', 'revision', 'cutoff', 'analysis_digest') if key in run.packet}}, 'published_by': publication.user_id if publication else None, 'created_at': run.created_at.astimezone(UTC).isoformat(), 'claim_reviews': [claim_review_view(r) for r in reviews], 'assessments': [_assessment_view(a) for a in assessments]}
 
 
 def save_claim_review(run_id: str, actor: str, request_key: str, claim_path: str, supported: bool | None, rationale: str, *, owner: bool = False, output_digest: str | None = None, judgment: str | None = None, flags: list[str] | None = None, reviewer_kind: str = 'unspecified', qualifications: str = '', independent: bool = False) -> dict[str, Any]:

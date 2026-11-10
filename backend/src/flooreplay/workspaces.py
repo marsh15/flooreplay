@@ -36,6 +36,18 @@ class WorkspaceMember(Base):
     role: Mapped[str] = mapped_column(String(16), default='member')
 
 
+def is_workspace_owner(session: Session, workspace_id: str, actor: Account) -> bool:
+    """Private HTTP overrides follow workspace ownership, not the account role.
+
+    Offline administration and the public synthetic example retain their explicit
+    account-owner trust root.
+    """
+    if allowed_workspaces.get() is None or workspace_id == DEMO:
+        return actor.role == 'owner'
+    membership = session.get(WorkspaceMember, (workspace_id, actor.id))
+    return membership is not None and membership.role == 'owner'
+
+
 def personal_workspace(session: Session, actor: Account) -> str:
     identity = 'owner-' + actor.id
     if session.get(Workspace, identity) is None:

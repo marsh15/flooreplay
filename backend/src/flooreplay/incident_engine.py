@@ -95,6 +95,11 @@ def _buckets(
     return grouped
 
 
+def _known(value: object, ids: set[str]) -> bool:
+    # Event ids are strings, so a non-string reference can never match; this also keeps unhashable values from raising.
+    return isinstance(value, str) and value in ids
+
+
 def _blocks(events: list[dict[str, Any]], start: datetime, end: datetime) -> tuple[int, list[dict[str, Any]]]:
     boundaries: set[datetime] = set()
     intervals: list[tuple[datetime, datetime, str]] = []
@@ -107,9 +112,17 @@ def _blocks(events: list[dict[str, Any]], start: datetime, end: datetime) -> tup
             boundaries.update((left, right))
             intervals.append((left, right, str(event["id"])))
     ordered = sorted(boundaries)
+    intervals.sort(key=lambda item: item[0])
+    pending = 0
+    active: list[tuple[datetime, datetime, str]] = []
     segments: list[dict[str, Any]] = []
     for left, right in zip(ordered, ordered[1:], strict=False):
-        reasons = sorted(event_id for a, b, event_id in intervals if a < right and b > left)
+        # Every interval edge is a boundary, so an interval overlaps this segment exactly when it started at or before ``left`` and ends after it.
+        while pending < len(intervals) and intervals[pending][0] <= left:
+            active.append(intervals[pending])
+            pending += 1
+        active = [item for item in active if item[1] > left]
+        reasons = sorted(event_id for _, _, event_id in active)
         if reasons:
             segments.append(
                 {"start": left.isoformat(), "end": right.isoformat(), "evidence": reasons}
@@ -308,10 +321,11 @@ def analyze_incident(revision: dict[str, Any]) -> dict[str, Any]:
         if not related:
             continue
         support = [str(event["id"]) for event in related]
+        support_ids = set(support)
         contradict = [
             str(event["id"])
             for event in events
-            if not event.get("context_only") and (event.get("contradicts") in support or any(target in support for target in event.get("contradiction_refs", [])) or category in event.get("contradicts_categories", []) or any(link["category"] == category and link["relation"] == "CONTRADICTS" for link in event.get("hypothesis_links", [])))
+            if not event.get("context_only") and (_known(event.get("contradicts"), support_ids) or any(_known(target, support_ids) for target in event.get("contradiction_refs", [])) or category in event.get("contradicts_categories", []) or any(link["category"] == category and link["relation"] == "CONTRADICTS" for link in event.get("hypothesis_links", [])))
         ]
         established = any(event.get("line_blocking") and event.get("start") and _time(event["start"]) < effective_end and _time(event.get("end", effective_end.isoformat())) > start for event in related)
         conflicted_ids = {record_id for conflict in correction_conflicts for record_id in conflict["replacement_ids"]}

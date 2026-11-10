@@ -8,7 +8,7 @@ Compare the participant's existing spreadsheet-and-phone process with FloorRepla
 
 Record participant roles and experience, case selection, case complexity and available source records. Define what counts as an actionable next check and relevant evidence before timing sessions. Have an independent practitioner assess conclusions if available. Record who authored the cases and who rates them.
 
-Use different but comparable cases for each method to reduce memory effects. Counterbalance the order when there are multiple participants. Keep the same evidence available to both methods, or explicitly report the difference. Record training, interruptions and every instance of author assistance. Choose the analysis and all case exclusions before collecting results. Retain unsuccessful and timed-out cases.
+Prefer different but comparable cases for each method to reduce memory effects. A same-incident comparison is supported; retain identical evidence and disclose prior exposure and its possible learning effects. Counterbalance the order when there are multiple participants. Keep the same evidence available to both methods, or explicitly report the difference. Record training, interruptions and every instance of author assistance. Choose the analysis and all case exclusions before collecting results. Retain unsuccessful and timed-out cases.
 
 Compare deterministic output with AI only in a separately identified condition. Record provider, model, prompt/configuration identity, retrieval mode and actual cost if AI is used. No paid request is required for a deterministic pilot.
 
@@ -40,3 +40,11 @@ State the number of participants and cases, sampling limits, experience and meth
 For real follow-up, record actions actually taken, ownership, completion time, later output and concurrent changes. "Output improved afterward" is an observation. Establishing causation requires a design that accounts for other changes. Do not credit FloorReplay with production improvement based only on chronological sequence.
 
 Retain the consented anonymized case records, rating definitions, exclusions and release commit beside the report. Link the final report from RELEASE_STATUS.md and use only measured claims in the case study.
+
+## Measurement tool
+
+`backend/src/flooreplay/pilot_measurement.py` validates a per-attempt CSV and writes a descriptive JSON summary. It runs offline. The blank record and the collection steps are in [`pilot/README.md`](pilot/README.md), with the header in [`pilot/comparative-pilot-template.csv`](pilot/comparative-pilot-template.csv).
+
+What the tool does: it refuses blank, unpaired or inconsistent rows; keeps blank cells distinct from zero; keeps failed and timed-out attempts in success-rate denominators; computes paired medians and differences only for comparable completed pairs; flags same-case repetition and its learning effects; reports method order; and reports the synthetic and practitioner cohorts separately.
+
+What the tool does not capture yet: time to the first actionable next check, useful next checks, missed-record lists, and the AI-condition fields. Record those on the design sheet, or do not report them. The tool makes no claim about benefit.

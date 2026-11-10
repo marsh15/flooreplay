@@ -155,7 +155,9 @@ def _remove_source_token(prose: str, source_value: str) -> str:
         return prose
     if NUMBER_WORD.search(source_value) or JOINED_QUANTITY_WORD.search(source_value) or QUANTITY_CONTEXT.search(source_value) or UNREFERENCED_TIME_WORD.search(source_value):
         return prose
-    if UNREFERENCED_DIGIT.search(source_value) and not (
+    # Only digit-bearing identifiers are removed. A word such as "half" may be a label or the
+    # quantifier in "half an hour"; removing it would hide the quantity from the numeric checks.
+    if not UNREFERENCED_DIGIT.search(source_value) or not (
         re.fullmatch(r"[A-Za-z][A-Za-z0-9:_-]*", source_value)
         or re.fullmatch(r"\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?", source_value)
         or re.fullmatch(r"\d{4}-\d{2}-\d{2}T[\d:.+\-Z]+", source_value)

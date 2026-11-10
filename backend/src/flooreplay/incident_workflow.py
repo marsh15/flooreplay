@@ -203,7 +203,7 @@ def _activity_view(row: WorkflowActivity) -> dict[str, str]:
         "actor": row.actor,
         "kind": row.kind,
         "text": row.text,
-        "created_at": row.created_at.isoformat(),
+        "created_at": row.created_at.astimezone(UTC).isoformat(),
     }
 
 
@@ -224,11 +224,11 @@ def task_view(session: Session, task: IncidentCheck) -> dict[str, Any]:
         "requested_fields": task.requested_fields,
         "assignee_id": task.assignee_id,
         "assignee_name": account.display_name if account else task.assignee_id,
-        "due_at": task.due_at.isoformat(),
+        "due_at": task.due_at.astimezone(UTC).isoformat(),
         "status": task.status,
         "created_by": task.created_by,
-        "created_at": task.created_at.isoformat(),
-        "updated_at": task.updated_at.isoformat(),
+        "created_at": task.created_at.astimezone(UTC).isoformat(),
+        "updated_at": task.updated_at.astimezone(UTC).isoformat(),
         "overdue": task.status not in TERMINAL and task.due_at < datetime.now(UTC),
         "activities": [_activity_view(row) for row in activities],
         "response": task.response,
@@ -276,7 +276,7 @@ def workflow_view(session: Session, incident_id: str) -> dict[str, Any]:
         "tasks": tasks,
         "handover": {
             "summary": analysis["summary"],
-            "cutoff": revision.cutoff.isoformat(),
+            "cutoff": revision.cutoff.astimezone(UTC).isoformat(),
             "uncertainties": [hypothesis["next_check"] for hypothesis in analysis["hypotheses"]],
             "outstanding_checks": [task for task in tasks if task["status"] not in TERMINAL],
             "completed_checks": [task for task in tasks if task["status"] == "COMPLETED"],
@@ -339,6 +339,7 @@ def create_check(
     if due <= now:
         raise ServiceError("INVALID_DEADLINE", "Choose a future deadline", 422)
     task = IncidentCheck(
+        workspace_id=analysis.workspace_id,
         incident_id=analysis.incident_id,
         analysis_id=analysis_id,
         revision=analysis.revision,
@@ -379,11 +380,53 @@ def _task(session: Session, task_id: str) -> IncidentCheck:
     ).scalar_one()
 
 
-def _assigned(user: Account, task: IncidentCheck) -> None:
-    if user.role != "owner" and task.assignee_id != user.id:
+def task_authority(session: Session, task: IncidentCheck, user: Account | None) -> dict[str, bool]:
+    """What the current request's actor may do to one check. Computed per request, never stored.
+
+    Receipts persist the task body for idempotent replay, so authority must stay out of them:
+    a replay would otherwise return privileges that have since been revoked.
+    """
+    if user is None:
+        return {"can_act": False, "can_manage": False}
+    from .workspaces import is_workspace_owner
+
+    override = is_workspace_owner(session, task.workspace_id, user)
+    return {
+        "can_act": override or task.assignee_id == user.id,
+        "can_manage": override or task.created_by == user.id,
+    }
+
+
+def with_task_authority(
+    session: Session, body: dict[str, Any], user: Account | None
+) -> dict[str, Any]:
+    task = session.get(IncidentCheck, body["id"])
+    if task is None:
+        raise ServiceError("CHECK_UNKNOWN", "Unknown check", 404)
+    return {**body, **task_authority(session, task, user)}
+
+
+def with_workflow_authority(
+    session: Session, workflow: dict[str, Any], user: Account | None
+) -> dict[str, Any]:
+    tasks = {body["id"]: with_task_authority(session, body, user) for body in workflow["tasks"]}
+    handover = workflow["handover"]
+    return {
+        **workflow,
+        "tasks": list(tasks.values()),
+        "handover": {
+            **handover,
+            "outstanding_checks": [tasks[task["id"]] for task in handover["outstanding_checks"]],
+            "completed_checks": [tasks[task["id"]] for task in handover["completed_checks"]],
+        },
+    }
+
+
+def _assigned(session: Session, user: Account, task: IncidentCheck) -> None:
+    if not task_authority(session, task, user)["can_act"]:
         raise ServiceError(
             "CHECK_ASSIGNEE_REQUIRED",
-            "Only the assigned account or owner can record this step",
+            "Only the assigned account or the workspace owner can record this step",
             403,
         )
 
@@ -403,17 +446,17 @@ def update_check(
     ):
         raise ServiceError("CHECK_TERMINAL", "Completed or cancelled checks cannot be changed", 409)
     comment = _text(body["comment"], "Update reason")
-    privileged = user.role == "owner" or task.created_by == user.id
+    privileged = task_authority(session, task, user)["can_manage"]
     status = body.get("status")
     if status == "CANCELLED" and not privileged:
         raise ServiceError(
-            "CHECK_CREATOR_REQUIRED", "Only the creator or owner can cancel a check", 403
+            "CHECK_CREATOR_REQUIRED", "Only the creator or workspace owner can cancel a check", 403
         )
     if body.get("assignee_id") is not None or body.get("due_at") is not None:
         if not privileged:
             raise ServiceError(
                 "CHECK_CREATOR_REQUIRED",
-                "Only the creator or owner can reassign or change deadlines",
+                "Only the creator or workspace owner can reassign or change deadlines",
                 403,
             )
         if body.get("assignee_id") is not None:
@@ -425,9 +468,9 @@ def update_check(
             if due <= datetime.now(UTC):
                 raise ServiceError("INVALID_DEADLINE", "Choose a future deadline", 422)
             task.due_at = due
-        comment = f"{comment} Assigned to {task.assignee_id}; due {task.due_at.isoformat()}."
+        comment = f"{comment} Assigned to {task.assignee_id}; due {task.due_at.astimezone(UTC).isoformat()}."
     if status == "IN_PROGRESS":
-        _assigned(user, task)
+        _assigned(session, user, task)
         if task.status != "OPEN":
             raise ServiceError("CHECK_STATE", "Only an open check can be started", 409)
     if status is not None:
@@ -444,7 +487,7 @@ def respond_check(
     if replay is not None:
         return replay
     task = _task(session, task_id)
-    _assigned(user, task)
+    _assigned(session, user, task)
     if task.status not in {"OPEN", "IN_PROGRESS"}:
         raise ServiceError(
             "CHECK_STATE", "Only an open or in-progress check can receive a response", 409
@@ -593,7 +636,7 @@ def complete_check(
     if replay is not None:
         return replay
     task = _task(session, task_id)
-    _assigned(user, task)
+    _assigned(session, user, task)
     if task.status != "ANSWERED":
         raise ServiceError(
             "CHECK_STATE", "Record the source response before completing the check", 409

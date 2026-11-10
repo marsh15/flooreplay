@@ -228,3 +228,57 @@ def test_reports_without_a_calendar_keep_their_existing_shape():
     pressure = analyze_incident(revision)["metrics"]["target_pressure"]
     assert pressure["time_basis"] == "elapsed_wall_clock" and "planned_non_working" not in pressure
     assert pressure["remaining_working_minutes"] == pressure["remaining_elapsed_minutes"] == 30
+
+
+def test_block_segments_match_a_brute_force_overlap_scan():
+    import random
+    from datetime import datetime, timedelta
+
+    from flooreplay.incident_engine import _blocks
+
+    rng = random.Random(7)
+    origin = datetime.fromisoformat("2026-01-01T09:00:00+05:30")
+    for _ in range(40):
+        events = []
+        for index in range(rng.randint(0, 25)):
+            left = rng.randint(0, 50)
+            events.append({"id": f"e{index}", "line_blocking": True, "start": (origin + timedelta(minutes=left)).isoformat(), "end": (origin + timedelta(minutes=left + rng.randint(1, 30))).isoformat()})
+        start, end = origin + timedelta(minutes=5), origin + timedelta(minutes=70)
+        minutes, segments = _blocks(events, start, end)
+        spans = [(max(datetime.fromisoformat(e["start"]), start), min(datetime.fromisoformat(e["end"]), end), e["id"]) for e in events]
+        spans = [item for item in spans if item[0] < item[1]]
+        bounds = sorted({point for a, b, _ in spans for point in (a, b)})
+        expected = [
+            {"start": left.isoformat(), "end": right.isoformat(), "evidence": sorted(i for a, b, i in spans if a < right and b > left)}
+            for left, right in zip(bounds, bounds[1:], strict=False)
+        ]
+        expected = [segment for segment in expected if segment["evidence"]]
+        assert segments == expected
+        assert minutes == int(sum((datetime.fromisoformat(s["end"]) - datetime.fromisoformat(s["start"])).total_seconds() / 60 for s in expected))
+
+
+def test_contradiction_references_are_matched_by_event_id_only():
+    revision = _revision()
+    revision["events"] += [
+        {"id": "lead", "type": "machine_interruption", "lane": "machines", "summary": "Machine stopped", "occurred_at": "2026-01-01T09:05:00+05:30", "available_at": "2026-01-01T09:06:00+05:30", "source_id": "src-2", "linked_categories": ["machine"]},
+        {"id": "rebuttal", "type": "routine_note", "lane": "notes", "summary": "Operator saw it running", "occurred_at": "2026-01-01T09:07:00+05:30", "available_at": "2026-01-01T09:08:00+05:30", "source_id": "src-3", "contradiction_refs": ["lead", "lead"]},
+    ]
+    machine = next(h for h in analyze_incident(revision)["hypotheses"] if h["category"] == "machine")
+    assert "rebuttal" in json.dumps(machine) and machine["status"] != "PLAUSIBLE"
+
+
+def test_many_repeated_contradiction_references_stay_linear():
+    import time
+
+    revision = _revision()
+    support = [
+        {"id": f"s{i}", "type": "machine_interruption", "lane": "machines", "summary": "Machine stopped", "occurred_at": "2026-01-01T09:05:00+05:30", "available_at": "2026-01-01T09:06:00+05:30", "source_id": "src-2", "linked_categories": ["machine", "material", "quality", "staffing", "changeover", "planning_reporting"]}
+        for i in range(1500)
+    ]
+    heavy = {"id": "heavy", "type": "routine_note", "lane": "notes", "summary": "Repeated reference", "occurred_at": "2026-01-01T09:07:00+05:30", "available_at": "2026-01-01T09:08:00+05:30", "source_id": "src-3", "contradiction_refs": ["anchor"] * 16000}
+    anchor = {"id": "anchor", "type": "routine_note", "lane": "notes", "summary": "Unlinked note", "occurred_at": "2026-01-01T09:06:00+05:30", "available_at": "2026-01-01T09:06:30+05:30", "source_id": "src-3"}
+    revision["events"] += [*support, anchor, heavy]
+    started = time.perf_counter()
+    analyze_incident(revision)
+    # Quadratic list scans took several seconds here; the bound leaves wide room for slow CI hosts.
+    assert time.perf_counter() - started < 1.5
