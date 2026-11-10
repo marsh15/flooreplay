@@ -69,6 +69,7 @@ jobs:
           uv run python -m flooreplay seed
           uv run python -m flooreplay seed
           uv run python -m flooreplay dataset-verify
+          uv run python -m flooreplay decision-cases-verify
       - name: Backend integration tests
         run: cd backend && uv run pytest
       - name: Acceptance credential-boundary tests

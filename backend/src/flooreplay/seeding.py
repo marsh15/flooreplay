@@ -318,6 +318,11 @@ def seed(session: Session) -> dict[str, int]:
         elif not existing_incident.evidence_card:
             existing_incident.evidence_card = incident_evidence_card(item)
 
+    from .decisions.demo import seed_demo
+
+    for name, created in seed_demo(session).items():
+        counts[f"decisions_{name}"] = created
+
     session.commit()
     return counts
 

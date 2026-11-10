@@ -47,6 +47,7 @@ def main() -> int:
     demo = commands.add_parser("export-demo")
     demo.add_argument("--output", default="../frontend/src/data")
     commands.add_parser("dataset-verify")
+    commands.add_parser("decision-cases-verify")
     evaluation = commands.add_parser("eval-openai")
     evaluation.add_argument("--owner", required=True)
     evaluation.add_argument("--stage", choices=["smoke", "pilot", "locked"], default="smoke")
@@ -101,11 +102,16 @@ def main() -> int:
     elif args.command == "export-demo":
         from .release_tools import export_demo
         result = export_demo(Path(args.output))
+    elif args.command == "decision-cases-verify":
+        from .decisions.demo import verify_cases
+        result = verify_cases()
     else:
         from .dataset_evaluation import evaluate_dataset
         result = evaluate_dataset()
     print(json.dumps(result, indent=2, default=str))
     if args.command == "eval-openai" and result.get("status") != "MEASURED_STRUCTURAL_ONLY":
+        return 1
+    if args.command == "decision-cases-verify" and result["status"] != "PASSED":
         return 1
     return 0
 
