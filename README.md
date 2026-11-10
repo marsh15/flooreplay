@@ -1,5 +1,11 @@
 # FloorReplay
 
+> **Version 2 is in development.** The order-decision pages use a provisional API
+> contract and are not yet connected to a complete backend workflow. The v1
+> shortfall investigation remains available at `/investigations`. The demo and
+> verification evidence below describe v1, not a completed v2 release. See the
+> [v2 plan](docs/v2/PLAN.md) and [implementation report](docs/v2/codex-report.md).
+
 FloorReplay is a workbench for investigating manufacturing incidents. Reconstruct what was known at a decision cutoff, inspect the source behind each calculation, compare revisions, and assign follow-up checks. Corrections create new evidence revisions while earlier reports keep their original inputs.
 
 Public examples use synthetic records. Private investigations require workspace membership. AI drafts are optional and require human review. FloorReplay has no factory pilot or measured operational benefit.

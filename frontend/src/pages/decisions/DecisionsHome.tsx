@@ -5,6 +5,7 @@ import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/Auth'
 import { listOrders } from '@/lib/decisions'
+import { ApiError } from '@/lib/http'
 import { formatInstant } from '@/lib/status'
 import type { GateState, Outcome } from '@/lib/decisions-types'
 
@@ -52,7 +53,16 @@ export function DecisionsHome() {
         ) : orders.isError ? (
           <Alert variant="limit">
             <div className="space-y-2">
-              <p>Orders could not be loaded. Try again when the decisions service is available.</p>
+              {orders.error instanceof ApiError && orders.error.status === 404 ? (
+                <p>
+                  Order decisions are not available from this server yet. Shortfall investigations
+                  remain available below.
+                </p>
+              ) : (
+                <p>
+                  Orders could not be loaded. Try again when the decisions service is available.
+                </p>
+              )}
               <Button variant="outline" onClick={() => void orders.refetch()}>
                 Retry orders
               </Button>
