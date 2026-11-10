@@ -12,7 +12,10 @@
         "payload": {
           "fabric_quality": "SJ180",
           "colour": "NAVY",
-          "qty": { "value": "4000", "unit": "m" }
+          "qty": {
+            "value": "4000",
+            "unit": "m"
+          }
         },
         "valid_from": "2026-10-22T04:30:00Z",
         "valid_to": null,
@@ -22,7 +25,6 @@
         "artifact_id": null
       }
     ],
-    "notes": [],
     "problems": [],
     "coverage": {
       "profile": "erp_fabric_stock",
@@ -30,7 +32,8 @@
       "qualities": ["SJ180"]
     },
     "status": "READY",
-    "preview_digest": "preview-ready-001"
+    "preview_digest": "preview-ready-001",
+    "pending_extraction": []
   },
   "blocked_preview": {
     "profile": "erp_fabric_stock",
@@ -38,7 +41,6 @@
     "raw_digest": "raw-blocked",
     "as_of": "2026-10-22T04:30:00Z",
     "facts": [],
-    "notes": [],
     "problems": [
       {
         "row": 2,
@@ -49,7 +51,16 @@
     ],
     "coverage": null,
     "status": "BLOCKED",
-    "preview_digest": "preview-blocked-001"
+    "preview_digest": "preview-blocked-001",
+    "pending_extraction": []
   },
-  "published": { "artifact_id": "artifact-001", "facts_created": 1 }
+  "published": {
+    "artifact_id": "artifact-001",
+    "idempotent_replay": false,
+    "known_at": "2026-10-22T04:31:00Z",
+    "raw_digest": "raw-001",
+    "preview_digest": "preview-ready-001",
+    "fact_ids": ["erp-fabric-stock:raw-001:2"],
+    "pending_extraction": []
+  }
 }

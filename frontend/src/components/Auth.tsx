@@ -2,6 +2,7 @@ import type { components } from '@/lib/generated-api'
 import { Fragment, createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { apiRequest, ApiError } from '@/lib/http'
+import { decisionWorkspace } from '@/lib/decision-workspace'
 import { session } from '@/lib/session'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -78,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () =>
       session.onExpire(() => {
         authGeneration.current += 1
+        decisionWorkspace.reset()
         client.clear()
         setUser(null)
         setEpoch((value) => value + 1)
@@ -117,6 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     )
     // Clear local state immediately; a slow or failed revocation must not keep data on screen.
     session.set(null)
+    decisionWorkspace.reset()
     client.clear()
     setUser(null)
     setEpoch((value) => value + 1)

@@ -34,24 +34,3 @@ test('shared transport lets the browser encode multipart uploads and keeps JSON 
   expect(captured[1].contentType).toBe('application/json')
   expect(JSON.parse(captured[1].body)).toEqual({ preview_digest: 'synthetic-preview' })
 })
-
-for (const status of [200, 204]) {
-  test(`bodyless decision actions accept an empty ${status} response`, async ({ page }) => {
-    await page.route('**/api/v1/**', (route) => {
-      if (new URL(route.request().url()).pathname.endsWith('/decisions/policies/synthetic/adopt'))
-        return route.fulfill({ status, body: '' })
-      return route.fulfill({ status: 503, json: { message: 'Unavailable in transport test' } })
-    })
-    await page.goto('/demo')
-    const result = await page.evaluate(async () => {
-      const modulePath = '/src/lib/http.ts'
-      const { apiNoContent } = await import(modulePath)
-      await apiNoContent('/decisions/policies/synthetic/adopt', {
-        method: 'POST',
-        body: JSON.stringify({ run_id: 'synthetic', acknowledgements: {} }),
-      })
-      return 'completed'
-    })
-    expect(result).toBe('completed')
-  })
-}

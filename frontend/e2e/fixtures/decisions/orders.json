@@ -1,12 +1,16 @@
 {
-  "orders": [
+  "items": [
     {
       "order_id": "POLO-221",
       "buyer": "Buyer A",
       "style_id": "POLO-221",
       "ship_date": "2026-11-12",
       "total_qty": "5000",
-      "latest": { "outcome": "ACCEPT", "gate_state": "READY", "cutoff": "2026-10-22T05:30:00Z" }
+      "latest": {
+        "outcome": "ACCEPT",
+        "gate_state": "READY",
+        "cutoff": "2026-10-22T05:30:00Z"
+      }
     },
     {
       "order_id": "POLO-222",

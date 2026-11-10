@@ -6,9 +6,12 @@ import { Limits, PageHeader, Section, StatusTag } from '@/components/board'
 import { SpanHighlight } from '@/components/decisions/SpanHighlight'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { WorkspacePicker } from '@/components/decisions/WorkspacePicker'
+import { useDecisionWorkspace } from '@/lib/decision-workspace'
 import { listReviewItems, resolveReviewItem } from '@/lib/decisions'
 import type { ReviewAction, ReviewItem } from '@/lib/decisions-types'
 import { useAuth } from '@/components/Auth'
+import { ApiError } from '@/lib/http'
 import { formatInstant } from '@/lib/status'
 
 type FieldDraft = { value: string; evidence: string }
@@ -20,7 +23,7 @@ function ReviewCard({
 }: {
   item: ReviewItem
   onResolve: (
-    id: string,
+    item: ReviewItem,
     action: ReviewAction,
     reason: string,
     corrected?: Record<string, FieldDraft>,
@@ -87,6 +90,25 @@ function ReviewCard({
         <div className="rounded-sm border border-border bg-background px-3 py-2 text-sm">
           <SpanHighlight text={item.note_text} fields={item.fields ?? []} />
         </div>
+      ) : item.fields?.some((field) => field.span) ? (
+        <div className="rounded-sm border border-border bg-background px-3 py-2 text-sm">
+          <p className="mb-1 text-xs text-muted-foreground">
+            The source note is not stored with this item. Evidence quoted from it:
+          </p>
+          <ul className="space-y-1">
+            {item.fields
+              .filter((field) => field.span)
+              .map((field) => (
+                <li key={field.name}>
+                  <span className="font-medium">{field.name.replaceAll('_', ' ')}:</span>{' '}
+                  <q lang="und">{field.span!.text}</q>{' '}
+                  <span className="text-xs text-muted-foreground">
+                    (characters {field.span!.start}–{field.span!.end})
+                  </span>
+                </li>
+              ))}
+          </ul>
+        </div>
       ) : (
         <p className="text-sm text-muted-foreground">No source note is attached to this item.</p>
       )}
@@ -144,23 +166,20 @@ function ReviewCard({
         />
       </label>
       <div className="flex flex-wrap gap-2">
-        <Button
-          disabled={!hasReason || pending}
-          onClick={() => onResolve(item.id, 'confirm', reason)}
-        >
+        <Button disabled={!hasReason || pending} onClick={() => onResolve(item, 'confirm', reason)}>
           Confirm {item.id}
         </Button>
         <Button
           variant="secondary"
           disabled={!hasReason || pending || Object.keys(changedDrafts).length === 0}
-          onClick={() => onResolve(item.id, 'correct', reason, changedDrafts)}
+          onClick={() => onResolve(item, 'correct', reason, changedDrafts)}
         >
           Correct {item.id}
         </Button>
         <Button
           variant="destructive"
           disabled={!hasReason || pending}
-          onClick={() => onResolve(item.id, 'reject', reason)}
+          onClick={() => onResolve(item, 'reject', reason)}
         >
           Reject {item.id}
         </Button>
@@ -171,25 +190,26 @@ function ReviewCard({
 
 export function ReviewQueue() {
   const { epoch } = useAuth()
+  const workspace = useDecisionWorkspace()
   const client = useQueryClient()
   const [notice, setNotice] = useState('')
   const items = useQuery({
-    queryKey: ['decisions', 'review-items', epoch],
+    queryKey: ['decisions', 'review-items', workspace, epoch],
     queryFn: listReviewItems,
   })
   const resolveMutation = useMutation({
     mutationFn: ({
-      id,
+      item,
       action,
       reason,
       corrected,
     }: {
-      id: string
+      item: ReviewItem
       action: ReviewAction
       reason: string
       corrected?: Record<string, FieldDraft>
     }) =>
-      resolveReviewItem(id, {
+      resolveReviewItem(item, {
         action,
         reason: reason.trim(),
         ...(action === 'correct' && corrected
@@ -221,13 +241,18 @@ export function ReviewQueue() {
           with a reason.
         </p>
       </PageHeader>
+      <WorkspacePicker />
       <Section
         title="Items needing review"
         detail="Evidence spans point to exact source text, including Tamil and Tanglish notes."
       >
         {items.isPending ? <p role="status">Loading review items…</p> : null}
         {items.isError ? (
-          <Limits tone="danger">Review items are unavailable. Try again later.</Limits>
+          <Limits tone="danger">
+            {items.error instanceof ApiError && items.error.status === 401
+              ? 'Sign in to see the review queue. It is only available in your own workspaces.'
+              : 'Review items are unavailable. Try again later.'}
+          </Limits>
         ) : null}
         {items.data?.items.length === 0 ? (
           <div role="status" className="rounded-sm border border-border bg-card p-5">
@@ -244,9 +269,9 @@ export function ReviewQueue() {
                 key={item.id}
                 item={item}
                 pending={resolveMutation.isPending}
-                onResolve={(id, action, reason, corrected) => {
+                onResolve={(target, action, reason, corrected) => {
                   setNotice('')
-                  resolveMutation.mutate({ id, action, reason, corrected })
+                  resolveMutation.mutate({ item: target, action, reason, corrected })
                 }}
               />
             ))}

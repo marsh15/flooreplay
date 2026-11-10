@@ -4,6 +4,8 @@ import { PageHeader, Section, StatusTag } from '@/components/board'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/Auth'
+import { WorkspacePicker } from '@/components/decisions/WorkspacePicker'
+import { useDecisionWorkspace } from '@/lib/decision-workspace'
 import { listOrders } from '@/lib/decisions'
 import { ApiError } from '@/lib/http'
 import { formatInstant } from '@/lib/status'
@@ -26,8 +28,9 @@ function statusTone(state: GateState | Outcome) {
 
 export function DecisionsHome() {
   const { user, epoch } = useAuth()
+  const workspace = useDecisionWorkspace()
   const orders = useQuery({
-    queryKey: ['decision-orders', user?.id ?? 'public', epoch],
+    queryKey: ['decision-orders', user?.id ?? 'public', epoch, workspace],
     queryFn: listOrders,
   })
   return (
@@ -38,6 +41,7 @@ export function DecisionsHome() {
           available at a specific cutoff.
         </p>
       </PageHeader>
+      <WorkspacePicker />
       <Alert variant="info">
         <strong>Synthetic manufacturing data.</strong> Public demo orders use synthetic data from a
         fictional knit-garment exporter.
@@ -55,8 +59,8 @@ export function DecisionsHome() {
             <div className="space-y-2">
               {orders.error instanceof ApiError && orders.error.status === 404 ? (
                 <p>
-                  Order decisions are not available from this server yet. Shortfall investigations
-                  remain available below.
+                  This workspace could not be found on the server. Choose another workspace, or open
+                  the shortfall investigations below.
                 </p>
               ) : (
                 <p>
@@ -119,7 +123,9 @@ export function DecisionsHome() {
                     <th scope="row" className="p-3">
                       <Link
                         className="font-mono font-semibold text-primary underline underline-offset-2 focus-visible:outline-2"
-                        to={`/orders/${encodeURIComponent(order.order_id)}`}
+                        to={`/orders/${encodeURIComponent(order.order_id)}${
+                          order.latest ? `?cutoff=${encodeURIComponent(order.latest.cutoff)}` : ''
+                        }`}
                       >
                         {order.order_id}
                       </Link>

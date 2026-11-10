@@ -25,31 +25,21 @@ async function fillErpForm(
   await page.getByLabel('Covered fabric qualities').fill('SJ180')
 }
 
-function multipartField(body: string, name: string) {
-  const marker = `name="${name}"\r\n`
-  const markerAt = body.indexOf(marker)
-  if (markerAt < 0) return undefined
-  const start = body.indexOf('\r\n\r\n', markerAt)
-  if (start < 0) return undefined
-  const end = body.indexOf('\r\n--', start + 4)
-  return end < 0 ? undefined : body.slice(start + 4, end)
+function decodeCsv(body: Record<string, unknown>) {
+  return Buffer.from(String(body.content_base64), 'base64').toString('utf8')
 }
 
-test('imports send explicit multipart fields and mapping edits invalidate the preview', async ({
+test('imports send the file and explicit settings as JSON and mapping edits invalidate the preview', async ({
   page,
 }) => {
-  const previewRequests: { contentType: string; body: string }[] = []
+  const previewRequests: Record<string, unknown>[] = []
   const publishRequests: Record<string, unknown>[] = []
   let failFirstPublish = true
   await page.route('**/api/v1/**', async (route) => {
     const request = route.request()
     const path = new URL(request.url()).pathname
     if (path.endsWith('/imports/preview') && request.method() === 'POST') {
-      const body = request.postDataBuffer()?.toString('utf8') ?? ''
-      previewRequests.push({
-        contentType: request.headers()['content-type'] ?? '',
-        body,
-      })
+      previewRequests.push(request.postDataJSON())
       return route.fulfill({ json: fixture.ready_preview })
     }
     if (path.endsWith('/imports/publish') && request.method() === 'POST') {
@@ -70,24 +60,22 @@ test('imports send explicit multipart fields and mapping edits invalidate the pr
   await expect(page.getByText('READY', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Publish import' })).toBeEnabled()
   expect(previewRequests).toHaveLength(1)
-  expect(previewRequests[0].contentType).toMatch(/^multipart\/form-data;\s*boundary=/i)
-  expect(previewRequests[0].body).toContain('name="file"')
-  expect(previewRequests[0].body).toContain('fabric-stock.csv')
-  expect(previewRequests[0].body).toContain('name="profile"')
-  expect(previewRequests[0].body).toContain('erp-fabric-stock')
-  expect(previewRequests[0].body).toContain('name="as_of"')
-  expect(previewRequests[0].body).toContain('2026-10-22T04:30:00')
-  expect(previewRequests[0].body).toContain('name="column_mapping"')
-  expect(JSON.parse(multipartField(previewRequests[0].body, 'column_mapping') ?? '{}')).toEqual({
+  const [sent] = previewRequests
+  expect(sent).toMatchObject({
+    filename: 'fabric-stock.csv',
+    profile: 'erp-fabric-stock',
+    timezone: 'Asia/Kolkata',
+    coverage_qualities: ['SJ180'],
+  })
+  expect(String(sent.as_of)).toContain('2026-10-22T04:30:00')
+  expect(decodeCsv(sent)).toBe(erpCsv)
+  expect(sent.column_mapping).toEqual({
     lot_id: 'lot_id',
     fabric_quality: 'fabric_quality',
     colour: 'colour',
     qty: 'Stock, metres',
   })
-  expect(JSON.parse(multipartField(previewRequests[0].body, 'units') ?? '{}')).toEqual({
-    qty: 'm',
-    allocation_qty: 'm',
-  })
+  expect(sent.units).toEqual({ qty: 'm', allocation_qty: 'm' })
 
   await page.getByLabel(/GSM column/).selectOption('unused')
   await expect(page.getByRole('button', { name: 'Publish import' })).toBeDisabled()
@@ -100,6 +88,9 @@ test('imports send explicit multipart fields and mapping edits invalidate the pr
   await expect(page.getByText('1 facts published')).toBeVisible()
   expect(publishRequests).toHaveLength(2)
   expect(publishRequests[0].preview_digest).toBe('preview-ready-001')
+  // Publishing sends the previewed bytes and settings again, so the server can re-check them.
+  expect(decodeCsv(publishRequests[0])).toBe(erpCsv)
+  expect(publishRequests[0].column_mapping).toEqual(sent.column_mapping)
   expect(publishRequests[1].idempotency_key).toBe(publishRequests[0].idempotency_key)
 
   const axe = await new AxeBuilder({ page }).analyze()
@@ -193,12 +184,12 @@ for (const item of profileCases) {
   test(`${item.profile} maps all required Package A fields and sends units by canonical field`, async ({
     page,
   }) => {
-    let body = ''
+    let body: Record<string, unknown> = {}
     await page.route('**/api/v1/**', (route) => {
       const request = route.request()
       const path = new URL(request.url()).pathname
       if (path.endsWith('/imports/preview')) {
-        body = request.postDataBuffer()?.toString('utf8') ?? ''
+        body = request.postDataJSON()
         return route.fulfill({
           json: { ...fixture.ready_preview, profile: item.profile.replaceAll('-', '_') },
         })
@@ -247,12 +238,10 @@ for (const item of profileCases) {
       await page.getByLabel(`${labels[field]} column`, { exact: true }).selectOption(field)
     await page.getByRole('button', { name: 'Preview import' }).click()
     await expect(page.getByText('READY', { exact: true })).toBeVisible()
-    const mapped = JSON.parse(multipartField(body, 'column_mapping') ?? '{}')
+    const mapped = body.column_mapping as Record<string, string>
     expect(Object.keys(mapped).sort()).toEqual([...item.required].sort())
     expect(mapped).toEqual(Object.fromEntries(item.required.map((field) => [field, field])))
-    if (Object.keys(item.units).length)
-      expect(JSON.parse(multipartField(body, 'units') ?? '{}')).toEqual(item.units)
-    else expect(multipartField(body, 'units')).toBeUndefined()
+    expect(body.units).toEqual(item.units)
   })
 }
 

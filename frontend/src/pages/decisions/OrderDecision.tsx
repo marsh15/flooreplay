@@ -10,6 +10,7 @@ import { RecordDecisionForm } from '@/components/decisions/RecordDecisionForm'
 import { PageHeader, Section, StatusTag } from '@/components/board'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { DEMO_WORKSPACE, useDecisionWorkspace } from '@/lib/decision-workspace'
 import { getOrderDecision, recordDecision } from '@/lib/decisions'
 import { formatInstant } from '@/lib/status'
 import type { Condition, Outcome } from '@/lib/decisions-types'
@@ -38,6 +39,7 @@ export function OrderDecision() {
   const cutoff = isUtcIso(requestedCutoff) ? requestedCutoff : undefined
   const invalidCutoff = requestedCutoff !== null && cutoff === undefined
   const { user, epoch } = useAuth()
+  const workspace = useDecisionWorkspace()
   const queryClient = useQueryClient()
   const [factId, setFactId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
@@ -46,6 +48,7 @@ export function OrderDecision() {
       'order-decision',
       user?.id ?? 'public',
       epoch,
+      workspace,
       orderId,
       cutoff ?? 'latest',
       policy ?? 'adopted',
@@ -66,7 +69,7 @@ export function OrderDecision() {
     onSuccess: async () => {
       setMessage('Final decision recorded with its reason.')
       await queryClient.invalidateQueries({
-        queryKey: ['order-decision', user?.id ?? 'public', epoch, orderId],
+        queryKey: ['order-decision', user?.id ?? 'public', epoch, workspace, orderId],
       })
     },
   })
@@ -235,6 +238,12 @@ export function OrderDecision() {
         title="Record the final decision"
         detail="A final outcome and a written reason are stored with the replay cutoff."
       >
+        {(!user || workspace === DEMO_WORKSPACE) && (
+          <Alert variant="info">
+            Recording a decision needs a signed-in account and a private workspace. The public demo
+            is read only.
+          </Alert>
+        )}
         {record.isError && <Alert variant="destructive">{record.error.message}</Alert>}
         <div className="max-w-2xl rounded-sm border border-border bg-card p-4">
           <RecordDecisionForm

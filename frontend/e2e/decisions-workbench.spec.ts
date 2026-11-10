@@ -169,18 +169,18 @@ test('v1 incident library has a dedicated investigations route and nav label', a
   await page.goto('/investigations')
   await expect(page.getByRole('heading', { name: 'Incident library' })).toBeVisible()
   await expect(
-    page.locator('#main-content').getByRole('link', { name: 'Shortfall investigations (v1)' }),
+    page
+      .getByRole('navigation', { name: 'Primary' })
+      .getByRole('link', { name: 'Shortfall investigations (v1)' }),
   ).toHaveAttribute('href', '/investigations')
 })
 
-test('home explains when the decisions endpoint is unavailable', async ({ page }) => {
-  await page.route('**/api/v1/decisions/orders', (route) =>
+test('home explains when the workspace cannot be found', async ({ page }) => {
+  await page.route('**/api/v1/decisions/orders?*', (route) =>
     route.fulfill({ status: 404, json: { detail: 'Not Found' } }),
   )
   await page.goto('/')
-  await expect(
-    page.getByText(/Order decisions are not available from this server yet/),
-  ).toBeVisible()
+  await expect(page.getByText(/This workspace could not be found on the server/)).toBeVisible()
   await expect(
     page.locator('#main-content').getByRole('link', { name: 'Shortfall investigations (v1)' }),
   ).toHaveAttribute('href', '/investigations')

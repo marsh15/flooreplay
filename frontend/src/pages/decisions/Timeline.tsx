@@ -7,6 +7,7 @@ import { KnowledgeScrubber } from '@/components/decisions/KnowledgeScrubber'
 import { PageHeader, Section, StatusTag } from '@/components/board'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { useDecisionWorkspace } from '@/lib/decision-workspace'
 import { getOrderDecision, getOrderTimeline } from '@/lib/decisions'
 import { formatInstant } from '@/lib/status'
 
@@ -34,9 +35,10 @@ export function Timeline() {
   const validCutoff = isUtcIso(requestedCutoff) ? requestedCutoff : undefined
   const invalidCutoff = requestedCutoff !== null && validCutoff === undefined
   const { user, epoch } = useAuth()
+  const workspace = useDecisionWorkspace()
   const [factId, setFactId] = useState<string | null>(null)
   const timeline = useQuery({
-    queryKey: ['order-timeline', user?.id ?? 'public', epoch, orderId],
+    queryKey: ['order-timeline', user?.id ?? 'public', epoch, workspace, orderId],
     queryFn: () => getOrderTimeline(orderId),
     enabled: Boolean(orderId),
   })
@@ -54,6 +56,7 @@ export function Timeline() {
       'timeline-decision',
       user?.id ?? 'public',
       epoch,
+      workspace,
       orderId,
       validCutoff ?? selectedTime ?? 'latest',
       policy ?? 'adopted',

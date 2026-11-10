@@ -6,10 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PolicyDiff } from '@/components/decisions/PolicyDiff'
 import { RegressionTable } from '@/components/decisions/RegressionTable'
+import { WorkspacePicker } from '@/components/decisions/WorkspacePicker'
+import { useDecisionWorkspace } from '@/lib/decision-workspace'
 import {
   adoptPolicy,
   getPolicyDiff,
   getRegressionRun,
+  latestRegressionRun,
   listPolicies,
   startRegressionRun,
 } from '@/lib/decisions'
@@ -17,7 +20,11 @@ import type { PolicyDiffResponse, RegressionRun } from '@/lib/decisions-types'
 import { ApiError } from '@/lib/http'
 
 export function ReplayLab() {
-  const policies = useQuery({ queryKey: ['decisions', 'policies'], queryFn: listPolicies })
+  const workspace = useDecisionWorkspace()
+  const policies = useQuery({
+    queryKey: ['decisions', 'policies', workspace],
+    queryFn: listPolicies,
+  })
   const [selectedCandidate, setSelectedCandidate] = useState('')
   const candidateRef = useRef('')
   const [run, setRun] = useState<RegressionRun | null>(null)
@@ -32,10 +39,23 @@ export function ReplayLab() {
     candidateRef.current = candidate
   }, [candidate])
   const diffQuery = useQuery<PolicyDiffResponse>({
-    queryKey: ['decisions', 'policy-diff', policies.data?.adopted, candidate],
+    queryKey: ['decisions', 'policy-diff', workspace, policies.data?.adopted, candidate],
     queryFn: () => getPolicyDiff(policies.data!.adopted, candidate),
     enabled: Boolean(policies.data?.adopted && candidate && candidate !== policies.data.adopted),
   })
+  const storedRun = useQuery({
+    queryKey: ['decisions', 'latest-run', workspace, candidate],
+    queryFn: () => latestRegressionRun(candidate),
+    enabled: Boolean(candidate && candidate !== policies.data?.adopted),
+    retry: false,
+  })
+  useEffect(() => {
+    const stored = storedRun.data
+    if (!stored || stored.policy_digest !== candidateRef.current) return
+    setRun((current) => current ?? stored)
+    setStoredRunId((current) => current || stored.id)
+    setNotice((current) => current || 'Latest stored regression run loaded.')
+  }, [storedRun.data])
   const runMutation = useMutation({
     mutationFn: async (digest: string) => {
       const started = await startRegressionRun({ policy_digest: digest })
@@ -52,9 +72,13 @@ export function ReplayLab() {
           : 'Run is incomplete; adoption stays disabled.',
       )
     },
-    onError: (_error, requestedDigest) => {
-      if (candidateRef.current === requestedDigest)
-        setNotice('The regression run could not be stored. Try again.')
+    onError: (error, requestedDigest) => {
+      if (candidateRef.current !== requestedDigest) return
+      setNotice(
+        error instanceof ApiError && (error.status === 401 || error.status === 404)
+          ? 'Running a regression needs a signed-in member of a private workspace. The public demo shows stored runs only.'
+          : 'The regression run could not be stored. Try again.',
+      )
     },
   })
   const refreshMutation = useMutation({
@@ -123,6 +147,7 @@ export function ReplayLab() {
           Adoption needs a stored complete run and a written acknowledgement for each regression.
         </p>
       </PageHeader>
+      <WorkspacePicker />
       {policies.isPending ? <p role="status">Loading policy list…</p> : null}
       {policies.isError ? <p role="alert">Policies are unavailable. Try again later.</p> : null}
       {policies.data ? (

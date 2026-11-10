@@ -116,11 +116,6 @@ export function apiDownload(path: string): Promise<Blob> {
   return performRequest(path, undefined, (response) => response.blob())
 }
 
-/** Successful commands such as adoption have no response document. */
-export function apiNoContent(path: string, init?: RequestInit): Promise<void> {
-  return performRequest(path, init, async () => undefined)
-}
-
 export class ApiError extends Error {
   code: string
   status: number

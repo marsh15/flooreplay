@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 
 import { Limits, PageHeader, Section, StatusTag } from '@/components/board'
+import { WorkspacePicker } from '@/components/decisions/WorkspacePicker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -289,6 +290,7 @@ export function DecisionImports() {
           time before publishing.
         </p>
       </PageHeader>
+      <WorkspacePicker />
       <Section
         title="Import source"
         detail="CSV evidence is previewed before it can become an immutable fact."

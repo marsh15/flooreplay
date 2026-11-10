@@ -150,7 +150,7 @@ export type RegressionClassification =
 export interface RegressionCase {
   case_id: string
   title: string
-  baseline: 'PASS' | 'FAIL'
+  baseline: 'PASS' | 'FAIL' | null
   candidate: 'PASS' | 'FAIL' | null
   classification: RegressionClassification
 }
@@ -189,6 +189,8 @@ export interface ReviewItem {
   note_id?: string
   note_text?: string
   fields?: ReviewField[]
+  /** Backend review item id for each flagged field, so one decision can be applied to all. */
+  field_items: Record<string, string>
   order_id?: string
   created_at: string
   assignee: string | null
