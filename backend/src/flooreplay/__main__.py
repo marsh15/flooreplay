@@ -48,6 +48,10 @@ def main() -> int:
     demo.add_argument("--output", default="../frontend/src/data")
     commands.add_parser("dataset-verify")
     commands.add_parser("decision-cases-verify")
+    sandbox = commands.add_parser(
+        "decisions-demo", help="Load the synthetic Tiruppur demo into an owner's private workspace"
+    )
+    sandbox.add_argument("--owner", required=True)
     evaluation = commands.add_parser("eval-openai")
     evaluation.add_argument("--owner", required=True)
     evaluation.add_argument("--stage", choices=["smoke", "pilot", "locked"], default="smoke")
@@ -102,6 +106,14 @@ def main() -> int:
     elif args.command == "export-demo":
         from .release_tools import export_demo
         result = export_demo(Path(args.output))
+    elif args.command == "decisions-demo":
+        from .decisions.demo import seed_demo
+        from .workspaces import personal_workspace
+        with session_scope() as session:
+            owner = session.get(Account, _owner(args.owner))
+            assert owner is not None
+            workspace = personal_workspace(session, owner)
+            result = {"workspace": workspace, **seed_demo(session, workspace)}
     elif args.command == "decision-cases-verify":
         from .decisions.demo import verify_cases
         result = verify_cases()

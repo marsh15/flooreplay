@@ -132,3 +132,27 @@ def test_an_anonymous_visitor_can_walk_the_whole_demo() -> None:
         json={"acknowledgements": {"case-03-overtime-covers": "I accept this."}},
     )
     assert adopt.status_code == 401
+
+
+def test_the_sandbox_command_loads_the_demo_into_the_owners_private_workspace(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import json
+    import sys
+    import uuid
+
+    from flooreplay.__main__ import main
+    from flooreplay.auth import create_account
+
+    name = "sandbox-" + uuid.uuid4().hex
+    create_account(name, "sandbox-test-password", "owner")
+    monkeypatch.setattr(sys, "argv", ["flooreplay", "decisions-demo", "--owner", name])
+    assert main() == 0
+    first = json.loads(capsys.readouterr().out)
+    assert first["workspace"].startswith("owner-") and first["cases"] == len(demo.case_specs())
+    assert main() == 0
+    second = json.loads(capsys.readouterr().out)
+    assert second["workspace"] == first["workspace"]
+    assert {k: v for k, v in second.items() if k != "workspace"} == dict.fromkeys(
+        ("facts", "artifacts", "policies", "cases", "evaluations", "runs"), 0
+    )

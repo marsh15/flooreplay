@@ -335,3 +335,43 @@ def test_order_summaries_only_list_orders_with_an_order_request() -> None:
         assert service.list_order_ids(session, ws) == []
     assert owner.get(f"{ROUTE}/orders?workspace_id={ws}").json() == {"items": []}
     assert FactKind.ORDER_REQUEST.value == "order_request"
+
+
+def load_demo(workspace: str) -> None:
+    """What the `decisions-demo` command does: seeding authors known_at, so it never runs over HTTP."""
+    from flooreplay.decisions import demo
+
+    with session_scope() as session:
+        demo.seed_demo(session, workspace)
+
+
+def test_a_private_workspace_loaded_with_the_demo_supports_the_whole_write_path() -> None:
+    from flooreplay.decisions import demo
+
+    owner, _ = client_for("owner")
+    ws = owner_workspace(owner)
+    load_demo(ws)
+    with session_scope() as session:
+        assert set(demo.seed_demo(session, ws).values()) == {0}
+
+    orders = {o["order_id"]: o for o in owner.get(f"{ROUTE}/orders?workspace_id={ws}").json()["items"]}
+    assert orders["POLO-221"]["latest"]["outcome"] == "ACCEPT"
+    recorded = owner.post(
+        f"{ROUTE}/orders/POLO-221/records?workspace_id={ws}",
+        json={
+            "cutoff": orders["POLO-221"]["latest"]["cutoff"],
+            "policy_digest": DEFAULT_DIGEST,
+            "final_outcome": "ACCEPT",
+            "reason": "QA resolved the stock conflict.",
+        },
+    )
+    assert recorded.status_code == 200, recorded.text
+    policies = owner.get(f"{ROUTE}/policies?workspace_id={ws}").json()
+    candidate = next(p for p in policies["items"] if p["policy_digest"] != policies["adopted"])
+    run = owner.get(f"{ROUTE}/regression-runs?workspace_id={ws}&candidate={candidate['policy_digest']}").json()["items"][0]
+    adopted = owner.post(
+        f"{ROUTE}/regression-runs/{run['id']}/adopt?workspace_id={ws}",
+        json={"acknowledgements": {"case-03-overtime-covers": "Overtime cap of one hour is acceptable."}},
+    )
+    assert adopted.status_code == 200, adopted.text
+    assert owner.get(f"{ROUTE}/policies?workspace_id={ws}").json()["adopted"] == candidate["policy_digest"]

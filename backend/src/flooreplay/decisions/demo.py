@@ -410,13 +410,13 @@ _STORED_EVALUATIONS = (
 )
 
 
-def seed_demo(session: Session) -> dict[str, int]:
-    """Create whatever the demo workspace is missing. A second run creates nothing."""
+def seed_demo(session: Session, workspace_id: str = WORKSPACE) -> dict[str, int]:
+    """Create whatever the workspace is missing of the demo. A second run creates nothing."""
     counts = {"facts": 0, "artifacts": 0, "policies": 0, "cases": 0, "evaluations": 0, "runs": 0}
-    if session.get(DecisionSourceArtifact, (WORKSPACE, ERP_ARTIFACT)) is None:
+    if session.get(DecisionSourceArtifact, (workspace_id, ERP_ARTIFACT)) is None:
         session.add(
             DecisionSourceArtifact(
-                workspace_id=WORKSPACE,
+                workspace_id=workspace_id,
                 id=ERP_ARTIFACT,
                 profile=SourceProfile.ERP_FABRIC_STOCK.value,
                 filename="erp-fabric-stock-2026-10-22.csv",
@@ -432,50 +432,50 @@ def seed_demo(session: Session) -> dict[str, int]:
         session.flush()
         counts["artifacts"] += 1
 
-    present = set(session.scalars(select(FactRow.id).where(FactRow.workspace_id == WORKSPACE)))
+    present = set(session.scalars(select(FactRow.id).where(FactRow.workspace_id == workspace_id)))
     missing = [fact for fact in demo_facts() if fact.id not in present]
     for known_at in sorted({fact.known_at for fact in missing}):
         batch = [fact for fact in missing if fact.known_at == known_at]
-        service.append_facts(session, batch, workspace_id=WORKSPACE, trusted_known_at=known_at)
+        service.append_facts(session, batch, workspace_id=workspace_id, trusted_known_at=known_at)
         counts["facts"] += len(batch)
 
     candidate = candidate_policy()
     for policy in (DEFAULT_POLICY_V1, candidate):
-        before = len(service.list_stored_policies(session, WORKSPACE))
-        service.store_policy(session, WORKSPACE, policy)
-        counts["policies"] += len(service.list_stored_policies(session, WORKSPACE)) - before
+        before = len(service.list_stored_policies(session, workspace_id))
+        service.store_policy(session, workspace_id, policy)
+        counts["policies"] += len(service.list_stored_policies(session, workspace_id)) - before
 
     coverage = erp_coverage()
     for case in case_specs():
-        if session.get(DecisionCase, (WORKSPACE, case.case_id)) is not None:
+        if session.get(DecisionCase, (workspace_id, case.case_id)) is not None:
             continue
         service.create_case(
-            session, WORKSPACE, case.case_id, case.name, case.cutoff, case.order_id,
+            session, workspace_id, case.case_id, case.name, case.cutoff, case.order_id,
             case.facts, coverage, synthetic=True,
         )
-        service.add_expectation(session, WORKSPACE, case.case_id, case.expectation)
+        service.add_expectation(session, workspace_id, case.case_id, case.expectation)
         counts["cases"] += 1
 
     for order_id, cutoff in _STORED_EVALUATIONS:
         known = session.scalar(
             select(DecisionEvaluation.id).where(
-                DecisionEvaluation.workspace_id == WORKSPACE,
+                DecisionEvaluation.workspace_id == workspace_id,
                 DecisionEvaluation.order_id == order_id,
                 DecisionEvaluation.cutoff == cutoff,
                 DecisionEvaluation.policy_digest == policy_digest(DEFAULT_POLICY_V1),
             )
         )
         if known is None:
-            service.evaluate_order(session, WORKSPACE, order_id, cutoff, DEFAULT_POLICY_V1)
+            service.evaluate_order(session, workspace_id, order_id, cutoff, DEFAULT_POLICY_V1)
             counts["evaluations"] += 1
 
     if session.scalar(
         select(RegressionRun.id).where(
-            RegressionRun.workspace_id == WORKSPACE,
+            RegressionRun.workspace_id == workspace_id,
             RegressionRun.candidate_policy_digest == policy_digest(candidate),
         )
     ) is None:
-        service.run_regression(session, WORKSPACE, DEFAULT_POLICY_V1, candidate)
+        service.run_regression(session, workspace_id, DEFAULT_POLICY_V1, candidate)
         counts["runs"] += 1
     return counts
 
