@@ -259,7 +259,7 @@ test('a public workspace explains why imports require private access', async ({ 
   await page.goto('/imports')
   await fillErpForm(page, 'lot_id,fabric_quality,colour,qty\nL-221,SJ180,NAVY,4000\n', 'qty')
   await page.getByRole('button', { name: 'Preview import' }).click()
-  await expect(page.getByText(/private workspace/i)).toBeVisible()
+  await expect(page.getByText(/Imports require a private workspace/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Publish import' })).toBeDisabled()
 })
 

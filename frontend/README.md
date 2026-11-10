@@ -50,4 +50,4 @@ pnpm preview
 
 Playwright tests need a running API with seed data. From the repository root, run `make e2e-install` to install Chromium, then `make e2e`. The test configuration starts or reuses a Vite server. `E2E_BASE_URL` selects a different frontend address.
 
-The [product guide](../PRODUCT.md) explains the incident workflow. [DEVELOPMENT.md](../DEVELOPMENT.md) records the design and verification history of the original coverage workbench.
+The [product guide](../docs/v1/PRODUCT.md) explains the incident workflow. [DEVELOPMENT.md](../docs/v1/DEVELOPMENT.md) records the design and verification history of the original coverage workbench.

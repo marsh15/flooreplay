@@ -5,15 +5,15 @@ import { ensureBackend, signInOwner } from './helpers'
 
 /**
  * The one live order-decisions spec: no mocks, the real API and the seeded synthetic demo.
- * Needs `make seed` (the public demo) and, for the private half, an owner who has run
- * `python -m flooreplay decisions-demo --owner <E2E_USERNAME>`. One sign-in only: the login
- * limit is 10 per 15 minutes.
+ * Needs `make seed` (the public demo). The private half needs an owner who has run
+ * `python -m flooreplay decisions-demo --owner <E2E_USERNAME>` and it adopts a policy, which
+ * can happen once per workspace, so it runs only when E2E_PRIVATE_SANDBOX=1 (CI sets it on a
+ * fresh database). Locally, load the sandbox for a new owner before each such run. One sign-in
+ * only: the login limit is 10 per 15 minutes.
  */
 test.beforeAll(ensureBackend)
 
-test('an anonymous visitor walks the public demo and a signed-in owner records and adopts', async ({
-  page,
-}) => {
+test('an anonymous visitor walks the public demo', async ({ page }) => {
   // --- the public demo, signed out -----------------------------------------------------------
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Order decisions' })).toBeVisible()
@@ -48,8 +48,16 @@ test('an anonymous visitor walks the public demo and a signed-in owner records a
   await expect(page.getByText('FIXED', { exact: true })).toBeVisible()
   await expect(page.getByText('REGRESSION', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Adopt policy' })).toBeDisabled()
+})
 
-  // --- a signed-in owner in a private workspace ----------------------------------------------
+test('a signed-in owner records a decision and adopts a policy in a private workspace', async ({
+  page,
+}) => {
+  test.skip(
+    !process.env.E2E_PRIVATE_SANDBOX,
+    'Set E2E_PRIVATE_SANDBOX=1 with a freshly loaded sandbox',
+  )
+  await page.goto('/')
   await signInOwner(page)
   // The first option is the public demo; the owner's personal workspace follows it.
   await page.getByLabel('Workspace').selectOption({ index: 1 })
