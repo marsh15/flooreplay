@@ -1069,10 +1069,50 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Order */
+        /**
+         * Get Order
+         * @description Replay the order as known at `cutoff` (default: now, settled) without storing anything.
+         */
         get: operations["get_order_api_v1_decisions_orders__order_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/orders/{order_id}/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Timeline */
+        get: operations["get_timeline_api_v1_decisions_orders__order_id__timeline_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/orders/{order_id}/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record For Order
+         * @description Store the replay the person was looking at (idempotent), then record their decision on it.
+         */
+        post: operations["record_for_order_api_v1_decisions_orders__order_id__records_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1189,7 +1229,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List Regression Runs
+         * @description Stored runs, newest first; `candidate` narrows them to one candidate policy.
+         */
+        get: operations["list_regression_runs_api_v1_decisions_regression_runs_get"];
         put?: never;
         /** Start Regression Run */
         post: operations["start_regression_run_api_v1_decisions_regression_runs_post"];
@@ -1766,6 +1810,31 @@ export interface components {
              */
             created_at: string;
         };
+        /** DecisionView */
+        DecisionView: {
+            /** Order Id */
+            order_id: string;
+            /**
+             * Cutoff
+             * Format: date-time
+             */
+            cutoff: string;
+            /** Settled */
+            settled: boolean;
+            policy: components["schemas"]["PolicyRef"];
+            /** Snapshot Digest */
+            snapshot_digest: string;
+            /** Decision Digest */
+            decision_digest: string;
+            gate: components["schemas"]["GateResult"];
+            /** Constraints */
+            constraints: components["schemas"]["ConstraintResult"][];
+            recommendation: components["schemas"]["RecommendationView"];
+            /** Facts */
+            facts: components["schemas"]["Fact"][];
+            /** Records */
+            records: components["schemas"]["RecordedDecision"][];
+        };
         /** EvaluateRequest */
         EvaluateRequest: {
             /** Order Id */
@@ -2226,6 +2295,16 @@ export interface components {
             /** Decision */
             decision: string;
         };
+        /** LatestOutcome */
+        LatestOutcome: {
+            outcome: components["schemas"]["Recommendation"];
+            gate_state: components["schemas"]["GateState"];
+            /**
+             * Cutoff
+             * Format: date-time
+             */
+            cutoff: string;
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Username */
@@ -2273,28 +2352,21 @@ export interface components {
         /** OrderList */
         OrderList: {
             /** Items */
-            items: components["schemas"]["OrderRef"][];
+            items: components["schemas"]["OrderSummary"][];
         };
-        /** OrderRef */
-        OrderRef: {
+        /** OrderSummary */
+        OrderSummary: {
             /** Order Id */
             order_id: string;
-        };
-        /** OrderView */
-        OrderView: {
-            /** Order Id */
-            order_id: string;
-            /**
-             * Cutoff
-             * Format: date-time
-             */
-            cutoff: string;
-            /** Settled */
-            settled: boolean;
-            /** Snapshot Digest */
-            snapshot_digest: string;
-            /** Facts */
-            facts: components["schemas"]["Fact"][];
+            /** Buyer */
+            buyer?: string | null;
+            /** Style Id */
+            style_id?: string | null;
+            /** Ship Date */
+            ship_date?: string | null;
+            /** Total Qty */
+            total_qty?: string | null;
+            latest?: components["schemas"]["LatestOutcome"] | null;
         };
         /** OvertimeCondition */
         OvertimeCondition: {
@@ -2420,8 +2492,22 @@ export interface components {
         };
         /** PolicyList */
         PolicyList: {
+            /**
+             * Adopted
+             * @description Digest of the policy decisions use when none is named
+             */
+            adopted: string;
             /** Items */
             items: components["schemas"]["StoredPolicyView"][];
+        };
+        /** PolicyRef */
+        PolicyRef: {
+            /** Digest */
+            digest: string;
+            /** Label */
+            label: string;
+            /** Engine Version */
+            engine_version: string;
         };
         /** PolicyStored */
         PolicyStored: {
@@ -2578,6 +2664,22 @@ export interface components {
             matches: boolean;
             result: components["schemas"]["ReplayResult"];
         };
+        /** RecordForOrderRequest */
+        RecordForOrderRequest: {
+            /**
+             * Cutoff
+             * Format: date-time
+             */
+            cutoff: string;
+            /** Policy Digest */
+            policy_digest: string;
+            final_outcome: components["schemas"]["Recommendation"];
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+        };
         /** RecordRequest */
         RecordRequest: {
             decision: components["schemas"]["Recommendation"];
@@ -2587,10 +2689,30 @@ export interface components {
              */
             reason: string;
         };
+        /** RecordedDecision */
+        RecordedDecision: {
+            /** Id */
+            id: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Reviewer */
+            reviewer: string;
+            engine_outcome: components["schemas"]["Recommendation"];
+            final_outcome: components["schemas"]["Recommendation"];
+            /** Reason */
+            reason: string;
+            /** Override */
+            override: boolean;
+        };
         /** RegressionCaseView */
         RegressionCaseView: {
             /** Case Id */
             case_id: string;
+            /** Title */
+            title: string;
             classification: components["schemas"]["Classification"];
             baseline: components["schemas"]["CaseRun"];
             candidate: components["schemas"]["CaseRun"];
@@ -2600,6 +2722,11 @@ export interface components {
             baseline: components["schemas"]["PolicyDocument-Input"];
             candidate: components["schemas"]["PolicyDocument-Input"];
         };
+        /** RegressionRunList */
+        RegressionRunList: {
+            /** Items */
+            items: components["schemas"]["RegressionRunView"][];
+        };
         /** RegressionRunView */
         RegressionRunView: {
             /** Id */
@@ -2608,6 +2735,8 @@ export interface components {
             status: string;
             /** Complete */
             complete: boolean;
+            /** Engine Version */
+            engine_version: string;
             /** Baseline Policy Digest */
             baseline_policy_digest: string;
             /** Candidate Policy Digest */
@@ -2789,6 +2918,30 @@ export interface components {
             extraction_items_created: number;
             /** Evaluation Items Created */
             evaluation_items_created: number;
+        };
+        /** Timeline */
+        Timeline: {
+            /** Knowledge Times */
+            knowledge_times: string[];
+            /** Events */
+            events: components["schemas"]["TimelineEvent"][];
+        };
+        /** TimelineEvent */
+        TimelineEvent: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Fact Id */
+            fact_id: string;
+            kind: components["schemas"]["FactKind"];
+            /** Entity Key */
+            entity_key: string;
+            /** Source */
+            source: string;
+            /** Summary */
+            summary: string;
         };
         /** TrimParams */
         "TrimParams-Input": {
@@ -4939,7 +5092,42 @@ export interface operations {
     get_order_api_v1_decisions_orders__order_id__get: {
         parameters: {
             query: {
-                cutoff: string;
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+                cutoff?: string | null;
+                policy?: string | null;
+            };
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_timeline_api_v1_decisions_orders__order_id__timeline_get: {
+        parameters: {
+            query: {
                 /** @description Workspace the caller belongs to */
                 workspace_id: string;
             };
@@ -4957,7 +5145,45 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrderView"];
+                    "application/json": components["schemas"]["Timeline"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_for_order_api_v1_decisions_orders__order_id__records_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordForOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordedDecision"];
                 };
             };
             /** @description Validation Error */
@@ -5203,6 +5429,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PolicyDiffView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_regression_runs_api_v1_decisions_regression_runs_get: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+                candidate?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegressionRunList"];
                 };
             };
             /** @description Validation Error */

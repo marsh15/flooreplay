@@ -2607,6 +2607,7 @@
     "/api/v1/decisions/orders/{order_id}": {
       "get": {
         "summary": "Get Order",
+        "description": "Replay the order as known at `cutoff` (default: now, settled) without storing anything.",
         "operationId": "get_order_api_v1_decisions_orders__order_id__get",
         "parameters": [
           {
@@ -2619,13 +2620,90 @@
             }
           },
           {
-            "name": "cutoff",
+            "name": "workspace_id",
             "in": "query",
             "required": true,
             "schema": {
               "type": "string",
-              "format": "date-time",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          },
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "Cutoff"
+            }
+          },
+          {
+            "name": "policy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Policy"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/orders/{order_id}/timeline": {
+      "get": {
+        "summary": "Get Timeline",
+        "operationId": "get_timeline_api_v1_decisions_orders__order_id__timeline_get",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order Id"
             }
           },
           {
@@ -2648,7 +2726,70 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrderView"
+                  "$ref": "#/components/schemas/Timeline"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/orders/{order_id}/records": {
+      "post": {
+        "summary": "Record For Order",
+        "description": "Store the replay the person was looking at (idempotent), then record their decision on it.",
+        "operationId": "record_for_order_api_v1_decisions_orders__order_id__records_post",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordForOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordedDecision"
                 }
               }
             }
@@ -3069,6 +3210,66 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RegressionRunView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Regression Runs",
+        "description": "Stored runs, newest first; `candidate` narrows them to one candidate policy.",
+        "operationId": "list_regression_runs_api_v1_decisions_regression_runs_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          },
+          {
+            "name": "candidate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Candidate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegressionRunList"
                 }
               }
             }
@@ -4823,6 +5024,76 @@
         ],
         "title": "DecisionRecordView"
       },
+      "DecisionView": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          },
+          "settled": {
+            "type": "boolean",
+            "title": "Settled"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/PolicyRef"
+          },
+          "snapshot_digest": {
+            "type": "string",
+            "title": "Snapshot Digest"
+          },
+          "decision_digest": {
+            "type": "string",
+            "title": "Decision Digest"
+          },
+          "gate": {
+            "$ref": "#/components/schemas/GateResult"
+          },
+          "constraints": {
+            "items": {
+              "$ref": "#/components/schemas/ConstraintResult"
+            },
+            "type": "array",
+            "title": "Constraints"
+          },
+          "recommendation": {
+            "$ref": "#/components/schemas/RecommendationView"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/Fact"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/RecordedDecision"
+            },
+            "type": "array",
+            "title": "Records"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "cutoff",
+          "settled",
+          "policy",
+          "snapshot_digest",
+          "decision_digest",
+          "gate",
+          "constraints",
+          "recommendation",
+          "facts",
+          "records"
+        ],
+        "title": "DecisionView"
+      },
       "EvaluateRequest": {
         "properties": {
           "order_id": {
@@ -6141,6 +6412,28 @@
         ],
         "title": "IncidentReviewRequest"
       },
+      "LatestOutcome": {
+        "properties": {
+          "outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "gate_state": {
+            "$ref": "#/components/schemas/GateState"
+          },
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          }
+        },
+        "type": "object",
+        "required": [
+          "outcome",
+          "gate_state",
+          "cutoff"
+        ],
+        "title": "LatestOutcome"
+      },
       "LoginRequest": {
         "properties": {
           "username": {
@@ -6259,7 +6552,7 @@
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/OrderRef"
+              "$ref": "#/components/schemas/OrderSummary"
             },
             "type": "array",
             "title": "Items"
@@ -6271,55 +6564,72 @@
         ],
         "title": "OrderList"
       },
-      "OrderRef": {
+      "OrderSummary": {
         "properties": {
           "order_id": {
             "type": "string",
             "title": "Order Id"
+          },
+          "buyer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer"
+          },
+          "style_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style Id"
+          },
+          "ship_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ship Date"
+          },
+          "total_qty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Qty"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatestOutcome"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
         "required": [
           "order_id"
         ],
-        "title": "OrderRef"
-      },
-      "OrderView": {
-        "properties": {
-          "order_id": {
-            "type": "string",
-            "title": "Order Id"
-          },
-          "cutoff": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Cutoff"
-          },
-          "settled": {
-            "type": "boolean",
-            "title": "Settled"
-          },
-          "snapshot_digest": {
-            "type": "string",
-            "title": "Snapshot Digest"
-          },
-          "facts": {
-            "items": {
-              "$ref": "#/components/schemas/Fact"
-            },
-            "type": "array",
-            "title": "Facts"
-          }
-        },
-        "type": "object",
-        "required": [
-          "order_id",
-          "cutoff",
-          "settled",
-          "snapshot_digest",
-          "facts"
-        ],
-        "title": "OrderView"
+        "title": "OrderSummary"
       },
       "OvertimeCondition": {
         "properties": {
@@ -6637,6 +6947,11 @@
       },
       "PolicyList": {
         "properties": {
+          "adopted": {
+            "type": "string",
+            "title": "Adopted",
+            "description": "Digest of the policy decisions use when none is named"
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/StoredPolicyView"
@@ -6647,9 +6962,33 @@
         },
         "type": "object",
         "required": [
+          "adopted",
           "items"
         ],
         "title": "PolicyList"
+      },
+      "PolicyRef": {
+        "properties": {
+          "digest": {
+            "type": "string",
+            "title": "Digest"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "digest",
+          "label",
+          "engine_version"
+        ],
+        "title": "PolicyRef"
       },
       "PolicyStored": {
         "properties": {
@@ -7033,6 +7372,37 @@
         "title": "Reconstruction",
         "description": "Outcome of replaying a stored evaluation. A mismatch is data, never an exception."
       },
+      "RecordForOrderRequest": {
+        "properties": {
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          },
+          "policy_digest": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Policy Digest"
+          },
+          "final_outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Reason",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "cutoff",
+          "policy_digest",
+          "final_outcome"
+        ],
+        "title": "RecordForOrderRequest"
+      },
       "RecordRequest": {
         "properties": {
           "decision": {
@@ -7051,11 +7421,57 @@
         ],
         "title": "RecordRequest"
       },
+      "RecordedDecision": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "reviewer": {
+            "type": "string",
+            "title": "Reviewer"
+          },
+          "engine_outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "final_outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "override": {
+            "type": "boolean",
+            "title": "Override"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "recorded_at",
+          "reviewer",
+          "engine_outcome",
+          "final_outcome",
+          "reason",
+          "override"
+        ],
+        "title": "RecordedDecision"
+      },
       "RegressionCaseView": {
         "properties": {
           "case_id": {
             "type": "string",
             "title": "Case Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
           },
           "classification": {
             "$ref": "#/components/schemas/Classification"
@@ -7070,6 +7486,7 @@
         "type": "object",
         "required": [
           "case_id",
+          "title",
           "classification",
           "baseline",
           "candidate"
@@ -7092,6 +7509,22 @@
         ],
         "title": "RegressionRequest"
       },
+      "RegressionRunList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RegressionRunView"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "RegressionRunList"
+      },
       "RegressionRunView": {
         "properties": {
           "id": {
@@ -7105,6 +7538,10 @@
           "complete": {
             "type": "boolean",
             "title": "Complete"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
           },
           "baseline_policy_digest": {
             "type": "string",
@@ -7136,6 +7573,7 @@
           "id",
           "status",
           "complete",
+          "engine_version",
           "baseline_policy_digest",
           "candidate_policy_digest",
           "suite_digest",
@@ -7615,6 +8053,69 @@
           "evaluation_items_created"
         ],
         "title": "SyncResult"
+      },
+      "Timeline": {
+        "properties": {
+          "knowledge_times": {
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "type": "array",
+            "title": "Knowledge Times"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "knowledge_times",
+          "events"
+        ],
+        "title": "Timeline"
+      },
+      "TimelineEvent": {
+        "properties": {
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "fact_id": {
+            "type": "string",
+            "title": "Fact Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/FactKind"
+          },
+          "entity_key": {
+            "type": "string",
+            "title": "Entity Key"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "known_at",
+          "fact_id",
+          "kind",
+          "entity_key",
+          "source",
+          "summary"
+        ],
+        "title": "TimelineEvent"
       },
       "TrimParams-Input": {
         "properties": {

@@ -11,6 +11,7 @@ from collections.abc import Collection, Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 
 import psycopg.errors
+from pydantic import ValidationError
 from sqlalchemy import func, select, text
 from sqlalchemy.exc import DataError, DBAPIError, IntegrityError
 from sqlalchemy.orm import Session
@@ -31,7 +32,12 @@ from flooreplay.decisions.models import (
     RegressionRun,
     StoredPolicy,
 )
-from flooreplay.decisions.policy import ENGINE_VERSION, PolicyDocument, policy_digest
+from flooreplay.decisions.policy import (
+    DEFAULT_POLICY_V1,
+    ENGINE_VERSION,
+    PolicyDocument,
+    policy_digest,
+)
 from flooreplay.decisions.replay import ReplayResult, replay
 from flooreplay.decisions.types import (
     Classification,
@@ -72,6 +78,11 @@ def is_settled(session: Session, cutoff: datetime) -> bool:
     if cutoff.tzinfo is None or cutoff.utcoffset() is None:
         raise ServiceError("CUTOFF_INVALID", "cutoff must carry a UTC offset", 422)
     return cutoff <= db_now(session) - SETTLE_HORIZON
+
+
+def latest_settled_instant(session: Session) -> datetime:
+    """The newest cutoff that is already settled: the database clock minus the settle horizon."""
+    return db_now(session) - SETTLE_HORIZON
 
 
 def _row_to_fact(row: FactRow) -> Fact:
@@ -305,6 +316,31 @@ def snapshot_at(session: Session, workspace_id: str, cutoff: datetime) -> snapsh
     return snapshots.snapshot_at(load_facts(session, workspace_id, known_by=cutoff), cutoff)
 
 
+def load_coverage(session: Session, workspace_id: str, cutoff: datetime) -> dict[str, CoverageDecl]:
+    """What each stock export known by `cutoff` declares it covers, keyed by artifact id.
+
+    The gate needs this to tell a known zero from an unknown stock level. An artifact that
+    was learned after the cutoff is never used, so a replay cannot see the future. A stored
+    declaration that does not parse is left out: the gate then treats the quality as
+    uncovered, which is the safe direction.
+    """
+    rows = session.scalars(
+        select(DecisionSourceArtifact).where(
+            DecisionSourceArtifact.workspace_id == workspace_id,
+            DecisionSourceArtifact.known_at <= cutoff,
+        )
+    ).all()
+    covered: dict[str, CoverageDecl] = {}
+    for row in rows:
+        if not row.coverage:
+            continue
+        try:
+            covered[row.id] = CoverageDecl.model_validate(row.coverage)
+        except ValidationError:
+            continue
+    return covered
+
+
 # ---------------------------------------------------------------------------
 # Decision evaluations and human decision records
 # ---------------------------------------------------------------------------
@@ -337,6 +373,13 @@ def _find_evaluation(
     )
 
 
+def find_evaluation(
+    session: Session, workspace_id: str, result: ReplayResult, order_id: str, cutoff: datetime
+) -> DecisionEvaluation | None:
+    """The stored evaluation for this exact replay, if one exists."""
+    return _find_evaluation(session, workspace_id, result, order_id, cutoff)
+
+
 def _load_evaluation(session: Session, workspace_id: str, evaluation_id: str) -> DecisionEvaluation:
     row = session.scalar(
         select(DecisionEvaluation).where(
@@ -366,7 +409,7 @@ def evaluate_order(
     if not is_settled(session, cutoff):  # also refuses a naive cutoff
         raise ServiceError("CUTOFF_NOT_SETTLED", "cutoff is too recent to store an evaluation", 422)
     snapshot = snapshot_at(session, workspace_id, cutoff)
-    result = replay(snapshot, order_id, policy)
+    result = replay(snapshot, order_id, policy, load_coverage(session, workspace_id, cutoff))
 
     existing = _find_evaluation(session, workspace_id, result, order_id, cutoff)
     if existing is not None:
@@ -460,7 +503,8 @@ def reconstruct(session: Session, workspace_id: str, evaluation_id: str) -> Reco
     policy = PolicyDocument.model_validate(evaluation.policy)
     policy_matches = policy_digest(policy) == evaluation.policy_digest
     snapshot = snapshot_at(session, workspace_id, evaluation.cutoff)
-    result = replay(snapshot, evaluation.order_id, policy)
+    coverage = load_coverage(session, workspace_id, evaluation.cutoff)
+    result = replay(snapshot, evaluation.order_id, policy, coverage)
     snapshot_matches = result.snapshot_digest == evaluation.snapshot_digest
     decision_matches = result.decision_digest == evaluation.decision_digest
     return Reconstruction(
@@ -877,3 +921,22 @@ def load_policy(session: Session, workspace_id: str, digest: str) -> PolicyDocum
 def store_policy(session: Session, workspace_id: str, policy: PolicyDocument) -> str:
     """Store a policy under its digest (idempotent) and return the digest."""
     return _store_policy(session, workspace_id, policy)
+
+
+def adopted_policy_digest(session: Session, workspace_id: str) -> str:
+    """The most recently adopted policy, or the built-in default if none was ever adopted."""
+    latest = session.scalar(
+        select(PolicyAdoption.policy_digest)
+        .where(PolicyAdoption.workspace_id == workspace_id)
+        .order_by(PolicyAdoption.created_at.desc(), PolicyAdoption.id.desc())
+        .limit(1)
+    )
+    return latest if latest is not None else policy_digest(DEFAULT_POLICY_V1)
+
+
+def resolve_policy(session: Session, workspace_id: str, digest: str | None) -> PolicyDocument:
+    """The policy a request names; no name means the adopted policy. The default needs no row."""
+    wanted = digest if digest is not None else adopted_policy_digest(session, workspace_id)
+    if wanted == policy_digest(DEFAULT_POLICY_V1):
+        return DEFAULT_POLICY_V1
+    return load_policy(session, workspace_id, wanted)
