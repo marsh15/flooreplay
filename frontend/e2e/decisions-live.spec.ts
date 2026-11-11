@@ -34,11 +34,16 @@ test('an anonymous visitor walks the public demo', async ({ page }) => {
   await page.getByRole('link', { name: 'Knowledge timeline' }).click()
   const scrubber = page.getByRole('slider', { name: 'Knowledge-time cutoff' })
   await scrubber.focus()
+  // Wait for each move to land in the URL (the real state) before pressing the next key and
+  // before looking at the replay it produces. 09:00, 10:30 and 12:30 IST are the knowledge times.
   await scrubber.press('Home')
+  await expect(page).toHaveURL(/cutoff=2026-10-22T03%3A30%3A00Z/)
   await expect(page.getByText('Gate: READY')).toBeVisible()
   await scrubber.press('ArrowRight')
+  await expect(page).toHaveURL(/cutoff=2026-10-22T05%3A00%3A00Z/)
   await expect(page.getByText('Gate: CONFLICTING')).toBeVisible()
   await scrubber.press('End')
+  await expect(page).toHaveURL(/cutoff=2026-10-22T07%3A00%3A00Z/)
   await expect(page.getByText('Gate: READY')).toBeVisible()
   await expect(page.getByText(/dyeing|fabric qc/i).first()).toBeVisible()
 
