@@ -1,55 +1,49 @@
 # FloorReplay
 
-> **Version 2 is in development.** The order-decision pages use a provisional API
-> contract and are not yet connected to a complete backend workflow. The v1
-> shortfall investigation remains available at `/investigations`. The demo and
-> verification evidence below describe v1, not a completed v2 release. See the
-> [v2 plan](docs/v2/PLAN.md) and [implementation report](docs/v2/codex-report.md).
+**Should we accept this urgent order?** FloorReplay helps a knit-garment exporter in Tiruppur or Coimbatore answer that question. It replays an order decision as it was known at any chosen time, shows the arithmetic behind fabric, trims, capacity and approval checks, says plainly when the evidence cannot be trusted, and leaves the final call and its reason to a person.
 
-FloorReplay is a workbench for investigating manufacturing incidents. Reconstruct what was known at a decision cutoff, inspect the source behind each calculation, compare revisions, and assign follow-up checks. Corrections create new evidence revisions while earlier reports keep their original inputs.
+> **Status.** A complete, tested prototype on **synthetic data**. There has been no factory pilot and no practitioner interview, the default policy values are unvalidated drafts, and no operational benefit is claimed. See [what this is not](#what-this-is-not).
 
-Public examples use synthetic records. Private investigations require workspace membership. AI drafts are optional and require human review. FloorReplay has no factory pilot or measured operational benefit.
+## Try it
 
-## Demo
+Open the app (see [Run locally](#run-locally)); no account is needed for the public demo, a fictional factory called "Tiruppur Knits (synthetic)".
 
-[![FloorReplay demo: a 74-unit shortfall traced to its source records, with uncounted intervals and next checks](docs/demo/flooreplay-demo.gif)](docs/demo/flooreplay-demo.mp4)
+1. On **Order decisions**, open **POLO-221**. The gate is READY and the engine recommends ACCEPT. Each constraint card shows its steps; select a fact id to see its source, both clocks and any correction chain.
+2. Choose **Knowledge timeline**. Move the slider back: at 11:00 IST a dyeing-house note says 1,200 m of lot L-221 failed shade while the ERP still shows 4,000 m, so the gate is CONFLICTING and the engine asks for review. At 12:30 QA records 2,800 m usable and the gate turns READY again.
+3. Open the other orders: POLO-222 needs capped overtime (accept with conditions), POLO-223 is short of fabric (needs review; split shipments are not built), POLO-224 has a stale trims sheet, POLO-225 is over the approval limit.
+4. Open the **Replay lab**. A stored run compares a candidate policy with the current one over nine frozen past cases: one is fixed, one regresses. Adoption needs a complete stored run and a written acknowledgement for the regression, and only a workspace owner can do it.
 
-A 20-second walkthrough of the incident workbench on the bundled synthetic data. Select the preview to play the full video with sound, or open [the MP4](docs/demo/flooreplay-demo.mp4).
+To record decisions or adopt a policy yourself, sign in as an owner and load the demo into your private workspace: `python -m flooreplay decisions-demo --owner <username>`.
 
-## Try the workflow
+## How it decides
 
-1. Open the incident library and choose "Delayed start on sewing line S4". Inspect the observed shortfall and follow an evidence reference to its source record.
-2. Compare revisions to see how a late maintenance note changes the available evidence. Earlier reports retain their original inputs and cutoff.
-3. Use "Practice investigation" to walk through assignment, source response, outcome and resolution in the browser. It requires no account and makes no paid requests.
-4. Sign in as an owner or reviewer to work in your authorized workspaces, record proposal decisions, assign checks and export the supervisor report.
+- **Facts with two clocks.** Every import row becomes an immutable fact with `valid_from` (when it was true) and `known_at` (when the system learned it). Corrections supersede; nothing is overwritten or deleted, and the database enforces it.
+- **A gate before arithmetic.** READY, STALE, INCOMPLETE or CONFLICTING, with every finding kept. Freshness is judged at the cutoff, never the wall clock.
+- **Six constraints.** Fabric per colour, safety stock, trims per item, sewing capacity, capped overtime and the approval threshold return PASS, FAIL or NOT_EVALUATED with their ordered steps.
+- **A recommendation, not a decision.** ACCEPT, ACCEPT_WITH_CONDITIONS, DECLINE or NEEDS_REVIEW. Anything uncertain needs review. A person records the final outcome and a reason; overrides are kept.
+- **Replay.** `(facts known at a cutoff, policy, engine version) → decision` is a pure function with a stable digest.
+- **No model in the decision.** Optional note extraction only proposes structured signals; deterministic checks verify each one and failures go to review.
 
-See [the operator guide](docs/operator-guide.md) for the import-to-handover workflow, [the demo guide](DEMO.md) for a walkthrough, and [the technical case study](docs/technical-case-study.md) for the engineering decisions behind it. The [pilot measurement template and tool](docs/pilot/README.md) prepare an actual practitioner comparison; they contain no measured results.
+Read [PRODUCT.md](PRODUCT.md) for scope and [ARCHITECTURE.md](ARCHITECTURE.md) for modules and guarantees.
 
-## What is implemented
+## What is built
 
-| Capability | Behavior |
+| Area | State |
 | --- | --- |
-| Evidence and revisions | Original source bytes, explicit CSV mappings, cumulative counter readings, reviewed identifier aliases, immutable revisions, knowledge cutoffs and saved report identities |
-| Deterministic investigation | Source-linked production metrics, conflicting observations, source health that separates missing records from lost output, declared working calendars and explicit uncertainty |
-| Follow-up workflow | Assigned checks, deadlines, source responses, recorded outcomes, separate resolution and shift handover |
-| Private workspaces | Server-side membership scope, owner-controlled import destinations, revocable accounts and memory-only browser sessions |
-| Optional AI and retrieval | Structured drafts, citation and numeric checks, pinned historical corpora and exact-output human review |
-| Operational controls | Saved request identities and receipts, a shared provider allowance, retained reservations for uncertain calls and recovery guidance |
-| Browser recovery | Saved synthetic fallback, request deadlines, account-state cleanup, missing-page and error screens, and keyboard navigation |
+| Decision engine (facts, snapshots, gate, constraints, recommendation, replay, policy comparison) | Built and tested, including property tests |
+| Append-only store, evaluations, human records, regression runs, owner-only adoption | Built and tested against PostgreSQL |
+| CSV imports (stock, trims, capacity, supplier updates, orders with bills of materials, notes) | Preview with explicit mapping, then publish; ambiguous dates, thousands separators and unknown units are blocked |
+| Order workbench, knowledge timeline, replay lab, review queue, imports | Built; the public demo is read-only |
+| Note extraction (English, Tamil, Tanglish) with deterministic checks | Built and tested with mock providers; **not reachable from the web app** |
+| Note benchmark | A 100-note draft corpus and offline scorer; **labels are unreviewed drafts** |
 
-Calculating a shortfall does not prove a cause. A retrieved historical incident does not establish that its intervention is appropriate now. Recorded proposal approval is a review decision, not factory-system execution.
+## What this is not
 
-## Architecture
-
-![FloorReplay architecture: the React browser calls a workspace-scoped FastAPI backend; backend modules store evidence and workflow in PostgreSQL and optionally call OpenAI.](docs/diagrams/architecture.svg)
-
-[Edit the diagram in Excalidraw](docs/diagrams/architecture.excalidraw) or [view the SVG](docs/diagrams/architecture.svg). The dashed arrow marks optional provider calls.
-
-The browser uses React, TypeScript, Vite and TanStack Query. FastAPI validates requests with Pydantic and accesses PostgreSQL through SQLAlchemy. PostgreSQL stores evidence, workflow and request receipts; pgvector supports hybrid retrieval. AI keys stay on the server.
-
-The API establishes workspace scope before accessing resources. Derived records retain their source workspace. Provider operations reserve a shared allowance before dispatch and retain that reservation when the charge is uncertain. The public replay limiter is bounded and process-local, so a replicated deployment needs a shared execution limiter.
-
-See [ARCHITECTURE.md](ARCHITECTURE.md), [the workflow contract](docs/incident-workflow.md), [CSV import mapping](docs/csv-import-mapping.md), and [the AI review protocol](docs/ai-claim-review-protocol.md).
+- Not validated with factory staff. The constraint list and defaults come from [discovery notes](docs/v2/discovery.md) that no practitioner has reviewed.
+- Not a source of accuracy claims. The note corpus labels have not been reviewed by a Tamil speaker, and no model has been scored against them.
+- Not a split-shipment planner. A material fabric or trims shortfall asks for review.
+- Not connected to live ERP systems. Evidence arrives as CSV files.
+- Not rate limited for anonymous replays. Anyone can request replays of the public demo at any cutoff; a deployment that exposes real data must not use this configuration.
 
 ## Run locally
 
@@ -59,62 +53,47 @@ With Docker Desktop or Docker Engine:
 docker compose up --build --wait
 ```
 
-Open [the application](http://localhost:5174). The API and database bind to loopback ports 8001 and 5434. Startup runs migrations and seeds the database. Repeated startup does not duplicate seed data or make paid calls.
+Open [the application](http://localhost:5174). The API and database bind to loopback ports 8001 and 5434. Startup runs migrations and seeds the database, including the demo; repeating it creates nothing new.
 
-Create individual accounts with prompted passwords:
+Create accounts with prompted passwords:
 
 ```sh
 docker compose exec api python -m flooreplay account-create owner --role owner
-docker compose exec api python -m flooreplay account-create reviewer --role reviewer
+docker compose exec api python -m flooreplay decisions-demo --owner owner
 ```
 
-For local development use Python 3.12+, uv 0.12.19, Node 22.12+ and pnpm 10.30.0. PostgreSQL must provide pgvector.
+For development use Python 3.12+, uv, Node 22.12+ and pnpm 10.30.0, with PostgreSQL that provides pgvector:
 
 ```sh
 cd backend
 cp .env.example .env
-uv sync --frozen --no-install-project --no-build
-uv sync --frozen --no-build
+uv sync --frozen
 uv run alembic upgrade head
 uv run python -m flooreplay seed
-uv run python -m flooreplay account-create owner --role owner
 uv run uvicorn flooreplay.api:app --port 8000
 ```
 
-In a second shell, run `cd frontend && pnpm install --frozen-lockfile --ignore-scripts && pnpm dev`. These commands disable dependency lifecycle scripts. Python dependencies must install from wheels; the repository's own reviewed Hatch build is permitted.
+In a second shell: `cd frontend && pnpm install --frozen-lockfile && pnpm dev`.
 
-Sessions expire after eight hours. Browser reloads require signing in again. Disabling an account revokes its access immediately.
-
-## Verification and release evidence
-
-CI checks backend lint, types, database behavior and dependencies. It also checks frontend lint, the build, dependencies and browser behavior, along with migrations, seed data, generated contracts and deployment configuration. Tests must use an isolated, disposable database whose name ends in `_test`.
+## Verification
 
 ```sh
-make verify
-make dataset-verify
-make e2e
-cd backend && uv audit --frozen
-cd frontend && pnpm audit --audit-level high
+make test-db                                    # disposable PostgreSQL on port 5435
+export FLOORREPLAY_TEST_DATABASE_URL=postgresql+psycopg://flooreplay_test@localhost:5435/flooreplay_release_test
+export FLOORREPLAY_DATABASE_URL=$FLOORREPLAY_TEST_DATABASE_URL
+make verify                                     # lint, types, backend tests
+make dataset-verify                             # v1 dataset and the decision cases
+make e2e                                        # browser specs (backend on :8000, seeded)
 ```
 
-[Release status](RELEASE_STATUS.md) preserves historical results. [The final review](docs/final-review.md) records the current changes and separates static and advisory checks from pending runtime acceptance. Earlier public hosted checks do not verify the current working tree or authenticated production flows.
+Test database names must end in `_test`. [RELEASE_STATUS.md](RELEASE_STATUS.md) records the latest results with their counts and what remains unverified.
 
-The [October 31 implementation report](docs/completion-2026-10-31.md) records the latest shortfall-workflow changes, database and browser checks, dependency-audit limits and remaining practitioner acceptance.
+## Earlier versions
 
-The synthetic dataset, frozen challenge cases and saved provider receipts let reviewers inspect the software. Qualified independent human review of AI claims, factory validation and measurements of usefulness remain pending. A valid output schema or passing software test does not establish operational accuracy.
+Version 1, shortfall investigations for a sewing line, is still in the app under "Earlier versions" and gets no new features. Its documents are in [docs/v1](docs/v1/), including its [product guide](docs/v1/PRODUCT.md), [release evidence](docs/v1/RELEASE_STATUS.md) and [demo guide](docs/v1/DEMO.md). The archived operator-coverage product is tagged `coverage-v1`.
 
-## Optional provider configuration
+## Configuration and deployment
 
-Set `FLOORREPLAY_OPENAI_API_KEY` only in the backend environment. Generation uses the configured pinned model; embeddings use the configured embedding model with 512 dimensions. The browser bundle contains no provider key. The application enforces a fixed ₹500 allowance divided by purpose. It does not reconcile that allowance with provider billing.
+`FLOORREPLAY_ANTHROPIC_API_KEY` and `FLOORREPLAY_OPENAI_API_KEY` are optional and server-side only; nothing in the order decision screens calls a provider. Seeding, migrations and the demo never make paid calls.
 
-See [AI trust evaluation](docs/ai-trust-evaluation.md) for existing measurements and remaining gates. Seeding, migrations and the practice demo never initiate paid calls.
-
-## Deployment
-
-See the [1 November hardening record](docs/security-hardening-2026-11-01.md) for workspace permissions, validation and the incomplete audit status.
-
-Follow [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md) for Vercel, Render and Neon, or [DEPLOY.md](DEPLOY.md) for container verification, backups and recovery. Before deploying with real data, complete authenticated acceptance checks, confirm TLS and proxy settings, define backup ownership and retention, and assign an operational owner. This synthetic demonstration has not been validated for factory decisions.
-
-## Engineering evidence
-
-Read the [technical case study](docs/technical-case-study.md) for architecture decisions, failures, verification results, hosted observations and measured local recovery. [Release evidence](RELEASE_STATUS.md) records local private-workspace verification separately from pending authenticated hosted acceptance and factory benefit that has yet to be measured.
+See [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md) for Vercel, Render and Neon and [DEPLOY.md](DEPLOY.md) for containers, backups and recovery. The [v2 plan](docs/v2/PLAN.md) records the approved design and its later changes are in [the changelog](docs/v2/changelog.md).

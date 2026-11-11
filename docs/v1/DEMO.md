@@ -4,7 +4,7 @@ Use the synthetic example to show how a supervisor investigates a sewing-line sh
 
 ## Start locally
 
-Run `docker compose up --build --wait` and open [the application](http://localhost:5174). Alternatively follow the native setup in [README.md](README.md). Create separate owner and reviewer accounts with the prompted CLI before demonstrating protected actions. No provider request is needed for the deterministic walkthrough.
+Run `docker compose up --build --wait` and open [the application](http://localhost:5174). Alternatively follow the native setup in [README.md](../../README.md). Create separate owner and reviewer accounts with the prompted CLI before demonstrating protected actions. No provider request is needed for the deterministic walkthrough.
 
 ## Safe first visit
 
@@ -12,7 +12,7 @@ Open the incident library and choose "Try the safe action demo". No account is n
 
 Use "Start the example investigation" to inspect the seeded synthetic example and its pinned records. The cutoff limits the report to records available by the displayed time. Choose a next check after reading the evidence and missing sources.
 
-For an unfamiliar visitor, use the [first-visit protocol](docs/first-visit-validation.md) and record assistance, misunderstandings and incomplete attempts. No successful human session is claimed yet.
+For an unfamiliar visitor, use the [first-visit protocol](../first-visit-validation.md) and record assistance, misunderstandings and incomplete attempts. No successful human session is claimed yet.
 
 ## Five-minute walkthrough
 
@@ -43,13 +43,13 @@ Sign in and create a check from a current proposal. Select an active assignee an
 
 Record the action taken, completion time, assessment and remaining uncertainty. Optional observed output must include its observation time. Explain that subsequent output does not prove the action caused a change. Show the shift handover and its outstanding checks, owners and deadlines.
 
-Mark the incident resolved only as a separate decision with a rationale, after all checks are completed or cancelled and at least one has a completed outcome. Explain that new evidence makes the old revision-bound resolution stale. Review the full rules in [incident workflow](docs/incident-workflow.md).
+Mark the incident resolved only as a separate decision with a rationale, after all checks are completed or cancelled and at least one has a completed outcome. Explain that new evidence makes the old revision-bound resolution stale. Review the full rules in [incident workflow](../incident-workflow.md).
 
 ## CSV import walkthrough
 
 Sign in as owner and download the synthetic baseline example from incident imports. Create a new incident with its matching scope and observation window, preview the rows and publish only a READY preview. Import the output example and then its correction against the latest revision. Show the preserved original source, replacement relationship and changed metric.
 
-For an unfamiliar CSV, select explicit source columns or deliberate constant defaults. Inspect normalized dates and units, then preview again after any interpretation change. Explain why a counter reading only becomes a delta when the reading before it ends where its interval starts, and why an unreviewed identifier blocks the preview instead of being matched by similarity. Follow the [example sequence](frontend/public/import-examples/README.md) and [mapping guide](docs/csv-import-mapping.md).
+For an unfamiliar CSV, select explicit source columns or deliberate constant defaults. Inspect normalized dates and units, then preview again after any interpretation change. Explain why a counter reading only becomes a delta when the reading before it ends where its interval starts, and why an unreviewed identifier blocks the preview instead of being matched by similarity. Follow the [example sequence](../../frontend/public/import-examples/README.md) and [mapping guide](../csv-import-mapping.md).
 
 ## AI support review
 

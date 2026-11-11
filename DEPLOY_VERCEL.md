@@ -28,6 +28,7 @@ Set these API environment variables:
 |---|---|
 | `FLOORREPLAY_DATABASE_URL` | Neon SQLAlchemy URL with TLS; use pooled for runtime |
 | `FLOORREPLAY_OPENAI_API_KEY` | Your OpenAI project key, entered as a secret |
+| `FLOORREPLAY_ANTHROPIC_API_KEY` | Optional. An Anthropic key for note extraction in the order-decisions backend, entered as a secret. Leave it empty and extraction stays off; the web app does not call it either way |
 | `FLOORREPLAY_CORS_ORIGINS` | Initially `[]`; replace with your exact Vercel origin in step 4 |
 | `FLOORREPLAY_MODE` | `public` (already in the Blueprint) |
 

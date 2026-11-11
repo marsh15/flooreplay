@@ -8,9 +8,9 @@ Evidence revisions and saved report identities preserve earlier investigations. 
 
 ### System architecture
 
-![FloorReplay architecture: browser, workspace-scoped API, backend investigation modules, PostgreSQL and optional OpenAI calls.](docs/diagrams/architecture.svg)
+![FloorReplay architecture: browser, workspace-scoped API, backend investigation modules, PostgreSQL and optional OpenAI calls.](../diagrams/architecture.svg)
 
-[Editable Excalidraw source](docs/diagrams/architecture.excalidraw). The backend modules run within the API application; the diagram groups them by responsibility, not as separate deployed services. The dashed arrow marks optional provider calls.
+[Editable Excalidraw source](../diagrams/architecture.excalidraw). The backend modules run within the API application; the diagram groups them by responsibility, not as separate deployed services. The dashed arrow marks optional provider calls.
 
 ### Dependency hierarchy
 
@@ -41,7 +41,7 @@ The browser keeps its token in memory. Authentication changes clear cached queri
 
 `incident_import.py` validates source rows and binds the preview identity to the original bytes, interpretation, scope and normalized records. Publication retains that identity and the raw source artifact.
 
-CSV imports require an explicit mapping from canonical fields to source columns, with optional constant defaults. A mapping cannot reuse a source column, name an unknown field or assign both a column and a default to the same field. The production, operation and note profiles normalize the selected values. Canonical JSON and JSONL use their existing import path. XLSX is not accepted. The mapping pass was verified locally on October 1, 2026; see [CSV import mapping](docs/csv-import-mapping.md).
+CSV imports require an explicit mapping from canonical fields to source columns, with optional constant defaults. A mapping cannot reuse a source column, name an unknown field or assign both a column and a default to the same field. The production, operation and note profiles normalize the selected values. Canonical JSON and JSONL use their existing import path. XLSX is not accepted. The mapping pass was verified locally on October 1, 2026; see [CSV import mapping](../csv-import-mapping.md).
 
 Production rows with count_mode `cumulative` carry counter readings. Only a reading that starts where the previous reading ended, with a counter that did not fall, yields a delta, and that delta becomes available when the later of its two readings does. A first reading, a gap or a reset anchors without inventing output, so its interval stays uncounted. Every reading's disposition is part of the preview identity and stays with the stored source artifact.
 
@@ -65,7 +65,7 @@ A source response publishes an immutable revision and raw source artifact. HTTP 
 
 Completion records an action and assessment. Resolution is a separate decision: it requires terminal checks and a completed outcome, and it pins the current revision. New evidence that supersedes that revision makes the incident effectively open again. Neither proposal approval nor check completion proves causation, factory execution or incident resolution.
 
-The browser shows current workflow separately from the selected historical report. Printable handovers include the report cutoff, open checks and ownership. See [the workflow contract](docs/incident-workflow.md) and [the improvement plan](IMPROVEMENT_PLAN.md).
+The browser shows current workflow separately from the selected historical report. Printable handovers include the report cutoff, open checks and ownership. See [the workflow contract](../incident-workflow.md) and [the improvement plan](IMPROVEMENT_PLAN.md).
 
 ## Optional paid execution
 
@@ -89,11 +89,11 @@ Precedent comparisons show recorded operational conditions and identify missing 
 
 Completed AI drafts remain private until the requester or an owner publishes an exact output digest for review. `semantic_review.py` returns a sanitized packet and preserves append-only claim judgments and whole-draft assessments. Reports show each actor's latest judgments and disagreement history. Qualifications and independence are self-declared. Legacy annotations retain unspecified reviewer status. Private run lookup requires requester or owner access.
 
-Claim annotations cover all four claim-bearing output structures and retain the output digest, rationale, authenticated actor and durable receipt. See [the AI claim review protocol](docs/ai-claim-review-protocol.md).
+Claim annotations cover all four claim-bearing output structures and retain the output digest, rationale, authenticated actor and durable receipt. See [the AI claim review protocol](../ai-claim-review-protocol.md).
 
 `trust_evaluation.py` verifies frozen release hashes and records deterministic and imported AI receipts for the same cases. `trust_live.py` dispatches only with an explicit persisted budget envelope, an existing owner and corpus, and the configured shared allowance. It refuses test databases, never automatically indexes or adds allowance, and does not repeat uncertain operations. Held-out observations retain their frozen bytes while execution metadata excludes them from public browsing and future corpora.
 
-Historical Qwen results remain archived evidence. Recorded OpenAI evidence-only smoke, pilot and hybrid smoke runs measure structure and retain provider receipts. The locked stage stopped at a validation failure. Independent human review remains pending, and historical Qwen support labels do not establish current-provider quality. See [AI trust evaluation](docs/ai-trust-evaluation.md).
+Historical Qwen results remain archived evidence. Recorded OpenAI evidence-only smoke, pilot and hybrid smoke runs measure structure and retain provider receipts. The locked stage stopped at a validation failure. Independent human review remains pending, and historical Qwen support labels do not establish current-provider quality. See [AI trust evaluation](../ai-trust-evaluation.md).
 
 ## Deployment and operations
 
@@ -101,22 +101,22 @@ Docker Compose runs pgvector/PostgreSQL, the API and an nginx static frontend wi
 
 Operational receipts retain allowlisted route templates, actor and request IDs, latency and failure category. Provider runs retain request correlation, provider receipt IDs and reservation identity. Expired or uncertain work remains inspectable and cannot silently dispatch again. The public replay limiter is process-local; replicated deployment requires a shared execution limiter. A worker architecture remains pending measured timeout and throughput evidence.
 
-See [deployment](DEPLOY_VERCEL.md), [monitoring](docs/operations-monitoring.md), [recovery](docs/recovery-drill.md) and [the technical case study](docs/technical-case-study.md).
+See [deployment](../../DEPLOY_VERCEL.md), [monitoring](../operations-monitoring.md), [recovery](../recovery-drill.md) and [the technical case study](../technical-case-study.md).
 
 ## Source map
 
 | Responsibility | Authoritative files |
 | --- | --- |
-| HTTP, authentication and workspace access | [API](backend/src/flooreplay/api.py), [authentication](backend/src/flooreplay/auth.py), [workspaces](backend/src/flooreplay/workspaces.py) |
-| Evidence and calculation | [imports](backend/src/flooreplay/incident_import.py), [engine](backend/src/flooreplay/incident_engine.py), [source health](backend/src/flooreplay/source_health.py), [persistence](backend/src/flooreplay/incident_service.py) |
-| Follow-up checks and resolution | [workflow](backend/src/flooreplay/incident_workflow.py) |
-| Paid execution and retrieval | [AI runs](backend/src/flooreplay/ai_runs.py), [spending](backend/src/flooreplay/spending.py), [provider](backend/src/flooreplay/openai_provider.py), [retrieval](backend/src/flooreplay/retrieval.py) |
-| Exact-output review and evaluation | [semantic review](backend/src/flooreplay/semantic_review.py), [evaluation](backend/src/flooreplay/trust_evaluation.py), [live evaluation](backend/src/flooreplay/trust_live.py) |
-| Browser sessions and cache lifecycle | [session](frontend/src/lib/session.ts), [authentication provider](frontend/src/components/Auth.tsx), [routes](frontend/src/App.tsx) |
-| Deployment | [Compose](docker-compose.yml), [Render](render.yaml), [Vercel](frontend/vercel.json) |
+| HTTP, authentication and workspace access | [API](../../backend/src/flooreplay/api.py), [authentication](../../backend/src/flooreplay/auth.py), [workspaces](../../backend/src/flooreplay/workspaces.py) |
+| Evidence and calculation | [imports](../../backend/src/flooreplay/incident_import.py), [engine](../../backend/src/flooreplay/incident_engine.py), [source health](../../backend/src/flooreplay/source_health.py), [persistence](../../backend/src/flooreplay/incident_service.py) |
+| Follow-up checks and resolution | [workflow](../../backend/src/flooreplay/incident_workflow.py) |
+| Paid execution and retrieval | [AI runs](../../backend/src/flooreplay/ai_runs.py), [spending](../../backend/src/flooreplay/spending.py), [provider](../../backend/src/flooreplay/openai_provider.py), [retrieval](../../backend/src/flooreplay/retrieval.py) |
+| Exact-output review and evaluation | [semantic review](../../backend/src/flooreplay/semantic_review.py), [evaluation](../../backend/src/flooreplay/trust_evaluation.py), [live evaluation](../../backend/src/flooreplay/trust_live.py) |
+| Browser sessions and cache lifecycle | [session](../../frontend/src/lib/session.ts), [authentication provider](../../frontend/src/components/Auth.tsx), [routes](../../frontend/src/App.tsx) |
+| Deployment | [Compose](../../docker-compose.yml), [Render](../../render.yaml), [Vercel](../../frontend/vercel.json) |
 
 ## Verification
 
-This document reflects the current implementation and configuration. Relevant tests cover [workspace isolation](backend/tests/test_workspace_isolation.py), [incident calculation](backend/tests/test_incident_engine.py), [workflow](backend/tests/test_incident_workflow.py), [paid execution](backend/tests/test_paid_release.py), [semantic review](backend/tests/test_semantic_review.py) and [operational receipts](backend/tests/test_operations.py).
+This document reflects the current implementation and configuration. Relevant tests cover [workspace isolation](../../backend/tests/test_workspace_isolation.py), [incident calculation](../../backend/tests/test_incident_engine.py), [workflow](../../backend/tests/test_incident_workflow.py), [paid execution](../../backend/tests/test_paid_release.py), [semantic review](../../backend/tests/test_semantic_review.py) and [operational receipts](../../backend/tests/test_operations.py).
 
 CI uses a disposable database and mocked provider calls. `release_tools.py` exports canonical saved reports and a content-digest manifest; frontend types derive from exported OpenAPI. Live model evaluation, qualified human review and authenticated hosted acceptance are separate release gates. Those tests were not rerun for this documentation edit. [Release status](RELEASE_STATUS.md) records historical checks without claiming factory validation.

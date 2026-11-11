@@ -6,8 +6,8 @@ This file is the T2 deliverable in `docs/v2/PLAN.md`. The plan is the contract. 
 
 ## Status
 
-- Interviews not yet conducted.
-- 0 of 2-3 practitioners reached as of 2026-10-20.
+- No interview is recorded in this repository. Update this section if calls were held and write them up below.
+- 0 of 2-3 practitioners reached as of 2026-10-20. As of 2026-11-11 the repository records none, and the 2026-10-27 freeze date has passed. The drafted constraint list and parameter defaults therefore stand as unvalidated drafts.
 - The constraint list freezes on 2026-10-27 (end of week 1). The owner decides the freeze, not this document.
 - If nobody is reached by the freeze date, this section will be updated to say so, the interview sections below stay as unanswered templates, and the defaults in `PLAN.md` stand. T8 then starts from the drafted constraint list and logs every later change in `changelog.md` (PLAN.md, "Shared rules for every task" and "Risks to watch").
 - Until an interview is held and written up, every statement under "Current workflow and pain points" is a hypothesis, and every default value under "Draft constraint list" is a draft, unvalidated.
