@@ -25,7 +25,7 @@ An independent read-only review of the backend changes found no access-control v
 
 ## What was not verified
 
-- **Not deployed.** The hosted site still runs the earlier version (commit `f5bab391`). There is no hosted acceptance receipt for 2.0, no authenticated hosted check and no run of GitHub Actions on this branch, which has not been pushed. A deployment runs migrations and then seeds, so the demo appears on first start; take a database backup first (see [DEPLOY.md](DEPLOY.md)).
+- **Not deployed.** The hosted site still runs the earlier version (commit `f5bab391`). There is no hosted acceptance receipt for 2.0, no authenticated hosted check and and the production site has not been checked. GitHub Actions passed on the pushed branch (run 42947182911, 2026-11-11), covering the fresh migration and seed, `decision-cases-verify`, the backend tests, the generated-contract check and the full browser suite including the live spec. A deployment runs migrations and then seeds, so the demo appears on first start; take a database backup first (see [DEPLOY.md](DEPLOY.md)).
 - **No practitioner validation.** No interview is recorded. The constraint list and default parameters are drafts ([discovery notes](docs/v2/discovery.md)).
 - **No model accuracy.** The 100-note English, Tamil and Tanglish corpus (`backend/evaluation/note-benchmark-v1/`) holds unreviewed draft labels, and no model has been scored against it. Extraction is not reachable from the web app. A Tamil speaker must review the labels before any comparison is meaningful.
 - **No load or abuse testing.** The anonymous replay limit lives in process memory, so it resets on restart and does not span instances.
@@ -42,7 +42,7 @@ An independent read-only review of the backend changes found no access-control v
 
 ## Next steps that need a person
 
-1. Push the branch and let GitHub Actions run; fix anything it finds.
+1. Open a pull request from `codex/v2-outer-layer` and merge it when ready.
 2. Review the Tamil gold labels, or leave the benchmark out of any claim.
 3. Back up the production database, deploy, and run `scripts/hosted_acceptance.py` with an owner login; commit the dated receipt to `docs/evidence/`.
 4. Hold at least two practitioner conversations before presenting the defaults as anything but drafts.
