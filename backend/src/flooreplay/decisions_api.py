@@ -36,7 +36,11 @@ from .decisions.policy import DEFAULT_POLICY_V1, PolicyDocument, parameter_diff,
 from .decisions.snapshot import Snapshot
 from .decisions.types import Classification, Recommendation
 from .errors import ServiceError
+from .ratelimit import SlidingWindowLimiter, enforce
 from .workspaces import DEMO, WorkspaceMember
+
+ANONYMOUS_READS_PER_MINUTE = 120
+"""Replays an anonymous client may request of the public demo each minute."""
 
 WorkspaceQuery = Annotated[str, Query(min_length=1, max_length=64, description="Workspace the caller belongs to")]
 
@@ -189,15 +193,25 @@ def _readable(request: Request, workspace_id: str) -> str:
     return workspace_id
 
 
-def reader(
-    user: Annotated[Account | None, Depends(current_user)], workspace_id: WorkspaceQuery
-) -> Account | None:
-    """Reads may be anonymous only on the public demo workspace; everything else needs a sign-in.
+anonymous_reads = SlidingWindowLimiter(ANONYMOUS_READS_PER_MINUTE, 60.0)
 
-    A dependency, so the refusal comes before any request body is validated.
+
+def reader(
+    request: Request,
+    user: Annotated[Account | None, Depends(current_user)],
+    workspace_id: WorkspaceQuery,
+) -> Account | None:
+    """Reads may be anonymous only on the public demo workspace, at a bounded rate.
+
+    A dependency, so the refusal comes before any request body is validated. Every read
+    replays stored facts, so an anonymous client is limited per minute; signed-in callers
+    are accountable and are not. The window lives in process memory, like the other public
+    limiter, so it bounds abuse per instance and resets on restart.
     """
-    if user is None and workspace_id != DEMO:
-        raise ServiceError("SIGN_IN_REQUIRED", "Sign in as an invited reviewer", 401)
+    if user is None:
+        if workspace_id != DEMO:
+            raise ServiceError("SIGN_IN_REQUIRED", "Sign in as an invited reviewer", 401)
+        enforce(anonymous_reads, request)
     return user
 
 

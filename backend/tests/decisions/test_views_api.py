@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+import pytest
 from fastapi.testclient import TestClient
 
 from decisions.test_api import (
@@ -375,3 +376,30 @@ def test_a_private_workspace_loaded_with_the_demo_supports_the_whole_write_path(
     )
     assert adopted.status_code == 200, adopted.text
     assert owner.get(f"{ROUTE}/policies?workspace_id={ws}").json()["adopted"] == candidate["policy_digest"]
+
+
+def test_anonymous_demo_reads_are_throttled_per_client_but_signed_in_reads_are_not(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from flooreplay import decisions_api
+    from flooreplay.decisions_api import ANONYMOUS_READS_PER_MINUTE
+    from flooreplay.ratelimit import SlidingWindowLimiter
+
+    monkeypatch.setattr(decisions_api, "anonymous_reads", SlidingWindowLimiter(ANONYMOUS_READS_PER_MINUTE, 60.0))
+    fresh = TestClient(app)
+    url = f"{ROUTE}/orders?workspace_id=public-demo"
+    for _ in range(ANONYMOUS_READS_PER_MINUTE):
+        assert fresh.get(url).status_code == 200
+    limited = fresh.get(url)
+    assert limited.status_code == 429
+    assert limited.json()["code"] == "RATE_LIMITED"
+    assert int(limited.headers["retry-after"]) >= 1
+
+    # A signed-in caller reading the same workspace is not counted against the anonymous budget.
+    name = "reader-" + uid()
+    from flooreplay.auth import create_account, sign_in
+
+    create_account(name, "reader-test-password", "reviewer")
+    token = sign_in(name, "reader-test-password", name)["token"]
+    signed_in = TestClient(fresh.app, headers={"Authorization": "Bearer " + token})
+    assert signed_in.get(url).status_code == 200

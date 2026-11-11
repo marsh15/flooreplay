@@ -465,7 +465,7 @@ def seed_demo(session: Session, workspace_id: str = WORKSPACE) -> dict[str, int]
                 DecisionEvaluation.policy_digest == policy_digest(DEFAULT_POLICY_V1),
             )
         )
-        if known is None:
+        if known is None and service.is_settled(session, cutoff):
             service.evaluate_order(session, workspace_id, order_id, cutoff, DEFAULT_POLICY_V1)
             counts["evaluations"] += 1
 

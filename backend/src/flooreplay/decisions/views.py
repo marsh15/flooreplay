@@ -102,7 +102,7 @@ def order_summaries(session: Session, workspace_id: str) -> list[OrderSummary]:
     order_ids = service.list_order_ids(session, workspace_id)
     if not order_ids:
         return []
-    snapshot = service.snapshot_at(session, workspace_id, service.db_now(session))
+    snapshot = service.snapshot_at(session, workspace_id, service.latest_settled_instant(session))
     latest: dict[str, DecisionEvaluation] = {}
     for row in session.scalars(
         select(DecisionEvaluation)
