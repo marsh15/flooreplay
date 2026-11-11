@@ -12,9 +12,10 @@ const NAV = [
   { to: '/lab', label: 'Replay lab', icon: FlaskConical },
   { to: '/review', label: 'Review queue', icon: Shield },
   { to: '/imports', label: 'Imports', icon: Activity },
-  { to: '/investigations', label: 'Shortfall investigations (v1)', icon: Library },
 ]
-const ENGINEERING = [
+// The earlier products stay reachable, but apart from the current order decision screens.
+const EARLIER_VERSIONS = [
+  { to: '/investigations', label: 'Shortfall investigations (v1)', icon: Library },
   { to: '/evaluation', label: 'Evaluation lab', icon: FlaskConical },
   { to: '/coverage', label: 'Coverage archive', icon: ArrowLeftRight },
 ]
@@ -107,8 +108,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 aria-hidden="true"
                 className="mx-2 hidden h-5 w-px bg-board-muted/40 sm:block"
               />
-              <span className="px-2 text-xs font-medium text-board-muted">Engineering</span>
-              {ENGINEERING.map(navLink)}
+              <span className="px-2 text-xs font-medium text-board-muted">Earlier versions</span>
+              {EARLIER_VERSIONS.map(navLink)}
             </div>
           </nav>
         </div>
