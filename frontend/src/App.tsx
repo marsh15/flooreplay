@@ -38,6 +38,26 @@ const IncidentEvaluationPage = lazy(() =>
 const IncidentImportsPage = lazy(() =>
   import('@/pages/IncidentImports').then((module) => ({ default: module.IncidentImportsPage })),
 )
+const DecisionsHomePage = lazy(() =>
+  import('@/pages/decisions/DecisionsHome').then((module) => ({ default: module.DecisionsHome })),
+)
+const OrderDecisionPage = lazy(() =>
+  import('@/pages/decisions/OrderDecision').then((module) => ({ default: module.OrderDecision })),
+)
+const TimelinePage = lazy(() =>
+  import('@/pages/decisions/Timeline').then((module) => ({ default: module.Timeline })),
+)
+const ReplayLabPage = lazy(() =>
+  import('@/pages/decisions/ReplayLab').then((module) => ({ default: module.ReplayLab })),
+)
+const ReviewQueuePage = lazy(() =>
+  import('@/pages/decisions/ReviewQueue').then((module) => ({ default: module.ReviewQueue })),
+)
+const DecisionImportsPage = lazy(() =>
+  import('@/pages/decisions/DecisionImports').then((module) => ({
+    default: module.DecisionImports,
+  })),
+)
 
 const OperationsPage = lazy(() =>
   import('@/pages/Operations').then((module) => ({ default: module.OperationsPage })),
@@ -64,7 +84,13 @@ function App() {
           <Routes>
             <Route path="/operations" element={<OperationsPage />} />
             <Route path="/workspaces" element={<WorkspacesPage />} />
-            <Route path="/" element={<IncidentLibraryPage />} />
+            <Route path="/" element={<DecisionsHomePage />} />
+            <Route path="/orders/:orderId/timeline" element={<TimelinePage />} />
+            <Route path="/orders/:orderId" element={<OrderDecisionPage />} />
+            <Route path="/lab" element={<ReplayLabPage />} />
+            <Route path="/review" element={<ReviewQueuePage />} />
+            <Route path="/imports" element={<DecisionImportsPage />} />
+            <Route path="/investigations" element={<IncidentLibraryPage />} />
             <Route path="/demo" element={<IncidentDemoPage />} />
             <Route path="/incidents/imports" element={<IncidentImportsPage />} />
             <Route path="/incidents/:id" element={<IncidentWorkbenchPage />} />

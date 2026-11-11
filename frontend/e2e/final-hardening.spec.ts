@@ -62,7 +62,7 @@ test('unrecognized and invalid revision links have recovery paths', async ({ pag
   await fixture(page)
   await page.goto('/missing-page')
   await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Open the incident library' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'Open order decisions' })).toHaveAttribute(
     'href',
     '/',
   )

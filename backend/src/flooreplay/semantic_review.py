@@ -12,9 +12,9 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 from .ai_evaluation import AIClaimReview, claim_review_view
 from .db import session_scope
 from .domain.hashing import digest
+from .errors import ServiceError
 from .models import Base
 from .paid_models import AIRun
-from .service import ServiceError
 from .spending import lock
 
 FLAGS = {'attribution_error', 'unsupported_conclusion', 'omitted_contradiction', 'appropriate_abstention', 'useful_next_check'}

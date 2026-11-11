@@ -1,0 +1,100 @@
+{
+  "order_id": "POLO-224",
+  "cutoff": "2026-10-22T05:30:00Z",
+  "settled": true,
+  "policy": {
+    "digest": "policy-v1-abc",
+    "label": "Tiruppur default",
+    "engine_version": "decision-v1"
+  },
+  "snapshot_digest": "snapshot-review-224",
+  "decision_digest": "decision-review-224",
+  "gate": {
+    "state": "INCOMPLETE",
+    "findings": [
+      {
+        "code": "note_signal_needs_review",
+        "state": "INCOMPLETE",
+        "entity_key": "lot:L-224",
+        "fact_ids": ["fact-note-224"],
+        "detail": "A fabric issue extracted from a Tamil and Tanglish note has not been confirmed.",
+        "rule_id": null
+      }
+    ],
+    "coverage_used": null
+  },
+  "constraints": [
+    {
+      "constraint": "FABRIC",
+      "subject": "NAVY",
+      "status": "NOT_EVALUATED",
+      "fact_ids": ["fact-order-224", "fact-bom-224", "fact-note-224"],
+      "steps": [],
+      "detail": "A note signal affecting fabric availability is awaiting review.",
+      "consumed_by": [],
+      "pending_review_fact_ids": ["fact-note-224"]
+    }
+  ],
+  "recommendation": {
+    "outcome": "NEEDS_REVIEW",
+    "candidate_outcome": null,
+    "conditions": [],
+    "reasons": ["A needs-review fabric signal affects the fabric decision."]
+  },
+  "facts": [
+    {
+      "id": "fact-order-224",
+      "kind": "order_request",
+      "entity_key": "order:POLO-224",
+      "payload": {
+        "buyer": "Buyer D",
+        "style_id": "POLO-224",
+        "colours": [{ "colour": "NAVY", "qty_pcs": 1000 }],
+        "ship_date": "2026-11-20",
+        "order_value_inr": "35000",
+        "partial_shipment_allowed": false
+      },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:05:00Z",
+      "supersedes_id": null,
+      "source": "order_requests",
+      "artifact_id": "artifact-order-224"
+    },
+    {
+      "id": "fact-bom-224",
+      "kind": "bom",
+      "entity_key": "bom:POLO-224",
+      "payload": {
+        "fabric_quality": "SJ180",
+        "consumption_per_pc": { "value": "0.82", "unit": "m" },
+        "trims": [],
+        "sam_minutes": "2.4"
+      },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:04:00Z",
+      "supersedes_id": null,
+      "source": "order_requests",
+      "artifact_id": "artifact-order-224"
+    },
+    {
+      "id": "fact-note-224",
+      "kind": "fabric_qc",
+      "entity_key": "lot:L-224",
+      "payload": {
+        "issue": "shade_fail",
+        "qty": { "value": "100", "unit": "m" },
+        "origin": "notes",
+        "review_state": "needs_review"
+      },
+      "valid_from": "2026-10-22T04:20:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:25:00Z",
+      "supersedes_id": null,
+      "source": "notes",
+      "artifact_id": "artifact-note-224"
+    }
+  ],
+  "records": []
+}

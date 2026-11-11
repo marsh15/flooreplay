@@ -14,6 +14,7 @@ import flooreplay.auth  # register account metadata
 import flooreplay.incident_workflow  # register assigned check metadata
 import flooreplay.semantic_review  # register shared review and assessment metadata
 import flooreplay.paid_models  # register provider and retrieval metadata
+import flooreplay.decisions.models  # register append-only decision facts and source artifacts
 
 config = context.config
 if config.config_file_name is not None:

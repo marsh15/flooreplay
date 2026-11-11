@@ -260,7 +260,7 @@ export function IncidentDemoPage() {
           Reset simulation
         </Button>
         <Link
-          to="/"
+          to="/investigations"
           className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline underline-offset-4"
         >
           Browse curated examples

@@ -16,9 +16,9 @@ from sqlalchemy.orm import Session
 from . import openai_provider
 from .config import settings
 from .db import session_scope
+from .errors import ServiceError
 from .models import IncidentRevision
 from .paid_models import CorpusRelease, EmbeddingArtifact, RetrievalRun, SpendEntry, now
-from .service import ServiceError
 from .spending import cost, lock, reserve, settle
 
 PREPROCESSING = "evidence-card-v2"

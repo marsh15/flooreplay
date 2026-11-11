@@ -2560,6 +2560,1379 @@
           }
         }
       }
+    },
+    "/api/v1/decisions/orders": {
+      "get": {
+        "summary": "List Orders",
+        "operationId": "list_orders_api_v1_decisions_orders_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/orders/{order_id}": {
+      "get": {
+        "summary": "Get Order",
+        "description": "Replay the order as known at `cutoff` (default: now, settled) without storing anything.",
+        "operationId": "get_order_api_v1_decisions_orders__order_id__get",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          },
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cutoff"
+            }
+          },
+          {
+            "name": "policy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Policy"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/orders/{order_id}/timeline": {
+      "get": {
+        "summary": "Get Timeline",
+        "operationId": "get_timeline_api_v1_decisions_orders__order_id__timeline_get",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Timeline"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/orders/{order_id}/records": {
+      "post": {
+        "summary": "Record For Order",
+        "description": "Store the replay the person was looking at (idempotent), then record their decision on it.",
+        "operationId": "record_for_order_api_v1_decisions_orders__order_id__records_post",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordForOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordedDecision"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/snapshot": {
+      "get": {
+        "summary": "Get Snapshot",
+        "operationId": "get_snapshot_api_v1_decisions_snapshot_get",
+        "parameters": [
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Cutoff"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/evaluate": {
+      "post": {
+        "summary": "Evaluate",
+        "operationId": "evaluate_api_v1_decisions_evaluate_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/evaluations/{evaluation_id}": {
+      "get": {
+        "summary": "Get Evaluation",
+        "operationId": "get_evaluation_api_v1_decisions_evaluations__evaluation_id__get",
+        "parameters": [
+          {
+            "name": "evaluation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Evaluation Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/evaluations/{evaluation_id}/record": {
+      "post": {
+        "summary": "Record Decision",
+        "operationId": "record_decision_api_v1_decisions_evaluations__evaluation_id__record_post",
+        "parameters": [
+          {
+            "name": "evaluation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Evaluation Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionRecordView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/policies": {
+      "get": {
+        "summary": "List Policies",
+        "operationId": "list_policies_api_v1_decisions_policies_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Store Policy",
+        "operationId": "store_policy_api_v1_decisions_policies_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDocument-Input"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyStored"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/policies/diff": {
+      "post": {
+        "summary": "Diff Policies",
+        "operationId": "diff_policies_api_v1_decisions_policies_diff_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDiffRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDiffView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/regression-runs": {
+      "post": {
+        "summary": "Start Regression Run",
+        "operationId": "start_regression_run_api_v1_decisions_regression_runs_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegressionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegressionRunView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Regression Runs",
+        "description": "Stored runs, newest first; `candidate` narrows them to one candidate policy.",
+        "operationId": "list_regression_runs_api_v1_decisions_regression_runs_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          },
+          {
+            "name": "candidate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Candidate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegressionRunList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/regression-runs/{run_id}": {
+      "get": {
+        "summary": "Get Regression Run",
+        "operationId": "get_regression_run_api_v1_decisions_regression_runs__run_id__get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegressionRunView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/regression-runs/{run_id}/adopt": {
+      "post": {
+        "summary": "Adopt Regression Run",
+        "operationId": "adopt_regression_run_api_v1_decisions_regression_runs__run_id__adopt_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdoptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyAdoptionView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/imports/preview": {
+      "post": {
+        "summary": "Preview Csv",
+        "operationId": "preview_csv_api_v1_decisions_imports_preview_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/imports/publish": {
+      "post": {
+        "summary": "Publish Csv",
+        "operationId": "publish_csv_api_v1_decisions_imports_publish_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/review-items": {
+      "get": {
+        "summary": "List Review Items",
+        "operationId": "list_review_items_api_v1_decisions_review_items_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "OPEN",
+                    "ASSIGNED",
+                    "CONFIRMED",
+                    "CORRECTED",
+                    "REJECTED"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "State"
+            }
+          },
+          {
+            "name": "assignee",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Assignee"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewItemList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/review-items/{item_id}": {
+      "get": {
+        "summary": "Get Review Item",
+        "operationId": "get_review_item_api_v1_decisions_review_items__item_id__get",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewItemDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/review-items/sync": {
+      "post": {
+        "summary": "Sync Review Queue",
+        "operationId": "sync_review_queue_api_v1_decisions_review_items_sync_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/review-items/{item_id}/assign": {
+      "post": {
+        "summary": "Assign Review Item",
+        "operationId": "assign_review_item_api_v1_decisions_review_items__item_id__assign_post",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewItemView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/review-items/{item_id}/confirm": {
+      "post": {
+        "summary": "Confirm Review Item",
+        "operationId": "confirm_review_item_api_v1_decisions_review_items__item_id__confirm_post",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewItemView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/review-items/{item_id}/correct": {
+      "post": {
+        "summary": "Correct Review Item",
+        "operationId": "correct_review_item_api_v1_decisions_review_items__item_id__correct_post",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewItemView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/review-items/{item_id}/reject": {
+      "post": {
+        "summary": "Reject Review Item",
+        "operationId": "reject_review_item_api_v1_decisions_review_items__item_id__reject_post",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Workspace the caller belongs to",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace the caller belongs to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewItemView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2783,6 +4156,276 @@
           "limitations"
         ],
         "title": "AIRunAssessmentRequest"
+      },
+      "AdoptRequest": {
+        "properties": {
+          "acknowledgements": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Acknowledgements"
+          }
+        },
+        "type": "object",
+        "title": "AdoptRequest"
+      },
+      "ApprovalParams-Input": {
+        "properties": {
+          "max_value_inr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Max Value Inr",
+            "ge": 0
+          },
+          "max_qty_pcs": {
+            "type": "integer",
+            "title": "Max Qty Pcs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "max_value_inr",
+          "max_qty_pcs"
+        ],
+        "title": "ApprovalParams"
+      },
+      "ApprovalParams-Output": {
+        "properties": {
+          "max_value_inr": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Max Value Inr",
+            "ge": 0
+          },
+          "max_qty_pcs": {
+            "type": "integer",
+            "title": "Max Qty Pcs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "max_value_inr",
+          "max_qty_pcs"
+        ],
+        "title": "ApprovalParams"
+      },
+      "AssignRequest": {
+        "properties": {
+          "assignee_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Id",
+            "description": "Null clears the assignment"
+          }
+        },
+        "type": "object",
+        "title": "AssignRequest"
+      },
+      "CapacityParams-Input": {
+        "properties": {
+          "eligible_lines": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Eligible Lines"
+          },
+          "default_efficiency_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Default Efficiency Pct",
+            "gt": 0
+          },
+          "cut_to_ship_days": {
+            "type": "integer",
+            "title": "Cut To Ship Days"
+          },
+          "finishing_days": {
+            "type": "integer",
+            "title": "Finishing Days"
+          },
+          "ot_cap_hours_per_line_day": {
+            "type": "integer",
+            "title": "Ot Cap Hours Per Line Day"
+          },
+          "non_working_weekdays": {
+            "items": {
+              "$ref": "#/components/schemas/Weekday"
+            },
+            "type": "array",
+            "title": "Non Working Weekdays",
+            "default": [
+              "SUN"
+            ]
+          },
+          "holidays": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Holidays",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "eligible_lines",
+          "default_efficiency_pct",
+          "cut_to_ship_days",
+          "finishing_days",
+          "ot_cap_hours_per_line_day"
+        ],
+        "title": "CapacityParams"
+      },
+      "CapacityParams-Output": {
+        "properties": {
+          "eligible_lines": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Eligible Lines"
+          },
+          "default_efficiency_pct": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Default Efficiency Pct",
+            "gt": 0
+          },
+          "cut_to_ship_days": {
+            "type": "integer",
+            "title": "Cut To Ship Days"
+          },
+          "finishing_days": {
+            "type": "integer",
+            "title": "Finishing Days"
+          },
+          "ot_cap_hours_per_line_day": {
+            "type": "integer",
+            "title": "Ot Cap Hours Per Line Day"
+          },
+          "non_working_weekdays": {
+            "items": {
+              "$ref": "#/components/schemas/Weekday"
+            },
+            "type": "array",
+            "title": "Non Working Weekdays",
+            "default": [
+              "SUN"
+            ]
+          },
+          "holidays": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Holidays",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "eligible_lines",
+          "default_efficiency_pct",
+          "cut_to_ship_days",
+          "finishing_days",
+          "ot_cap_hours_per_line_day"
+        ],
+        "title": "CapacityParams"
+      },
+      "CaseRun": {
+        "properties": {
+          "verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Verdict"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "failures": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Failures"
+          },
+          "decision_digest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Digest"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "verdict",
+          "outcome",
+          "failures",
+          "decision_digest",
+          "error"
+        ],
+        "title": "CaseRun",
+        "description": "One case replayed under one policy. `verdict` is None when the case could not be judged."
       },
       "CheckCompleteRequest": {
         "properties": {
@@ -3043,6 +4686,17 @@
         ],
         "title": "CheckUpdateRequest"
       },
+      "Classification": {
+        "type": "string",
+        "enum": [
+          "UNCHANGED_PASS",
+          "UNCHANGED_FAIL",
+          "FIXED",
+          "REGRESSION",
+          "NOT_COMPARABLE"
+        ],
+        "title": "Classification"
+      },
       "ComparisonRequest": {
         "properties": {
           "suite_id": {
@@ -3073,6 +4727,754 @@
         ],
         "title": "ComparisonRequest"
       },
+      "ConfirmRequest": {
+        "properties": {
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "Required, at most 2000 characters"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value",
+            "description": "Required when the field failed checks; at most 500 characters"
+          },
+          "fact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FactDraft"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "note"
+        ],
+        "title": "ConfirmRequest"
+      },
+      "ConflictRule": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "left_kind": {
+            "$ref": "#/components/schemas/FactKind"
+          },
+          "right_kind": {
+            "$ref": "#/components/schemas/FactKind"
+          },
+          "join": {
+            "type": "string",
+            "const": "entity_key",
+            "title": "Join"
+          },
+          "valid_time": {
+            "type": "string",
+            "const": "overlap",
+            "title": "Valid Time"
+          },
+          "predicate": {
+            "type": "string",
+            "title": "Predicate"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "left_kind",
+          "right_kind",
+          "join",
+          "valid_time",
+          "predicate"
+        ],
+        "title": "ConflictRule"
+      },
+      "ConstraintId": {
+        "type": "string",
+        "enum": [
+          "FABRIC",
+          "SAFETY",
+          "TRIMS",
+          "CAPACITY",
+          "OVERTIME",
+          "APPROVAL"
+        ],
+        "title": "ConstraintId"
+      },
+      "ConstraintResult": {
+        "properties": {
+          "constraint": {
+            "$ref": "#/components/schemas/ConstraintId"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConstraintStatus"
+          },
+          "fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fact Ids"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "consumed_by": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Consumed By",
+            "default": []
+          },
+          "pending_review_fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Pending Review Fact Ids",
+            "default": []
+          },
+          "required": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "available": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "overtime": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OvertimeNeed"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "constraint",
+          "subject",
+          "status",
+          "fact_ids",
+          "steps",
+          "detail"
+        ],
+        "title": "ConstraintResult"
+      },
+      "ConstraintStatus": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "FAIL",
+          "NOT_EVALUATED"
+        ],
+        "title": "ConstraintStatus"
+      },
+      "CorrectRequest": {
+        "properties": {
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "Required, at most 2000 characters"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value",
+            "description": "The corrected value; at most 500 characters"
+          },
+          "fact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FactDraft"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "note"
+        ],
+        "title": "CorrectRequest"
+      },
+      "CoverageUsed": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "title": "Artifact Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of",
+            "description": "UTC-offset-aware instant"
+          },
+          "qualities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Qualities"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "as_of",
+          "qualities"
+        ],
+        "title": "CoverageUsed"
+      },
+      "DecisionRecordView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "evaluation_id": {
+            "type": "string",
+            "title": "Evaluation Id"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "recommended_outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "override": {
+            "type": "boolean",
+            "title": "Override"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "actor": {
+            "type": "string",
+            "title": "Actor"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "evaluation_id",
+          "decision",
+          "recommended_outcome",
+          "override",
+          "reason",
+          "actor",
+          "created_at"
+        ],
+        "title": "DecisionRecordView"
+      },
+      "DecisionView": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          },
+          "settled": {
+            "type": "boolean",
+            "title": "Settled"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/PolicyRef"
+          },
+          "snapshot_digest": {
+            "type": "string",
+            "title": "Snapshot Digest"
+          },
+          "decision_digest": {
+            "type": "string",
+            "title": "Decision Digest"
+          },
+          "gate": {
+            "$ref": "#/components/schemas/GateResult"
+          },
+          "constraints": {
+            "items": {
+              "$ref": "#/components/schemas/ConstraintResult"
+            },
+            "type": "array",
+            "title": "Constraints"
+          },
+          "recommendation": {
+            "$ref": "#/components/schemas/RecommendationView"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/Fact"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/RecordedDecision"
+            },
+            "type": "array",
+            "title": "Records"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "cutoff",
+          "settled",
+          "policy",
+          "snapshot_digest",
+          "decision_digest",
+          "gate",
+          "constraints",
+          "recommendation",
+          "facts",
+          "records"
+        ],
+        "title": "DecisionView"
+      },
+      "EvaluateRequest": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Order Id"
+          },
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          },
+          "policy_digest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Digest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "cutoff"
+        ],
+        "title": "EvaluateRequest"
+      },
+      "EvaluationDetail": {
+        "properties": {
+          "evaluation": {
+            "$ref": "#/components/schemas/EvaluationView"
+          },
+          "reconstruction": {
+            "$ref": "#/components/schemas/Reconstruction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evaluation",
+          "reconstruction"
+        ],
+        "title": "EvaluationDetail"
+      },
+      "EvaluationView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          },
+          "policy_digest": {
+            "type": "string",
+            "title": "Policy Digest"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "snapshot_digest": {
+            "type": "string",
+            "title": "Snapshot Digest"
+          },
+          "decision_digest": {
+            "type": "string",
+            "title": "Decision Digest"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_id",
+          "cutoff",
+          "policy_digest",
+          "engine_version",
+          "snapshot_digest",
+          "decision_digest",
+          "outcome",
+          "created_at"
+        ],
+        "title": "EvaluationView"
+      },
+      "EvidenceSpan": {
+        "properties": {
+          "start": {
+            "type": "integer",
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "title": "End"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "text"
+        ],
+        "title": "EvidenceSpan"
+      },
+      "FabricParams-Input": {
+        "properties": {
+          "wastage_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Wastage Pct",
+            "ge": 0
+          },
+          "inbound_buffer_days": {
+            "type": "integer",
+            "title": "Inbound Buffer Days"
+          },
+          "safety_floor_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Safety Floor Pct",
+            "ge": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "wastage_pct",
+          "inbound_buffer_days",
+          "safety_floor_pct"
+        ],
+        "title": "FabricParams"
+      },
+      "FabricParams-Output": {
+        "properties": {
+          "wastage_pct": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Wastage Pct",
+            "ge": 0
+          },
+          "inbound_buffer_days": {
+            "type": "integer",
+            "title": "Inbound Buffer Days"
+          },
+          "safety_floor_pct": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Safety Floor Pct",
+            "ge": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "wastage_pct",
+          "inbound_buffer_days",
+          "safety_floor_pct"
+        ],
+        "title": "FabricParams"
+      },
+      "Fact": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/FactKind"
+          },
+          "entity_key": {
+            "type": "string",
+            "title": "Entity Key"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Valid From",
+            "description": "UTC-offset-aware instant"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "description": "UTC-offset-aware instant"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid To"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At",
+            "description": "UTC-offset-aware instant"
+          },
+          "supersedes_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supersedes Id"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceProfile"
+          },
+          "artifact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "entity_key",
+          "payload",
+          "valid_from",
+          "valid_to",
+          "known_at",
+          "supersedes_id",
+          "source",
+          "artifact_id"
+        ],
+        "title": "Fact",
+        "description": "An immutable, hashable, bitemporal record.\n\n`payload` is canonicalised on construction (Decimals become text, floats are\nrejected, datetimes become UTC \"Z\" strings, text becomes NFC) and then deep-frozen:\nmappings become `FrozenDict`, lists become tuples (they dump back as JSON lists)."
+      },
+      "FactDraft": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/FactKind"
+          },
+          "entity_key": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Entity Key"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          },
+          "supersedes_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supersedes Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "entity_key",
+          "payload"
+        ],
+        "title": "FactDraft",
+        "description": "A human-supplied fact. `origin`, `review_state` and `extraction_id` are set by the server."
+      },
+      "FactKind": {
+        "type": "string",
+        "enum": [
+          "order_request",
+          "bom",
+          "fabric_lot",
+          "fabric_qc",
+          "fabric_inbound",
+          "fabric_allocation",
+          "trim_status",
+          "line_capacity",
+          "line_commitment",
+          "resolution"
+        ],
+        "title": "FactKind"
+      },
+      "Finding": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/FactKind"
+          },
+          "entity_key": {
+            "type": "string",
+            "title": "Entity Key"
+          },
+          "subject_id": {
+            "type": "string",
+            "title": "Subject Id"
+          },
+          "fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fact Ids"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "kind",
+          "entity_key",
+          "subject_id",
+          "fact_ids"
+        ],
+        "title": "Finding",
+        "description": "Something the snapshot noticed that downstream gates must see."
+      },
       "ForkRequest": {
         "properties": {
           "snapshot_id": {
@@ -3085,6 +5487,133 @@
           "snapshot_id"
         ],
         "title": "ForkRequest"
+      },
+      "FreshnessHours": {
+        "properties": {
+          "erp_fabric_stock": {
+            "type": "integer",
+            "title": "Erp Fabric Stock"
+          },
+          "sheet_trims_status": {
+            "type": "integer",
+            "title": "Sheet Trims Status"
+          },
+          "shift_capacity": {
+            "type": "integer",
+            "title": "Shift Capacity"
+          },
+          "supplier_updates": {
+            "type": "integer",
+            "title": "Supplier Updates"
+          },
+          "notes": {
+            "type": "integer",
+            "title": "Notes"
+          },
+          "order_requests": {
+            "type": "integer",
+            "title": "Order Requests"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "erp_fabric_stock",
+          "sheet_trims_status",
+          "shift_capacity",
+          "supplier_updates",
+          "notes",
+          "order_requests"
+        ],
+        "title": "FreshnessHours"
+      },
+      "GateFinding": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "state": {
+            "$ref": "#/components/schemas/GateState"
+          },
+          "entity_key": {
+            "type": "string",
+            "title": "Entity Key"
+          },
+          "fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fact Ids"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "rule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "state",
+          "entity_key",
+          "fact_ids",
+          "detail"
+        ],
+        "title": "GateFinding"
+      },
+      "GateResult": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/GateState"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/GateFinding"
+            },
+            "type": "array",
+            "title": "Findings"
+          },
+          "coverage_used": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoverageUsed"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "state",
+          "findings"
+        ],
+        "title": "GateResult"
+      },
+      "GateState": {
+        "type": "string",
+        "enum": [
+          "READY",
+          "STALE",
+          "INCOMPLETE",
+          "CONFLICTING"
+        ],
+        "title": "GateState"
       },
       "HTTPValidationError": {
         "properties": {
@@ -3141,6 +5670,104 @@
           "idempotency_key"
         ],
         "title": "HybridRequest"
+      },
+      "ImportBody": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Filename"
+          },
+          "profile": {
+            "type": "string",
+            "maxLength": 48,
+            "minLength": 1,
+            "title": "Profile"
+          },
+          "column_mapping": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Column Mapping"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Timezone",
+            "default": "Asia/Kolkata"
+          },
+          "units": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Units"
+          },
+          "coverage_qualities": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage Qualities"
+          },
+          "content_base64": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Content Base64"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "profile",
+          "as_of",
+          "content_base64"
+        ],
+        "title": "ImportBody"
+      },
+      "ImportProblem": {
+        "properties": {
+          "row": {
+            "type": "integer",
+            "title": "Row"
+          },
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "row",
+          "field",
+          "code",
+          "message"
+        ],
+        "title": "ImportProblem"
       },
       "ImportRequestBody": {
         "properties": {
@@ -3785,6 +6412,28 @@
         ],
         "title": "IncidentReviewRequest"
       },
+      "LatestOutcome": {
+        "properties": {
+          "outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "gate_state": {
+            "$ref": "#/components/schemas/GateState"
+          },
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          }
+        },
+        "type": "object",
+        "required": [
+          "outcome",
+          "gate_state",
+          "cutoff"
+        ],
+        "title": "LatestOutcome"
+      },
       "LoginRequest": {
         "properties": {
           "username": {
@@ -3885,6 +6534,638 @@
         ],
         "title": "NoteParseRequest"
       },
+      "NoteRequest": {
+        "properties": {
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "Required, at most 2000 characters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "note"
+        ],
+        "title": "NoteRequest"
+      },
+      "OrderList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "OrderList"
+      },
+      "OrderSummary": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "buyer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer"
+          },
+          "style_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style Id"
+          },
+          "ship_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ship Date"
+          },
+          "total_qty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Qty"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatestOutcome"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id"
+        ],
+        "title": "OrderSummary"
+      },
+      "OvertimeCondition": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "overtime"
+          },
+          "lines": {
+            "type": "integer",
+            "title": "Lines"
+          },
+          "hours_per_line_per_day": {
+            "type": "integer",
+            "title": "Hours Per Line Per Day"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lines",
+          "hours_per_line_per_day",
+          "days"
+        ],
+        "title": "OvertimeCondition"
+      },
+      "OvertimeNeed": {
+        "properties": {
+          "lines": {
+            "type": "integer",
+            "title": "Lines"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "cap_hours_per_line_day": {
+            "type": "integer",
+            "title": "Cap Hours Per Line Day"
+          },
+          "hours_per_line_per_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hours Per Line Per Day"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lines",
+          "days",
+          "cap_hours_per_line_day",
+          "hours_per_line_per_day"
+        ],
+        "title": "OvertimeNeed",
+        "description": "What overtime would have to be, for T9's `overtime` condition."
+      },
+      "ParameterChange": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "before": {
+            "title": "Before"
+          },
+          "after": {
+            "title": "After"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "before",
+          "after"
+        ],
+        "title": "ParameterChange"
+      },
+      "PendingNote": {
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "title": "Note Id"
+          },
+          "lot_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot Hint"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "note_digest": {
+            "type": "string",
+            "title": "Note Digest"
+          },
+          "state": {
+            "type": "string",
+            "const": "pending_extraction",
+            "title": "State",
+            "default": "pending_extraction"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "note_id",
+          "text",
+          "note_digest"
+        ],
+        "title": "PendingNote"
+      },
+      "PolicyAdoptionView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "regression_run_id": {
+            "type": "string",
+            "title": "Regression Run Id"
+          },
+          "policy_digest": {
+            "type": "string",
+            "title": "Policy Digest"
+          },
+          "adopted_by": {
+            "type": "string",
+            "title": "Adopted By"
+          },
+          "acknowledgements": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Acknowledgements"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "regression_run_id",
+          "policy_digest",
+          "adopted_by",
+          "acknowledgements",
+          "created_at"
+        ],
+        "title": "PolicyAdoptionView"
+      },
+      "PolicyDiffRequest": {
+        "properties": {
+          "baseline": {
+            "$ref": "#/components/schemas/PolicyDocument-Input"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/PolicyDocument-Input"
+          }
+        },
+        "type": "object",
+        "required": [
+          "baseline",
+          "candidate"
+        ],
+        "title": "PolicyDiffRequest"
+      },
+      "PolicyDiffView": {
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/ParameterChange"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "changes"
+        ],
+        "title": "PolicyDiffView"
+      },
+      "PolicyDocument-Input": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "freshness_hours": {
+            "$ref": "#/components/schemas/FreshnessHours"
+          },
+          "fabric": {
+            "$ref": "#/components/schemas/FabricParams-Input"
+          },
+          "trims": {
+            "$ref": "#/components/schemas/TrimParams-Input"
+          },
+          "capacity": {
+            "$ref": "#/components/schemas/CapacityParams-Input"
+          },
+          "approval": {
+            "$ref": "#/components/schemas/ApprovalParams-Input"
+          },
+          "conflict_rules": {
+            "items": {
+              "$ref": "#/components/schemas/ConflictRule"
+            },
+            "type": "array",
+            "title": "Conflict Rules"
+          },
+          "enabled_constraints": {
+            "items": {
+              "$ref": "#/components/schemas/ConstraintId"
+            },
+            "type": "array",
+            "title": "Enabled Constraints"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "engine_version",
+          "freshness_hours",
+          "fabric",
+          "trims",
+          "capacity",
+          "approval",
+          "conflict_rules",
+          "enabled_constraints"
+        ],
+        "title": "PolicyDocument",
+        "description": "The whole policy. Its `policy_digest` identifies it; it is never edited in place."
+      },
+      "PolicyDocument-Output": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "freshness_hours": {
+            "$ref": "#/components/schemas/FreshnessHours"
+          },
+          "fabric": {
+            "$ref": "#/components/schemas/FabricParams-Output"
+          },
+          "trims": {
+            "$ref": "#/components/schemas/TrimParams-Output"
+          },
+          "capacity": {
+            "$ref": "#/components/schemas/CapacityParams-Output"
+          },
+          "approval": {
+            "$ref": "#/components/schemas/ApprovalParams-Output"
+          },
+          "conflict_rules": {
+            "items": {
+              "$ref": "#/components/schemas/ConflictRule"
+            },
+            "type": "array",
+            "title": "Conflict Rules"
+          },
+          "enabled_constraints": {
+            "items": {
+              "$ref": "#/components/schemas/ConstraintId"
+            },
+            "type": "array",
+            "title": "Enabled Constraints"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "engine_version",
+          "freshness_hours",
+          "fabric",
+          "trims",
+          "capacity",
+          "approval",
+          "conflict_rules",
+          "enabled_constraints"
+        ],
+        "title": "PolicyDocument",
+        "description": "The whole policy. Its `policy_digest` identifies it; it is never edited in place."
+      },
+      "PolicyList": {
+        "properties": {
+          "adopted": {
+            "type": "string",
+            "title": "Adopted",
+            "description": "Digest of the policy decisions use when none is named"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StoredPolicyView"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "adopted",
+          "items"
+        ],
+        "title": "PolicyList"
+      },
+      "PolicyRef": {
+        "properties": {
+          "digest": {
+            "type": "string",
+            "title": "Digest"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "digest",
+          "label",
+          "engine_version"
+        ],
+        "title": "PolicyRef"
+      },
+      "PolicyStored": {
+        "properties": {
+          "policy_digest": {
+            "type": "string",
+            "title": "Policy Digest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy_digest"
+        ],
+        "title": "PolicyStored"
+      },
+      "PreviewView": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "READY",
+              "BLOCKED"
+            ],
+            "title": "Status"
+          },
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "raw_digest": {
+            "type": "string",
+            "title": "Raw Digest"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "preview_digest": {
+            "type": "string",
+            "title": "Preview Digest"
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage"
+          },
+          "problems": {
+            "items": {
+              "$ref": "#/components/schemas/ImportProblem"
+            },
+            "type": "array",
+            "title": "Problems"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/Fact"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "pending_extraction": {
+            "items": {
+              "$ref": "#/components/schemas/PendingNote"
+            },
+            "type": "array",
+            "title": "Pending Extraction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "profile",
+          "filename",
+          "raw_digest",
+          "as_of",
+          "preview_digest",
+          "coverage",
+          "problems",
+          "facts",
+          "pending_extraction"
+        ],
+        "title": "PreviewView"
+      },
+      "PublishBody": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Filename"
+          },
+          "profile": {
+            "type": "string",
+            "maxLength": 48,
+            "minLength": 1,
+            "title": "Profile"
+          },
+          "column_mapping": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Column Mapping"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Timezone",
+            "default": "Asia/Kolkata"
+          },
+          "units": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Units"
+          },
+          "coverage_qualities": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage Qualities"
+          },
+          "content_base64": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Content Base64"
+          },
+          "preview_digest": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Preview Digest"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "profile",
+          "as_of",
+          "content_base64",
+          "preview_digest",
+          "idempotency_key"
+        ],
+        "title": "PublishBody"
+      },
       "PublishRequestBody": {
         "properties": {
           "profile_id": {
@@ -3929,6 +7210,378 @@
         ],
         "title": "PublishRequestBody"
       },
+      "PublishView": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "title": "Artifact Id"
+          },
+          "idempotent_replay": {
+            "type": "boolean",
+            "title": "Idempotent Replay"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "raw_digest": {
+            "type": "string",
+            "title": "Raw Digest"
+          },
+          "preview_digest": {
+            "type": "string",
+            "title": "Preview Digest"
+          },
+          "fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fact Ids"
+          },
+          "pending_extraction": {
+            "items": {
+              "$ref": "#/components/schemas/PendingNote"
+            },
+            "type": "array",
+            "title": "Pending Extraction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "idempotent_replay",
+          "known_at",
+          "raw_digest",
+          "preview_digest",
+          "fact_ids",
+          "pending_extraction"
+        ],
+        "title": "PublishView"
+      },
+      "Quantity": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/Unit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "unit"
+        ],
+        "title": "Quantity",
+        "description": "A Decimal amount (exactly 3 dp) with a unit. JSON form: canonical text, e.g. \"5\"."
+      },
+      "Recommendation": {
+        "type": "string",
+        "enum": [
+          "ACCEPT",
+          "ACCEPT_WITH_CONDITIONS",
+          "DECLINE",
+          "NEEDS_REVIEW"
+        ],
+        "title": "Recommendation"
+      },
+      "RecommendationView": {
+        "properties": {
+          "outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "candidate_outcome": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Recommendation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/OvertimeCondition"
+            },
+            "type": "array",
+            "title": "Conditions",
+            "default": []
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "outcome"
+        ],
+        "title": "RecommendationView"
+      },
+      "Reconstruction": {
+        "properties": {
+          "evaluation_id": {
+            "type": "string",
+            "title": "Evaluation Id"
+          },
+          "stored_decision_digest": {
+            "type": "string",
+            "title": "Stored Decision Digest"
+          },
+          "recomputed_decision_digest": {
+            "type": "string",
+            "title": "Recomputed Decision Digest"
+          },
+          "snapshot_matches": {
+            "type": "boolean",
+            "title": "Snapshot Matches"
+          },
+          "policy_matches": {
+            "type": "boolean",
+            "title": "Policy Matches"
+          },
+          "matches": {
+            "type": "boolean",
+            "title": "Matches"
+          },
+          "result": {
+            "$ref": "#/components/schemas/ReplayResult"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evaluation_id",
+          "stored_decision_digest",
+          "recomputed_decision_digest",
+          "snapshot_matches",
+          "policy_matches",
+          "matches",
+          "result"
+        ],
+        "title": "Reconstruction",
+        "description": "Outcome of replaying a stored evaluation. A mismatch is data, never an exception."
+      },
+      "RecordForOrderRequest": {
+        "properties": {
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          },
+          "policy_digest": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Policy Digest"
+          },
+          "final_outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Reason",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "cutoff",
+          "policy_digest",
+          "final_outcome"
+        ],
+        "title": "RecordForOrderRequest"
+      },
+      "RecordRequest": {
+        "properties": {
+          "decision": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Reason",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "title": "RecordRequest"
+      },
+      "RecordedDecision": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "reviewer": {
+            "type": "string",
+            "title": "Reviewer"
+          },
+          "engine_outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "final_outcome": {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "override": {
+            "type": "boolean",
+            "title": "Override"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "recorded_at",
+          "reviewer",
+          "engine_outcome",
+          "final_outcome",
+          "reason",
+          "override"
+        ],
+        "title": "RecordedDecision"
+      },
+      "RegressionCaseView": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/Classification"
+          },
+          "baseline": {
+            "$ref": "#/components/schemas/CaseRun"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/CaseRun"
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "title",
+          "classification",
+          "baseline",
+          "candidate"
+        ],
+        "title": "RegressionCaseView"
+      },
+      "RegressionRequest": {
+        "properties": {
+          "baseline": {
+            "$ref": "#/components/schemas/PolicyDocument-Input"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/PolicyDocument-Input"
+          }
+        },
+        "type": "object",
+        "required": [
+          "baseline",
+          "candidate"
+        ],
+        "title": "RegressionRequest"
+      },
+      "RegressionRunList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RegressionRunView"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "RegressionRunList"
+      },
+      "RegressionRunView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "baseline_policy_digest": {
+            "type": "string",
+            "title": "Baseline Policy Digest"
+          },
+          "candidate_policy_digest": {
+            "type": "string",
+            "title": "Candidate Policy Digest"
+          },
+          "suite_digest": {
+            "type": "string",
+            "title": "Suite Digest"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/RegressionCaseView"
+            },
+            "type": "array",
+            "title": "Cases"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "complete",
+          "engine_version",
+          "baseline_policy_digest",
+          "candidate_policy_digest",
+          "suite_digest",
+          "created_at",
+          "cases"
+        ],
+        "title": "RegressionRunView"
+      },
       "ReplayRequest": {
         "properties": {
           "scenario_id": {
@@ -3959,6 +7612,56 @@
         ],
         "title": "ReplayRequest"
       },
+      "ReplayResult": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "snapshot_digest": {
+            "type": "string",
+            "title": "Snapshot Digest"
+          },
+          "policy_digest": {
+            "type": "string",
+            "title": "Policy Digest"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "gate": {
+            "$ref": "#/components/schemas/GateResult"
+          },
+          "constraints": {
+            "items": {
+              "$ref": "#/components/schemas/ConstraintResult"
+            },
+            "type": "array",
+            "title": "Constraints"
+          },
+          "recommendation": {
+            "$ref": "#/components/schemas/RecommendationView"
+          },
+          "decision_digest": {
+            "type": "string",
+            "title": "Decision Digest"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "order_id",
+          "snapshot_digest",
+          "policy_digest",
+          "engine_version",
+          "gate",
+          "constraints",
+          "recommendation",
+          "decision_digest"
+        ],
+        "title": "ReplayResult"
+      },
       "ReviewCheckRequest": {
         "properties": {
           "original_replay_id": {
@@ -3981,6 +7684,497 @@
           "target_scenario_revision"
         ],
         "title": "ReviewCheckRequest"
+      },
+      "ReviewEventView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "actor": {
+            "type": "string",
+            "title": "Actor"
+          },
+          "assignee_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Id"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "corrected_value": {
+            "title": "Corrected Value"
+          },
+          "resulting_fact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resulting Fact Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "actor",
+          "assignee_id",
+          "note",
+          "corrected_value",
+          "resulting_fact_id",
+          "created_at"
+        ],
+        "title": "ReviewEventView"
+      },
+      "ReviewItemDetail": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ReviewItemView"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewEventView"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "events"
+        ],
+        "title": "ReviewItemDetail"
+      },
+      "ReviewItemList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewItemView"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "ReviewItemList"
+      },
+      "ReviewItemView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source_kind": {
+            "type": "string",
+            "title": "Source Kind"
+          },
+          "extraction_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction Id"
+          },
+          "evaluation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Id"
+          },
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "field_status": {
+            "type": "string",
+            "title": "Field Status"
+          },
+          "check_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Check Codes"
+          },
+          "claimed_value": {
+            "title": "Claimed Value"
+          },
+          "evidence_span": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceSpan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entity_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Key"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "assignee_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Id"
+          },
+          "resulting_fact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resulting Fact Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_kind",
+          "extraction_id",
+          "evaluation_id",
+          "field",
+          "field_status",
+          "check_codes",
+          "claimed_value",
+          "evidence_span",
+          "entity_key",
+          "state",
+          "assignee_id",
+          "resulting_fact_id",
+          "created_at"
+        ],
+        "title": "ReviewItemView"
+      },
+      "Snapshot": {
+        "properties": {
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff",
+            "description": "UTC-offset-aware instant"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/Fact"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            },
+            "type": "array",
+            "title": "Findings"
+          },
+          "digest": {
+            "type": "string",
+            "title": "Digest"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cutoff",
+          "facts",
+          "findings",
+          "digest"
+        ],
+        "title": "Snapshot"
+      },
+      "SnapshotView": {
+        "properties": {
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          },
+          "settled": {
+            "type": "boolean",
+            "title": "Settled"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/Snapshot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cutoff",
+          "settled",
+          "snapshot"
+        ],
+        "title": "SnapshotView"
+      },
+      "SourceProfile": {
+        "type": "string",
+        "enum": [
+          "erp_fabric_stock",
+          "sheet_trims_status",
+          "shift_capacity",
+          "supplier_updates",
+          "notes",
+          "order_requests",
+          "review_queue"
+        ],
+        "title": "SourceProfile"
+      },
+      "Step": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "expression": {
+            "type": "string",
+            "title": "Expression"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "expression",
+          "value"
+        ],
+        "title": "Step",
+        "description": "One line of arithmetic: the formula with the numbers substituted, and its value."
+      },
+      "StoredPolicyView": {
+        "properties": {
+          "policy_digest": {
+            "type": "string",
+            "title": "Policy Digest"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/PolicyDocument-Output"
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy_digest",
+          "label",
+          "engine_version",
+          "created_at",
+          "policy"
+        ],
+        "title": "StoredPolicyView"
+      },
+      "SyncResult": {
+        "properties": {
+          "extraction_items_created": {
+            "type": "integer",
+            "title": "Extraction Items Created"
+          },
+          "evaluation_items_created": {
+            "type": "integer",
+            "title": "Evaluation Items Created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "extraction_items_created",
+          "evaluation_items_created"
+        ],
+        "title": "SyncResult"
+      },
+      "Timeline": {
+        "properties": {
+          "knowledge_times": {
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "type": "array",
+            "title": "Knowledge Times"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "knowledge_times",
+          "events"
+        ],
+        "title": "Timeline"
+      },
+      "TimelineEvent": {
+        "properties": {
+          "known_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Known At"
+          },
+          "fact_id": {
+            "type": "string",
+            "title": "Fact Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/FactKind"
+          },
+          "entity_key": {
+            "type": "string",
+            "title": "Entity Key"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "known_at",
+          "fact_id",
+          "kind",
+          "entity_key",
+          "source",
+          "summary"
+        ],
+        "title": "TimelineEvent"
+      },
+      "TrimParams-Input": {
+        "properties": {
+          "wastage_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Wastage Pct",
+            "ge": 0
+          },
+          "buffer_days": {
+            "type": "integer",
+            "title": "Buffer Days"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "wastage_pct",
+          "buffer_days"
+        ],
+        "title": "TrimParams"
+      },
+      "TrimParams-Output": {
+        "properties": {
+          "wastage_pct": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Wastage Pct",
+            "ge": 0
+          },
+          "buffer_days": {
+            "type": "integer",
+            "title": "Buffer Days"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "wastage_pct",
+          "buffer_days"
+        ],
+        "title": "TrimParams"
+      },
+      "Unit": {
+        "type": "string",
+        "enum": [
+          "kg",
+          "m",
+          "pcs",
+          "minutes"
+        ],
+        "title": "Unit"
       },
       "ValidationError": {
         "properties": {
@@ -4021,6 +8215,27 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "Verdict": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "FAIL"
+        ],
+        "title": "Verdict"
+      },
+      "Weekday": {
+        "type": "string",
+        "enum": [
+          "MON",
+          "TUE",
+          "WED",
+          "THU",
+          "FRI",
+          "SAT",
+          "SUN"
+        ],
+        "title": "Weekday"
       },
       "WorkspaceMemberRequest": {
         "properties": {

@@ -12,12 +12,12 @@ from flooreplay import ai_runs, openai_provider
 from flooreplay.config import settings
 from flooreplay.db import session_scope
 from flooreplay.domain.hashing import incident_digest
+from flooreplay.errors import ServiceError
 from flooreplay.incident_engine import incident_evidence_card
 from flooreplay.incident_service import create_analysis
 from flooreplay.models import IncidentAnalysis, IncidentRevision
 from flooreplay.paid_models import AIRun, CorpusRelease, RetrievalRun, SpendEntry
 from flooreplay.retrieval import hybrid_search, lexical_search, precedent_comparison, publish_corpus
-from flooreplay.service import ServiceError
 
 
 def development_payload(incident_id, cutoff, *, line='DEV-S', lineage=None, split='historical'):

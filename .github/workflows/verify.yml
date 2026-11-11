@@ -25,8 +25,10 @@ jobs:
       FLOORREPLAY_TEST_DATABASE_URL: postgresql+psycopg://flooreplay_test@localhost:5432/flooreplay_release_test
       FLOORREPLAY_BUILD_ID: ${{ github.sha }}
       FLOORREPLAY_OPENAI_API_KEY: ''
+      FLOORREPLAY_ANTHROPIC_API_KEY: ''
       E2E_USERNAME: browser-owner
       E2E_PASSWORD: disposable-browser-test-password
+      E2E_PRIVATE_SANDBOX: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -68,6 +70,7 @@ jobs:
           uv run python -m flooreplay seed
           uv run python -m flooreplay seed
           uv run python -m flooreplay dataset-verify
+          uv run python -m flooreplay decision-cases-verify
       - name: Backend integration tests
         run: cd backend && uv run pytest
       - name: Acceptance credential-boundary tests
@@ -84,6 +87,7 @@ jobs:
         run: |
           cd backend
           uv run python -c 'import os; from flooreplay.auth import create_account; create_account(os.environ["E2E_USERNAME"], os.environ["E2E_PASSWORD"], "owner")'
+          uv run python -m flooreplay decisions-demo --owner "$E2E_USERNAME"
           .venv/bin/python -m uvicorn flooreplay.api:app --host 127.0.0.1 --port 8000 > /tmp/flooreplay-api.log 2>&1 &
           echo "$!" > "$RUNNER_TEMP/flooreplay-api.pid"
           for attempt in $(seq 1 30); do

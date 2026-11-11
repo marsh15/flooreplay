@@ -51,6 +51,7 @@ test-db:
 
 dataset-verify:
 	cd backend && uv run python -m flooreplay dataset-verify
+	cd backend && uv run python -m flooreplay decision-cases-verify
 
 export-demo:
 	cd backend && uv run python -m flooreplay export-demo

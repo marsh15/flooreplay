@@ -1,0 +1,52 @@
+{
+  "items": [
+    {
+      "order_id": "POLO-221",
+      "buyer": "Buyer A",
+      "style_id": "POLO-221",
+      "ship_date": "2026-11-12",
+      "total_qty": "5000",
+      "latest": {
+        "outcome": "ACCEPT",
+        "gate_state": "READY",
+        "cutoff": "2026-10-22T05:30:00Z"
+      }
+    },
+    {
+      "order_id": "POLO-222",
+      "buyer": "Buyer B",
+      "style_id": "POLO-222",
+      "ship_date": "2026-11-14",
+      "total_qty": "4200",
+      "latest": {
+        "outcome": "NEEDS_REVIEW",
+        "gate_state": "CONFLICTING",
+        "cutoff": "2026-10-22T05:30:00Z"
+      }
+    },
+    {
+      "order_id": "POLO-223",
+      "buyer": "Buyer C",
+      "style_id": "POLO-223",
+      "ship_date": "2026-11-18",
+      "total_qty": "6000",
+      "latest": {
+        "outcome": "ACCEPT_WITH_CONDITIONS",
+        "gate_state": "READY",
+        "cutoff": "2026-10-22T05:30:00Z"
+      }
+    },
+    {
+      "order_id": "POLO-224",
+      "buyer": "Buyer D",
+      "style_id": "POLO-224",
+      "ship_date": "2026-11-20",
+      "total_qty": "1000",
+      "latest": {
+        "outcome": "NEEDS_REVIEW",
+        "gate_state": "INCOMPLETE",
+        "cutoff": "2026-10-22T05:30:00Z"
+      }
+    }
+  ]
+}

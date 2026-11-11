@@ -7,8 +7,15 @@ import { SignInControl, useAuth } from '@/components/Auth'
 import { Limits } from '@/components/board'
 import { cn } from '@/lib/utils'
 
-const NAV = [{ to: '/', label: 'Incidents', icon: Library }]
-const ENGINEERING = [
+const NAV = [
+  { to: '/', label: 'Order decisions', icon: Library },
+  { to: '/lab', label: 'Replay lab', icon: FlaskConical },
+  { to: '/review', label: 'Review queue', icon: Shield },
+  { to: '/imports', label: 'Imports', icon: Activity },
+]
+// The earlier products stay reachable, but apart from the current order decision screens.
+const EARLIER_VERSIONS = [
+  { to: '/investigations', label: 'Shortfall investigations (v1)', icon: Library },
   { to: '/evaluation', label: 'Evaluation lab', icon: FlaskConical },
   { to: '/coverage', label: 'Coverage archive', icon: ArrowLeftRight },
 ]
@@ -32,8 +39,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const navLink = ({ to, label, icon: Icon }: (typeof NAV)[number]) => {
     const active =
       to === '/'
-        ? pathname === '/' || pathname.startsWith('/incidents/')
-        : pathname === to || pathname.startsWith(`${to}/`)
+        ? pathname === '/' || pathname.startsWith('/orders/')
+        : to === '/investigations'
+          ? pathname === to || pathname.startsWith(`${to}/`) || pathname.startsWith('/incidents/')
+          : pathname === to || pathname.startsWith(`${to}/`)
     return (
       <Link
         key={to}
@@ -70,11 +79,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 FloorReplay
               </span>
               <span className="block text-xs text-board-muted">
-                {user ? 'Private and demo investigations' : 'Synthetic manufacturing data'}
+                {user ? 'Private order decisions' : 'Synthetic manufacturing data'}
               </span>
             </span>
           </Link>
-          <div className="ml-auto flex items-center gap-3 pb-2 sm:order-3">
+          <div className="ml-auto flex items-center gap-3 pb-2">
             {isDemo ? (
               <span className="text-sm font-medium text-board-muted">Isolated simulation</span>
             ) : (
@@ -90,7 +99,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             )}
           </div>
           <nav
-            className="flex w-full flex-wrap items-center gap-x-1 border-t border-rule sm:order-2 sm:w-auto sm:border-0"
+            className="flex w-full flex-wrap items-center gap-x-1 border-t border-rule"
             aria-label="Primary"
           >
             {navigation.map(navLink)}
@@ -99,8 +108,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 aria-hidden="true"
                 className="mx-2 hidden h-5 w-px bg-board-muted/40 sm:block"
               />
-              <span className="px-2 text-xs font-medium text-board-muted">Engineering</span>
-              {ENGINEERING.map(navLink)}
+              <span className="px-2 text-xs font-medium text-board-muted">Earlier versions</span>
+              {EARLIER_VERSIONS.map(navLink)}
             </div>
           </nav>
         </div>

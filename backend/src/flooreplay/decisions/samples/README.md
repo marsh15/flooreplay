@@ -1,0 +1,1 @@
+All CSV files in this directory contain synthetic examples for the fictional factory “Tiruppur Knits (synthetic)”. They are not real factory records. The sample order profile stores its `colours` and `trims` columns as JSON arrays, as documented by `decisions/imports.py`.

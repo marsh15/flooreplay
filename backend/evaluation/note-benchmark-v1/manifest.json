@@ -1,0 +1,33 @@
+{
+  "version": "note-benchmark-v1",
+  "schema_version": "note-signal-v2",
+  "synthetic": true,
+  "drafted_by": "codex",
+  "frozen": false,
+  "note_count": 100,
+  "pilot_count": 30,
+  "counts_by_language": {
+    "en": 40,
+    "ta": 30,
+    "tanglish": 30
+  },
+  "pilot_counts_by_language": {
+    "en": 12,
+    "ta": 9,
+    "tanglish": 9
+  },
+  "files": {
+    "notes.jsonl": {
+      "sha256": "ef9de0a8745af018acb7584c699596e732868d11e47ca60e302e9e5140d47987",
+      "records": 100
+    },
+    "gold.jsonl": {
+      "sha256": "2bd257d99f1854f4d1a273009f7a34f7ae245ba76ff87e02e2653156d209f5a3",
+      "records": 100
+    },
+    "pilot.jsonl": {
+      "sha256": "a0fd9f88c9d234c372f9243c6e4b62e44ecc77bab2eb2c56efe7845bb1346155",
+      "records": 30
+    }
+  }
+}

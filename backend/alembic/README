@@ -17,4 +17,4 @@ The equivalent command from backend is:
 
 Migrations update the schema. Load application fixtures separately with
 make seed from the repository root. See ../../README.md for local setup and
-../../DEVELOPMENT.md for the original coverage engine's development history.
+../../docs/v1/DEVELOPMENT.md for the original coverage engine's development history.

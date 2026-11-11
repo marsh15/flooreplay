@@ -10,11 +10,11 @@ import pytest
 from sqlalchemy.orm import Session
 
 from flooreplay.db import engine
+from flooreplay.errors import ServiceError
 from flooreplay.incident_fixtures import incident_fixtures
 from flooreplay.incident_import import preview_incident_import
 from flooreplay.incident_service import create_analysis, create_incident_from_source, publish_source
 from flooreplay.models import IncidentRevision
-from flooreplay.service import ServiceError
 
 
 def test_publication_confirmation_binds_scope_and_timezone_and_preserves_correction_history():

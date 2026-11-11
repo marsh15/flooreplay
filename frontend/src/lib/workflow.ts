@@ -1,5 +1,5 @@
 import type { components } from '@/lib/generated-api'
-import { apiRequest } from '@/lib/api'
+import { apiRequest } from '@/lib/http'
 
 export interface WorkflowAssignee {
   id: string

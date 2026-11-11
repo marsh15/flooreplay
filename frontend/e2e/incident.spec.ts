@@ -5,7 +5,7 @@ import { ensureBackend, signInOwner } from './helpers'
 test.beforeAll(ensureBackend)
 
 test('incident investigation keeps evidence and later revision separate', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/investigations')
   await expect(page.getByRole('heading', { name: 'Incident library' })).toBeVisible()
   await page.getByRole('link', { name: 'Delayed start on sewing line S4' }).click()
   await expect(page.getByRole('heading', { name: 'Observed situation' })).toBeVisible()
@@ -82,7 +82,7 @@ test('incident import preview blocks an invalid source row', async ({ page }) =>
 
 test('bundled investigation remains readable while the API is unavailable', async ({ page }) => {
   await page.route('**/api/v1/**', (route) => route.abort())
-  await page.goto('/')
+  await page.goto('/investigations')
   await expect(page.getByText(/Showing bundled saved demo cases/)).toBeVisible()
   await page.getByRole('link', { name: 'Delayed start on sewing line S4' }).click()
   await expect(page.getByText('Saved deterministic result')).toBeVisible()

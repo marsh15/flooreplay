@@ -5,6 +5,7 @@ from pydantic import ValidationError
 
 from flooreplay.api import create_app
 from flooreplay.config import Settings, settings
+from flooreplay.schema_head import SCHEMA_HEAD
 
 
 @pytest.mark.parametrize("origin", ["*", "https://*.vercel.app", "https://app.vercel.app/", "https://app.vercel.app/path", "http://app.vercel.app"])
@@ -33,5 +34,5 @@ def test_readiness_identifies_application_and_compatible_schema(monkeypatch):
     monkeypatch.setattr(settings, 'build_id', 'readiness-identity-test')
     response = TestClient(create_app()).get('/api/v1/health/ready')
     assert response.status_code == 200
-    assert response.json() == {'status': 'ready', 'build_id': 'readiness-identity-test', 'schema_revision': '20261001_operations'}
+    assert response.json() == {'status': 'ready', 'build_id': 'readiness-identity-test', 'schema_revision': SCHEMA_HEAD}
     assert response.headers['X-Request-ID']

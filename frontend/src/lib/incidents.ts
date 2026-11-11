@@ -1,5 +1,5 @@
 import type { components } from '@/lib/generated-api'
-import { apiRequest, apiDownload, ApiError } from '@/lib/api'
+import { apiRequest, apiDownload, ApiError } from '@/lib/http'
 import savedLibrary from '@/data/incident-library.json'
 import savedRevision from '@/data/hero-revision.json'
 import savedReport from '@/data/hero-report.json'

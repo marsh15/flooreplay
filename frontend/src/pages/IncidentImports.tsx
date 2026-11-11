@@ -720,7 +720,7 @@ function IncidentImportsForm({ owner }: { owner: boolean }) {
   return (
     <div className="space-y-6">
       <Link
-        to="/"
+        to="/investigations"
         className="inline-flex min-h-8 items-center gap-1.5 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
       >
         <ArrowLeft aria-hidden="true" className="size-3.5" />

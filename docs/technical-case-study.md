@@ -10,11 +10,11 @@ Calculation coverage, reported evidence availability, investigation state, assig
 
 AI drafts reference permitted evidence and typed metrics. Numeric and citation checks protect the output contract but cannot establish semantic support. Reviewers inspect the exact output alongside cited and uncited pinned records. Their judgments and rationales are append-only, and the review shows disagreements. Factual support and operational approval remain separate. Historical retrieval pins its corpus/cutoff, excludes current lineage and held-out cases, and compares observed conditions and missing intervention/outcome evidence. An empty useful-match result is acceptable.
 
-In the browser-only safe demo, visitors can inspect evidence, assign a check and record an outcome. The demo requires no account and makes no shared mutations or paid requests. See the [architecture](../ARCHITECTURE.md), [workflow](incident-workflow.md), [CSV contract](csv-import-mapping.md) and [product scope](../PRODUCT.md).
+In the browser-only safe demo, visitors can inspect evidence, assign a check and record an outcome. The demo requires no account and makes no shared mutations or paid requests. See the [architecture](v1/ARCHITECTURE.md), [workflow](incident-workflow.md), [CSV contract](csv-import-mapping.md) and [product scope](v1/PRODUCT.md).
 
 ## Measured results and limits
 
-The production-ownership release passes 241 backend tests and 62 browser scenarios, plus lint, type checks and build. Six rollback-harness guard tests pass. The code and verification boundaries are recorded in [release evidence](../RELEASE_STATUS.md). These results describe the reviewed release snapshot; parallel uncommitted edits are excluded.
+The production-ownership release passes 241 backend tests and 62 browser scenarios, plus lint, type checks and build. Six rollback-harness guard tests pass. The code and verification boundaries are recorded in [release evidence](v1/RELEASE_STATUS.md). These results describe the reviewed release snapshot; parallel uncommitted edits are excluded.
 
 The fifth-priority code release `a3b7c23`, documented in `04e0466`, passed 225 backend tests and 58 browser scenarios, plus lint, type checks and build. These are local software checks. The production-ownership pass has separate acceptance/recovery artifacts; only their completed entries establish measurements.
 

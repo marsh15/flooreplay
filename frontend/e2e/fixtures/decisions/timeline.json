@@ -1,0 +1,42 @@
+{
+  "knowledge_times": [
+    "2026-10-22T04:04:00Z",
+    "2026-10-22T04:05:00Z",
+    "2026-10-22T04:06:00Z",
+    "2026-10-22T04:07:00Z"
+  ],
+  "events": [
+    {
+      "known_at": "2026-10-22T04:04:00Z",
+      "fact_id": "fact-bom-221",
+      "kind": "bom",
+      "entity_key": "bom:POLO-221",
+      "source": "order_requests",
+      "summary": "POLO-221 BOM lists SJ180 fabric, 0.82 m per piece, and BTN-01 trims"
+    },
+    {
+      "known_at": "2026-10-22T04:05:00Z",
+      "fact_id": "fact-order-221",
+      "kind": "order_request",
+      "entity_key": "order:POLO-221",
+      "source": "order_requests",
+      "summary": "Order POLO-221 requests 5,000 NAVY pieces"
+    },
+    {
+      "known_at": "2026-10-22T04:06:00Z",
+      "fact_id": "fact-lot-221",
+      "kind": "fabric_lot",
+      "entity_key": "lot:L-221",
+      "source": "erp_fabric_stock",
+      "summary": "Lot L-221 observed at 5,200 m"
+    },
+    {
+      "known_at": "2026-10-22T04:07:00Z",
+      "fact_id": "fact-capacity-221",
+      "kind": "line_capacity",
+      "entity_key": "line:L1:2026-11-03",
+      "source": "shift_capacity",
+      "summary": "Line L1 reports 18,000 available minutes"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "order_id": "POLO-223",
+  "cutoff": "2026-10-22T05:30:00Z",
+  "settled": true,
+  "policy": {
+    "digest": "policy-v1-abc",
+    "label": "Tiruppur default",
+    "engine_version": "decision-v1"
+  },
+  "snapshot_digest": "snapshot-overtime-223",
+  "decision_digest": "decision-overtime-223",
+  "gate": {
+    "state": "READY",
+    "findings": [],
+    "coverage_used": {
+      "artifact_id": "artifact-erp-223",
+      "as_of": "2026-10-22T04:00:00Z",
+      "qualities": ["SJ180"]
+    }
+  },
+  "constraints": [
+    {
+      "constraint": "CAPACITY",
+      "subject": "Eligible lines",
+      "status": "FAIL",
+      "fact_ids": ["fact-capacity-223"],
+      "steps": [
+        {
+          "label": "Required minutes",
+          "expression": "6,000 pcs × 2.8 min/pc ÷ 0.8",
+          "value": "21,000 min"
+        },
+        {
+          "label": "Available minutes",
+          "expression": "19,000 min − 1,000 min",
+          "value": "18,000 min"
+        }
+      ],
+      "detail": "Capacity is short by 3,000 minutes.",
+      "consumed_by": [],
+      "pending_review_fact_ids": []
+    },
+    {
+      "constraint": "OVERTIME",
+      "subject": "Eligible lines",
+      "status": "PASS",
+      "fact_ids": ["fact-capacity-223"],
+      "steps": [
+        {
+          "label": "Overtime required",
+          "expression": "ceil(3,000 min ÷ (3 lines × 10 days × 60 min))",
+          "value": "2 hours per line per day"
+        }
+      ],
+      "detail": "Overtime is within the 2-hour daily cap for each eligible line.",
+      "consumed_by": [],
+      "pending_review_fact_ids": []
+    }
+  ],
+  "recommendation": {
+    "outcome": "ACCEPT_WITH_CONDITIONS",
+    "candidate_outcome": null,
+    "conditions": [{ "type": "overtime", "lines": 3, "hours_per_line_per_day": 2, "days": 10 }],
+    "reasons": ["Capacity requires approved overtime."]
+  },
+  "facts": [
+    {
+      "id": "fact-capacity-223",
+      "kind": "line_capacity",
+      "entity_key": "line:L1:2026-11-03",
+      "payload": {
+        "available_minutes": { "value": "19000", "unit": "minutes" },
+        "efficiency_pct": "0.8"
+      },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:07:00Z",
+      "supersedes_id": null,
+      "source": "shift_capacity",
+      "artifact_id": "artifact-capacity-223"
+    }
+  ],
+  "records": []
+}

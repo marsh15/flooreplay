@@ -21,6 +21,7 @@ services:
       FLOORREPLAY_MODE: public
       FLOORREPLAY_BUILD_ID: ${FLOORREPLAY_BUILD_ID:-local-compose}
       FLOORREPLAY_OPENAI_API_KEY: ${FLOORREPLAY_OPENAI_API_KEY:-}
+      FLOORREPLAY_ANTHROPIC_API_KEY: ${FLOORREPLAY_ANTHROPIC_API_KEY:-}
       FLOORREPLAY_CORS_ORIGINS: '["http://localhost:${FLOORREPLAY_FRONTEND_PORT:-5174}","http://127.0.0.1:${FLOORREPLAY_FRONTEND_PORT:-5174}"]'
     command: ["sh", "-c", "alembic upgrade head && python -m flooreplay seed && exec uvicorn flooreplay.api:app --host 0.0.0.0 --port 8000"]
     ports:

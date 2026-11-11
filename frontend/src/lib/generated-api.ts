@@ -1045,6 +1045,391 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/decisions/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Orders */
+        get: operations["list_orders_api_v1_decisions_orders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/orders/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Order
+         * @description Replay the order as known at `cutoff` (default: now, settled) without storing anything.
+         */
+        get: operations["get_order_api_v1_decisions_orders__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/orders/{order_id}/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Timeline */
+        get: operations["get_timeline_api_v1_decisions_orders__order_id__timeline_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/orders/{order_id}/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record For Order
+         * @description Store the replay the person was looking at (idempotent), then record their decision on it.
+         */
+        post: operations["record_for_order_api_v1_decisions_orders__order_id__records_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/snapshot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Snapshot */
+        get: operations["get_snapshot_api_v1_decisions_snapshot_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/evaluate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Evaluate */
+        post: operations["evaluate_api_v1_decisions_evaluate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/evaluations/{evaluation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Evaluation */
+        get: operations["get_evaluation_api_v1_decisions_evaluations__evaluation_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/evaluations/{evaluation_id}/record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record Decision */
+        post: operations["record_decision_api_v1_decisions_evaluations__evaluation_id__record_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Policies */
+        get: operations["list_policies_api_v1_decisions_policies_get"];
+        put?: never;
+        /** Store Policy */
+        post: operations["store_policy_api_v1_decisions_policies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/policies/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Diff Policies */
+        post: operations["diff_policies_api_v1_decisions_policies_diff_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/regression-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Regression Runs
+         * @description Stored runs, newest first; `candidate` narrows them to one candidate policy.
+         */
+        get: operations["list_regression_runs_api_v1_decisions_regression_runs_get"];
+        put?: never;
+        /** Start Regression Run */
+        post: operations["start_regression_run_api_v1_decisions_regression_runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/regression-runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Regression Run */
+        get: operations["get_regression_run_api_v1_decisions_regression_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/regression-runs/{run_id}/adopt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adopt Regression Run */
+        post: operations["adopt_regression_run_api_v1_decisions_regression_runs__run_id__adopt_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/imports/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Csv */
+        post: operations["preview_csv_api_v1_decisions_imports_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/imports/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish Csv */
+        post: operations["publish_csv_api_v1_decisions_imports_publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/review-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Review Items */
+        get: operations["list_review_items_api_v1_decisions_review_items_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/review-items/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Review Item */
+        get: operations["get_review_item_api_v1_decisions_review_items__item_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/review-items/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sync Review Queue */
+        post: operations["sync_review_queue_api_v1_decisions_review_items_sync_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/review-items/{item_id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Assign Review Item */
+        post: operations["assign_review_item_api_v1_decisions_review_items__item_id__assign_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/review-items/{item_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm Review Item */
+        post: operations["confirm_review_item_api_v1_decisions_review_items__item_id__confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/review-items/{item_id}/correct": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Correct Review Item */
+        post: operations["correct_review_item_api_v1_decisions_review_items__item_id__correct_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decisions/review-items/{item_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject Review Item */
+        post: operations["reject_review_item_api_v1_decisions_review_items__item_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1130,6 +1515,100 @@ export interface components {
             /** Limitations */
             limitations: string;
         };
+        /** AdoptRequest */
+        AdoptRequest: {
+            /** Acknowledgements */
+            acknowledgements?: {
+                [key: string]: string;
+            };
+        };
+        /** ApprovalParams */
+        "ApprovalParams-Input": {
+            /** Max Value Inr */
+            max_value_inr: number | string;
+            /** Max Qty Pcs */
+            max_qty_pcs: number;
+        };
+        /** ApprovalParams */
+        "ApprovalParams-Output": {
+            /** Max Value Inr */
+            max_value_inr: string;
+            /** Max Qty Pcs */
+            max_qty_pcs: number;
+        };
+        /** AssignRequest */
+        AssignRequest: {
+            /**
+             * Assignee Id
+             * @description Null clears the assignment
+             */
+            assignee_id?: string | null;
+        };
+        /** CapacityParams */
+        "CapacityParams-Input": {
+            /** Eligible Lines */
+            eligible_lines: string[];
+            /** Default Efficiency Pct */
+            default_efficiency_pct: number | string;
+            /** Cut To Ship Days */
+            cut_to_ship_days: number;
+            /** Finishing Days */
+            finishing_days: number;
+            /** Ot Cap Hours Per Line Day */
+            ot_cap_hours_per_line_day: number;
+            /**
+             * Non Working Weekdays
+             * @default [
+             *       "SUN"
+             *     ]
+             */
+            non_working_weekdays: components["schemas"]["Weekday"][];
+            /**
+             * Holidays
+             * @default []
+             */
+            holidays: string[];
+        };
+        /** CapacityParams */
+        "CapacityParams-Output": {
+            /** Eligible Lines */
+            eligible_lines: string[];
+            /** Default Efficiency Pct */
+            default_efficiency_pct: string;
+            /** Cut To Ship Days */
+            cut_to_ship_days: number;
+            /** Finishing Days */
+            finishing_days: number;
+            /** Ot Cap Hours Per Line Day */
+            ot_cap_hours_per_line_day: number;
+            /**
+             * Non Working Weekdays
+             * @default [
+             *       "SUN"
+             *     ]
+             */
+            non_working_weekdays: components["schemas"]["Weekday"][];
+            /**
+             * Holidays
+             * @default []
+             */
+            holidays: string[];
+        };
+        /**
+         * CaseRun
+         * @description One case replayed under one policy. `verdict` is None when the case could not be judged.
+         */
+        CaseRun: {
+            verdict: components["schemas"]["Verdict"] | null;
+            /** Outcome */
+            outcome: string | null;
+            /** Failures */
+            failures: string[];
+            /** Decision Digest */
+            decision_digest: string | null;
+            /** Error */
+            error: string | null;
+        };
         /** CheckCompleteRequest */
         CheckCompleteRequest: {
             /** Idempotency Key */
@@ -1199,6 +1678,11 @@ export interface components {
             /** Due At */
             due_at?: string | null;
         };
+        /**
+         * Classification
+         * @enum {string}
+         */
+        Classification: "UNCHANGED_PASS" | "UNCHANGED_FAIL" | "FIXED" | "REGRESSION" | "NOT_COMPARABLE";
         /** ComparisonRequest */
         ComparisonRequest: {
             /** Suite Id */
@@ -1210,11 +1694,341 @@ export interface components {
             /** Idempotency Key */
             idempotency_key: string;
         };
+        /** ConfirmRequest */
+        ConfirmRequest: {
+            /**
+             * Note
+             * @description Required, at most 2000 characters
+             */
+            note: string;
+            /**
+             * Value
+             * @description Required when the field failed checks; at most 500 characters
+             */
+            value?: string | null;
+            fact?: components["schemas"]["FactDraft"] | null;
+        };
+        /** ConflictRule */
+        ConflictRule: {
+            /** Id */
+            id: string;
+            left_kind: components["schemas"]["FactKind"];
+            right_kind: components["schemas"]["FactKind"];
+            /**
+             * Join
+             * @constant
+             */
+            join: "entity_key";
+            /**
+             * Valid Time
+             * @constant
+             */
+            valid_time: "overlap";
+            /** Predicate */
+            predicate: string;
+        };
+        /**
+         * ConstraintId
+         * @enum {string}
+         */
+        ConstraintId: "FABRIC" | "SAFETY" | "TRIMS" | "CAPACITY" | "OVERTIME" | "APPROVAL";
+        /** ConstraintResult */
+        ConstraintResult: {
+            constraint: components["schemas"]["ConstraintId"];
+            /** Subject */
+            subject: string;
+            status: components["schemas"]["ConstraintStatus"];
+            /** Fact Ids */
+            fact_ids: string[];
+            /** Steps */
+            steps: components["schemas"]["Step"][];
+            /** Detail */
+            detail: string;
+            /**
+             * Consumed By
+             * @default []
+             */
+            consumed_by: string[];
+            /**
+             * Pending Review Fact Ids
+             * @default []
+             */
+            pending_review_fact_ids: string[];
+            required?: components["schemas"]["Quantity"] | null;
+            available?: components["schemas"]["Quantity"] | null;
+            overtime?: components["schemas"]["OvertimeNeed"] | null;
+        };
+        /**
+         * ConstraintStatus
+         * @enum {string}
+         */
+        ConstraintStatus: "PASS" | "FAIL" | "NOT_EVALUATED";
+        /** CorrectRequest */
+        CorrectRequest: {
+            /**
+             * Note
+             * @description Required, at most 2000 characters
+             */
+            note: string;
+            /**
+             * Value
+             * @description The corrected value; at most 500 characters
+             */
+            value?: string | null;
+            fact?: components["schemas"]["FactDraft"] | null;
+        };
+        /** CoverageUsed */
+        CoverageUsed: {
+            /** Artifact Id */
+            artifact_id: string;
+            /**
+             * As Of
+             * Format: date-time
+             * @description UTC-offset-aware instant
+             */
+            as_of: string;
+            /** Qualities */
+            qualities: string[];
+        };
+        /** DecisionRecordView */
+        DecisionRecordView: {
+            /** Id */
+            id: string;
+            /** Evaluation Id */
+            evaluation_id: string;
+            decision: components["schemas"]["Recommendation"];
+            recommended_outcome: components["schemas"]["Recommendation"];
+            /** Override */
+            override: boolean;
+            /** Reason */
+            reason: string;
+            /** Actor */
+            actor: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** DecisionView */
+        DecisionView: {
+            /** Order Id */
+            order_id: string;
+            /**
+             * Cutoff
+             * Format: date-time
+             */
+            cutoff: string;
+            /** Settled */
+            settled: boolean;
+            policy: components["schemas"]["PolicyRef"];
+            /** Snapshot Digest */
+            snapshot_digest: string;
+            /** Decision Digest */
+            decision_digest: string;
+            gate: components["schemas"]["GateResult"];
+            /** Constraints */
+            constraints: components["schemas"]["ConstraintResult"][];
+            recommendation: components["schemas"]["RecommendationView"];
+            /** Facts */
+            facts: components["schemas"]["Fact"][];
+            /** Records */
+            records: components["schemas"]["RecordedDecision"][];
+        };
+        /** EvaluateRequest */
+        EvaluateRequest: {
+            /** Order Id */
+            order_id: string;
+            /**
+             * Cutoff
+             * Format: date-time
+             */
+            cutoff: string;
+            /** Policy Digest */
+            policy_digest?: string | null;
+        };
+        /** EvaluationDetail */
+        EvaluationDetail: {
+            evaluation: components["schemas"]["EvaluationView"];
+            reconstruction: components["schemas"]["Reconstruction"];
+        };
+        /** EvaluationView */
+        EvaluationView: {
+            /** Id */
+            id: string;
+            /** Order Id */
+            order_id: string;
+            /**
+             * Cutoff
+             * Format: date-time
+             */
+            cutoff: string;
+            /** Policy Digest */
+            policy_digest: string;
+            /** Engine Version */
+            engine_version: string;
+            /** Snapshot Digest */
+            snapshot_digest: string;
+            /** Decision Digest */
+            decision_digest: string;
+            outcome: components["schemas"]["Recommendation"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** EvidenceSpan */
+        EvidenceSpan: {
+            /** Start */
+            start: number;
+            /** End */
+            end: number;
+            /** Text */
+            text: string;
+        };
+        /** FabricParams */
+        "FabricParams-Input": {
+            /** Wastage Pct */
+            wastage_pct: number | string;
+            /** Inbound Buffer Days */
+            inbound_buffer_days: number;
+            /** Safety Floor Pct */
+            safety_floor_pct: number | string;
+        };
+        /** FabricParams */
+        "FabricParams-Output": {
+            /** Wastage Pct */
+            wastage_pct: string;
+            /** Inbound Buffer Days */
+            inbound_buffer_days: number;
+            /** Safety Floor Pct */
+            safety_floor_pct: string;
+        };
+        /**
+         * Fact
+         * @description An immutable, hashable, bitemporal record.
+         *
+         *     `payload` is canonicalised on construction (Decimals become text, floats are
+         *     rejected, datetimes become UTC "Z" strings, text becomes NFC) and then deep-frozen:
+         *     mappings become `FrozenDict`, lists become tuples (they dump back as JSON lists).
+         */
+        Fact: {
+            /** Id */
+            id: string;
+            kind: components["schemas"]["FactKind"];
+            /** Entity Key */
+            entity_key: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /**
+             * Valid From
+             * Format: date-time
+             * @description UTC-offset-aware instant
+             */
+            valid_from: string;
+            /** Valid To */
+            valid_to: string | null;
+            /**
+             * Known At
+             * Format: date-time
+             * @description UTC-offset-aware instant
+             */
+            known_at: string;
+            /** Supersedes Id */
+            supersedes_id: string | null;
+            source: components["schemas"]["SourceProfile"];
+            /** Artifact Id */
+            artifact_id: string | null;
+        };
+        /**
+         * FactDraft
+         * @description A human-supplied fact. `origin`, `review_state` and `extraction_id` are set by the server.
+         */
+        FactDraft: {
+            kind: components["schemas"]["FactKind"];
+            /** Entity Key */
+            entity_key: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Supersedes Id */
+            supersedes_id?: string | null;
+        };
+        /**
+         * FactKind
+         * @enum {string}
+         */
+        FactKind: "order_request" | "bom" | "fabric_lot" | "fabric_qc" | "fabric_inbound" | "fabric_allocation" | "trim_status" | "line_capacity" | "line_commitment" | "resolution";
+        /**
+         * Finding
+         * @description Something the snapshot noticed that downstream gates must see.
+         */
+        Finding: {
+            /** Code */
+            code: string;
+            kind: components["schemas"]["FactKind"];
+            /** Entity Key */
+            entity_key: string;
+            /** Subject Id */
+            subject_id: string;
+            /** Fact Ids */
+            fact_ids: string[];
+            /**
+             * Detail
+             * @default
+             */
+            detail: string;
+        };
         /** ForkRequest */
         ForkRequest: {
             /** Snapshot Id */
             snapshot_id: string;
         };
+        /** FreshnessHours */
+        FreshnessHours: {
+            /** Erp Fabric Stock */
+            erp_fabric_stock: number;
+            /** Sheet Trims Status */
+            sheet_trims_status: number;
+            /** Shift Capacity */
+            shift_capacity: number;
+            /** Supplier Updates */
+            supplier_updates: number;
+            /** Notes */
+            notes: number;
+            /** Order Requests */
+            order_requests: number;
+        };
+        /** GateFinding */
+        GateFinding: {
+            /** Code */
+            code: string;
+            state: components["schemas"]["GateState"];
+            /** Entity Key */
+            entity_key: string;
+            /** Fact Ids */
+            fact_ids: string[];
+            /** Detail */
+            detail: string;
+            /** Rule Id */
+            rule_id?: string | null;
+        };
+        /** GateResult */
+        GateResult: {
+            state: components["schemas"]["GateState"];
+            /** Findings */
+            findings: components["schemas"]["GateFinding"][];
+            coverage_used?: components["schemas"]["CoverageUsed"] | null;
+        };
+        /**
+         * GateState
+         * @enum {string}
+         */
+        GateState: "READY" | "STALE" | "INCOMPLETE" | "CONFLICTING";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1232,6 +2046,46 @@ export interface components {
             exclude_id?: string | null;
             /** Idempotency Key */
             idempotency_key: string;
+        };
+        /** ImportBody */
+        ImportBody: {
+            /** Filename */
+            filename: string;
+            /** Profile */
+            profile: string;
+            /** Column Mapping */
+            column_mapping?: {
+                [key: string]: string;
+            };
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /**
+             * Timezone
+             * @default Asia/Kolkata
+             */
+            timezone: string;
+            /** Units */
+            units?: {
+                [key: string]: string;
+            };
+            /** Coverage Qualities */
+            coverage_qualities?: string[] | null;
+            /** Content Base64 */
+            content_base64: string;
+        };
+        /** ImportProblem */
+        ImportProblem: {
+            /** Row */
+            row: number;
+            /** Field */
+            field: string;
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
         };
         /** ImportRequestBody */
         ImportRequestBody: {
@@ -1441,6 +2295,16 @@ export interface components {
             /** Decision */
             decision: string;
         };
+        /** LatestOutcome */
+        LatestOutcome: {
+            outcome: components["schemas"]["Recommendation"];
+            gate_state: components["schemas"]["GateState"];
+            /**
+             * Cutoff
+             * Format: date-time
+             */
+            cutoff: string;
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Username */
@@ -1477,6 +2341,243 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** NoteRequest */
+        NoteRequest: {
+            /**
+             * Note
+             * @description Required, at most 2000 characters
+             */
+            note: string;
+        };
+        /** OrderList */
+        OrderList: {
+            /** Items */
+            items: components["schemas"]["OrderSummary"][];
+        };
+        /** OrderSummary */
+        OrderSummary: {
+            /** Order Id */
+            order_id: string;
+            /** Buyer */
+            buyer?: string | null;
+            /** Style Id */
+            style_id?: string | null;
+            /** Ship Date */
+            ship_date?: string | null;
+            /** Total Qty */
+            total_qty?: string | null;
+            latest?: components["schemas"]["LatestOutcome"] | null;
+        };
+        /** OvertimeCondition */
+        OvertimeCondition: {
+            /**
+             * Type
+             * @default overtime
+             */
+            type: string;
+            /** Lines */
+            lines: number;
+            /** Hours Per Line Per Day */
+            hours_per_line_per_day: number;
+            /** Days */
+            days: number;
+        };
+        /**
+         * OvertimeNeed
+         * @description What overtime would have to be, for T9's `overtime` condition.
+         */
+        OvertimeNeed: {
+            /** Lines */
+            lines: number;
+            /** Days */
+            days: number;
+            /** Cap Hours Per Line Day */
+            cap_hours_per_line_day: number;
+            /** Hours Per Line Per Day */
+            hours_per_line_per_day: number | null;
+        };
+        /** ParameterChange */
+        ParameterChange: {
+            /** Path */
+            path: string;
+            /** Before */
+            before: unknown;
+            /** After */
+            after: unknown;
+        };
+        /** PendingNote */
+        PendingNote: {
+            /** Note Id */
+            note_id: string;
+            /** Lot Hint */
+            lot_hint?: string | null;
+            /** Text */
+            text: string;
+            /** Note Digest */
+            note_digest: string;
+            /**
+             * State
+             * @default pending_extraction
+             * @constant
+             */
+            state: "pending_extraction";
+        };
+        /** PolicyAdoptionView */
+        PolicyAdoptionView: {
+            /** Id */
+            id: string;
+            /** Regression Run Id */
+            regression_run_id: string;
+            /** Policy Digest */
+            policy_digest: string;
+            /** Adopted By */
+            adopted_by: string;
+            /** Acknowledgements */
+            acknowledgements: {
+                [key: string]: string;
+            };
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** PolicyDiffRequest */
+        PolicyDiffRequest: {
+            baseline: components["schemas"]["PolicyDocument-Input"];
+            candidate: components["schemas"]["PolicyDocument-Input"];
+        };
+        /** PolicyDiffView */
+        PolicyDiffView: {
+            /** Changes */
+            changes: components["schemas"]["ParameterChange"][];
+        };
+        /**
+         * PolicyDocument
+         * @description The whole policy. Its `policy_digest` identifies it; it is never edited in place.
+         */
+        "PolicyDocument-Input": {
+            /** Label */
+            label: string;
+            /** Engine Version */
+            engine_version: string;
+            freshness_hours: components["schemas"]["FreshnessHours"];
+            fabric: components["schemas"]["FabricParams-Input"];
+            trims: components["schemas"]["TrimParams-Input"];
+            capacity: components["schemas"]["CapacityParams-Input"];
+            approval: components["schemas"]["ApprovalParams-Input"];
+            /** Conflict Rules */
+            conflict_rules: components["schemas"]["ConflictRule"][];
+            /** Enabled Constraints */
+            enabled_constraints: components["schemas"]["ConstraintId"][];
+        };
+        /**
+         * PolicyDocument
+         * @description The whole policy. Its `policy_digest` identifies it; it is never edited in place.
+         */
+        "PolicyDocument-Output": {
+            /** Label */
+            label: string;
+            /** Engine Version */
+            engine_version: string;
+            freshness_hours: components["schemas"]["FreshnessHours"];
+            fabric: components["schemas"]["FabricParams-Output"];
+            trims: components["schemas"]["TrimParams-Output"];
+            capacity: components["schemas"]["CapacityParams-Output"];
+            approval: components["schemas"]["ApprovalParams-Output"];
+            /** Conflict Rules */
+            conflict_rules: components["schemas"]["ConflictRule"][];
+            /** Enabled Constraints */
+            enabled_constraints: components["schemas"]["ConstraintId"][];
+        };
+        /** PolicyList */
+        PolicyList: {
+            /**
+             * Adopted
+             * @description Digest of the policy decisions use when none is named
+             */
+            adopted: string;
+            /** Items */
+            items: components["schemas"]["StoredPolicyView"][];
+        };
+        /** PolicyRef */
+        PolicyRef: {
+            /** Digest */
+            digest: string;
+            /** Label */
+            label: string;
+            /** Engine Version */
+            engine_version: string;
+        };
+        /** PolicyStored */
+        PolicyStored: {
+            /** Policy Digest */
+            policy_digest: string;
+        };
+        /** PreviewView */
+        PreviewView: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "READY" | "BLOCKED";
+            /** Profile */
+            profile: string;
+            /** Filename */
+            filename: string;
+            /** Raw Digest */
+            raw_digest: string;
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /** Preview Digest */
+            preview_digest: string;
+            /** Coverage */
+            coverage: {
+                [key: string]: unknown;
+            } | null;
+            /** Problems */
+            problems: components["schemas"]["ImportProblem"][];
+            /** Facts */
+            facts: components["schemas"]["Fact"][];
+            /** Pending Extraction */
+            pending_extraction: components["schemas"]["PendingNote"][];
+        };
+        /** PublishBody */
+        PublishBody: {
+            /** Filename */
+            filename: string;
+            /** Profile */
+            profile: string;
+            /** Column Mapping */
+            column_mapping?: {
+                [key: string]: string;
+            };
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /**
+             * Timezone
+             * @default Asia/Kolkata
+             */
+            timezone: string;
+            /** Units */
+            units?: {
+                [key: string]: string;
+            };
+            /** Coverage Qualities */
+            coverage_qualities?: string[] | null;
+            /** Content Base64 */
+            content_base64: string;
+            /** Preview Digest */
+            preview_digest: string;
+            /** Idempotency Key */
+            idempotency_key: string;
+        };
         /** PublishRequestBody */
         PublishRequestBody: {
             /** Profile Id */
@@ -1495,6 +2596,161 @@ export interface components {
             /** Preview Digest */
             preview_digest: string;
         };
+        /** PublishView */
+        PublishView: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Idempotent Replay */
+            idempotent_replay: boolean;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Raw Digest */
+            raw_digest: string;
+            /** Preview Digest */
+            preview_digest: string;
+            /** Fact Ids */
+            fact_ids: string[];
+            /** Pending Extraction */
+            pending_extraction: components["schemas"]["PendingNote"][];
+        };
+        /**
+         * Quantity
+         * @description A Decimal amount (exactly 3 dp) with a unit. JSON form: canonical text, e.g. "5".
+         */
+        Quantity: {
+            /** Value */
+            value: string;
+            unit: components["schemas"]["Unit"];
+        };
+        /**
+         * Recommendation
+         * @enum {string}
+         */
+        Recommendation: "ACCEPT" | "ACCEPT_WITH_CONDITIONS" | "DECLINE" | "NEEDS_REVIEW";
+        /** RecommendationView */
+        RecommendationView: {
+            outcome: components["schemas"]["Recommendation"];
+            candidate_outcome?: components["schemas"]["Recommendation"] | null;
+            /**
+             * Conditions
+             * @default []
+             */
+            conditions: components["schemas"]["OvertimeCondition"][];
+            /**
+             * Reasons
+             * @default []
+             */
+            reasons: string[];
+        };
+        /**
+         * Reconstruction
+         * @description Outcome of replaying a stored evaluation. A mismatch is data, never an exception.
+         */
+        Reconstruction: {
+            /** Evaluation Id */
+            evaluation_id: string;
+            /** Stored Decision Digest */
+            stored_decision_digest: string;
+            /** Recomputed Decision Digest */
+            recomputed_decision_digest: string;
+            /** Snapshot Matches */
+            snapshot_matches: boolean;
+            /** Policy Matches */
+            policy_matches: boolean;
+            /** Matches */
+            matches: boolean;
+            result: components["schemas"]["ReplayResult"];
+        };
+        /** RecordForOrderRequest */
+        RecordForOrderRequest: {
+            /**
+             * Cutoff
+             * Format: date-time
+             */
+            cutoff: string;
+            /** Policy Digest */
+            policy_digest: string;
+            final_outcome: components["schemas"]["Recommendation"];
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+        };
+        /** RecordRequest */
+        RecordRequest: {
+            decision: components["schemas"]["Recommendation"];
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+        };
+        /** RecordedDecision */
+        RecordedDecision: {
+            /** Id */
+            id: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Reviewer */
+            reviewer: string;
+            engine_outcome: components["schemas"]["Recommendation"];
+            final_outcome: components["schemas"]["Recommendation"];
+            /** Reason */
+            reason: string;
+            /** Override */
+            override: boolean;
+        };
+        /** RegressionCaseView */
+        RegressionCaseView: {
+            /** Case Id */
+            case_id: string;
+            /** Title */
+            title: string;
+            classification: components["schemas"]["Classification"];
+            baseline: components["schemas"]["CaseRun"];
+            candidate: components["schemas"]["CaseRun"];
+        };
+        /** RegressionRequest */
+        RegressionRequest: {
+            baseline: components["schemas"]["PolicyDocument-Input"];
+            candidate: components["schemas"]["PolicyDocument-Input"];
+        };
+        /** RegressionRunList */
+        RegressionRunList: {
+            /** Items */
+            items: components["schemas"]["RegressionRunView"][];
+        };
+        /** RegressionRunView */
+        RegressionRunView: {
+            /** Id */
+            id: string;
+            /** Status */
+            status: string;
+            /** Complete */
+            complete: boolean;
+            /** Engine Version */
+            engine_version: string;
+            /** Baseline Policy Digest */
+            baseline_policy_digest: string;
+            /** Candidate Policy Digest */
+            candidate_policy_digest: string;
+            /** Suite Digest */
+            suite_digest: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Cases */
+            cases: components["schemas"]["RegressionCaseView"][];
+        };
         /** ReplayRequest */
         ReplayRequest: {
             /** Scenario Id */
@@ -1506,6 +2762,23 @@ export interface components {
             /** Idempotency Key */
             idempotency_key: string;
         };
+        /** ReplayResult */
+        ReplayResult: {
+            /** Order Id */
+            order_id: string;
+            /** Snapshot Digest */
+            snapshot_digest: string;
+            /** Policy Digest */
+            policy_digest: string;
+            /** Engine Version */
+            engine_version: string;
+            gate: components["schemas"]["GateResult"];
+            /** Constraints */
+            constraints: components["schemas"]["ConstraintResult"][];
+            recommendation: components["schemas"]["RecommendationView"];
+            /** Decision Digest */
+            decision_digest: string;
+        };
         /** ReviewCheckRequest */
         ReviewCheckRequest: {
             /** Original Replay Id */
@@ -1515,6 +2788,180 @@ export interface components {
             /** Target Scenario Revision */
             target_scenario_revision: number;
         };
+        /** ReviewEventView */
+        ReviewEventView: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Actor */
+            actor: string;
+            /** Assignee Id */
+            assignee_id: string | null;
+            /** Note */
+            note: string;
+            /** Corrected Value */
+            corrected_value: unknown;
+            /** Resulting Fact Id */
+            resulting_fact_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** ReviewItemDetail */
+        ReviewItemDetail: {
+            item: components["schemas"]["ReviewItemView"];
+            /** Events */
+            events: components["schemas"]["ReviewEventView"][];
+        };
+        /** ReviewItemList */
+        ReviewItemList: {
+            /** Items */
+            items: components["schemas"]["ReviewItemView"][];
+        };
+        /** ReviewItemView */
+        ReviewItemView: {
+            /** Id */
+            id: string;
+            /** Source Kind */
+            source_kind: string;
+            /** Extraction Id */
+            extraction_id: string | null;
+            /** Evaluation Id */
+            evaluation_id: string | null;
+            /** Field */
+            field: string;
+            /** Field Status */
+            field_status: string;
+            /** Check Codes */
+            check_codes: string[];
+            /** Claimed Value */
+            claimed_value: unknown;
+            evidence_span: components["schemas"]["EvidenceSpan"] | null;
+            /** Entity Key */
+            entity_key: string | null;
+            /** State */
+            state: string;
+            /** Assignee Id */
+            assignee_id: string | null;
+            /** Resulting Fact Id */
+            resulting_fact_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** Snapshot */
+        Snapshot: {
+            /**
+             * Cutoff
+             * Format: date-time
+             * @description UTC-offset-aware instant
+             */
+            cutoff: string;
+            /** Facts */
+            facts: components["schemas"]["Fact"][];
+            /** Findings */
+            findings: components["schemas"]["Finding"][];
+            /** Digest */
+            digest: string;
+        };
+        /** SnapshotView */
+        SnapshotView: {
+            /**
+             * Cutoff
+             * Format: date-time
+             */
+            cutoff: string;
+            /** Settled */
+            settled: boolean;
+            snapshot: components["schemas"]["Snapshot"];
+        };
+        /**
+         * SourceProfile
+         * @enum {string}
+         */
+        SourceProfile: "erp_fabric_stock" | "sheet_trims_status" | "shift_capacity" | "supplier_updates" | "notes" | "order_requests" | "review_queue";
+        /**
+         * Step
+         * @description One line of arithmetic: the formula with the numbers substituted, and its value.
+         */
+        Step: {
+            /** Label */
+            label: string;
+            /** Expression */
+            expression: string;
+            /** Value */
+            value: string;
+        };
+        /** StoredPolicyView */
+        StoredPolicyView: {
+            /** Policy Digest */
+            policy_digest: string;
+            /** Label */
+            label: string;
+            /** Engine Version */
+            engine_version: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            policy: components["schemas"]["PolicyDocument-Output"];
+        };
+        /** SyncResult */
+        SyncResult: {
+            /** Extraction Items Created */
+            extraction_items_created: number;
+            /** Evaluation Items Created */
+            evaluation_items_created: number;
+        };
+        /** Timeline */
+        Timeline: {
+            /** Knowledge Times */
+            knowledge_times: string[];
+            /** Events */
+            events: components["schemas"]["TimelineEvent"][];
+        };
+        /** TimelineEvent */
+        TimelineEvent: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Fact Id */
+            fact_id: string;
+            kind: components["schemas"]["FactKind"];
+            /** Entity Key */
+            entity_key: string;
+            /** Source */
+            source: string;
+            /** Summary */
+            summary: string;
+        };
+        /** TrimParams */
+        "TrimParams-Input": {
+            /** Wastage Pct */
+            wastage_pct: number | string;
+            /** Buffer Days */
+            buffer_days: number;
+        };
+        /** TrimParams */
+        "TrimParams-Output": {
+            /** Wastage Pct */
+            wastage_pct: string;
+            /** Buffer Days */
+            buffer_days: number;
+        };
+        /**
+         * Unit
+         * @enum {string}
+         */
+        Unit: "kg" | "m" | "pcs" | "minutes";
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -1528,6 +2975,16 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /**
+         * Verdict
+         * @enum {string}
+         */
+        Verdict: "PASS" | "FAIL";
+        /**
+         * Weekday
+         * @enum {string}
+         */
+        Weekday: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
         /** WorkspaceMemberRequest */
         WorkspaceMemberRequest: {
             /** Account Id */
@@ -3587,6 +5044,856 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_orders_api_v1_decisions_orders_get: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_order_api_v1_decisions_orders__order_id__get: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+                cutoff?: string | null;
+                policy?: string | null;
+            };
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_timeline_api_v1_decisions_orders__order_id__timeline_get: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Timeline"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_for_order_api_v1_decisions_orders__order_id__records_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordForOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordedDecision"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_snapshot_api_v1_decisions_snapshot_get: {
+        parameters: {
+            query: {
+                cutoff: string;
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SnapshotView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    evaluate_api_v1_decisions_evaluate_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EvaluateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_evaluation_api_v1_decisions_evaluations__evaluation_id__get: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                evaluation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_decision_api_v1_decisions_evaluations__evaluation_id__record_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                evaluation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionRecordView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_policies_api_v1_decisions_policies_get: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    store_policy_api_v1_decisions_policies_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyDocument-Input"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyStored"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    diff_policies_api_v1_decisions_policies_diff_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyDiffRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyDiffView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_regression_runs_api_v1_decisions_regression_runs_get: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+                candidate?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegressionRunList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_regression_run_api_v1_decisions_regression_runs_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegressionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegressionRunView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_regression_run_api_v1_decisions_regression_runs__run_id__get: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegressionRunView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    adopt_regression_run_api_v1_decisions_regression_runs__run_id__adopt_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdoptRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyAdoptionView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_csv_api_v1_decisions_imports_preview_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreviewView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_csv_api_v1_decisions_imports_publish_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_review_items_api_v1_decisions_review_items_get: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+                state?: ("OPEN" | "ASSIGNED" | "CONFIRMED" | "CORRECTED" | "REJECTED") | null;
+                assignee?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewItemList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_review_item_api_v1_decisions_review_items__item_id__get: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewItemDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sync_review_queue_api_v1_decisions_review_items_sync_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assign_review_item_api_v1_decisions_review_items__item_id__assign_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewItemView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_review_item_api_v1_decisions_review_items__item_id__confirm_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewItemView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    correct_review_item_api_v1_decisions_review_items__item_id__correct_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewItemView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reject_review_item_api_v1_decisions_review_items__item_id__reject_post: {
+        parameters: {
+            query: {
+                /** @description Workspace the caller belongs to */
+                workspace_id: string;
+            };
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewItemView"];
                 };
             };
             /** @description Validation Error */

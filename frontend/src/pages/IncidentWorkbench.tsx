@@ -400,7 +400,7 @@ export function IncidentWorkbenchPage() {
   return (
     <div className="investigation-workbench space-y-10">
       <Link
-        to="/"
+        to="/investigations"
         className="inline-flex min-h-8 items-center gap-2 rounded-sm text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft aria-hidden="true" size={14} />

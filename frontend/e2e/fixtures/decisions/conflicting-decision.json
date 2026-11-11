@@ -1,0 +1,127 @@
+{
+  "order_id": "POLO-222",
+  "cutoff": "2026-10-22T05:30:00Z",
+  "settled": true,
+  "policy": {
+    "digest": "policy-v1-abc",
+    "label": "Tiruppur default",
+    "engine_version": "decision-v1"
+  },
+  "snapshot_digest": "snapshot-conflict-222",
+  "decision_digest": "decision-conflict-222",
+  "gate": {
+    "state": "CONFLICTING",
+    "findings": [
+      {
+        "code": "qc_claims_against_lot",
+        "state": "CONFLICTING",
+        "entity_key": "lot:L-221",
+        "fact_ids": [
+          "fact-lot-222",
+          "fact-qc-222",
+          "fact-lot-222-correction",
+          "fact-lot-222-recount"
+        ],
+        "detail": "ERP reports 4,000 m in lot L-221; dyeing-house QC reports 1,200 m failed.",
+        "rule_id": "qc_claims_against_lot"
+      }
+    ],
+    "coverage_used": {
+      "artifact_id": "artifact-erp-222",
+      "as_of": "2026-10-22T04:00:00Z",
+      "qualities": ["SJ180"]
+    }
+  },
+  "constraints": [
+    {
+      "constraint": "FABRIC",
+      "subject": "NAVY",
+      "status": "NOT_EVALUATED",
+      "fact_ids": ["fact-lot-222", "fact-qc-222"],
+      "steps": [],
+      "detail": "Conflicting evidence prevents a reliable fabric calculation.",
+      "consumed_by": [],
+      "pending_review_fact_ids": []
+    }
+  ],
+  "recommendation": {
+    "outcome": "NEEDS_REVIEW",
+    "candidate_outcome": "ACCEPT",
+    "conditions": [],
+    "reasons": ["Resolve the conflicting lot quantity before deciding."]
+  },
+  "facts": [
+    {
+      "id": "fact-lot-222",
+      "kind": "fabric_lot",
+      "entity_key": "lot:L-221",
+      "payload": {
+        "fabric_quality": "SJ180",
+        "colour": "NAVY",
+        "qty": { "value": "4000", "unit": "m" },
+        "gsm": "180",
+        "width_m": "1.5"
+      },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:06:00Z",
+      "supersedes_id": null,
+      "source": "erp_fabric_stock",
+      "artifact_id": "artifact-erp-222"
+    },
+    {
+      "id": "fact-qc-222",
+      "kind": "fabric_qc",
+      "entity_key": "lot:L-221",
+      "payload": {
+        "issue": "defect",
+        "qty": { "value": "1200", "unit": "m" },
+        "origin": "notes",
+        "review_state": "needs_review"
+      },
+      "valid_from": "2026-10-22T04:20:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:25:00Z",
+      "supersedes_id": null,
+      "source": "notes",
+      "artifact_id": "artifact-note-222"
+    },
+    {
+      "id": "fact-lot-222-correction",
+      "kind": "fabric_lot",
+      "entity_key": "lot:L-221",
+      "payload": {
+        "fabric_quality": "SJ180",
+        "colour": "NAVY",
+        "qty": { "value": "3800", "unit": "m" },
+        "gsm": "180",
+        "width_m": "1.5"
+      },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:40:00Z",
+      "supersedes_id": "fact-lot-222",
+      "source": "erp_fabric_stock",
+      "artifact_id": "artifact-erp-222-correction"
+    },
+    {
+      "id": "fact-lot-222-recount",
+      "kind": "fabric_lot",
+      "entity_key": "lot:L-221",
+      "payload": {
+        "fabric_quality": "SJ180",
+        "colour": "NAVY",
+        "qty": { "value": "3700", "unit": "m" },
+        "gsm": "180",
+        "width_m": "1.5"
+      },
+      "valid_from": "2026-10-22T04:00:00Z",
+      "valid_to": null,
+      "known_at": "2026-10-22T04:45:00Z",
+      "supersedes_id": "fact-lot-222",
+      "source": "erp_fabric_stock",
+      "artifact_id": "artifact-erp-222-recount"
+    }
+  ],
+  "records": []
+}
